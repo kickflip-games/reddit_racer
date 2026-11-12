@@ -12,14 +12,15 @@
     "login": "devvit login",
     "prettier": "prettier --write .",
     "test:types": "tsc --build",
-    "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:unit": "tsx --test \"src/**/*.test.ts\" \"tests/unit/**/*.test.ts\"",
     "dev:local": "vite --config vite.local.config.ts",
     "type-check": "npm run test:types",
-    "test": "npm run test:unit --",
+    "test": "tsx --test",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run build",
-    "test:e2e": "playwright test"
+    "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run tracks:check && npm run build",
+    "test:e2e": "playwright test",
+    "tracks:check": "tsx scripts/tracks-check.ts"
   },
   "engines": {
     "node": "24.22.x"
@@ -28,6 +29,8 @@
     "@devvit/start": "0.15.3",
     "@devvit/web": "0.15.3",
     "@hono/node-server": "2.1.6",
+    "@trpc/client": "11.28.0",
+    "@trpc/server": "11.28.0",
     "devvit": "0.15.3",
     "hono": "4.13.18",
     "three": "0.187.0"

@@ -11,7 +11,7 @@
     <title>Reddit Racer</title>
   </head>
   <body>
-    <main id="race" aria-label="One-button racing game">
+    <main id="race" aria-label="One-button racing game" data-phase="loading">
       <canvas
         id="race-canvas"
         aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
@@ -21,24 +21,47 @@
           <p class="eyebrow">DAILY TIME ATTACK</p>
           <h1>Reddit Racer<span class="title-dot">.</span></h1>
         </div>
-        <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+        <div class="mode-stack">
+          <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+          <p id="track-source" data-state="loading" hidden></p>
+          <div id="daily-details" class="daily-details" hidden>
+            <p id="daily-date"></p>
+            <p id="daily-reset"></p>
+          </div>
+        </div>
       </header>
       <div class="timing" aria-label="Race telemetry">
         <p class="eyebrow">LAP TIME</p>
         <output id="timer">00.000</output>
         <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
+        <label
+          id="lap-progress-label"
+          class="lap-progress-label"
+          for="lap-progress"
+        >
+          Gates 0/8 · 0%
+        </label>
+        <progress id="lap-progress" max="1" value="0">0%</progress>
       </div>
+      <output
+        id="race-countdown"
+        class="race-countdown"
+        aria-label="Race countdown"
+        aria-live="polite"
+        hidden
+        >3</output
+      >
       <div id="card" class="race-card">
         <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
         <h2 id="card-title">Find your rhythm.</h2>
         <p id="card-copy">Hold to go. Release to slow.</p>
-        <button id="start-button" type="button">
+        <button id="start-button" type="button" disabled>
           Start practice <span aria-hidden="true">↗</span>
         </button>
         <button id="retry-button" type="button" hidden>
           Try again <span aria-hidden="true">↗</span>
         </button>
-        <p class="card-note">
+        <p id="track-note" class="card-note">
           A fresh circuit every day. Ranked racing coming soon.
         </p>
       </div>

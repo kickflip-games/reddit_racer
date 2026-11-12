@@ -14,6 +14,92 @@
 - CI first run exposed browser-test wall-time limits on software rendering. Reduced automated screenshot pixel density, retained a full-lap test with a bounded 120-second timeout, and upload browser artifacts even on failure.
 - Starter globe textures removed from browser public assets. Three.js bundle size remains a mobile profiling task for #24.
 
+- Merged [PR #26](https://github.com/kickflip-games/reddit_racer/pull/26) as `718bb89`; verified #2 closed. CI run `43134316080` passed on head `69fc739` before squash merge.
+
+## 2026-11-12 — canonical geometry (#5)
+
+- Started from updated main `718bb89` on `hacking/canonical-track-geometry`.
+- Implement #5 before #3 so simulation, mesh edges and future replay verification share one distance/curvature/width source.
+- Keep authoring math separate from serialized runtime sampling; never use the art mesh as physics authority.
+- Implemented validated plain track schema, quantized distance samples, exact road cross-sections, canonical JSON/SHA-256 and independent authoring. Renderer/car/camera now consume it; local `?debug=track` visualizes widths, normals, curvature and checkpoints.
+- Validation: `npm run check` passed (7 unit tests). All 8 desktop/mobile Chromium browser checks passed: full lap/retry, Node/browser JSON/hash/sample equality, mesh seam/upward winding/exact edge agreement, debug overlay and landscape resize. Both debug screenshots inspected; mobile capture in `docs/screenshots/canonical-track-mobile.png`.
+- Corrected downward triangle winding and exact-multiple floating remainder at the seam during validation. Global road clearance/playability remain #7; this PR does not claim WebKit or hosted/physical-device proof.
+- Devvit CLI identity is configured (`devvit whoami` succeeded); no private build uploaded yet. Hosted game/ranking evidence remains pending #20.
+
+- Merged [PR #28](https://github.com/kickflip-games/reddit_racer/pull/28) as `d03c871`; verified #5 closed. CI run `43135537604` passed on `9c79dce` before squash merge.
+
+## 2026-11-12 — fixed-step simulation (#3)
+
+- Started from updated main `d03c871` on `hacking/fixed-step-race-simulation`.
+- Replace preview frame-delta driving with a shared 120 Hz simulation, bounded versioned accelerator-transition replays and an interpolated renderer. Keep client/session times non-authoritative.
+- Implemented quantized shared simulation and strict bounded replay schema, fixed-step browser driver, input-time synchronization, interpolation, off-road/recovery feedback and visible interruption/retry handling. Test code now has its own TypeScript project so browser and Node test sources are checked too.
+- Validation: `npm run check` passed (22 unit tests); 16 browser tests passed, including full desktop/mobile laps, braking/retry, focus/long-gap interruption, geometry checks and exact full-state replay equality in Chromium/WebKit against Node. The 16 shared tests also passed under Node 22 via `npx --package=node@22 node --import tsx --test 'src/shared/*.test.ts'`.
+- Frozen reference replays: hold-only 1867 ticks (15.558 s); a half-second lift at ticks 800–860 finishes in 1590 ticks (13.250 s). This numerical control establishes a braking benefit; it is not human balance evidence. The short reference oval is not the final generated content.
+- Fixed the test clock to pause between scripted actions; auto-running time under parallel rendering correctly tripped the new gap safeguard. Kept dedicated intentional gap tests. Inspected mobile driving capture `docs/screenshots/fixed-step-mobile.png`.
+- Node/Chromium/WebKit replay fixtures pass. WebKit coverage is for pure replay math, separate from rendered-browser and real phone evidence.
+
+- Merged [PR #29](https://github.com/kickflip-games/reddit_racer/pull/29) as `d89ff68`; verified #3 closed. CI run `43137329441` passed on `d1ba8ec` before squash merge.
+
+## 2026-11-12 — hold controls and touch safety (#4)
+
+- Started from updated main `d89ff68` on `hacking/hold-controls-touch-safety`.
+- Most handling landed with #3. This focused follow-up releases pointer capture safely on cancel/finish/focus loss, retains throttle/brake feedback while sliding/off-road and suppresses active-race long-press menus/callouts and expanded-page overscroll.
+- Added native Chromium touch emulation: hold/release, captured movement, full lap/retry, combined keyboard/touch release orders, cancellation, secondary touches and focus cleanup.
+- Validation: `npm run check` passed (22 unit tests); all 19 browser tests passed, including the new native touch-emulation lap, cancellation and capture/combined-input cases. Driving screenshot inspected: `docs/screenshots/touch-driving-mobile.png`. No physics parameters changed; frozen replay results remain identical.
+- Capture-loss test first released a pending capture before `gotpointercapture`; corrected the test to establish capture with movement before testing its actual loss. Native cancel and focus cleanup remain independently checked.
+- External completion blocker: no physical phone or first-time human participants are available to the agent. Browser touch emulation cannot establish real Reddit phone scrolling, responsiveness or newcomer comprehension. Keep #4 open after its implementation PR; record remaining observations on the issue and continue #8.
+
+- Merged [PR #30](https://github.com/kickflip-games/reddit_racer/pull/30) as `b225eda`; CI run `43138859786` passed on `a4da945`. Confirmed #4 stays open and updated its blocker comment with merge evidence.
+
+## 2026-11-12 — lap lifecycle and checkpoints (#8)
+
+- Started from updated main `b225eda` on `hacking/lap-rules-and-countdown`.
+- Added an outer race-rules layer: stationary unscored countdown, ordered sector gates, bounded monotonic progress, valid terminal finish and abandonment. Preserve arcade-v1 physics/numerical fixture times; version replay rules explicitly.
+- Checkpoints span the runoff corridor so an off-road mistake cannot leave the automatically steered car permanently behind a required gate. Every forward arc metre still costs simulation time; replay never accepts client position/checkpoint claims.
+
+- Validation: `npm run check` passed (31 unit tests); all 19 browser checks passed, including held countdown with zero score/speed, ordered progress to 100%, full keyboard/touch laps, retry, interruptions and Node/Chromium/WebKit replay equality. Countdown and finish mobile screenshots inspected: `docs/screenshots/lap-countdown-mobile.png` and `docs/screenshots/lap-finish-mobile.png`.
+- `fixed-step-v2` identifies the new verifier/lap rules; `arcade-v1` physics and golden hold/lift outcomes remain exactly unchanged. `advanceLapProgress` is an extra trajectory guard; verification still computes every next state through shared physics and never accepts snapshots.
+
+- Merged [PR #31](https://github.com/kickflip-games/reddit_racer/pull/31) as `c35c22b`; verified #8 closed. CI run `43140903751` passed on `49140db` before squash merge.
+
+## 2026-11-12 — procedural circuits (#6)
+
+- Started from updated main `c35c22b` on `hacking/procedural-circuit-generator`.
+- Built a deterministic closed periodic spline from driving-motif control groups. Validate accepted road geometry, bound retries and fallback, and expose reproducible seed diagnostics.
+- Added a separate local SVG gallery for hundreds of canonical courses; keep it outside the production Devvit entrypoints. Full simulation-based quality gates follow #7 before immutable ranked daily content in #9.
+
+- Initial rounded-polygon layouts had shallow motif geometry; refined one genuine infield U and stronger S controls, then reran all checks. Observed opposing turns are tested at >=140 degrees. Intermediate reserve-radius failure was corrected before committing; failed source was never merged.
+- Final validation: `npm run check` passed (39 unit tests, types, lint, format, 200-seed structural CLI, production build); all 22 browser tests passed, including Node/browser seed hashes, safe seed text, 10-course gallery and 200-card inspection. Workshop HTML/code confirmed absent from production output. Inspected `docs/screenshots/generator-gallery.png`.
+- Fixed regression set: 200 structurally valid requests, 3 reserve uses (1.5%), 198 distinct hashes/profiles, mean 3.405 attempts, lengths 350.054–499.404m; 484 radius and 6 shoulder-fold candidate rejections. Reserve repetition is explicit.
+- Independent real-physics/replay-verified release-window probe on showcase-0…9: 24.233–28.225s, 3–5 lifts, 4.267–8.050s faster than hold. This is a bounded control, not final quality approval or human balance evidence. #7 ships the generalized bot/quality gates.
+
+- Merged [PR #32](https://github.com/kickflip-games/reddit_racer/pull/32) as `ad092a1`; verified #6 closed. CI run `43145526452` passed on `524a3b6` before squash merge.
+
+## 2026-11-12 — track quality and playable seeds (#7)
+
+- Started from updated main `ad092a1` on `hacking/track-quality-and-playable-seeds`.
+- Added real shared-rules hold/cautious/bounded fast controllers, replay rechecks, smoothness/clearance gates and versioned acceptance thresholds. Generation caps structural candidates and quality assessments separately; reserve must pass the same quality policy.
+- Local gallery checks selected driving quality and opens the accepted seed in the game. DEV-only async loading prevents early Start; production seed queries cannot select/recompute a course. Retry keeps the loaded track; generated previews omit reference scenery.
+- CLI now defaults to full quality over 200 fixed seeds, retains `--structural`, reports requested/total assessment counts separately, continues after individual failures and exits nonzero with a complete failure report.
+- Quality winning tapes are developer/server diagnostics; the future public daily challenge response must omit solver tapes. This is automated rule/difficulty evidence, not human fun or device performance proof.
+
+- Validation: `npm run check` passed on final code (47 unit tests including 200 approved seeds, types/lint/format, full quality CLI, build). All 31 browser tests passed, including selected quality/candidate hash, generated-course input replay with exact Node finish ticks, retry, rejection loading state and generated replay equality in Chromium/WebKit. Production output excludes gallery/quality search. Inspected approved workshop and mobile driving screenshots.
+- Full CLI report saved with all 200 records/zero failures and CI now uploads it with browser evidence. Result: 3 reserves (1.5%), 198 distinct courses/profiles, mean 3.425 requested structural candidates; fast 22.550–30.208s, 3–6 meaningful lifts, gains 3.775–8.433s. Requested quality average 0.99; reserve-inclusive average 1.005. Machine-specific elapsed time is not phone/hosted performance evidence.
+- Screenshots: `docs/screenshots/approved-gallery.png`, `docs/screenshots/generated-driving-mobile.png`. Bot outcomes are developer diagnostics; none are inserted into a production leaderboard.
+
+- Merged [PR #33](https://github.com/kickflip-games/reddit_racer/pull/33) as `5708c1b`; verified #7 closed. CI run `43150201623` passed on `1db04af`, including all browser checks and uploaded quality report.
+
+## 2026-11-12 — immutable daily challenges (#9)
+
+- Started from updated main `5708c1b` on `hacking/immutable-daily-challenges`.
+- Persist the complete accepted canonical course, hashes, UTC window, versions, initial conditions and acceptance configuration. Atomic hash insertion plus winner read-back prevents competing requests or deployments from replacing an existing day.
+- Bind posts permanently using trusted Reddit creation time; handle a post creation crossing midnight by updating its small public metadata after binding. Old posts offer practice. A loaded course stays fixed across reset and retries.
+- Added Hono/tRPC v11 transport, removed unused starter counter/forms, and explicitly enabled Redis. Client-provided dates/posts/geometry cannot select the bound daily record. Public data excludes quality search solution tapes.
+- Daily post creation remains a moderator action; recurring posting is deferred to hosted setup. Registered app identity remains `full-throttle-dev`. No upload or hosted validation is claimed in this step.
+- Validation: `npm run check` passed (63 unit tests, types/lint/format, 200 approved seeds and production build); all 47 browser checks passed. Node 22.23.5 passed 26 daily/API/simulation/replay tests. Installed Devvit configuration parsing confirmed the menu, trigger, entrypoints and Redis permission without uploading.
+- Atomic storage controls race different candidate courses and require every caller to return the persisted winner. Tests also cover deployment reuse, original post date, midnight during generation/in-flight expiry, reserve failure, stale quality approval, corrupt records and unconfirmed writes. New record creation rechecks the copied road against its exact quality policy; stored reads do not rerun generation or bots.
+- Inspected mobile current/archive screenshots: `docs/screenshots/daily-challenge-mobile.png` and `docs/screenshots/archive-practice-mobile.png`. These use explicitly mocked daily transport and real local rendering; they are not hosted or physical-phone evidence. Production client excludes generator/solver code and the splash stays independent of Three.js/tRPC.
+
 ## Next
 
-Merge the tested foundation PR, then #3 fixed-step simulation, #5 canonical geometry, #4 handling and #8 lap rules. Begin #23 test infrastructure with each module; do not close it until its full regression coverage exists.
+Finish and merge #9, then #10 authenticated replay sessions and #11 atomic leaderboard. Keep #4 external observations open.

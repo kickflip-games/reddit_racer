@@ -19,18 +19,46 @@ npm run build        # production client and server
 npm run type-check   # TypeScript
 npm run lint
 npm run test:unit
-npm run check        # formatting, types, lint, unit tests, build
+npm run test:e2e     # browser regression checks (install browsers below)
+npm run tracks:check # 200 fixed-seed geometry + driving quality checks
+npm run check        # formatting, types, lint, units, 200-track quality, build
 ```
 
 For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. The existing private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link. Standalone browser success does **not** establish hosted Reddit integration; verified test-post results and blockers are recorded in [the progress log](docs/implementation-progress.md).
 
 `npm run deploy` builds/checks and uploads a **private** Devvit version. Do not run `devvit publish` or submit for general app review. Private upload/playtesting is sufficient for the hackathon development workflow. Never commit credentials.
 
+For automated browser checks, install the pinned Playwright browser runtimes once:
+
+```sh
+npx playwright install chromium webkit
+npm run test:e2e
+npm run test -- src/shared/simulation.test.ts  # one isolated test file
+```
+
+Linux CI uses `npx playwright install --with-deps chromium webkit`. Rendered gameplay checks cover desktop and mobile-sized Chromium; pure authoritative replay fixtures additionally run in WebKit. These checks do not substitute for a physical phone or hosted Reddit test.
+
+The shared simulation runs at 120 Hz with versioned input replays; see [simulation rules](docs/simulation.md) and [canonical geometry](docs/track-geometry.md), and [lap lifecycle/checkpoints](docs/race-rules.md).
+
+Inspect procedural courses at http://localhost:5173/track-gallery.html while `npm run dev:local` is running. Enter a seed or generate up to 300 SVG previews. The gallery is excluded from the Devvit production build. Grid cards show structural previews. Check a selected course with the real shared simulator, then use Drive selected seed for local unranked practice. The default local game retains the reference oval.
+
+On Reddit, each post loads its permanently bound UTC daily circuit from Redis through tRPC. The complete accepted geometry and race versions are stored; deployments never replace an existing day. Old posts remain unranked practice. Reset messaging follows the server clock, while an already loaded course stays fixed through retries. Ranked sessions and leaderboards follow in #10/#11; daily practice does not claim a verified score.
+
+The moderator menu's **Create today's race** action creates a post for the current UTC circuit. There is no recurring post scheduler yet. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
+
+```sh
+npm run tracks:check -- --prefix showcase --count 10
+npm run tracks:check -- --structural # faster geometry-only inspection
+npm run tracks:check -- --report /tmp/racer-tracks.json
+```
+
+See [procedural generation](docs/procedural-generation.md) for motifs and [track quality](docs/track-quality.md) for bounded controller checks, thresholds and reports.
+
 ## Architecture
 
 - `src/client`: Vite / Three.js expanded game and lightweight inline splash.
 - `src/shared`: platform-independent deterministic simulation and track definitions; no DOM, Three.js or Devvit imports.
-- `src/server`: Hono backend with authenticated Devvit context and Redis. Future ranked scores are calculated by replaying input on the server, never accepted as client times.
+- `src/server`: Hono and tRPC v11 backend with request-local Devvit context and installation-scoped Redis. Future ranked scores are calculated by replaying input on the server, never accepted as client times.
 - `assets/3d_models.zip`: supplied Kenney models. Selectively extract useful models; do not serve the entire archive.
 
 Keep heavy rendering dependencies out of the inline splash. Use Devvit client navigation/toasts instead of browser navigation/alerts. The project uses Devvit Web, not Blocks or the legacy public API.

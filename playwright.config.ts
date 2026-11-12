@@ -13,6 +13,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/touch.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 960, height: 720 },
@@ -20,7 +21,13 @@ export default defineConfig({
       },
     },
     {
+      name: 'webkit-replay',
+      testMatch: '**/replay.spec.ts',
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
       name: 'mobile-chromium',
+      testIgnore: '**/gallery-batch.spec.ts',
       use: { ...devices['Pixel 7'], deviceScaleFactor: 1 },
     },
   ],

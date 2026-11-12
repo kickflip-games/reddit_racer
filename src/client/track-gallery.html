@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#102e29" />
+    <link rel="stylesheet" href="track-gallery.css" />
+    <title>Circuit workshop · Reddit Racer</title>
+  </head>
+  <body>
+    <main id="gallery-app">
+      <header class="workshop-header">
+        <div>
+          <p class="eyebrow">REDDIT RACER · LOCAL DEVELOPMENT</p>
+          <h1>Circuit workshop<span>.</span></h1>
+          <p class="intro">
+            Explore the layouts. Keep the seed. Inspect every bend.
+          </p>
+        </div>
+        <span class="development-badge">PRELIMINARY GENERATION</span>
+      </header>
+      <p class="quality-note">
+        Grid cards preview structural geometry. Run selected driving checks to
+        test lap completion and braking with the shared simulation. Automated
+        checks do not establish real-device performance or guarantee that a
+        course is fun. Local previews are unranked.
+      </p>
+      <section
+        class="panel controls"
+        aria-label="Reproduce and generate circuits"
+      >
+        <form id="seed-form">
+          <label for="gallery-seed">Inspect one seed</label>
+          <div class="input-row">
+            <input
+              id="gallery-seed"
+              name="seed"
+              value="showcase-0"
+              maxlength="96"
+              required
+              spellcheck="false"
+            />
+            <button id="inspect-seed" type="submit">
+              Inspect seed <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </form>
+        <form id="batch-form">
+          <div class="batch-fields">
+            <div>
+              <label for="gallery-prefix">Batch seed prefix</label>
+              <input
+                id="gallery-prefix"
+                name="prefix"
+                value="showcase"
+                maxlength="88"
+                required
+                spellcheck="false"
+              />
+            </div>
+            <div>
+              <label for="gallery-count">Courses · max 300</label>
+              <input
+                id="gallery-count"
+                name="count"
+                type="number"
+                value="100"
+                min="1"
+                max="300"
+                step="1"
+                required
+              />
+            </div>
+          </div>
+          <button id="generate-gallery" type="submit">
+            Generate grid <span aria-hidden="true">↓</span>
+          </button>
+        </form>
+      </section>
+      <p id="gallery-error" class="error" role="alert" hidden></p>
+      <section class="selected-layout" aria-label="Selected circuit inspection">
+        <div class="panel selected-preview">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">SELECTED CIRCUIT</p>
+              <h2 id="selected-seed">showcase-0</h2>
+            </div>
+            <span id="selected-status" class="status-badge">Generating</span>
+          </div>
+          <svg
+            id="selected-track"
+            class="selected-track"
+            role="img"
+            aria-label="Selected circuit geometry"
+          ></svg>
+          <p class="map-legend">
+            <span>Mint · centreline</span><span>Gold · start / direction</span
+            ><span>Blue · checkpoints</span>
+          </p>
+          <div class="profile-heading">
+            <h3>Curvature over distance</h3>
+            <span>Signed geometry · not a driving recommendation</span>
+          </div>
+          <svg
+            id="curvature-profile"
+            class="curvature-profile"
+            role="img"
+            aria-label="Signed curvature by distance"
+          ></svg>
+        </div>
+        <aside class="panel inspection">
+          <p class="eyebrow">REPRODUCTION &amp; GEOMETRY</p>
+          <h2>Under the bonnet.</h2>
+          <dl id="selected-metrics" class="metrics"></dl>
+          <h3>Driving motifs</h3>
+          <p id="selected-motifs" class="motifs">Waiting for a course.</p>
+          <section
+            class="quality-inspection"
+            aria-label="Real simulation quality checks"
+          >
+            <h3>Driving quality</h3>
+            <p
+              id="quality-verdict"
+              role="status"
+              aria-live="polite"
+              data-state="unchecked"
+            >
+              Driving quality is unchecked for this structural preview.
+            </p>
+            <button id="check-quality" type="button">
+              Check selected driving quality
+            </button>
+            <table id="quality-table" hidden>
+              <thead>
+                <tr>
+                  <th scope="col">Controller</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Off road</th>
+                  <th
+                    scope="col"
+                    title="Accelerator releases lasting at least 0.1 seconds"
+                  >
+                    Lifts ≥0.1s
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="quality-metrics"></tbody>
+            </table>
+            <a id="drive-selected" class="drive-link" href="#" hidden
+              >Drive selected seed <span aria-hidden="true">↗</span></a
+            >
+            <p class="quality-limit">
+              Bot results use shared race rules. Human playtesting and phone
+              performance remain unverified.
+            </p>
+          </section>
+          <h3>Canonical SHA-256</h3>
+          <code id="selected-hash" class="track-hash">Computing…</code>
+          <details>
+            <summary>Full generator diagnostics</summary>
+            <pre id="selected-diagnostics"></pre>
+          </details>
+        </aside>
+      </section>
+      <section class="batch-section" aria-labelledby="batch-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">SHAPE &amp; SEQUENCE EXPLORER</p>
+            <h2 id="batch-title">A hundred possibilities.</h2>
+          </div>
+          <p
+            id="gallery-status"
+            role="status"
+            aria-live="polite"
+            data-state="idle"
+          >
+            Ready to generate.
+          </p>
+        </div>
+        <p class="batch-note">
+          Select a card to inspect its exact seed. Generation yields between
+          small batches; submitting a new batch replaces the previous one.
+        </p>
+        <div id="track-gallery" class="track-grid"></div>
+      </section>
+    </main>
+    <script type="module" src="track-gallery.ts"></script>
+  </body>
+</html>

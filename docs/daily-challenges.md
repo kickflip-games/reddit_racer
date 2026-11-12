@@ -1,6 +1,6 @@
 # Immutable UTC daily challenges
 
-`src/server/core/daily-challenges.ts` owns challenge persistence and permanent post binding. Redis, Reddit post lookup, clock and course factories are injected; the core imports no Devvit platform module. `src/shared/daily-challenge.ts` defines validated storage/public schemas, hashes, UTC helpers and the future ranked-session timing policy.
+`src/server/core/daily-challenges.ts` owns challenge persistence and permanent post binding. Redis, Reddit post lookup, clock and course factories are injected; the core imports no Devvit platform module. `src/shared/daily-challenge.ts` defines validated storage/public schemas, hashes, UTC helpers and the ranked-session timing policy.
 
 ## Stored record and public view
 
@@ -12,7 +12,7 @@ The public `DailyChallengeView` contains:
 - `serverNowMs`, `currentDay`, `nextResetAtMs`: server-derived UTC display context.
 - `isCurrent`, `rankedWindowOpen`: whether this post's challenge belongs to the current UTC window.
 
-`rankedWindowOpen` is temporal eligibility only. Authenticated sessions and ranked verification arrive in issue #10; this field alone does not grant ranking or create a score. Old challenges remain available as clearly labelled practice.
+`rankedWindowOpen` is temporal eligibility only. [Authenticated sessions and replay verification](ranked-verification.md) check it against the server clock; this field alone does not grant ranking or create a score. Old challenges remain available as clearly labelled practice.
 
 `toPublicDailyChallenge()` explicitly enumerates public fields. Internal configuration, audit, solver transitions and controller search tapes are absent from the DTO. `parseDailyChallengeView()` validates both immutable challenge data and the view's UTC flags, preventing a mismatched date/reset indicator from being accepted as authoritative.
 
@@ -62,7 +62,7 @@ The currently retained scored tuple is `fixed-step-v2 / arcade-v1 / 120 Hz`, wit
 
 When handling is tuned in issue #25, retain the old version-specific simulation/race/replay implementation and add explicit runtime dispatch before enabling another tuple. A compatibility label pointing to mutable current functions is insufficient. Unknown schema, unsupported runtime, invalid initial conditions, malformed geometry or hash mismatch must not overwrite the original record. Public API mapping treats integrity/runtime failures as a precondition failure, separate from temporary service outages.
 
-## Midnight and future ranked sessions
+## Midnight and ranked sessions
 
 All windows use server UTC calendar days, independent of player timezone or daylight saving. The shared policy helper `rankedSessionExpiresAt(challenge, startedAtMs)` permits starts only within `[startsAtMs, endsAtMs)` and returns:
 
@@ -70,7 +70,7 @@ All windows use server UTC calendar days, independent of player timezone or dayl
 min(startedAtMs + 5 minutes, endsAtMs + 3 minutes)
 ```
 
-Issue #10 must pin the session to the challenge ID/hash, runtime versions and authenticated account at start. A pre-midnight session may finish against its original challenge/leaderboard until that bounded expiry. Starting after midnight on an old post is practice. The helper defines the policy; this PR does not yet implement authenticated session persistence or scoring.
+Sessions pin the challenge ID/hash, runtime versions and authenticated account at start. A pre-midnight session may finish against its original challenge until that bounded expiry. Starting after midnight on an old post is practice. [Ranked verification](ranked-verification.md) implements persistence and authoritative replay; leaderboard storage follows in #11.
 
 The client can display reset time using `serverNowMs` plus monotonic elapsed time. That display never determines the authoritative day, track or lap time.
 

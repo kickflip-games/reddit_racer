@@ -42,7 +42,9 @@ The shared simulation runs at 120 Hz with versioned input replays; see [simulati
 
 Inspect procedural courses at http://localhost:5173/track-gallery.html while `npm run dev:local` is running. Enter a seed or generate up to 300 SVG previews. The gallery is excluded from the Devvit production build. Grid cards show structural previews. Check a selected course with the real shared simulator, then use Drive selected seed for local unranked practice. The default local game retains the reference oval.
 
-On Reddit, each post loads its permanently bound UTC daily circuit from Redis through tRPC. The complete accepted geometry and race versions are stored; deployments never replace an existing day. Old posts remain unranked practice. Reset messaging follows the server clock, while an already loaded course stays fixed through retries. Ranked sessions and leaderboards follow in #10/#11; daily practice does not claim a verified score.
+On Reddit, each post loads its permanently bound UTC daily circuit from Redis through tRPC. The complete accepted geometry and race versions are stored; deployments never replace an existing day. Old posts remain unranked practice. Reset messaging follows the server clock, while an already loaded course stays fixed through retries.
+
+Daily attempts request an authenticated session before countdown. After finishing, the server calculates time from the recorded accelerator inputs using the stored course and shared simulation. The result stays unverified until the server accepts it. Signed-out or unavailable verification can continue as clearly labelled practice. Leaderboards and personal bests follow in #11; a verified receipt alone does not claim a rank. See [ranked verification](docs/ranked-verification.md) for expiry, idempotency, rate limits and the explicit limitation that valid input replays do not prove human play. Hosted authentication remains a separate private test under #20.
 
 The moderator menu's **Create today's race** action creates a post for the current UTC circuit. There is no recurring post scheduler yet. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
 
@@ -58,7 +60,7 @@ See [procedural generation](docs/procedural-generation.md) for motifs and [track
 
 - `src/client`: Vite / Three.js expanded game and lightweight inline splash.
 - `src/shared`: platform-independent deterministic simulation and track definitions; no DOM, Three.js or Devvit imports.
-- `src/server`: Hono and tRPC v11 backend with request-local Devvit context and installation-scoped Redis. Future ranked scores are calculated by replaying input on the server, never accepted as client times.
+- `src/server`: Hono and tRPC v11 backend with request-local Devvit identity and installation-scoped Redis. Verified times are calculated by replaying input on the server; client times, user IDs and track data are never accepted as ranking authority.
 - `assets/3d_models.zip`: supplied Kenney models. Selectively extract useful models; do not serve the entire archive.
 
 Keep heavy rendering dependencies out of the inline splash. Use Devvit client navigation/toasts instead of browser navigation/alerts. The project uses Devvit Web, not Blocks or the legacy public API.

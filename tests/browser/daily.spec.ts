@@ -27,6 +27,17 @@ async function interceptDaily(
     calls++;
     await route.fulfill({ json: { result: { data } } });
   });
+  await page.context().route('**/api/trpc/startRankedRace*', async (route) => {
+    await route.fulfill({
+      json: {
+        error: {
+          message: 'Signed out in daily transport fixture',
+          code: -32001,
+          data: { code: 'UNAUTHORIZED', httpStatus: 401 },
+        },
+      },
+    });
+  });
   return () => calls;
 }
 
@@ -138,6 +149,10 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   await expect(page.locator('#mode-label')).toHaveText('DAILY · UNRANKED');
   await page.locator('#start-button').click();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-phase',
+    'countdown'
+  );
   await page.keyboard.down('Space');
   await page.clock.runFor(7000);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');

@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
-import { createSimulationDriver } from './simulation-driver';
+import {
+  createSimulationDriver,
+  type InterruptionReason,
+} from './simulation-driver';
+import type { Replay } from '../shared/replay';
 import { sampleTrack, type Track } from '../shared/track';
 import {
   createTrackDebugOverlay,
@@ -8,7 +12,31 @@ import {
   getTrackBounds,
 } from './track-renderer';
 
-export type GameSceneOptions = { generated: boolean };
+export type AttemptPreparation = {
+  kind: 'practice' | 'ranked' | 'blocked';
+  message: string;
+};
+export type VerificationOutcome = {
+  status: 'verified' | 'rejected' | 'unavailable';
+  message: string;
+  finishTicks?: number;
+};
+export type GameSceneHooks = {
+  beforeStart?: (attempt: {
+    attemptId: number;
+    signal: AbortSignal;
+  }) => Promise<AttemptPreparation>;
+  onFinish?: (attempt: {
+    attemptId: number;
+    replay: Replay;
+    finishTicks: number;
+  }) => Promise<VerificationOutcome>;
+  onAbandon?: (attempt: {
+    attemptId: number;
+    reason: InterruptionReason;
+  }) => void;
+};
+export type GameSceneOptions = GameSceneHooks & { generated: boolean };
 
 export function initializeGame(track: Track, options: GameSceneOptions): void {
   function element(id: string): HTMLElement {
@@ -177,18 +205,24 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   scene.add(car);
 
   let racing = false;
+  let preparing = false;
+  let attemptId = 0;
+  let attemptMode: 'practice' | 'ranked' = 'practice';
+  let preparation: AbortController | undefined;
+  const verification = element('verification-status');
   let pointerHeld = false;
   let keyHeld = false;
   let activePointer: number | undefined;
   const driver = createSimulationDriver(track);
 
   function held(): boolean {
-    return racing && (pointerHeld || keyHeld);
+    return (racing || preparing) && (pointerHeld || keyHeld);
   }
   function feedback(): void {
     const state = driver.state;
     const race = driver.raceState;
     raceRoot.dataset.phase = race.phase;
+    raceRoot.dataset.preparing = String(preparing);
     countdown.hidden = race.phase !== 'countdown';
     if (race.phase === 'countdown') {
       const value = String(
@@ -220,17 +254,21 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
         : state.slip > 0.05
           ? 'SLIDING'
           : '';
-    inputLabel.textContent = racing
-      ? race.phase === 'countdown'
-        ? held()
-          ? 'HOLDING · READY TO GO'
-          : 'GET READY · HOLD TO GO'
-        : `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
-      : driver.interrupted
-        ? 'RACE INTERRUPTED · TRY AGAIN'
-        : state.status === 'finished'
-          ? 'LAP COMPLETE'
-          : 'SPACE OR TOUCH THE TRACK';
+    inputLabel.textContent = preparing
+      ? held()
+        ? 'HOLDING · GETTING READY'
+        : 'GETTING READY'
+      : racing
+        ? race.phase === 'countdown'
+          ? held()
+            ? 'HOLDING · READY TO GO'
+            : 'GET READY · HOLD TO GO'
+          : `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
+        : driver.interrupted
+          ? 'RACE INTERRUPTED · TRY AGAIN'
+          : state.status === 'finished'
+            ? 'LAP COMPLETE'
+            : 'SPACE OR TOUCH THE TRACK';
     brakeMaterial.color.set(held() ? '#672e27' : '#ff302e');
   }
   function clearPointer(): void {
@@ -283,12 +321,40 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   function formatTime(seconds: number): string {
     return seconds.toFixed(3).padStart(6, '0');
   }
+  function verificationStatus(state: string, message: string): void {
+    verification.dataset.state = state;
+    verification.textContent = message;
+    verification.hidden = !message;
+  }
+  function enableAttemptButtons(enabled: boolean): void {
+    start.toggleAttribute('disabled', !enabled);
+    retry.toggleAttribute('disabled', !enabled);
+  }
+  function applyVerification(id: number, result: VerificationOutcome): void {
+    if (id !== attemptId) return;
+    verificationStatus(result.status, result.message);
+    cardCopy.textContent = result.message;
+    if (result.status === 'verified' && result.finishTicks !== undefined) {
+      cardTitle.textContent = `${formatTime(result.finishTicks / SIMULATION_HZ)} seconds`;
+      element('card-kicker').textContent = 'VERIFIED TIME';
+    } else {
+      element('card-kicker').textContent = 'LAP COMPLETE · UNVERIFIED';
+    }
+  }
   function showOutcome(): void {
     if (!racing || driver.active) return;
     racing = false;
     release();
     const state = driver.state;
     if (driver.interrupted) {
+      options.onAbandon?.({
+        attemptId,
+        reason: driver.interruptionReason ?? 'focus',
+      });
+      verificationStatus(
+        'abandoned',
+        'Attempt interrupted. This run will not be submitted.'
+      );
       cardTitle.textContent = 'Race interrupted.';
       cardCopy.textContent =
         driver.interruptionReason === 'focus'
@@ -304,28 +370,108 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       cardTitle.textContent = `${formatTime(finishTicks / SIMULATION_HZ)} seconds`;
       cardCopy.textContent = 'Practice complete. Find a faster rhythm.';
       element('card-kicker').textContent = 'LAP COMPLETE · UNRANKED';
+      if (attemptMode === 'ranked' && options.onFinish) {
+        const id = attemptId;
+        verificationStatus('pending', 'Checking your run…');
+        cardCopy.textContent = 'Checking your run…';
+        const result = { attemptId: id, replay: driver.replay, finishTicks };
+        void options
+          .onFinish(result)
+          .then((outcome) => applyVerification(id, outcome))
+          .catch(() => {
+            applyVerification(id, {
+              status: 'unavailable',
+              message:
+                'Verification is unavailable. This time remains unverified.',
+            });
+          });
+      }
     }
     start.hidden = true;
     retry.hidden = false;
     card.hidden = false;
   }
-  function beginRace(timestamp: number): void {
-    release();
+  function startCountdown(): void {
+    preparing = false;
+    preparation = undefined;
+    enableAttemptButtons(true);
+    const timestamp = performance.now();
     driver.start(timestamp);
     racing = true;
+    driver.setInput(pointerHeld || keyHeld, timestamp);
+    raceRoot.dataset.attemptMode = attemptMode;
     card.hidden = true;
     feedback();
     positionCar();
   }
+  function preparationBlocked(message: string): void {
+    preparing = false;
+    preparation = undefined;
+    enableAttemptButtons(true);
+    release();
+    cardTitle.textContent = 'Run could not start.';
+    cardCopy.textContent = message;
+    verificationStatus('blocked', message);
+    start.hidden = true;
+    retry.hidden = false;
+    card.hidden = false;
+  }
+  function beginRace(): void {
+    if (preparing || racing) return;
+    release();
+    attemptId++;
+    attemptMode = 'practice';
+    if (!options.beforeStart) {
+      verificationStatus('practice', '');
+      startCountdown();
+      return;
+    }
+    const id = attemptId;
+    const controller = new AbortController();
+    preparation = controller;
+    preparing = true;
+    enableAttemptButtons(false);
+    verificationStatus('preparing', 'Preparing your daily race…');
+    feedback();
+    void options
+      .beforeStart({ attemptId: id, signal: controller.signal })
+      .then((decision) => {
+        if (
+          id !== attemptId ||
+          controller.signal.aborted ||
+          !preparing ||
+          document.hidden
+        )
+          return;
+        if (decision.kind === 'blocked') {
+          preparationBlocked(decision.message);
+          return;
+        }
+        attemptMode = decision.kind;
+        verificationStatus(decision.kind, decision.message);
+        startCountdown();
+      })
+      .catch(() => {
+        if (id === attemptId && !controller.signal.aborted)
+          preparationBlocked(
+            'The run could not be prepared. Please try again.'
+          );
+      });
+  }
   function updateInput(timestamp: number): void {
-    driver.setInput(pointerHeld || keyHeld, timestamp);
+    if (racing) driver.setInput(pointerHeld || keyHeld, timestamp);
     showOutcome();
     feedback();
   }
-  start.addEventListener('click', () => beginRace(performance.now()));
-  retry.addEventListener('click', () => beginRace(performance.now()));
+  start.addEventListener('click', beginRace);
+  retry.addEventListener('click', beginRace);
   canvas.addEventListener('pointerdown', (event) => {
-    if (!racing || activePointer !== undefined || event.button !== 0) return;
+    if (
+      (!racing && !preparing) ||
+      activePointer !== undefined ||
+      event.button !== 0
+    )
+      return;
     event.preventDefault();
     activePointer = event.pointerId;
     pointerHeld = true;
@@ -333,7 +479,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     updateInput(performance.now());
   });
   canvas.addEventListener('contextmenu', (event) => {
-    if (racing && driver.active) event.preventDefault();
+    if (preparing || (racing && driver.active)) event.preventDefault();
   });
   function releasePointer(event: PointerEvent): void {
     if (event.pointerId !== activePointer) return;
@@ -344,7 +490,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   canvas.addEventListener('pointercancel', releasePointer);
   canvas.addEventListener('lostpointercapture', releasePointer);
   window.addEventListener('keydown', (event) => {
-    if (event.code !== 'Space' || !racing) return;
+    if (event.code !== 'Space' || (!racing && !preparing)) return;
     event.preventDefault();
     keyHeld = true;
     updateInput(performance.now());
@@ -355,6 +501,18 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     updateInput(performance.now());
   });
   function interruptRace(): void {
+    if (preparing) {
+      const id = attemptId;
+      preparation?.abort();
+      attemptId++;
+      preparationBlocked('The game lost focus. Try again when you are ready.');
+      verificationStatus(
+        'abandoned',
+        'Preparation cancelled. This attempt did not start.'
+      );
+      options.onAbandon?.({ attemptId: id, reason: 'focus' });
+      return;
+    }
     driver.abandon('focus');
     showOutcome();
     release();

@@ -7,6 +7,10 @@ import {
   startDailyClock,
 } from './daily-client';
 import type { DailyChallengeView } from '../shared/daily-challenge';
+import {
+  createRankedRaceHooks,
+  type AttemptPresentation,
+} from './ranked-client';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -113,6 +117,25 @@ function resetLabel(seconds: number): string {
     .join(':');
 }
 
+let dailyArchived = false;
+let dailyDay = '';
+let attemptPresentation: AttemptPresentation = 'practice';
+function renderDailyMode(): void {
+  element('mode-label').textContent =
+    attemptPresentation === 'ranked'
+      ? 'RANKED · DAILY'
+      : dailyArchived
+        ? 'ARCHIVE · UNRANKED'
+        : 'DAILY · UNRANKED';
+  element('track-note').textContent =
+    attemptPresentation === 'ranked'
+      ? dailyArchived
+        ? `Current race keeps the ${dailyDay} circuit. New attempts use practice.`
+        : `${dailyDay} daily race. Your time is checked after finishing.`
+      : dailyArchived
+        ? `This post keeps its ${dailyDay} circuit. Unranked practice.`
+        : `Shared ${dailyDay} UTC circuit. Sign in to verify daily runs.`;
+}
 function showDailyCourse(view: DailyChallengeView): void {
   const challenge = view.challenge;
   race.dataset.challengeId = challenge.id;
@@ -122,21 +145,26 @@ function showDailyCourse(view: DailyChallengeView): void {
   element('daily-details').hidden = false;
   element('daily-date').textContent = `${challenge.day} · UTC`;
   startDailyClock(view, (clock) => {
-    element('mode-label').textContent = clock.archived
-      ? 'ARCHIVE · UNRANKED'
-      : 'DAILY · UNRANKED';
+    dailyArchived = clock.archived;
+    dailyDay = challenge.day;
+    renderDailyMode();
     element('daily-reset').textContent = clock.archived
-      ? 'Archived course · practice'
+      ? attemptPresentation === 'ranked'
+        ? 'Current race keeps this course'
+        : 'Archived course · practice'
       : `UTC reset in ${resetLabel(clock.resetSeconds)}`;
-    element('track-note').textContent = clock.archived
-      ? `This post keeps its ${challenge.day} circuit. Unranked practice.`
-      : `Shared ${challenge.day} UTC circuit. Runs are currently unranked.`;
   });
 }
 
 async function boot(): Promise<void> {
   const course = await loadCourse();
-  initializeGame(course.track, { generated: course.generated });
+  const hooks = course.daily
+    ? createRankedRaceHooks(course.daily.challenge, (mode) => {
+        attemptPresentation = mode;
+        renderDailyMode();
+      })
+    : {};
+  initializeGame(course.track, { generated: course.generated, ...hooks });
   source.dataset.state = 'ready';
   source.dataset.fallback = String(course.fallbackUsed);
   if (course.daily) {

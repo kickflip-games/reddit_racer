@@ -162,6 +162,24 @@ h1 {
 #lap-progress::-moz-progress-bar {
   background: #ffbd59;
 }
+.verification-status {
+  max-width: 180px;
+  margin: 10px 0 0;
+  color: #d3e3cb;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.verification-status[data-state='verified'] {
+  color: #c8ffd8;
+}
+.verification-status[data-state='blocked'],
+.verification-status[data-state='rejected'],
+.verification-status[data-state='unavailable'] {
+  color: #ffc38b;
+}
+.verification-status[hidden] {
+  display: none;
+}
 .race-countdown {
   position: absolute;
   top: 50%;

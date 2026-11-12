@@ -32,7 +32,7 @@
     "@trpc/client": "11.28.0",
     "@trpc/server": "11.28.0",
     "devvit": "0.15.3",
-    "hono": "4.13.17",
+    "hono": "4.13.18",
     "three": "0.187.0"
   },
   "devDependencies": {

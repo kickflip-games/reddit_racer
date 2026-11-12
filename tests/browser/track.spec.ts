@@ -112,10 +112,13 @@ test('road mesh closes with upward faces and matches shared road bounds', async 
 test('local geometry overlay is readable after a mobile resize', async ({
   page,
 }) => {
+  await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html?debug=track');
+  await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await expect(page.locator('#track-debug')).toBeVisible();
   await expect(page.locator('#track-debug')).toContainText('Curvature');
   await page.locator('#start-button').click();
+  await page.clock.runFor(3100);
   await page.screenshot({
     path: `test-results/canonical-track-${test.info().project.name}.png`,
   });

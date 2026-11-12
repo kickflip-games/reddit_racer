@@ -1,12 +1,10 @@
 import {
-  createSimulationState,
   HANDLING_VERSION,
   MAX_SIMULATION_TICKS,
   SIMULATION_VERSION,
-  stepSimulation,
 } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
-import { validateTrack } from './track.ts';
+import { createRacingState, stepRace } from './race-rules.ts';
 import type { Track } from './track.ts';
 
 export const MAX_REPLAY_TRANSITIONS = 2400;
@@ -107,19 +105,21 @@ export function validateReplay(value: unknown): Replay {
 /** The shared simulator, never the client endTick, calculates the ranked result. */
 export function runReplay(track: Track, value: unknown): ReplayResult {
   const replay = validateReplay(value);
-  validateTrack(track);
-  let state = createSimulationState();
+  let race = createRacingState(track);
   let held = false;
   let transitionIndex = 0;
-  while (state.tick < replay.endTick && state.status === 'running') {
+  while (race.simulation.tick < replay.endTick && race.phase === 'racing') {
     const next = replay.transitions[transitionIndex];
-    if (next && next.tick === state.tick) {
+    if (next && next.tick === race.simulation.tick) {
       held = next.held;
       transitionIndex++;
     }
-    state = stepSimulation(track, state, held);
+    race = stepRace(track, race, held);
   }
-  if (state.finishedTick === null)
+  if (race.phase === 'abandoned')
+    throw new Error('Replay violated race progress rules');
+  const state = race.simulation;
+  if (race.phase !== 'finished' || state.finishedTick === null)
     throw new Error('Replay did not complete the circuit');
   if (
     state.finishedTick !== replay.endTick ||

@@ -2,7 +2,7 @@ import { sampleTrack } from './track.ts';
 import type { Track } from './track.ts';
 
 export const SIMULATION_HZ = 120;
-export const SIMULATION_VERSION = 'fixed-step-v1';
+export const SIMULATION_VERSION = 'fixed-step-v2';
 export const HANDLING_VERSION = 'arcade-v1';
 export const MAX_SIMULATION_TICKS = SIMULATION_HZ * 120;
 

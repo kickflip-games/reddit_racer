@@ -1,0 +1,275 @@
+import {
+  createSimulationState,
+  HANDLING,
+  MAX_SIMULATION_TICKS,
+  quantizeSimulation,
+  SIMULATION_HZ,
+  stepSimulation,
+} from './simulation.ts';
+import type { SimulationState } from './simulation.ts';
+import { validateTrack } from './track.ts';
+import type { Track } from './track.ts';
+
+export const COUNTDOWN_TICKS = SIMULATION_HZ * 3;
+export type RacePhase =
+  'loading' | 'ready' | 'countdown' | 'racing' | 'finished' | 'abandoned';
+export type RaceAbandonReason =
+  | 'focus'
+  | 'frame-gap'
+  | 'input-limit'
+  | 'time-limit'
+  | 'invalid-progress'
+  | 'cancelled';
+export type LapProgress = {
+  nextCheckpointIndex: number;
+  checkpointTicks: number[];
+};
+export type RaceState = LapProgress & {
+  phase: RacePhase;
+  simulation: SimulationState;
+  countdownTicksRemaining: number;
+  abandonReason: RaceAbandonReason | null;
+};
+
+const progressTolerance = 0.000000001;
+
+export function createRaceState(): RaceState {
+  return {
+    phase: 'loading',
+    simulation: createSimulationState(),
+    countdownTicksRemaining: 0,
+    nextCheckpointIndex: 0,
+    checkpointTicks: [],
+    abandonReason: null,
+  };
+}
+
+/** Track acceptance is explicit; loading and ready states never run physics. */
+export function prepareRace(
+  track: Track,
+  state: RaceState = createRaceState()
+): RaceState {
+  if (state.phase !== 'loading')
+    throw new Error('Only a loading race can become ready');
+  validateTrack(track);
+  return { ...createRaceState(), phase: 'ready' };
+}
+
+export function startRace(state: RaceState): RaceState {
+  if (state.phase !== 'ready') throw new Error('Only a ready race can start');
+  return {
+    ...createRaceState(),
+    phase: 'countdown',
+    countdownTicksRemaining: COUNTDOWN_TICKS,
+  };
+}
+
+/** Verifiers create identical fresh scored conditions, excluding the UI-only countdown. */
+export function createRacingState(track: Track): RaceState {
+  return { ...prepareRace(track), phase: 'racing' };
+}
+
+export function abandonRace(
+  state: RaceState,
+  reason: RaceAbandonReason
+): RaceState {
+  if (state.phase === 'finished' || state.phase === 'abandoned') return state;
+  return { ...state, phase: 'abandoned', abandonReason: reason };
+}
+
+function validateSimulationFields(state: SimulationState): void {
+  for (const value of [
+    state.tick,
+    state.distance,
+    state.speed,
+    state.lateralOffset,
+    state.lateralVelocity,
+    state.slip,
+    state.recoveryTicksRemaining,
+    state.recoveryCount,
+  ]) {
+    if (!Number.isFinite(value))
+      throw new Error('Race progress contains nonfinite state');
+  }
+  if (
+    !Number.isInteger(state.tick) ||
+    state.tick < 0 ||
+    state.tick > MAX_SIMULATION_TICKS ||
+    state.speed < 0 ||
+    state.speed > HANDLING.maximumSpeed ||
+    state.slip < 0 ||
+    state.slip > 1
+  ) {
+    throw new Error('Race progress contains invalid state bounds');
+  }
+  if (
+    typeof state.offRoad !== 'boolean' ||
+    typeof state.recovering !== 'boolean' ||
+    !Number.isInteger(state.recoveryTicksRemaining) ||
+    state.recoveryTicksRemaining < 0 ||
+    state.recoveryTicksRemaining >= HANDLING.recoveryTicks ||
+    state.recovering !== state.recoveryTicksRemaining > 0 ||
+    !Number.isInteger(state.recoveryCount) ||
+    state.recoveryCount < 0
+  ) {
+    throw new Error('Race progress contains invalid recovery state');
+  }
+}
+
+/**
+ * Guard the scored trajectory, then cross ordered arc-distance sector gates.
+ * Gates span runoff: a mild off-road mistake must not strand a one-button car.
+ */
+export function advanceLapProgress(
+  track: Track,
+  progress: LapProgress,
+  previous: SimulationState,
+  next: SimulationState
+): LapProgress {
+  validateSimulationFields(previous);
+  validateSimulationFields(next);
+  if (
+    previous.status !== 'running' ||
+    previous.finishedTick !== null ||
+    next.tick !== previous.tick + 1
+  ) {
+    throw new Error(
+      'Race ticks must advance exactly once from a running state'
+    );
+  }
+  if (
+    previous.distance < 0 ||
+    previous.distance >= track.totalLength ||
+    next.distance < 0 ||
+    next.distance > track.totalLength
+  ) {
+    throw new Error('Race distance is outside the complete circuit');
+  }
+  const delta = next.distance - previous.distance;
+  if (delta < -progressTolerance)
+    throw new Error('Reverse race progress is invalid');
+  if (delta > HANDLING.maximumSpeed / SIMULATION_HZ + 0.000002) {
+    throw new Error('Race progress jump exceeds one legal tick');
+  }
+  const stationaryRecovery = previous.recovering || next.recovering;
+  const expectedDistance = stationaryRecovery
+    ? previous.distance
+    : Math.min(
+        track.totalLength,
+        quantizeSimulation(previous.distance + next.speed / SIMULATION_HZ)
+      );
+  if (Math.abs(next.distance - expectedDistance) > progressTolerance) {
+    throw new Error(
+      'Race progress does not match authoritative forward movement'
+    );
+  }
+  if (
+    previous.tick === 0 &&
+    (previous.distance !== 0 ||
+      previous.speed !== 0 ||
+      previous.lateralOffset !== 0 ||
+      previous.lateralVelocity !== 0 ||
+      previous.recoveryCount !== 0)
+  ) {
+    throw new Error('Race did not begin from identical initial conditions');
+  }
+
+  let nextCheckpointIndex = progress.nextCheckpointIndex;
+  if (
+    !Number.isInteger(nextCheckpointIndex) ||
+    nextCheckpointIndex < 0 ||
+    nextCheckpointIndex > track.checkpoints.length ||
+    progress.checkpointTicks.length !== nextCheckpointIndex
+  ) {
+    throw new Error('Invalid checkpoint progress');
+  }
+  let previousSplitTick = 0;
+  for (const split of progress.checkpointTicks) {
+    if (
+      !Number.isInteger(split) ||
+      split < 1 ||
+      split < previousSplitTick ||
+      split > previous.tick
+    ) {
+      throw new Error('Invalid checkpoint split ticks');
+    }
+    previousSplitTick = split;
+  }
+  const lastGate = track.checkpoints[nextCheckpointIndex - 1];
+  const nextGate = track.checkpoints[nextCheckpointIndex];
+  if (
+    (lastGate && lastGate.s > previous.distance) ||
+    (nextGate && nextGate.s <= previous.distance)
+  ) {
+    throw new Error('Skipped or fabricated checkpoint progress');
+  }
+  let checkpointTicks = progress.checkpointTicks;
+  while (nextCheckpointIndex < track.checkpoints.length) {
+    const checkpoint = track.checkpoints[nextCheckpointIndex];
+    if (!checkpoint || checkpoint.s > next.distance) break;
+    checkpointTicks = [...checkpointTicks, next.tick];
+    nextCheckpointIndex++;
+  }
+  if (next.distance === track.totalLength) {
+    if (
+      nextCheckpointIndex !== track.checkpoints.length ||
+      next.status !== 'finished' ||
+      next.finishedTick !== next.tick
+    ) {
+      throw new Error(
+        'Finish requires every checkpoint and a complete authoritative lap'
+      );
+    }
+  } else if (next.status !== 'running' || next.finishedTick !== null) {
+    throw new Error('Partial circuit cannot finish');
+  }
+  return { nextCheckpointIndex, checkpointTicks };
+}
+
+export function stepRace(
+  track: Track,
+  state: RaceState,
+  held: boolean
+): RaceState {
+  if (typeof held !== 'boolean')
+    throw new Error('Accelerator input must be Boolean');
+  if (
+    state.phase === 'finished' ||
+    state.phase === 'abandoned' ||
+    state.phase === 'loading' ||
+    state.phase === 'ready'
+  )
+    return state;
+  if (state.phase === 'countdown') {
+    if (
+      !Number.isInteger(state.countdownTicksRemaining) ||
+      state.countdownTicksRemaining < 1 ||
+      state.countdownTicksRemaining > COUNTDOWN_TICKS ||
+      state.simulation.tick !== 0 ||
+      state.simulation.distance !== 0
+    )
+      return abandonRace(state, 'invalid-progress');
+    const countdownTicksRemaining = state.countdownTicksRemaining - 1;
+    return {
+      ...state,
+      countdownTicksRemaining,
+      phase: countdownTicksRemaining === 0 ? 'racing' : 'countdown',
+    };
+  }
+  if (state.simulation.tick >= MAX_SIMULATION_TICKS)
+    return abandonRace(state, 'time-limit');
+  let simulation: SimulationState;
+  let progress: LapProgress;
+  try {
+    simulation = stepSimulation(track, state.simulation, held);
+    progress = advanceLapProgress(track, state, state.simulation, simulation);
+  } catch {
+    return abandonRace(state, 'invalid-progress');
+  }
+  return {
+    ...state,
+    ...progress,
+    simulation,
+    phase: simulation.status === 'finished' ? 'finished' : 'racing',
+  };
+}

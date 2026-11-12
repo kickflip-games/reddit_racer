@@ -5,14 +5,14 @@ export const EXPECTED_HOLD_FINISH_TICKS = 1867;
 export const EXPECTED_LIFT_FINISH_TICKS = 1590;
 export const HOLD_REPLAY: Replay = {
   schemaVersion: 1,
-  simulationVersion: 'fixed-step-v1',
+  simulationVersion: 'fixed-step-v2',
   handlingVersion: 'arcade-v1',
   transitions: [{ tick: 0, held: true }],
   endTick: EXPECTED_HOLD_FINISH_TICKS,
 };
 export const LIFT_REPLAY: Replay = {
   schemaVersion: 1,
-  simulationVersion: 'fixed-step-v1',
+  simulationVersion: 'fixed-step-v2',
   handlingVersion: 'arcade-v1',
   transitions: [
     { tick: 0, held: true },

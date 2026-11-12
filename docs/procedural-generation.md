@@ -67,7 +67,7 @@ Fallback is visible: `diagnostics.fallbackUsed` is true, `diagnostics.requestedS
 
 ## Local inspection and reproducible checks
 
-Run `npm run dev:local`, then open `/track-gallery.html`. Enter one seed to reproduce it, or a prefix/count to generate up to 300 SVG previews with signed curvature profiles and diagnostics. Single seeds are limited to 96 characters and batch prefixes to 88. Select a gallery card to inspect that exact generated seed. The gallery can check selected driving quality and open `/game.html?seed=...` in local development. That path uses the fully validated candidate and keeps it fixed across retries. Normal no-query practice retains the reference oval; generated production challenges will come from the server's immutable record in issue #9. Production ignores the local seed query.
+Run `npm run dev:local`, then open `/track-gallery.html`. Enter one seed to reproduce it, or a prefix/count to generate up to 300 SVG previews with signed curvature profiles and diagnostics. Single seeds are limited to 96 characters and batch prefixes to 88. Select a gallery card to inspect that exact generated seed. The gallery can check selected driving quality and open `/game.html?seed=...` in local development. That path uses the fully validated candidate and keeps it fixed across retries. Normal no-query practice retains the reference oval; generated production challenges come from the server's [immutable daily record](daily-challenges.md). Production ignores the local seed query.
 
 The command-line structural report is reproducible:
 

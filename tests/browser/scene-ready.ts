@@ -8,6 +8,22 @@ export async function waitForSceneAssets(page: Page): Promise<void> {
   await expect(scene).toHaveAttribute('data-scenery-art', 'kenney');
 }
 
+/** Use the same native disclosure a player opens; it is collapsed for each attempt. */
+export async function setRaceSettingsOpen(
+  page: Page,
+  open: boolean
+): Promise<void> {
+  const settings = page.locator('#race-settings');
+  const current = await settings.evaluate((element) => {
+    if (!(element instanceof HTMLDetailsElement))
+      throw new Error('Missing native race settings');
+    return element.open;
+  });
+  if (current !== open) await settings.locator(':scope > summary').click();
+  if (open) await expect(settings).toHaveAttribute('open');
+  else await expect(settings).not.toHaveAttribute('open');
+}
+
 /** Read the real game context for CI evidence; no renderer or driver is replaced. */
 export async function readSceneGraphics(page: Page) {
   return page.locator('#race-canvas').evaluate((canvas) => {

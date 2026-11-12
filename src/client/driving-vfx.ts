@@ -29,7 +29,7 @@ export type DrivingVfxFrame = {
 };
 export type DrivingVfx = {
   object: THREE.Group;
-  update(frame: Readonly<DrivingVfxFrame>): void;
+  update(frame: Readonly<DrivingVfxFrame>): boolean;
   reset(): void;
   dispose(): void;
 };
@@ -37,7 +37,7 @@ type ParticlePool = {
   object: THREE.Points;
   update(deltaSeconds: number): void;
   emit(x: number, y: number, z: number, driftX: number, driftZ: number): void;
-  flush(): void;
+  flush(): boolean;
   reset(): void;
   dispose(): void;
 };
@@ -272,10 +272,10 @@ function createParticlePool(
     object,
     update(delta) {
       if (count === 0 || delta === 0) return;
-      dirty = true;
       for (let i = 0; i < count;) {
         const life = (remaining[i] ?? 0) - delta;
         if (life <= 0) {
+          dirty = true;
           count--;
           for (let axis = 0; axis < 3; axis++) {
             positions[i * 3 + axis] = positions[count * 3 + axis] ?? 0;
@@ -287,11 +287,16 @@ function createParticlePool(
           continue;
         }
         remaining[i] = life;
-        for (let axis = 0; axis < 3; axis++)
-          positions[i * 3 + axis] =
-            (positions[i * 3 + axis] ?? 0) +
-            (velocities[i * 3 + axis] ?? 0) * delta;
+        for (let axis = 0; axis < 3; axis++) {
+          const index = i * 3 + axis;
+          const before = positions[index];
+          positions[index] =
+            (positions[index] ?? 0) + (velocities[index] ?? 0) * delta;
+          if (positions[index] !== before) dirty = true;
+        }
+        const beforeAlpha = colors[i * 4 + 3];
         colors[i * 4 + 3] = opacity * (life / lifetime) ** 2;
+        if (colors[i * 4 + 3] !== beforeAlpha) dirty = true;
         i++;
       }
     },
@@ -308,7 +313,7 @@ function createParticlePool(
       dirty = true;
     },
     flush() {
-      if (!dirty) return;
+      if (!dirty) return false;
       geometry.setDrawRange(0, count);
       position.clearUpdateRanges();
       colorAttribute.clearUpdateRanges();
@@ -319,6 +324,7 @@ function createParticlePool(
       position.needsUpdate = true;
       colorAttribute.needsUpdate = true;
       dirty = false;
+      return true;
     },
     reset() {
       count = 0;
@@ -377,6 +383,10 @@ export function createDrivingVfx(
     0.32,
     random
   );
+  const particleSizes: readonly [ParticlePool, number, number, number][] = [
+    [smoke, 0.9, 2.5, 12],
+    [dust, 0.65, 2, 9],
+  ];
   const positions = new Float32Array(DRIVING_VFX_LIMITS.skidQuads * 12),
     colors = new Float32Array(DRIVING_VFX_LIMITS.skidQuads * 16);
   const indices = new Uint16Array(DRIVING_VFX_LIMITS.skidQuads * 6),
@@ -438,7 +448,8 @@ export function createDrivingVfx(
   let disposed = false,
     reduced = false,
     positionDirty = false,
-    colorDirty = false;
+    colorDirty = false,
+    pendingChanged = false;
   function breakHistory(): void {
     lastTick = undefined;
     birthCredit = 0;
@@ -458,25 +469,35 @@ export function createDrivingVfx(
     lastLateral = frame.state.lateralOffset;
     lastRecoveryCount = frame.state.recoveryCount;
   }
-  function flush(): void {
-    smoke.flush();
-    dust.flush();
+  function flush(): boolean {
+    const smokeChanged = smoke.flush(),
+      dustChanged = dust.flush();
+    let changed = pendingChanged || smokeChanged || dustChanged;
+    pendingChanged = false;
     if (positionDirty) {
+      changed = true;
       positionAttribute.clearUpdateRanges();
       positionAttribute.addUpdateRange(0, written * 12);
       positionAttribute.needsUpdate = true;
       positionDirty = false;
     }
     if (colorDirty) {
+      changed = true;
       colorAttribute.clearUpdateRanges();
       colorAttribute.addUpdateRange(0, written * 16);
       colorAttribute.needsUpdate = true;
       colorDirty = false;
     }
-    geometry.setDrawRange(0, liveSkids > 0 ? written * 6 : 0);
+    const drawCount = liveSkids > 0 ? written * 6 : 0;
+    if (geometry.drawRange.count !== drawCount) {
+      geometry.setDrawRange(0, drawCount);
+      changed = true;
+    }
+    return changed;
   }
   function reset(): void {
     if (disposed) return;
+    pendingChanged = true;
     smoke.reset();
     dust.reset();
     lives.fill(0);
@@ -547,11 +568,11 @@ export function createDrivingVfx(
   return {
     object,
     update(frame) {
-      if (disposed) return;
+      if (disposed) return false;
       if (frame.reducedMotion) {
         if (!reduced) reset();
         reduced = true;
-        return;
+        return flush();
       }
       if (reduced) {
         reduced = false;
@@ -564,8 +585,10 @@ export function createDrivingVfx(
       dust.update(delta);
       if (liveSkids > 0 && delta > 0)
         for (let slot = 0; slot < written; slot++) {
-          if ((lives[slot] ?? 0) <= 0) continue;
-          lives[slot] = Math.max(0, (lives[slot] ?? 0) - delta);
+          const beforeLife = lives[slot] ?? 0;
+          if (beforeLife <= 0) continue;
+          lives[slot] = Math.max(0, beforeLife - delta);
+          if (lives[slot] === beforeLife) continue;
           if ((lives[slot] ?? 0) === 0) liveSkids--;
           for (let corner = 0; corner < 4; corner++)
             colors[slot * 16 + corner * 4 + 3] =
@@ -589,39 +612,38 @@ export function createDrivingVfx(
       );
       if (!finite || !Number.isSafeInteger(state.tick) || state.tick < 0) {
         breakHistory();
-        flush();
-        return;
+        return flush();
       }
-      if (smoke.object.material instanceof THREE.PointsMaterial)
-        smoke.object.material.size = THREE.MathUtils.clamp(
-          frame.cssPixelsPerMetre * 0.9,
-          2.5,
-          12
+      for (const [pool, scale, minimum, maximum] of particleSizes) {
+        const material = pool.object.material;
+        const size = THREE.MathUtils.clamp(
+          frame.cssPixelsPerMetre * scale,
+          minimum,
+          maximum
         );
-      if (dust.object.material instanceof THREE.PointsMaterial)
-        dust.object.material.size = THREE.MathUtils.clamp(
-          frame.cssPixelsPerMetre * 0.65,
-          2,
-          9
-        );
+        if (
+          material instanceof THREE.PointsMaterial &&
+          material.size !== size
+        ) {
+          material.size = size;
+          if (pool.object.geometry.drawRange.count > 0) pendingChanged = true;
+        }
+      }
       if (
         frame.phase !== 'racing' ||
         state.recovering ||
         state.recoveryTicksRemaining > 0
       ) {
         breakHistory();
-        flush();
-        return;
+        return flush();
       }
       if (lastTick === undefined) {
         baseline(frame);
-        flush();
-        return;
+        return flush();
       }
       const ticks = state.tick - lastTick;
       if (ticks === 0) {
-        flush();
-        return;
+        return flush();
       }
       const progress = state.distance - lastDistance,
         lateral = Math.abs(state.lateralOffset - lastLateral);
@@ -645,8 +667,7 @@ export function createDrivingVfx(
       ) {
         breakHistory();
         baseline(frame);
-        flush();
-        return;
+        return flush();
       }
       const moving =
         state.speed > 2 && progress > 0 && leftMove + rightMove > 0.004;
@@ -703,7 +724,7 @@ export function createDrivingVfx(
         trailValid[1] = false;
       }
       baseline(frame);
-      flush();
+      return flush();
     },
     reset,
     dispose() {

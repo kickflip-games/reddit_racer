@@ -484,3 +484,88 @@ void test('caller-owned contact vectors can be reused and long catch-up cannot b
   }
   vfx.dispose();
 });
+
+void test('empty effects remain unchanged while explicit reset and reduced-motion clear invalidate once', () => {
+  const vfx = createDrivingVfx(track);
+  const empty = frameAt(0, { phase: 'ready', state: { speed: 0 } });
+  assert.equal(vfx.update(empty), false);
+  assert.equal(vfx.update({ ...empty, cssPixelsPerMetre: 12 }), false);
+  assert.equal(vfx.update(empty), false);
+  vfx.reset();
+  assert.equal(vfx.update(empty), true);
+  assert.equal(vfx.update(empty), false);
+  assert.equal(vfx.update({ ...empty, reducedMotion: true }), true);
+  assert.equal(vfx.update({ ...empty, reducedMotion: true }), false);
+  assert.equal(vfx.update(empty), false);
+  vfx.dispose();
+  assert.equal(vfx.update(empty), false);
+});
+
+void test('births, visible point sizing, fading and the final clear report changes without duplicate tick uploads', () => {
+  const vfx = createDrivingVfx(track);
+  assert.equal(vfx.update(frameAt(0, { deltaSeconds: 0 })), false);
+  const born = frameAt(4, { deltaSeconds: 0 });
+  assert.equal(vfx.update(born), true);
+  assert.equal(vfx.update(born), false);
+  const resized = { ...born, cssPixelsPerMetre: 10 };
+  assert.equal(vfx.update(resized), true);
+  assert.equal(vfx.update(resized), false);
+  emit(vfx, 8, 120, { deltaSeconds: 0 });
+  const finish = frameAt(120, { phase: 'finished', deltaSeconds: 0 });
+  assert.equal(vfx.update(finish), false, 'History-only phase change');
+  const nodes = vfx.object.children.map((node) => {
+    assert.ok(node instanceof THREE.Mesh || node instanceof THREE.Points);
+    return node;
+  });
+  let finalClear = false;
+  for (let age = 0; age < 160; age++) {
+    const changed = vfx.update({ ...finish, deltaSeconds: 0.05 });
+    const allEmpty = nodes.every((node) => node.geometry.drawRange.count === 0);
+    if (allEmpty) {
+      assert.equal(
+        changed,
+        true,
+        'Final invisible draw range still needs a clear'
+      );
+      finalClear = true;
+      break;
+    }
+    assert.equal(changed, true, 'Visible particles/marks keep fading');
+  }
+  assert.equal(finalClear, true);
+  const versions = nodes.map((node) => {
+    const position = node.geometry.getAttribute('position');
+    const color = node.geometry.getAttribute('color');
+    assert.ok(position instanceof THREE.BufferAttribute);
+    assert.ok(color instanceof THREE.BufferAttribute);
+    return [position.version, color.version];
+  });
+  for (let idle = 0; idle < 120; idle++)
+    assert.equal(vfx.update({ ...finish, deltaSeconds: 0.05 }), false);
+  nodes.forEach((node, index) => {
+    const position = node.geometry.getAttribute('position');
+    const color = node.geometry.getAttribute('color');
+    assert.ok(position instanceof THREE.BufferAttribute);
+    assert.ok(color instanceof THREE.BufferAttribute);
+    assert.deepEqual([position.version, color.version], versions[index]);
+  });
+  vfx.dispose();
+});
+
+void test('reset and reduced-motion clears retain exactly one pending visual invalidation with live pools', () => {
+  const vfx = createDrivingVfx(track);
+  emit(vfx, 0, 60, { deltaSeconds: 0 });
+  vfx.reset();
+  const ready = frameAt(0, { phase: 'ready', deltaSeconds: 0 });
+  assert.equal(vfx.update(ready), true);
+  assert.equal(vfx.update(ready), false);
+  emit(vfx, 0, 60, { deltaSeconds: 0 });
+  const reduced = frameAt(64, { reducedMotion: true, deltaSeconds: 0 });
+  assert.equal(vfx.update(reduced), true);
+  assert.equal(vfx.update(reduced), false);
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
+  assert.equal(skids(vfx).geometry.drawRange.count, 0);
+  assert.equal(vfx.update(frameAt(68, { deltaSeconds: 0 })), false);
+  assert.equal(vfx.update(frameAt(72, { deltaSeconds: 0 })), true);
+  vfx.dispose();
+});

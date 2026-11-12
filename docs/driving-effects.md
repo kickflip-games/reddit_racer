@@ -20,6 +20,10 @@ Skid containment uses the exact canonical cross-sections, including the closing 
 
 Reduced motion clears the effects immediately and suppresses new births. Finish stops emission while existing effects fade. Retry clears pools, histories and draw ranges in place, preserving every geometry, material, texture and attribute array. Whole-scene teardown disposes the three geometries, three materials and one shared mask once.
 
+`DrivingVfx.update(frame)` now returns whether visible buffers, point sizing or draw ranges changed. Live particles and skid marks continue to invalidate while fading, including their final clear; empty unchanged effects return `false` and stop uploading buffers. Explicit resets and reduced-motion clears retain one pending invalidation for the next update. Tick gating and canonical containment are unchanged.
+
+`CarVisual.update(frame)` likewise reports actual pose, wheel, brake-lamp or body-lean changes. Body smoothing snaps to its target within `0.00001` radians (less than `0.001` degrees), so a stopped car eventually settles exactly. Reset and newly installed art retain one invalidation. These visual flags let the scene skip settled inactive draws while continuing every countdown and racing frame; they never alter authoritative simulation or input.
+
 Focused Node tests cover budgets at different render schedules, recycling, exact road-edge and seam behavior, discontinuities, reused caller vectors, fading, reduced motion, 20 resets and disposal ownership. A replay control proves the same authoritative final state and finishing tick with effects enabled. Browser fixtures separately check actual alpha/depth rendering; these limits are not physical-phone performance measurements.
 
 The following is the actual local generated course with scripted input, not a human or hosted lap. The existing complete generated-lap test still finishes at exactly 3,215 ticks (26.792 seconds).

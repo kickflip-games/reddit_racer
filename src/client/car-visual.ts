@@ -2,6 +2,8 @@ import * as THREE from 'three';
 
 export const CAR_VISUAL_LENGTH = 3.8;
 export const CAR_VISUAL_GROUND_Y = 0.045;
+/** Below 0.001 degrees: settle body lean exactly so inactive rendering can stop. */
+export const CAR_VISUAL_SETTLE_EPSILON = 0.00001;
 /** Conservative radius shared by both fallback and imported art placements. */
 export const CAR_VISUAL_FOOTPRINT = 2.3;
 export type CarVisualFrame = {
@@ -23,7 +25,7 @@ export type CarVisual = {
   object: THREE.Group;
   readonly kind: 'fallback' | 'kenney';
   installModel(template: THREE.Group): boolean;
-  update(frame: Readonly<CarVisualFrame>): void;
+  update(frame: Readonly<CarVisualFrame>): boolean;
   reset(): void;
   getRearContacts(leftOut: THREE.Vector3, rightOut: THREE.Vector3): void;
   dispose(): void;
@@ -57,6 +59,8 @@ export function createCarVisual(): CarVisual {
   let source: THREE.Group | undefined;
   let pitch = 0;
   let roll = 0;
+  let braking = false;
+  let pendingChanged = true;
   const fallbackGeometries = new Set<THREE.BufferGeometry>();
   const fallbackMaterials = new Set<THREE.Material>();
   const lampGeometry = new THREE.BoxGeometry(0.35, 0.14, 0.16);
@@ -219,6 +223,9 @@ export function createCarVisual(): CarVisual {
     fallbackMaterials.clear();
   }
   function reset(): void {
+    if (disposed) return;
+    pendingChanged = true;
+    braking = false;
     pitch = 0;
     roll = 0;
     rig.body.rotation.set(0, 0, 0);
@@ -246,9 +253,21 @@ export function createCarVisual(): CarVisual {
       return true;
     },
     update(frame) {
-      if (disposed) return;
-      object.position.set(frame.x, CAR_VISUAL_GROUND_Y, frame.z);
-      object.rotation.y = frame.heading;
+      if (disposed) return false;
+      let changed = pendingChanged;
+      pendingChanged = false;
+      if (
+        object.position.x !== frame.x ||
+        object.position.y !== CAR_VISUAL_GROUND_Y ||
+        object.position.z !== frame.z
+      ) {
+        object.position.set(frame.x, CAR_VISUAL_GROUND_Y, frame.z);
+        changed = true;
+      }
+      if (object.rotation.y !== frame.heading) {
+        object.rotation.y = frame.heading;
+        changed = true;
+      }
       const active = frame.racing && !frame.reducedMotion;
       let targetPitch = active
         ? clamp(-frame.acceleration * 0.003, -0.055, 0.055)
@@ -265,19 +284,36 @@ export function createCarVisual(): CarVisual {
       const blend = frame.reducedMotion
         ? 1
         : 1 - Math.exp(-Math.min(0.05, Math.max(0, frame.deltaSeconds)) * 12);
-      pitch += (targetPitch - pitch) * blend;
-      roll += (targetRoll - roll) * blend;
-      rig.body.rotation.set(pitch, 0, roll);
+      let nextPitch = pitch + (targetPitch - pitch) * blend;
+      let nextRoll = roll + (targetRoll - roll) * blend;
+      if (Math.abs(nextPitch - targetPitch) <= CAR_VISUAL_SETTLE_EPSILON)
+        nextPitch = targetPitch;
+      if (Math.abs(nextRoll - targetRoll) <= CAR_VISUAL_SETTLE_EPSILON)
+        nextRoll = targetRoll;
+      if (pitch !== nextPitch || roll !== nextRoll) {
+        pitch = nextPitch;
+        roll = nextRoll;
+        rig.body.rotation.set(pitch, 0, roll);
+        changed = true;
+      }
       for (const wheel of rig.wheels) {
         spin.setFromAxisAngle(
           axle,
           (frame.distance / wheel.radius) % (Math.PI * 2)
         );
-        wheel.node.quaternion.copy(wheel.quaternion).multiply(spin);
+        spin.premultiply(wheel.quaternion);
+        if (!wheel.node.quaternion.equals(spin)) {
+          wheel.node.quaternion.copy(spin);
+          changed = true;
+        }
       }
-      lampMaterial.color.set(
-        frame.racing && !frame.held ? '#ff3026' : '#6f231c'
-      );
+      const nextBraking = frame.racing && !frame.held;
+      if (braking !== nextBraking) {
+        braking = nextBraking;
+        lampMaterial.color.set(braking ? '#ff3026' : '#6f231c');
+        changed = true;
+      }
+      return changed;
     },
     reset,
     getRearContacts(leftOut, rightOut) {

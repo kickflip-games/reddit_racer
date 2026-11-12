@@ -31,21 +31,21 @@ The private test subreddit is `r/full_throttle_dev_dev`; a developer account nee
 For a reproducible private build, choose a new unused version and upload/install that exact version after checks pass. The value below is an example for the next upload, not a claim that it has been tested:
 
 ```sh
-RACER_TEST_VERSION=0.0.11
+RACER_TEST_VERSION=0.0.12
 npm run check
 npx devvit upload --version "$RACER_TEST_VERSION"
 npx devvit install full_throttle_dev_dev "full-throttle-dev@$RACER_TEST_VERSION"
 ```
 
-An explicit install does not run the development watcher. To reinstall the already observed `0.0.10` build instead:
+An explicit install does not run the development watcher. To reinstall the already observed `0.0.11` build instead:
 
 ```sh
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.10
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.11
 ```
 
 These commands upload an owner-visible build and install it only in the existing private test community. They do not publish the app or change community privacy. Keep the app identifier `full-throttle-dev` unchanged.
 
-On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, and `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
+On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup; and `0.0.11` verified the simpler clock-only driving UI, collapsed Settings and a fresh ranked finish/retry. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
 
 Read private server logs with:
 
@@ -77,7 +77,7 @@ Daily attempts request an authenticated session before countdown. After finishin
 
 Verified results update one personal best per Reddit account and UTC challenge. Receipt, personal best and improvement outcome are committed together. Results show the top 20, your current best/place and nearby racers; equal tick times share places (1, 1, 3). The board loads on results or manual refresh, and a board outage does not undo a verified time or block practice. Results remain readable for 90 days; old course geometry remains retained for practice. [Leaderboard storage](docs/leaderboard.md) documents concurrency, bounded reads and recovery. No development records are inserted into the deployed board.
 
-The footer's **Sound** toggle and **Motion** selector are independent settings. Sound starts from a race or unmute gesture and becomes quiet on interruption. Motion follows the device by default; Reduced clears decorative effects and body lean while keeping the car and braking road visible. Settings have native keyboard behavior and do not add driving controls. [Sound and motion](docs/driving-audio.md) and [pooled driving effects](docs/driving-effects.md) document resource limits and test boundaries.
+The **Settings** disclosure contains independent **Sound** and **Motion** choices and closes when a new race starts. The race view keeps just the lap clock and a small race-mode label; gates, speed and accelerator/braking text are not displayed. Sound starts from a race or unmute gesture and becomes quiet on interruption. Motion follows the device by default; Reduced clears decorative effects and body lean while keeping the car and braking road visible. Settings have native keyboard behavior and do not add driving controls. [Sound and motion](docs/driving-audio.md) and [pooled driving effects](docs/driving-effects.md) document resource limits and test boundaries.
 
 The finish card puts the result, current personal best/place, this run's improvement and a server-backed target above **Race again**. **Daily standings** expands without another request. The current best can be faster than this run if another attempt already improved it. Network requests have a ten-second deadline: unavailable daily loading offers labelled reference practice, unavailable session preparation keeps the loaded course in practice, and an unconfirmed submission never claims a verified time.
 

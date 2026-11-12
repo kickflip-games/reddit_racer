@@ -8,6 +8,7 @@ import {
   createCarVisual,
   CAR_VISUAL_GROUND_Y,
   CAR_VISUAL_LENGTH,
+  CAR_VISUAL_SETTLE_EPSILON,
   type CarVisualFrame,
 } from '../../src/client/car-visual.ts';
 import {
@@ -615,6 +616,85 @@ void test('all four tyres roll forward in world space on fallback and authored r
       }
     }
     car.dispose();
+  }
+  disposeAssetTemplate(imported);
+});
+
+void test('fallback and authored car change flags settle while pose, wheels, lamps, reset and install still invalidate', async () => {
+  const imported = await actualCar();
+  const neutral: CarVisualFrame = {
+    ...frame,
+    speed: 0,
+    acceleration: 0,
+    lateralAcceleration: 0,
+    curvature: 0,
+    racing: false,
+  };
+  for (const authored of [false, true]) {
+    const car = createCarVisual();
+    if (authored) assert.equal(car.installModel(imported), true);
+    assert.equal(car.update(neutral), true, 'Initial visual installation');
+    assert.equal(car.update(neutral), false, 'Unchanged neutral rig');
+    for (const pose of [
+      { ...neutral, x: 2 },
+      { ...neutral, z: 3 },
+      { ...neutral, heading: Math.PI / 2 },
+      { ...neutral, distance: 0.25 },
+      { ...neutral, racing: true, held: false },
+      { ...neutral, racing: true, held: true },
+    ]) {
+      assert.equal(car.update(pose), true);
+      assert.equal(
+        car.update(pose),
+        false,
+        'Same pose/lamps/wheel orientation'
+      );
+    }
+    car.update(neutral);
+    assert.equal(car.update({ ...neutral, speed: 30, slip: 1 }), false);
+    const body = car.object.getObjectByName('car-body-wrapper');
+    assert.ok(body);
+    assert.equal(car.update(frame), true);
+    let activeSettled = false;
+    for (let step = 0; step < 120; step++)
+      if (!car.update(frame)) {
+        activeSettled = true;
+        break;
+      }
+    assert.equal(activeSettled, true, 'Constant corner load settles exactly');
+    assert.ok(Math.abs(body.rotation.x) > CAR_VISUAL_SETTLE_EPSILON);
+    assert.ok(Math.abs(body.rotation.z) > CAR_VISUAL_SETTLE_EPSILON);
+    let lastChanged = false;
+    for (let step = 0; step < 120; step++) {
+      const changed = car.update(neutral);
+      if (!changed) break;
+      lastChanged = changed;
+    }
+    assert.equal(lastChanged, true);
+    assert.equal(body.rotation.x, 0);
+    assert.equal(body.rotation.z, 0);
+    assert.equal(car.update(neutral), false, 'No asymptotic inactive redraws');
+    car.update(frame);
+    assert.equal(car.update({ ...frame, reducedMotion: true }), true);
+    assert.equal(body.rotation.x, 0);
+    assert.equal(body.rotation.z, 0);
+    assert.equal(car.update({ ...frame, reducedMotion: true }), false);
+    car.reset();
+    assert.equal(
+      car.update(neutral),
+      true,
+      'Reset invalidation survives until update'
+    );
+    assert.equal(car.update(neutral), false);
+    assert.equal(car.installModel(imported), true);
+    assert.equal(
+      car.update(neutral),
+      !authored,
+      'Only a new template invalidates'
+    );
+    assert.equal(car.update(neutral), false);
+    car.dispose();
+    assert.equal(car.update(frame), false);
   }
   disposeAssetTemplate(imported);
 });

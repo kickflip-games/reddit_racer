@@ -31,21 +31,21 @@ The private test subreddit is `r/full_throttle_dev_dev`; a developer account nee
 For a reproducible private build, choose a new unused version and upload/install that exact version after checks pass. The value below is an example for the next upload, not a claim that it has been tested:
 
 ```sh
-RACER_TEST_VERSION=0.0.10
+RACER_TEST_VERSION=0.0.11
 npm run check
 npx devvit upload --version "$RACER_TEST_VERSION"
 npx devvit install full_throttle_dev_dev "full-throttle-dev@$RACER_TEST_VERSION"
 ```
 
-An explicit install does not run the development watcher. To reinstall the already observed `0.0.9` build instead:
+An explicit install does not run the development watcher. To reinstall the already observed `0.0.10` build instead:
 
 ```sh
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.9
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.10
 ```
 
 These commands upload an owner-visible build and install it only in the existing private test community. They do not publish the app or change community privacy. Keep the app identifier `full-throttle-dev` unchanged.
 
-On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, and `0.0.9` rechecked the subsequent drawing-cost fix. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
+On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, and `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
 
 Read private server logs with:
 

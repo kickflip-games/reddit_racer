@@ -5,12 +5,17 @@ import {
   type InterruptionReason,
 } from './simulation-driver';
 import type { Replay } from '../shared/replay';
-import { sampleTrack, type Track } from '../shared/track';
+import { createRaceCamera } from './race-camera';
+import { createCarVisual } from './car-visual';
+import { createScenery } from './scenery';
 import {
-  createTrackDebugOverlay,
-  createTrackRenderer,
-  getTrackBounds,
-} from './track-renderer';
+  loadCarAsset,
+  loadSceneryAssets,
+  disposeSceneAssets,
+  type SceneryAssets,
+} from './scene-assets';
+import { sampleTrack, type Track } from '../shared/track';
+import { createTrackDebugOverlay, createTrackRenderer } from './track-renderer';
 
 export type AttemptPreparation = {
   kind: 'practice' | 'ranked' | 'blocked';
@@ -73,16 +78,12 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     : 'PRACTICE · UNRANKED';
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
-  const bounds = getTrackBounds(track, 0.8);
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerZ = (bounds.minZ + bounds.maxZ) / 2;
-
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#548365');
-  const camera = new THREE.OrthographicCamera(-70, 70, 70, -70, 0.1, 400);
-  camera.position.set(centerX, 115, centerZ + 55);
-  camera.lookAt(centerX, 0, centerZ);
-  camera.updateMatrixWorld();
+  // The uniformly lit field receives no shadows; match it with the clear color
+  // to avoid a redundant full-screen ground draw on every racing frame.
+  scene.background = new THREE.Color('#77a55b');
+  const raceCamera = createRaceCamera(track);
+  const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({
@@ -102,14 +103,6 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   const sun = new THREE.DirectionalLight('#fff0cf', 2.1);
   sun.position.set(-30, 80, 30);
   scene.add(sun);
-
-  const grass = new THREE.Mesh(
-    new THREE.PlaneGeometry(500, 500),
-    new THREE.MeshLambertMaterial({ color: '#548365' })
-  );
-  grass.rotation.x = -Math.PI / 2;
-  grass.position.set(centerX, -0.05, centerZ);
-  scene.add(grass);
 
   scene.add(createTrackRenderer(track));
 
@@ -135,79 +128,12 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     element('race').append(legend);
   }
 
-  const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: '#7f6551' });
-  const treeCrownMaterial = new THREE.MeshLambertMaterial({ color: '#2d6249' });
-  const treeTrunkGeometry = new THREE.CylinderGeometry(0.35, 0.45, 2.4, 5);
-  const treeCrownGeometry = new THREE.ConeGeometry(2.2, 5.2, 6);
-  for (const [x, z] of options.generated
-    ? []
-    : [
-        [-11, -10],
-        [-15, -5],
-        [-10, 2],
-        [10, 15],
-        [14, 20],
-        [9, 25],
-        [-43, 16],
-        [-46, 23],
-        [42, -24],
-        [45, -18],
-      ]) {
-    if (x === undefined || z === undefined) continue;
-    const trunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
-    trunk.position.set(x, 1.2, z);
-    const crown = new THREE.Mesh(treeCrownGeometry, treeCrownMaterial);
-    crown.position.set(x, 4.4, z);
-    scene.add(trunk, crown);
-  }
-
-  const car = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(1.9, 0.65, 3.3),
-    new THREE.MeshLambertMaterial({ color: '#ff784e' })
-  );
-  body.position.y = 0.8;
-  const cabin = new THREE.Mesh(
-    new THREE.BoxGeometry(1.5, 0.6, 1.5),
-    new THREE.MeshLambertMaterial({ color: '#ffe6ad' })
-  );
-  cabin.position.set(0, 1.35, -0.2);
-  const windscreen = new THREE.Mesh(
-    new THREE.BoxGeometry(1.55, 0.45, 0.15),
-    new THREE.MeshLambertMaterial({ color: '#254647' })
-  );
-  windscreen.position.set(0, 1.32, 0.62);
-  car.add(body, cabin, windscreen);
-  const tyreGeometry = new THREE.CylinderGeometry(0.48, 0.48, 0.35, 8);
-  const tyreMaterial = new THREE.MeshLambertMaterial({ color: '#20322f' });
-  for (const x of [-1, 1])
-    for (const z of [-1.05, 1.05]) {
-      const tyre = new THREE.Mesh(tyreGeometry, tyreMaterial);
-      tyre.rotation.z = Math.PI / 2;
-      tyre.position.set(x, 0.5, z);
-      car.add(tyre);
-    }
-  const brakeMaterial = new THREE.MeshBasicMaterial({ color: '#ff302e' });
-  for (const x of [-0.65, 0.65]) {
-    const lamp = new THREE.Mesh(
-      new THREE.BoxGeometry(0.4, 0.2, 0.08),
-      brakeMaterial
-    );
-    lamp.position.set(x, 0.85, -1.69);
-    car.add(lamp);
-  }
-  const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(3, 4.4),
-    new THREE.MeshBasicMaterial({
-      color: '#1a322b',
-      transparent: true,
-      opacity: 0.22,
-    })
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = 0.065;
-  car.add(shadow);
-  scene.add(car);
+  const carVisual = createCarVisual();
+  const scenery = createScenery(track);
+  scene.add(carVisual.object, scenery.object);
+  raceRoot.dataset.carArt = 'fallback';
+  raceRoot.dataset.carLoad = 'loading';
+  raceRoot.dataset.sceneryArt = 'fallback';
 
   let racing = false;
   let preparing = false;
@@ -219,6 +145,66 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   let keyHeld = false;
   let activePointer: number | undefined;
   const driver = createSimulationDriver(track);
+  const hud = element('race-hud');
+  const footer = document.querySelector('.race-footer');
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let viewportDirty = true;
+  let needsCameraReset = true;
+  let pendingCar: THREE.Group | undefined;
+  let pendingScenery: SceneryAssets | undefined;
+  let destroyed = false;
+  let frameHandle = 0;
+  let previousFrameTime: number | undefined;
+
+  function applyPendingAssets(): boolean {
+    // Read the actual driver now: a Start click can precede the next render.
+    if (destroyed || preparing || driver.active) return false;
+    let changed = false;
+    if (pendingCar) {
+      const installed = carVisual.installModel(pendingCar);
+      pendingCar = undefined;
+      raceRoot.dataset.carArt = carVisual.kind;
+      raceRoot.dataset.carLoad = installed ? 'ready' : 'unavailable';
+      changed = installed;
+    }
+    if (pendingScenery) {
+      const available = Object.keys(pendingScenery).length;
+      const installed = scenery.installAssets(pendingScenery);
+      pendingScenery = undefined;
+      raceRoot.dataset.sceneryArt = installed
+        ? available === 5
+          ? 'kenney'
+          : 'partial'
+        : 'fallback';
+      changed = installed || changed;
+    }
+    return changed;
+  }
+
+  function refreshCameraViewport(): void {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const canvasBounds = canvas.getBoundingClientRect();
+    const hudBounds = hud.getBoundingClientRect();
+    const footerBounds = footer?.getBoundingClientRect();
+    const top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
+    const bottom = footerBounds
+      ? Math.max(12, canvasBounds.bottom - footerBounds.top + 8)
+      : 36;
+    raceRoot.style.setProperty('--hud-bottom', `${top}px`);
+    raceCamera.resize({
+      width,
+      height,
+      insets: { top, bottom, left: 12, right: 12 },
+    });
+    viewportDirty = false;
+  }
+
+  function renderReadyArt(): void {
+    if (!applyPendingAssets()) return;
+    positionCar();
+    if (raceCamera.renderable) renderer.render(scene, camera);
+  }
 
   function held(): boolean {
     return (racing || preparing) && (pointerHeld || keyHeld);
@@ -226,6 +212,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   function feedback(): void {
     const state = driver.state;
     const race = driver.raceState;
+    if (raceRoot.dataset.phase !== race.phase) viewportDirty = true;
     raceRoot.dataset.phase = race.phase;
     raceRoot.dataset.preparing = String(preparing);
     countdown.hidden = race.phase !== 'countdown';
@@ -274,7 +261,6 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
           : state.status === 'finished'
             ? 'LAP COMPLETE'
             : 'SPACE OR TOUCH THE TRACK';
-    brakeMaterial.color.set(held() ? '#672e27' : '#ff302e');
   }
   function clearPointer(): void {
     const pointer = activePointer;
@@ -290,7 +276,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     clearPointer();
     feedback();
   }
-  function positionCar(): void {
+  function positionCar(deltaSeconds = 0): void {
     const current = driver.state;
     const previous = driver.previousState;
     const alpha = driver.alpha;
@@ -311,18 +297,48 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     );
     const speed = THREE.MathUtils.lerp(previous.speed, current.speed, alpha);
     const frame = sampleTrack(track, track.startS + distance);
-    car.position.set(
-      frame.x + frame.nx * lateral,
-      0,
-      frame.z + frame.nz * lateral
-    );
     const velocityX = frame.tx * speed + frame.nx * lateralVelocity;
     const velocityZ = frame.tz * speed + frame.nz * lateralVelocity;
-    car.rotation.y =
+    const heading =
       speed > 0.1 || Math.abs(lateralVelocity) > 0.1
         ? Math.atan2(velocityX, velocityZ)
         : Math.atan2(frame.tx, frame.tz);
+    const phase = driver.raceState.phase;
+    const scored = phase === 'racing';
+    carVisual.update({
+      x: frame.x + frame.nx * lateral,
+      z: frame.z + frame.nz * lateral,
+      heading,
+      distance,
+      speed,
+      acceleration: scored
+        ? (current.speed - previous.speed) * SIMULATION_HZ
+        : 0,
+      lateralAcceleration: scored
+        ? (current.lateralVelocity - previous.lateralVelocity) * SIMULATION_HZ
+        : 0,
+      curvature: frame.curvature,
+      slip: THREE.MathUtils.lerp(previous.slip, current.slip, alpha),
+      held: held(),
+      racing: scored,
+      reducedMotion: motionQuery.matches,
+      deltaSeconds,
+    });
+    if (viewportDirty) refreshCameraViewport();
+    raceCamera.update(
+      { distance, lateralOffset: lateral, heading },
+      {
+        mode:
+          phase === 'countdown' || phase === 'racing' || phase === 'finished'
+            ? 'chase'
+            : 'overview',
+        deltaSeconds,
+        reset: needsCameraReset,
+      }
+    );
+    needsCameraReset = false;
   }
+
   function formatTime(seconds: number): string {
     return seconds.toFixed(3).padStart(6, '0');
   }
@@ -336,7 +352,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     retry.toggleAttribute('disabled', !enabled);
   }
   function applyVerification(id: number, result: VerificationOutcome): void {
-    if (id !== attemptId) return;
+    if (destroyed || id !== attemptId) return;
     verificationStatus(result.status, result.message);
     cardCopy.textContent = result.message;
     if (result.status === 'verified' && result.finishTicks !== undefined) {
@@ -408,6 +424,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     enableAttemptButtons(true);
     const timestamp = performance.now();
     driver.start(timestamp);
+    carVisual.reset();
+    needsCameraReset = true;
     racing = true;
     driver.setInput(pointerHeld || keyHeld, timestamp);
     raceRoot.dataset.attemptMode = attemptMode;
@@ -431,7 +449,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     cardTitle.focus({ preventScroll: true });
   }
   function beginRace(): void {
-    if (preparing || racing) return;
+    if (destroyed || preparing || racing) return;
+    renderReadyArt();
     release();
     card.scrollTop = 0;
     attemptId++;
@@ -544,51 +563,93 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   function resize(): void {
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    const aspect = width / Math.max(height, 1);
-    // Fit the authoritative road bounds in the camera's angled view.
-    const corners = [
-      new THREE.Vector3(bounds.minX, 0, bounds.minZ),
-      new THREE.Vector3(bounds.minX, 0, bounds.maxZ),
-      new THREE.Vector3(bounds.maxX, 0, bounds.minZ),
-      new THREE.Vector3(bounds.maxX, 0, bounds.maxZ),
-    ].map((point) => point.applyMatrix4(camera.matrixWorldInverse));
-    const projectedWidth =
-      Math.max(...corners.map((point) => point.x)) -
-      Math.min(...corners.map((point) => point.x));
-    const projectedHeight =
-      Math.max(...corners.map((point) => point.y)) -
-      Math.min(...corners.map((point) => point.y));
-    const halfHeight = Math.max(
-      projectedHeight * 0.72,
-      (projectedWidth * 0.72) / aspect
-    );
-    camera.left = -halfHeight * aspect;
-    camera.right = halfHeight * aspect;
-    camera.top = halfHeight;
-    camera.bottom = -halfHeight;
-    camera.updateProjectionMatrix();
+    viewportDirty = true;
+    if (width <= 0 || height <= 0) {
+      refreshCameraViewport();
+      return;
+    }
     renderer.setSize(width, height, false);
-    // Resizing clears WebGL's drawing buffer; redraw even while animation clocks are paused.
+    // The drawing buffer is cleared even with paused clocks; always redraw it.
     positionCar();
-    renderer.render(scene, camera);
+    if (raceCamera.renderable) renderer.render(scene, camera);
   }
   window.addEventListener('resize', resize);
-  resize();
-  positionCar();
   feedback();
+  resize();
+  // Daily metadata and asynchronous verification can wrap after initialization.
+  // Observe layout changes instead of measuring the HUD on every driving frame.
+  const hudObserver = new ResizeObserver(() => {
+    if (destroyed) return;
+    viewportDirty = true;
+    positionCar();
+    if (raceCamera.renderable) renderer.render(scene, camera);
+  });
+  hudObserver.observe(hud);
+  if (footer) hudObserver.observe(footer);
+
+  void loadCarAsset()
+    .then((template) => {
+      if (destroyed) return;
+      if (!template) {
+        raceRoot.dataset.carLoad = 'unavailable';
+        return;
+      }
+      pendingCar = template;
+      renderReadyArt();
+    })
+    .catch(() => {
+      if (!destroyed) raceRoot.dataset.carLoad = 'unavailable';
+    });
+  void loadSceneryAssets()
+    .then((assets) => {
+      if (destroyed) return;
+      pendingScenery = assets;
+      renderReadyArt();
+    })
+    .catch(() => {});
 
   function animate(time: number): void {
+    if (destroyed) return;
+    const deltaSeconds =
+      previousFrameTime === undefined
+        ? 0
+        : Math.min(0.1, Math.max(0, (time - previousFrameTime) / 1000));
+    previousFrameTime = time;
     driver.advance(time);
     showOutcome();
-    positionCar();
+    applyPendingAssets();
     feedback();
+    positionCar(deltaSeconds);
     const state = driver.state;
     timer.textContent = formatTime(
       (state.finishedTick ?? state.tick) / SIMULATION_HZ
     );
     speedLabel.textContent = String(Math.round(state.speed * 3.6));
-    renderer.render(scene, camera);
-    requestAnimationFrame(animate);
+    if (raceCamera.renderable) renderer.render(scene, camera);
+    frameHandle = requestAnimationFrame(animate);
   }
-  requestAnimationFrame(animate);
+  frameHandle = requestAnimationFrame(animate);
+
+  window.addEventListener('pagehide', (event) => {
+    if (event.persisted || destroyed) return;
+    destroyed = true;
+    cancelAnimationFrame(frameHandle);
+    preparation?.abort();
+    hudObserver.disconnect();
+    window.removeEventListener('resize', resize);
+    carVisual.dispose();
+    scenery.dispose();
+    scene.remove(carVisual.object, scenery.object);
+    disposeSceneAssets();
+    scene.traverse((node) => {
+      if (node instanceof THREE.Mesh || node instanceof THREE.LineSegments) {
+        node.geometry.dispose();
+        for (const material of Array.isArray(node.material)
+          ? node.material
+          : [node.material])
+          material.dispose();
+      }
+    });
+    renderer.dispose();
+  });
 }

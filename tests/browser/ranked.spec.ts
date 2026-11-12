@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 import {
   createDailyChallengeRecord,
   dailyChallengeView,
@@ -119,6 +120,7 @@ async function openDaily(
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   return record;
 }

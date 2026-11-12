@@ -1,10 +1,12 @@
 import { test, expect, type Page, type CDPSession } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 
 type TouchPoint = { x: number; y: number; id: number };
 
 async function prepareTouchRace(page: Page) {
   await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await page.locator('#start-button').click();
   await page.clock.runFor(3100);

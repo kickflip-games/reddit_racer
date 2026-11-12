@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { readSceneGraphics, waitForSceneAssets } from './scene-ready.ts';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
 import { COUNTDOWN_TICKS } from '../../src/shared/race-rules.ts';
 import { SIMULATION_HZ } from '../../src/shared/simulation.ts';
@@ -27,7 +28,15 @@ test('approved generated hairpin can be driven, finished and retried with the sa
     seed
   );
   await expect(page.locator('#start-button')).toBeEnabled();
+  await waitForSceneAssets(page);
+  await test.info().attach('generated-renderer-environment', {
+    body: JSON.stringify(await readSceneGraphics(page), null, 2),
+    contentType: 'application/json',
+  });
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
+  await page.screenshot({
+    path: `test-results/generated-ready-${test.info().project.name}.png`,
+  });
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
   await page.clock.runFor((COUNTDOWN_TICKS * 1000) / SIMULATION_HZ);

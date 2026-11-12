@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 import {
   createDailyChallengeRecord,
   dailyChallengeView,
@@ -162,6 +163,7 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   await expect(page.locator('#mode-label')).toHaveText('DAILY RACE');
   await page.locator('#start-button').click();

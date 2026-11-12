@@ -1,0 +1,44 @@
+import { expect, type Page } from '@playwright/test';
+
+/** Healthy initialized scenes must finish asset I/O before an artificial clock jump. */
+export async function waitForSceneAssets(page: Page): Promise<void> {
+  const scene = page.locator('#race');
+  await expect(scene).toHaveAttribute('data-car-load', 'ready');
+  await expect(scene).toHaveAttribute('data-car-art', 'kenney');
+  await expect(scene).toHaveAttribute('data-scenery-art', 'kenney');
+}
+
+/** Read the real game context for CI evidence; no renderer or driver is replaced. */
+export async function readSceneGraphics(page: Page) {
+  return page.locator('#race-canvas').evaluate((canvas) => {
+    if (!(canvas instanceof HTMLCanvasElement))
+      throw new Error('Missing real game canvas');
+    const context = canvas.getContext('webgl2');
+    if (!context) throw new Error('Missing active WebGL2 context');
+    const gl = context;
+    const debug = gl.getExtension('WEBGL_debug_renderer_info');
+    function textParameter(parameter: number): string {
+      const value: unknown = gl.getParameter(parameter);
+      return typeof value === 'string' ? value : 'unavailable';
+    }
+    return {
+      label: 'Actual game context; runtime metadata, not presented FPS',
+      userAgent: navigator.userAgent,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      devicePixelRatio,
+      viewport: [innerWidth, innerHeight],
+      canvasCss: [canvas.clientWidth, canvas.clientHeight],
+      drawingBuffer: [gl.drawingBufferWidth, gl.drawingBufferHeight],
+      version: textParameter(gl.VERSION),
+      vendor: textParameter(gl.VENDOR),
+      renderer: textParameter(gl.RENDERER),
+      unmaskedVendor: debug
+        ? textParameter(debug.UNMASKED_VENDOR_WEBGL)
+        : 'unavailable',
+      unmaskedRenderer: debug
+        ? textParameter(debug.UNMASKED_RENDERER_WEBGL)
+        : 'unavailable',
+      attributes: gl.getContextAttributes(),
+    };
+  });
+}

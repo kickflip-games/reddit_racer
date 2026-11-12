@@ -84,13 +84,35 @@ function roadStrip(
   );
 }
 
+function colouredSurface(
+  positions: number[],
+  indices: number[],
+  colors: number[],
+  name: string
+): THREE.Mesh {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  const mesh = new THREE.Mesh(
+    geometry,
+    new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
+  );
+  mesh.name = name;
+  return mesh;
+}
+
 function addStartLine(group: THREE.Group, track: Track): void {
   const columns = 8;
   const rowLength = 0.65;
-  const materials = [
-    new THREE.MeshLambertMaterial({ color: '#222e30', side: THREE.DoubleSide }),
-    new THREE.MeshLambertMaterial({ color: '#f9f3d6', side: THREE.DoubleSide }),
-  ];
+  const dark = new THREE.Color('#26353b');
+  const light = new THREE.Color('#fff5db');
+  const positions: number[] = [],
+    indices: number[] = [],
+    colors: number[] = [];
   for (let row = 0; row < 2; row++) {
     const rowStart = track.startS + (row - 1) * rowLength;
     const rowEnd = rowStart + rowLength;
@@ -105,19 +127,56 @@ function addStartLine(group: THREE.Group, track: Track): void {
         roadPointAt(track, rowStart, startFrame.width * rightFraction),
         roadPointAt(track, rowEnd, endFrame.width * rightFraction),
       ];
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute(
-        'position',
-        new THREE.Float32BufferAttribute(
-          corners.flatMap((point) => [point.x, 0.06, point.z]),
-          3
-        )
-      );
-      geometry.setIndex([0, 2, 1, 2, 3, 1]);
-      geometry.computeVertexNormals();
-      group.add(new THREE.Mesh(geometry, materials[(column + row) % 2]));
+      const base = positions.length / 3;
+      const color = (column + row) % 2 === 0 ? dark : light;
+      for (const point of corners) {
+        positions.push(point.x, 0.04, point.z);
+        colors.push(color.r, color.g, color.b);
+      }
+      indices.push(base, base + 2, base + 1, base + 2, base + 3, base + 1);
     }
   }
+  group.add(colouredSurface(positions, indices, colors, 'starting-grid'));
+}
+
+function kerbStrip(track: Track, side: -1 | 1): THREE.Mesh {
+  const strip = buildRoadStripVertices(
+    track,
+    { side, offset: side * 0.04 },
+    { side, offset: side * 0.64 },
+    0.035
+  );
+  const red = new THREE.Color('#d86552');
+  const cream = new THREE.Color('#fff2d7');
+  const positions: number[] = [],
+    colors: number[] = [],
+    indices: number[] = [];
+  for (let index = 0; index < track.samples.length; index++) {
+    const sample = track.samples[index];
+    if (!sample) continue;
+    const color = Math.floor(sample.s / 3) % 2 === 0 ? red : cream;
+    const base = positions.length / 3;
+    for (let corner = 0; corner < 4; corner++) {
+      const offset = (index * 2 + corner) * 3;
+      const x = strip.positions[offset],
+        y = strip.positions[offset + 1],
+        z = strip.positions[offset + 2];
+      if (x === undefined || y === undefined || z === undefined)
+        throw new Error('Incomplete canonical kerb');
+      positions.push(x, y, z);
+      colors.push(color.r, color.g, color.b);
+    }
+    // The left strip has the opposite cross-section order; faces remain upward.
+    if (side === 1)
+      indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+    else indices.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
+  }
+  return colouredSurface(
+    positions,
+    indices,
+    colors,
+    side === 1 ? 'kerb-right' : 'kerb-left'
+  );
 }
 
 export function createTrackRenderer(track: Track): THREE.Group {
@@ -128,31 +187,32 @@ export function createTrackRenderer(track: Track): THREE.Group {
       track,
       { side: -1, offset: -0.8 },
       { side: 1, offset: 0.8 },
-      '#d4c5a0',
+      '#aabb7b',
       0
     ),
     roadStrip(
       track,
       { side: -1, offset: 0 },
       { side: 1, offset: 0 },
-      '#394747',
+      '#36464a',
       0.03
     ),
     roadStrip(
       track,
       { side: -1, offset: 0.18 },
       { side: -1, offset: 0.32 },
-      '#e7e9cc',
-      0.045
+      '#f6eed6',
+      0.04
     ),
     roadStrip(
       track,
       { side: 1, offset: -0.32 },
       { side: 1, offset: -0.18 },
-      '#e7e9cc',
-      0.045
+      '#f6eed6',
+      0.04
     )
   );
+  group.add(kerbStrip(track, -1), kerbStrip(track, 1));
   addStartLine(group, track);
   return group;
 }

@@ -7,8 +7,9 @@ import {
   type VerifiedRunResponse,
 } from '../shared/ranked-race';
 import type { GameSceneHooks, VerificationOutcome } from './game-scene';
+import { withRequestDeadline } from './request-deadline';
 
-export type AttemptPresentation = 'practice' | 'preparing' | 'ranked';
+export type AttemptPresentation = 'ready' | 'practice' | 'preparing' | 'ranked';
 
 function errorCode(error: unknown): string | undefined {
   if (typeof error !== 'object' || error === null || !('data' in error))
@@ -36,17 +37,29 @@ function matchesCourse(
 export function createRankedRaceHooks(
   challenge: DailyChallenge,
   present: (mode: AttemptPresentation) => void,
-  onVerified?: (attemptId: number, receipt: VerifiedRunResponse) => void
+  onVerified?: (attemptId: number, receipt: VerifiedRunResponse) => void,
+  isPracticeOnly?: () => boolean
 ): GameSceneHooks {
   const sessions = new Map<number, StartRankedRaceResponse>();
   let currentAttempt = 0;
   return {
     async beforeStart({ attemptId, signal }) {
       currentAttempt = attemptId;
+      if (isPracticeOnly?.()) {
+        present('practice');
+        return {
+          kind: 'practice',
+          message: 'Archived circuit. This attempt is unranked practice.',
+        };
+      }
       present('preparing');
       let value: unknown;
       try {
-        value = await api.startRankedRace.mutate(undefined, { signal });
+        value = await withRequestDeadline(
+          (requestSignal) =>
+            api.startRankedRace.mutate(undefined, { signal: requestSignal }),
+          { signal }
+        );
       } catch (error) {
         if (signal.aborted || attemptId !== currentAttempt)
           return { kind: 'blocked', message: 'Preparation cancelled.' };
@@ -102,10 +115,12 @@ export function createRankedRaceHooks(
           message: 'This attempt could not be checked. Try a new race.',
         };
       try {
-        const value = await api.submitRun.mutate({
-          sessionId: session.sessionId,
-          replay,
-        });
+        const value = await withRequestDeadline((signal) =>
+          api.submitRun.mutate(
+            { sessionId: session.sessionId, replay },
+            { signal }
+          )
+        );
         let receipt: VerifiedRunResponse;
         try {
           receipt = parseVerifiedRunResponse(value);

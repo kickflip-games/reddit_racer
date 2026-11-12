@@ -4,7 +4,7 @@ A bite-sized daily arcade racer for Reddit, built from the official Devvit Web /
 
 ## Development
 
-Use Node **24.22.2** (`nvm use` with the committed `.nvmrc`) and npm. Devvit executes backend code in its managed Node environment; local tooling uses the pinned Node version.
+Use Node **24.22.2** (`nvm use` with the committed `.nvmrc`) and npm. Devvit executes backend code in its managed Node 22 environment; local tooling uses the pinned Node version.
 
 ```sh
 npm ci
@@ -24,7 +24,15 @@ npm run tracks:check # 200 fixed-seed geometry + driving quality checks
 npm run check        # formatting, types, lint, units, 200-track quality, build
 ```
 
-For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. The existing private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link. Standalone browser success does **not** establish hosted Reddit integration; verified test-post results and blockers are recorded in [the progress log](docs/implementation-progress.md).
+For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. The existing private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link, or open [the existing private test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xtz9oc/fullthrottledev/) while signed in with access. Use the subreddit moderator menu's **Create today's race** action for a fresh UTC-day post. If Reddit redirects to login, complete its normal sign-in flow; private-community access is required.
+
+On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact source, account, results and screenshots. This includes Reddit's mobile preview; it does not establish physical-phone performance. Standalone mock tests and private storage diagnostics are documented separately. Current results and remaining checks are in [the progress log](docs/implementation-progress.md).
+
+Read private server logs with:
+
+```sh
+npx devvit logs full_throttle_dev_dev full-throttle-dev --since 30m
+```
 
 `npm run deploy` builds/checks and uploads a **private** Devvit version. Do not run `devvit publish` or submit for general app review. Private upload/playtesting is sufficient for the hackathon development workflow. Never commit credentials.
 
@@ -44,11 +52,15 @@ Inspect procedural courses at http://localhost:5173/track-gallery.html while `np
 
 On Reddit, each post loads its permanently bound UTC daily circuit from Redis through tRPC. The complete accepted geometry and race versions are stored; deployments never replace an existing day. Old posts remain unranked practice. Reset messaging follows the server clock, while an already loaded course stays fixed through retries.
 
-Daily attempts request an authenticated session before countdown. After finishing, the server calculates time from the recorded accelerator inputs using the stored course and shared simulation. The result stays unverified until the server accepts it. Signed-out or unavailable verification can continue as clearly labelled practice. See [ranked verification](docs/ranked-verification.md) for expiry, idempotency, rate limits and the explicit limitation that valid input replays do not prove human play. Hosted authentication remains a separate private test under #20.
+Daily attempts request an authenticated session before countdown. After finishing, the server calculates time from the recorded accelerator inputs using the stored course and shared simulation. The result stays unverified until the server accepts it. Signed-out or unavailable verification can continue as clearly labelled practice. See [ranked verification](docs/ranked-verification.md) for expiry, idempotency, rate limits and the explicit limitation that valid input replays do not prove human play. #20 tracks the remaining hosted conditions and final UI.
 
 Verified results update one personal best per Reddit account and UTC challenge. Receipt, personal best and improvement outcome are committed together. Results show the top 20, your current best/place and nearby racers; equal tick times share places (1, 1, 3). The board loads on results or manual refresh, and a board outage does not undo a verified time or block practice. Results remain readable for 90 days; old course geometry remains retained for practice. [Leaderboard storage](docs/leaderboard.md) documents concurrency, bounded reads and recovery. No development records are inserted into the deployed board.
 
+The finish card puts the result, current personal best/place, this run's improvement and a server-backed target above **Race again**. **Daily standings** expands without another request. The current best can be faster than this run if another attempt already improved it. Network requests have a ten-second deadline: unavailable daily loading offers labelled reference practice, unavailable session preparation keeps the loaded course in practice, and an unconfirmed submission never claims a verified time.
+
 The moderator menu's **Create today's race** action creates a post for the current UTC circuit. There is no recurring post scheduler yet. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
+
+Archived posts start practice immediately. A next-day button opens a server-checked current Reddit post when one is registered; otherwise practice and a manual check remain available. Links expire at the returned UTC boundary and never replace the loaded course. [Today's post navigation](docs/today-race-posts.md) documents first-winner registration, trusted URL checks and safe recovery after a post has already been created.
 
 ```sh
 npm run tracks:check -- --prefix showcase --count 10

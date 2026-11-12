@@ -38,8 +38,8 @@ button {
 .hud {
   position: absolute;
   top: max(20px, env(safe-area-inset-top));
-  left: 24px;
-  right: 24px;
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -114,7 +114,7 @@ h1 {
 .timing {
   position: absolute;
   top: 96px;
-  left: 24px;
+  left: max(24px, env(safe-area-inset-left));
   pointer-events: none;
 }
 #timer {
@@ -211,6 +211,9 @@ h1 {
   border: 1px solid #b3d3b63d;
   border-radius: 18px;
   box-shadow: 0 12px 36px #0a241e44;
+  max-height: calc(100% - 144px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .race-card[hidden] {
   display: none;
@@ -223,6 +226,10 @@ h2 {
   margin: 4px 0 7px;
   font-size: 28px;
   letter-spacing: -1.1px;
+  overflow-wrap: anywhere;
+}
+#card-title:focus {
+  outline: none;
 }
 #card-copy {
   color: #d3e3cb;
@@ -268,8 +275,6 @@ button:focus-visible {
 }
 .race-card[data-leaderboard='true'] {
   max-height: calc(100% - 144px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
 }
 .race-card[data-leaderboard='true'] #retry-button {
   position: sticky;
@@ -277,8 +282,8 @@ button:focus-visible {
   z-index: 1;
 }
 .leaderboard {
-  margin-top: 14px;
-  padding-top: 12px;
+  margin-top: 12px;
+  padding-top: 4px;
   border-top: 1px solid #b3d3b63d;
   font-size: 11px;
   line-height: 1.5;
@@ -286,7 +291,11 @@ button:focus-visible {
   -webkit-user-select: text;
 }
 .leaderboard[hidden],
-.leaderboard [hidden] {
+.leaderboard [hidden],
+.result-summary[hidden],
+.result-summary [hidden],
+.today-race[hidden],
+.today-race [hidden] {
   display: none;
 }
 .leaderboard-heading {
@@ -308,9 +317,9 @@ button:focus-visible {
 }
 #leaderboard-refresh {
   width: auto;
-  min-height: 36px;
-  padding: 6px 10px;
-  font-size: 11px;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 12px;
   color: #fff9e8;
   background: #356254;
 }
@@ -331,6 +340,10 @@ button:focus-visible {
   max-height: 142px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+.leaderboard-rows:focus-visible {
+  outline: 2px solid white;
+  outline-offset: -2px;
 }
 .leaderboard table {
   width: 100%;
@@ -362,11 +375,60 @@ button:focus-visible {
   color: #ffcf7b;
   background: #ffbd5912;
 }
+.result-summary {
+  margin: 0 0 16px;
+  padding: 12px;
+  border: 1px solid #b3d3b63d;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.result-summary p {
+  margin: 0;
+}
+.result-summary p + p {
+  margin-top: 6px;
+}
+#leaderboard-me {
+  font-weight: 700;
+}
+#result-target {
+  color: #adc9b9;
+  font-size: 11px;
+}
+.leaderboard summary {
+  min-height: 44px;
+  padding: 12px 0;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.leaderboard summary:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+.today-race {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #b3d3b63d;
+}
+.today-race p {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #d3e3cb;
+}
+.today-race button {
+  font-size: 12px;
+  min-height: 44px;
+}
 .race-footer {
   position: absolute;
   bottom: max(20px, env(safe-area-inset-bottom));
-  left: 24px;
-  right: 24px;
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
   display: flex;
   justify-content: space-between;
   font-size: 9px;
@@ -434,8 +496,8 @@ button:focus-visible {
 }
 @media (max-width: 480px) {
   .hud {
-    left: 18px;
-    right: 18px;
+    left: max(18px, env(safe-area-inset-left));
+    right: max(18px, env(safe-area-inset-right));
     gap: 8px;
   }
   .mode {
@@ -444,12 +506,12 @@ button:focus-visible {
     letter-spacing: 0.3px;
   }
   .timing {
-    left: 18px;
+    left: max(18px, env(safe-area-inset-left));
     top: 88px;
   }
   .race-footer {
-    left: 18px;
-    right: 18px;
+    left: max(18px, env(safe-area-inset-left));
+    right: max(18px, env(safe-area-inset-right));
     letter-spacing: 0.6px;
   }
   .footer-detail {
@@ -462,11 +524,12 @@ button:focus-visible {
   }
   .race-card {
     left: auto;
-    right: 20px;
+    right: max(20px, env(safe-area-inset-right));
     transform: none;
     width: 260px;
     bottom: 46px;
     padding: 16px;
+    max-height: calc(100% - 100px);
   }
   .race-card[data-leaderboard='true'] {
     max-height: calc(100% - 100px);
@@ -478,6 +541,30 @@ button:focus-visible {
     display: none;
   }
   .hud {
-    top: 16px;
+    top: max(16px, env(safe-area-inset-top));
+  }
+}
+@media (max-width: 360px) {
+  .hud {
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+  }
+  h1 {
+    font-size: 21px;
+  }
+  .race-card {
+    width: calc(100% - 24px);
+    padding: 18px;
+  }
+  .race-card h2 {
+    font-size: 25px;
+  }
+  .card-note {
+    font-size: 11px;
+  }
+  .race-footer {
+    left: 12px;
+    right: 12px;
+    font-size: 8px;
   }
 }

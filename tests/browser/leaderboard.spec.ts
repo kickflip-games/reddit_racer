@@ -67,6 +67,43 @@ function startResponse(
   };
 }
 
+function personalBestBoard(record: DailyChallengeRecord): LeaderboardView {
+  const view = board(record);
+  // A later run on another device can improve the current PB after this outcome.
+  const currentBestTicks = replay.endTick - 60;
+  const self = {
+    username: 'DailyDriver',
+    finishTicks: currentBestTicks,
+    rank: 3,
+    isSelf: true,
+  };
+  view.top = [
+    {
+      username: 'Apex',
+      finishTicks: currentBestTicks - 60,
+      rank: 1,
+      isSelf: false,
+    },
+    {
+      username: 'Braker',
+      finishTicks: currentBestTicks - 60,
+      rank: 1,
+      isSelf: false,
+    },
+    self,
+  ];
+  view.me = self;
+  view.nearby = view.top;
+  view.outcome = {
+    sessionId,
+    previousBestTicks: replay.endTick + 120,
+    personalBestTicks: replay.endTick,
+    isPersonalBest: true,
+    improvementTicks: 120,
+  };
+  return view;
+}
+
 async function serviceError(route: Route): Promise<void> {
   await route.fulfill({
     json: {
@@ -106,39 +143,8 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   page,
 }) => {
   const record = await dailyRecord();
-  const view = board(record);
-  // The current PB can be faster than this run's immutable commit snapshot.
+  const view = personalBestBoard(record);
   const currentBestTicks = replay.endTick - 60;
-  const self = {
-    username: 'DailyDriver',
-    finishTicks: currentBestTicks,
-    rank: 3,
-    isSelf: true,
-  };
-  view.top = [
-    {
-      username: 'Apex',
-      finishTicks: currentBestTicks - 60,
-      rank: 1,
-      isSelf: false,
-    },
-    {
-      username: 'Braker',
-      finishTicks: currentBestTicks - 60,
-      rank: 1,
-      isSelf: false,
-    },
-    self,
-  ];
-  view.me = self;
-  view.nearby = view.top;
-  view.outcome = {
-    sessionId,
-    previousBestTicks: replay.endTick + 120,
-    personalBestTicks: replay.endTick,
-    isPersonalBest: true,
-    improvementTicks: 120,
-  };
   let starts = 0;
   let boardCalls = 0;
   let releaseVerification = (): void => {};
@@ -199,6 +205,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#start-label')).toHaveText('Race today');
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   expect(boardCalls).toBe(0);
   await page.locator('#start-button').click();
@@ -219,26 +226,30 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
     'ready'
   );
   await expect(page.locator('#card-kicker')).toHaveText('VERIFIED TIME');
+  await expect(page.locator('#card-title')).toBeFocused();
+  await page.keyboard.press('Space');
+  expect(starts).toBe(1);
   await expect(page.locator('#leaderboard-outcome')).toContainText(
-    'improved your daily best by 1.000s'
-  );
-  await expect(page.locator('#leaderboard-outcome')).toContainText(
-    `${(replay.endTick / 120).toFixed(3)}s`
+    '1.000s faster than your prior best'
   );
   await expect(page.locator('#leaderboard-me')).toHaveText(
     `Your current best: ${(currentBestTicks / 120).toFixed(3)}s · #3`
   );
-  await expect(
-    page.locator('#leaderboard-top tbody tr td:first-child')
-  ).toHaveText(['1', '1', '3']);
-  await expect(
-    page.locator('#leaderboard-nearby tr[data-self=true]')
-  ).toHaveCount(1);
+  await expect(page.locator('#leaderboard-details')).not.toHaveAttribute(
+    'open'
+  );
+  await expect(page.locator('#result-target')).toContainText('Braker');
   await expect(page.locator('#retry-button')).toBeInViewport();
   expect(await page.locator('html').innerHTML()).not.toContain(sessionId);
   await page.screenshot({
     path: `test-results/leaderboard-mock-${test.info().project.name}.png`,
   });
+  await page.locator('#leaderboard-title').click();
+  await expect(
+    page.locator('#leaderboard-top tbody tr td:first-child')
+  ).toHaveText(['1', '1', '3']);
+  await expect(page.locator('#leaderboard-nearby')).toBeHidden();
+  expect(boardCalls).toBe(1);
   await page.locator('#leaderboard-refresh').click();
   await expect(page.locator('#leaderboard')).toHaveAttribute(
     'data-state',
@@ -269,6 +280,138 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   );
   expect(starts).toBe(2);
   expect(boardCalls).toBe(3);
+  expect(errors).toEqual([]);
+});
+
+test('presentation fixture keeps responsive results and native standings accessible without another simulation lap', async ({
+  page,
+}) => {
+  const record = await dailyRecord();
+  const view = personalBestBoard(record);
+  let boardCalls = 0;
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route('**/api/trpc/dailyChallenge*', (route) =>
+    route.fulfill({
+      json: { result: { data: dailyChallengeView(record, view.serverNowMs) } },
+    })
+  );
+  await page.route('**/api/trpc/getLeaderboard*', (route) => {
+    boardCalls++;
+    const input: unknown = JSON.parse(
+      new URL(route.request().url()).searchParams.get('input') ?? 'null'
+    );
+    expect(input).toEqual({ sessionId });
+    return route.fulfill({ json: { result: { data: view } } });
+  });
+  await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
+  await page.goto('/game.html?daily=1');
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#start-label')).toHaveText('Race today');
+  await page.screenshot({
+    path: `test-results/quick-start-mock-${test.info().project.name}.png`,
+  });
+  await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
+  await page.evaluate(
+    async ({ challenge, finishTicks, serverNowMs, sessionId }) => {
+      const moduleUrl = '/leaderboard-client.ts';
+      const { createLeaderboardController } = await import(moduleUrl);
+      const controller = createLeaderboardController(challenge);
+      // This fixture only mounts result presentation. The integration case above
+      // proves real input, exact replay, verification, finish focus and actual Retry.
+      // No simulation state, production globals or score-submission hook is changed.
+      const start = document.getElementById('start-button');
+      const retry = document.getElementById('retry-button');
+      const title = document.getElementById('card-title');
+      const kicker = document.getElementById('card-kicker');
+      const copy = document.getElementById('card-copy');
+      const mode = document.getElementById('mode-label');
+      if (!start || !retry || !title || !kicker || !copy || !mode)
+        throw new Error('Missing source result presentation');
+      start.hidden = true;
+      retry.hidden = false;
+      title.textContent = `${(finishTicks / 120).toFixed(3)} seconds`;
+      kicker.textContent = 'PRESENTATION FIXTURE';
+      copy.textContent = 'Time verified.';
+      mode.textContent = 'UI FIXTURE · MOCKED';
+      controller.onAttemptStart({ attemptId: 1 });
+      controller.recordVerified(1, {
+        sessionId,
+        challengeId: challenge.id,
+        challengeHash: challenge.challengeHash,
+        finishTicks,
+        simulationHz: 120,
+        finishTimeMs: (finishTicks * 1000) / 120,
+        verifiedAtMs: serverNowMs,
+      });
+      controller.onResults({ attemptId: 1, mode: 'ranked' });
+    },
+    {
+      challenge: toPublicDailyChallenge(record),
+      finishTicks: replay.endTick,
+      serverNowMs: view.serverNowMs,
+      sessionId,
+    }
+  );
+  await expect(page.locator('#leaderboard')).toHaveAttribute(
+    'data-state',
+    'ready'
+  );
+  await expect(page.locator('#leaderboard-details')).not.toHaveAttribute(
+    'open'
+  );
+  const originalViewport = page.viewportSize();
+  await page.setViewportSize({ width: 320, height: 568 });
+  await expect
+    .poll(() =>
+      page
+        .locator('#race-canvas')
+        .evaluate((canvas) =>
+          canvas instanceof HTMLCanvasElement ? canvas.width : 0
+        )
+    )
+    .toBe(320);
+  await page.clock.runFor(32);
+  await expect(page.locator('#retry-button')).toBeInViewport();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth
+    )
+  ).toBe(true);
+  expect(
+    (await page.locator('#retry-button').boundingBox())?.height
+  ).toBeGreaterThanOrEqual(44);
+  await page.screenshot({
+    path: `test-results/quick-results-320-presentation-mock-${test.info().project.name}.png`,
+  });
+  await page.setViewportSize({ width: 640, height: 360 });
+  await page.clock.runFor(32);
+  await expect(page.locator('#retry-button')).toBeInViewport();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth
+    )
+  ).toBe(true);
+  if (originalViewport) {
+    await page.setViewportSize(originalViewport);
+    await page.clock.runFor(32);
+  }
+  await page.locator('#leaderboard-title').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#leaderboard-details')).toHaveAttribute('open');
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#leaderboard-refresh')).toBeFocused();
+  for (const id of [
+    'retry-button',
+    'leaderboard-title',
+    'leaderboard-refresh',
+  ]) {
+    expect(
+      (await page.locator(`#${id}`).boundingBox())?.height
+    ).toBeGreaterThanOrEqual(44);
+  }
+  expect(boardCalls).toBe(1);
+  expect(await page.locator('html').innerHTML()).not.toContain(sessionId);
   expect(errors).toEqual([]);
 });
 
@@ -312,6 +455,7 @@ test('the standalone results controller honestly renders empty, signed-out, expi
   );
   await expect(page.locator('#leaderboard-me')).toContainText('Sign in');
   await expect(page.locator('#leaderboard-outcome')).toBeHidden();
+  await page.locator('#leaderboard-title').click();
   await page.waitForTimeout(1100);
   expect(calls).toBe(1);
   await page.locator('#leaderboard-refresh').click();
@@ -332,7 +476,9 @@ test('the standalone results controller honestly renders empty, signed-out, expi
     'error'
   );
   await expect(page.locator('#leaderboard-top')).toBeHidden();
-  await expect(page.locator('#leaderboard-me')).toHaveText('');
+  await expect(page.locator('#leaderboard-me')).toHaveText(
+    'Practice time · not ranked.'
+  );
 });
 
 test('a stored slower-run outcome never claims a new best from a newer current PB', async ({
@@ -386,7 +532,7 @@ test('a stored slower-run outcome never claims a new best from a newer current P
     'ready'
   );
   await expect(page.locator('#leaderboard-outcome')).toHaveText(
-    `This run kept your daily best at ${(personalBestTicks / 120).toFixed(3)}s.`
+    'This run: 1.000s slower than your prior best.'
   );
   await expect(page.locator('#leaderboard-outcome')).not.toContainText(
     'improved'

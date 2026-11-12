@@ -6,6 +6,7 @@ import {
   type LeaderboardView,
 } from '../shared/leaderboard';
 import type { VerifiedRunResponse } from '../shared/ranked-race';
+import { withRequestDeadline } from './request-deadline';
 
 export type LeaderboardController = {
   onAttemptStart: (attempt: { attemptId: number }) => void;
@@ -46,14 +47,20 @@ function fillRows(table: HTMLElement, rows: LeaderboardRow[]): void {
   }
 }
 
-function outcomeText(view: LeaderboardView): string {
+function outcomeText(
+  view: LeaderboardView,
+  receipt: VerifiedRunResponse | undefined
+): string {
   const outcome = view.outcome;
-  if (!outcome) return '';
+  if (!outcome || !receipt) return '';
   if (outcome.previousBestTicks === null)
-    return `This run set your first daily best: ${seconds(outcome.personalBestTicks)}.`;
+    return 'First verified daily best. Keep finding your rhythm.';
   if (outcome.isPersonalBest)
-    return `This run improved your daily best by ${seconds(outcome.improvementTicks ?? 0)} to ${seconds(outcome.personalBestTicks)}.`;
-  return `This run kept your daily best at ${seconds(outcome.personalBestTicks)}.`;
+    return `This run: ${seconds(outcome.improvementTicks ?? 0)} faster than your prior best.`;
+  const delta = receipt.finishTicks - outcome.previousBestTicks;
+  return delta === 0
+    ? 'This run matched your prior best.'
+    : `This run: ${seconds(delta)} slower than your prior best.`;
 }
 
 /** Only post-bound board queries leave this controller. Session tokens stay in memory. */
@@ -67,6 +74,12 @@ export function createLeaderboardController(
   const nearby = element('leaderboard-nearby');
   const me = element('leaderboard-me');
   const outcome = element('leaderboard-outcome');
+  const summary = element('result-summary');
+  const target = element('result-target');
+  const detailsElement = element('leaderboard-details');
+  if (!(detailsElement instanceof HTMLDetailsElement))
+    throw new Error('Missing standings disclosure');
+  const details = detailsElement;
   const refreshElement = element('leaderboard-refresh');
   if (!(refreshElement instanceof HTMLButtonElement))
     throw new Error('Missing leaderboard refresh button');
@@ -77,6 +90,7 @@ export function createLeaderboardController(
   let receipt: VerifiedRunResponse | undefined;
   let request: AbortController | undefined;
   let requestVersion = 0;
+  let resultMode: 'practice' | 'ranked' = 'practice';
 
   function clearRows(): void {
     fillRows(top, []);
@@ -86,6 +100,16 @@ export function createLeaderboardController(
     me.textContent = '';
     outcome.textContent = '';
     outcome.hidden = true;
+    target.textContent = '';
+    target.hidden = true;
+  }
+
+  function unrankedExplanation(): string {
+    return receipt
+      ? 'Time verified · daily position unavailable.'
+      : resultMode === 'practice'
+        ? 'Practice time · not ranked.'
+        : 'Time unverified · not ranked.';
   }
 
   function render(view: LeaderboardView): void {
@@ -93,6 +117,7 @@ export function createLeaderboardController(
     if (view.status === 'expired') {
       panel.dataset.state = 'expired';
       status.textContent = 'These daily standings are no longer retained.';
+      me.textContent = unrankedExplanation();
       return;
     }
     panel.dataset.state = view.top.length ? 'ready' : 'empty';
@@ -105,12 +130,28 @@ export function createLeaderboardController(
       me.textContent = 'Sign in to save a daily best and see your position.';
     } else if (view.me) {
       me.textContent = `Your current best: ${seconds(view.me.finishTicks)} · #${view.me.rank}`;
-      fillRows(nearby, view.nearby);
-      nearby.hidden = !view.nearby.length;
+      const additional = view.nearby.filter(
+        (row) =>
+          !view.top.some(
+            (topRow) =>
+              topRow.username === row.username &&
+              topRow.rank === row.rank &&
+              topRow.finishTicks === row.finishTicks
+          )
+      );
+      fillRows(nearby, additional);
+      nearby.hidden = !additional.length;
+      const faster = view.nearby
+        .filter((row) => view.me && row.finishTicks < view.me.finishTicks)
+        .at(-1);
+      if (faster) {
+        target.textContent = `Next target: ${faster.username} · ${seconds(faster.finishTicks)} (${seconds(view.me.finishTicks - faster.finishTicks)} ahead)`;
+        target.hidden = false;
+      }
     } else {
       me.textContent = 'You have no verified daily time yet.';
     }
-    outcome.textContent = outcomeText(view);
+    outcome.textContent = outcomeText(view, receipt);
     outcome.hidden = !outcome.textContent;
   }
 
@@ -126,9 +167,13 @@ export function createLeaderboardController(
     status.textContent = 'Loading daily standings…';
     refresh.disabled = true;
     clearRows();
+    me.textContent = receipt
+      ? 'Time verified · loading your daily position…'
+      : unrankedExplanation();
     try {
-      const value = await api.getLeaderboard.query(
-        sessionId ? { sessionId } : {},
+      const value = await withRequestDeadline(
+        (signal) =>
+          api.getLeaderboard.query(sessionId ? { sessionId } : {}, { signal }),
         { signal: controller.signal }
       );
       if (
@@ -164,6 +209,7 @@ export function createLeaderboardController(
       panel.dataset.state = 'error';
       status.textContent = 'Daily standings are unavailable. Try refreshing.';
       clearRows();
+      me.textContent = unrankedExplanation();
     } finally {
       if (version === requestVersion) refresh.disabled = false;
     }
@@ -178,6 +224,8 @@ export function createLeaderboardController(
       showingResults = false;
       receipt = undefined;
       panel.hidden = true;
+      summary.hidden = true;
+      details.open = false;
       panel.dataset.state = 'idle';
       card.dataset.leaderboard = 'false';
       refresh.disabled = false;
@@ -186,10 +234,12 @@ export function createLeaderboardController(
     recordVerified(attemptId, verified) {
       if (attemptId === currentAttempt) receipt = verified;
     },
-    onResults({ attemptId }) {
+    onResults({ attemptId, mode }) {
       if (attemptId !== currentAttempt) return;
       showingResults = true;
+      resultMode = mode;
       panel.hidden = false;
+      summary.hidden = false;
       card.dataset.leaderboard = 'true';
       void load();
     },

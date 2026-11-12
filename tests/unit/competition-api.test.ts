@@ -99,6 +99,9 @@ function harness() {
         commitVerified: competition.commitVerified,
       });
       return {
+        todayRacePost: async () => {
+          throw new Error('Unexpected today post query');
+        },
         getDailyChallenge: () => daily.getForPost(),
         startRankedRace: ranked.start,
         submitRun: ranked.submit,

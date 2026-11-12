@@ -12,6 +12,7 @@ import {
   type AttemptPresentation,
 } from './ranked-client';
 import { createLeaderboardController } from './leaderboard-client';
+import { createTodayRaceController } from './today-race-client';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -120,14 +121,30 @@ function resetLabel(seconds: number): string {
 
 let dailyArchived = false;
 let dailyDay = '';
-let attemptPresentation: AttemptPresentation = 'practice';
+let attemptPresentation: AttemptPresentation = 'ready';
 function renderDailyMode(): void {
   element('mode-label').textContent =
     attemptPresentation === 'ranked'
       ? 'RANKED · DAILY'
+      : attemptPresentation === 'preparing'
+        ? 'GETTING READY'
+        : dailyArchived
+          ? 'ARCHIVE · UNRANKED'
+          : attemptPresentation === 'practice'
+            ? 'DAILY · UNRANKED'
+            : 'DAILY RACE';
+  element('start-label').textContent =
+    attemptPresentation === 'preparing'
+      ? 'Preparing…'
       : dailyArchived
-        ? 'ARCHIVE · UNRANKED'
-        : 'DAILY · UNRANKED';
+        ? 'Start practice'
+        : 'Race today';
+  element('retry-label').textContent =
+    attemptPresentation === 'preparing'
+      ? 'Preparing…'
+      : dailyArchived
+        ? 'Practise again'
+        : 'Race again';
   element('track-note').textContent =
     attemptPresentation === 'ranked'
       ? dailyArchived
@@ -135,7 +152,9 @@ function renderDailyMode(): void {
         : `${dailyDay} daily race. Your time is checked after finishing.`
       : dailyArchived
         ? `This post keeps its ${dailyDay} circuit. Unranked practice.`
-        : `Shared ${dailyDay} UTC circuit. Sign in to verify daily runs.`;
+        : attemptPresentation === 'practice'
+          ? `Shared ${dailyDay} UTC circuit. This attempt is unranked practice.`
+          : `Shared ${dailyDay} UTC circuit. Your time is checked after finishing.`;
 }
 function showDailyCourse(view: DailyChallengeView): void {
   const challenge = view.challenge;
@@ -145,10 +164,12 @@ function showDailyCourse(view: DailyChallengeView): void {
   source.hidden = true;
   element('daily-details').hidden = false;
   element('daily-date').textContent = `${challenge.day} · UTC`;
+  const todayRace = createTodayRaceController(challenge.day);
   startDailyClock(view, (clock) => {
     dailyArchived = clock.archived;
     dailyDay = challenge.day;
     renderDailyMode();
+    todayRace.updateArchived(clock.archived);
     element('daily-reset').textContent = clock.archived
       ? attemptPresentation === 'ranked'
         ? 'Current race keeps this course'
@@ -169,7 +190,8 @@ async function boot(): Promise<void> {
           attemptPresentation = mode;
           renderDailyMode();
         },
-        leaderboard?.recordVerified
+        leaderboard?.recordVerified,
+        () => dailyArchived
       )
     : {};
   initializeGame(course.track, {

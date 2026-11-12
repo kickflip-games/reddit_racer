@@ -123,6 +123,9 @@ function setup() {
       commitVerified: createNxReceiptCommitter(store),
     });
     return {
+      todayRacePost: async () => {
+        throw new Error('Unexpected today post query');
+      },
       getDailyChallenge: async () => dailyChallengeView(await fixture, now),
       startRankedRace: () => service.start(),
       submitRun: (input) => service.submit(input),

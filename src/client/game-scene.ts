@@ -378,8 +378,9 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       element('card-kicker').textContent = 'LAP COMPLETE · UNRANKED';
       if (attemptMode === 'ranked' && options.onFinish) {
         const id = attemptId;
-        verificationStatus('pending', 'Checking your run…');
-        cardCopy.textContent = 'Checking your run…';
+        verificationStatus('pending', 'Checking your time…');
+        cardCopy.textContent = 'Checking your time…';
+        element('card-kicker').textContent = 'CHECKING TIME';
         const result = { attemptId: id, replay: driver.replay, finishTicks };
         void options
           .onFinish(result)
@@ -398,6 +399,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     start.hidden = true;
     retry.hidden = false;
     card.hidden = false;
+    card.scrollTop = 0;
+    cardTitle.focus({ preventScroll: true });
   }
   function startCountdown(): void {
     preparing = false;
@@ -409,6 +412,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     driver.setInput(pointerHeld || keyHeld, timestamp);
     raceRoot.dataset.attemptMode = attemptMode;
     card.hidden = true;
+    canvas.focus({ preventScroll: true });
     feedback();
     positionCar();
   }
@@ -423,10 +427,13 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     start.hidden = true;
     retry.hidden = false;
     card.hidden = false;
+    card.scrollTop = 0;
+    cardTitle.focus({ preventScroll: true });
   }
   function beginRace(): void {
     if (preparing || racing) return;
     release();
+    card.scrollTop = 0;
     attemptId++;
     attemptMode = 'practice';
     options.onAttemptStart?.({ attemptId });
@@ -439,6 +446,9 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     const controller = new AbortController();
     preparation = controller;
     preparing = true;
+    cardTitle.textContent = 'Preparing your race…';
+    cardCopy.textContent = 'Hold to go. Release to slow when the race begins.';
+    element('card-kicker').textContent = 'GETTING READY';
     enableAttemptButtons(false);
     verificationStatus('preparing', 'Preparing your daily race…');
     feedback();
@@ -558,6 +568,9 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     camera.bottom = -halfHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
+    // Resizing clears WebGL's drawing buffer; redraw even while animation clocks are paused.
+    positionCar();
+    renderer.render(scene, camera);
   }
   window.addEventListener('resize', resize);
   resize();

@@ -11,7 +11,7 @@
     <title>Reddit Racer</title>
   </head>
   <body>
-    <main id="race" aria-label="One-button racing game">
+    <main id="race" aria-label="One-button racing game" data-phase="loading">
       <canvas
         id="race-canvas"
         aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
@@ -27,7 +27,23 @@
         <p class="eyebrow">LAP TIME</p>
         <output id="timer">00.000</output>
         <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
+        <label
+          id="lap-progress-label"
+          class="lap-progress-label"
+          for="lap-progress"
+        >
+          Gates 0/8 · 0%
+        </label>
+        <progress id="lap-progress" max="1" value="0">0%</progress>
       </div>
+      <output
+        id="race-countdown"
+        class="race-countdown"
+        aria-label="Race countdown"
+        aria-live="polite"
+        hidden
+        >3</output
+      >
       <div id="card" class="race-card">
         <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
         <h2 id="card-title">Find your rhythm.</h2>

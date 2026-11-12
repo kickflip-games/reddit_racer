@@ -1,17 +1,22 @@
 import type { Track } from '../shared/track.ts';
 import {
-  createSimulationState,
   HANDLING_VERSION,
   MAX_SIMULATION_TICKS,
   SIMULATION_HZ,
   SIMULATION_VERSION,
-  stepSimulation,
   type SimulationState,
 } from '../shared/simulation.ts';
 import { MAX_REPLAY_TRANSITIONS, type Replay } from '../shared/replay.ts';
+import {
+  abandonRace,
+  prepareRace,
+  startRace,
+  stepRace,
+  type RaceAbandonReason,
+  type RaceState,
+} from '../shared/race-rules.ts';
 
-export type InterruptionReason =
-  'focus' | 'frame-gap' | 'input-limit' | 'time-limit';
+export type InterruptionReason = RaceAbandonReason;
 
 const tickMilliseconds = 1000 / SIMULATION_HZ;
 const maximumFrameGap = 250;
@@ -19,19 +24,24 @@ const clockTolerance = 0.000001;
 
 /** Browser-independent clock and input tape. Rendering never changes authoritative state. */
 export class SimulationDriver {
-  private current = createSimulationState();
-  private previous = this.current;
+  private race: RaceState;
+  private previous: SimulationState;
   private lastTimestamp: number | undefined;
   private accumulatedMilliseconds = 0;
   private inputHeld = false;
   private transitions: Replay['transitions'] = [];
-  private running = false;
-  private reason: InterruptionReason | undefined;
 
-  constructor(private readonly track: Track) {}
+  constructor(private readonly track: Track) {
+    this.race = prepareRace(track);
+    this.previous = this.race.simulation;
+  }
 
   get state(): Readonly<SimulationState> {
-    return this.current;
+    return this.race.simulation;
+  }
+
+  get raceState(): Readonly<RaceState> {
+    return this.race;
   }
 
   get previousState(): Readonly<SimulationState> {
@@ -39,19 +49,19 @@ export class SimulationDriver {
   }
 
   get active(): boolean {
-    return this.running;
+    return this.race.phase === 'countdown' || this.race.phase === 'racing';
   }
 
   get interrupted(): boolean {
-    return this.reason !== undefined;
+    return this.race.phase === 'abandoned';
   }
 
   get interruptionReason(): InterruptionReason | undefined {
-    return this.reason;
+    return this.race.abandonReason ?? undefined;
   }
 
   get alpha(): number {
-    return this.running
+    return this.active
       ? Math.max(
           0,
           Math.min(1, this.accumulatedMilliseconds / tickMilliseconds)
@@ -64,29 +74,26 @@ export class SimulationDriver {
       schemaVersion: 1,
       simulationVersion: SIMULATION_VERSION,
       handlingVersion: HANDLING_VERSION,
-      // A transition on current.tick is pending, so it is not part of the completed tape yet.
       transitions: this.transitions
-        .filter((transition) => transition.tick < this.current.tick)
+        .filter((transition) => transition.tick < this.state.tick)
         .map((transition) => ({ ...transition })),
-      endTick: this.current.tick,
+      endTick: this.state.tick,
     };
   }
 
   start(timestampMilliseconds: number): void {
     if (!Number.isFinite(timestampMilliseconds))
       throw new Error('Invalid start time');
-    this.current = createSimulationState();
-    this.previous = this.current;
+    this.race = startRace(prepareRace(this.track));
+    this.previous = this.race.simulation;
     this.lastTimestamp = timestampMilliseconds;
     this.accumulatedMilliseconds = 0;
     this.inputHeld = false;
     this.transitions = [];
-    this.reason = undefined;
-    this.running = true;
   }
 
   advance(timestampMilliseconds: number): void {
-    if (!this.running) return;
+    if (!this.active) return;
     if (!Number.isFinite(timestampMilliseconds))
       throw new Error('Invalid frame time');
     if (this.lastTimestamp === undefined)
@@ -101,21 +108,29 @@ export class SimulationDriver {
     }
     this.accumulatedMilliseconds += elapsed;
     while (this.accumulatedMilliseconds + clockTolerance >= tickMilliseconds) {
-      if (this.current.tick >= MAX_SIMULATION_TICKS) {
+      if (this.state.tick >= MAX_SIMULATION_TICKS) {
         this.abandon('time-limit');
         return;
       }
-      this.previous = this.current;
-      this.current = stepSimulation(this.track, this.current, this.inputHeld);
+      // Countdown inputs are latched only. Record the value that actually reaches a scored tick.
+      if (
+        this.race.phase === 'racing' &&
+        this.inputHeld !== (this.transitions.at(-1)?.held ?? false)
+      ) {
+        if (this.transitions.length >= MAX_REPLAY_TRANSITIONS) {
+          this.abandon('input-limit');
+          return;
+        }
+        this.transitions.push({ tick: this.state.tick, held: this.inputHeld });
+      }
+      this.previous = this.race.simulation;
+      this.race = stepRace(this.track, this.race, this.inputHeld);
       this.accumulatedMilliseconds = Math.max(
         0,
         this.accumulatedMilliseconds - tickMilliseconds
       );
-      if (this.current.status === 'finished') {
-        this.running = false;
-        return;
-      }
-      if (this.current.tick >= MAX_SIMULATION_TICKS) {
+      if (!this.active) return;
+      if (this.state.tick >= MAX_SIMULATION_TICKS) {
         this.abandon('time-limit');
         return;
       }
@@ -125,24 +140,13 @@ export class SimulationDriver {
   setInput(held: boolean, timestampMilliseconds: number): void {
     // Finish elapsed ticks with their old input before quantizing the new transition.
     this.advance(timestampMilliseconds);
-    if (!this.running || held === this.inputHeld) return;
-    const last = this.transitions.at(-1);
-    if (last?.tick === this.current.tick) this.transitions.pop();
-    const precedingHeld = this.transitions.at(-1)?.held ?? false;
-    if (held !== precedingHeld) {
-      if (this.transitions.length >= MAX_REPLAY_TRANSITIONS) {
-        this.abandon('input-limit');
-        return;
-      }
-      this.transitions.push({ tick: this.current.tick, held });
-    }
+    if (!this.active) return;
     this.inputHeld = held;
   }
 
   abandon(reason: InterruptionReason = 'focus'): void {
-    if (!this.running) return;
-    this.reason = reason;
-    this.running = false;
+    if (!this.active) return;
+    this.race = abandonRace(this.race, reason);
     this.inputHeld = false;
     this.accumulatedMilliseconds = 0;
   }

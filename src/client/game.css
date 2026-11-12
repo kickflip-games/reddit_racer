@@ -98,6 +98,53 @@ h1 {
   color: #fff9e8;
   font-variant-numeric: tabular-nums;
 }
+.lap-progress-label {
+  display: block;
+  margin-top: 12px;
+  font-size: 9px;
+  color: #d3e3cb;
+  font-variant-numeric: tabular-nums;
+}
+#lap-progress {
+  display: block;
+  width: 140px;
+  height: 6px;
+  margin-top: 5px;
+  border: 0;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #183b35;
+  accent-color: #ffbd59;
+}
+#lap-progress::-webkit-progress-bar {
+  background: #183b35;
+}
+#lap-progress::-webkit-progress-value {
+  background: #ffbd59;
+}
+#lap-progress::-moz-progress-bar {
+  background: #ffbd59;
+}
+.race-countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 116px;
+  padding: 14px 22px 20px;
+  border: 1px solid #ffbd5980;
+  border-radius: 20px;
+  background: #153e36eb;
+  color: #ffbd59;
+  font-size: clamp(64px, 14vw, 90px);
+  font-weight: 850;
+  line-height: 1;
+  text-align: center;
+  pointer-events: none;
+}
+.race-countdown[hidden] {
+  display: none;
+}
 .race-card {
   position: absolute;
   bottom: max(62px, calc(env(safe-area-inset-bottom) + 44px));

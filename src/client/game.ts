@@ -20,6 +20,13 @@ if (!(canvas instanceof HTMLCanvasElement))
   throw new Error('Missing race canvas');
 const timer = element('timer');
 const speedLabel = element('speed');
+const raceRoot = element('race');
+const countdown = element('race-countdown');
+const progressElement = element('lap-progress');
+if (!(progressElement instanceof HTMLProgressElement))
+  throw new Error('Missing lap progress indicator');
+const lapProgress = progressElement;
+const lapProgressLabel = element('lap-progress-label');
 const card = element('card');
 const cardTitle = element('card-title');
 const cardCopy = element('card-copy');
@@ -173,6 +180,23 @@ function held(): boolean {
 }
 function feedback(): void {
   const state = driver.state;
+  const race = driver.raceState;
+  raceRoot.dataset.phase = race.phase;
+  countdown.hidden = race.phase !== 'countdown';
+  if (race.phase === 'countdown') {
+    const value = String(
+      Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ)
+    );
+    if (countdown.textContent !== value) countdown.textContent = value;
+  }
+  const percentage = Math.min(
+    100,
+    Math.floor((state.distance / track.totalLength) * 100)
+  );
+  lapProgress.max = track.totalLength;
+  lapProgress.value = state.distance;
+  lapProgress.textContent = `${percentage}%`;
+  lapProgressLabel.textContent = `Gates ${race.nextCheckpointIndex}/${track.checkpoints.length} · ${percentage}%`;
   inputLabel.dataset.held = String(held());
   inputLabel.dataset.condition = state.recovering
     ? 'recovering'
@@ -190,7 +214,11 @@ function feedback(): void {
         ? 'SLIDING'
         : '';
   inputLabel.textContent = racing
-    ? `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
+    ? race.phase === 'countdown'
+      ? held()
+        ? 'HOLDING · READY TO GO'
+        : 'GET READY · HOLD TO GO'
+      : `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
     : driver.interrupted
       ? 'RACE INTERRUPTED · TRY AGAIN'
       : state.status === 'finished'
@@ -260,7 +288,9 @@ function showOutcome(): void {
         ? 'The game lost focus. Try again when you are ready.'
         : driver.interruptionReason === 'time-limit'
           ? 'Practice timed out. Try another run.'
-          : 'The race could not continue smoothly. Try another run.';
+          : driver.interruptionReason === 'invalid-progress'
+            ? 'This lap missed a gate. Try another run.'
+            : 'The race could not continue smoothly. Try another run.';
     element('card-kicker').textContent = 'ATTEMPT ENDED · UNRANKED';
   } else {
     const finishTicks = state.finishedTick ?? state.tick;

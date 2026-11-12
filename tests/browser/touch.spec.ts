@@ -7,6 +7,8 @@ async function prepareTouchRace(page: Page) {
   await page.goto('/game.html');
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await page.locator('#start-button').click();
+  await page.clock.runFor(3100);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
   const canvas = page.locator('#race-canvas');
   await canvas.evaluate((node) =>
     node.addEventListener('pointerdown', (event) => {

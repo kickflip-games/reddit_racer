@@ -15,11 +15,7 @@ import {
   type SceneryAssets,
 } from './scene-assets';
 import { sampleTrack, type Track } from '../shared/track';
-import {
-  createTrackDebugOverlay,
-  createTrackRenderer,
-  getTrackBounds,
-} from './track-renderer';
+import { createTrackDebugOverlay, createTrackRenderer } from './track-renderer';
 
 export type AttemptPreparation = {
   kind: 'practice' | 'ranked' | 'blocked';
@@ -82,12 +78,10 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     : 'PRACTICE · UNRANKED';
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
-  const bounds = getTrackBounds(track, 0.8);
-  const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerZ = (bounds.minZ + bounds.maxZ) / 2;
-
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#65945e');
+  // The uniformly lit field receives no shadows; match it with the clear color
+  // to avoid a redundant full-screen ground draw on every racing frame.
+  scene.background = new THREE.Color('#77a55b');
   const raceCamera = createRaceCamera(track);
   const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
@@ -109,14 +103,6 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   const sun = new THREE.DirectionalLight('#fff0cf', 2.1);
   sun.position.set(-30, 80, 30);
   scene.add(sun);
-
-  const grass = new THREE.Mesh(
-    new THREE.PlaneGeometry(500, 500),
-    new THREE.MeshLambertMaterial({ color: '#65945e' })
-  );
-  grass.rotation.x = -Math.PI / 2;
-  grass.position.set(centerX, -0.05, centerZ);
-  scene.add(grass);
 
   scene.add(createTrackRenderer(track));
 

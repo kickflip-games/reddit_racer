@@ -1,35 +1,53 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="stylesheet" type="text/css" href="game.css" />
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width, height=device-height, user-scalable=0"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="full-screen" content="yes" />
-    <meta name="x5-fullscreen" content="true" />
-    <meta name="360-fullscreen" content="true" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#183b35" />
+    <link rel="stylesheet" href="game.css" />
+    <title>Reddit Racer</title>
   </head>
   <body>
-    <canvas id="bg"></canvas>
-    <div class="overlay">
-      <h1 class="title" id="title"></h1>
-      <p class="description">Edit <span class="code">src/client/splash.ts</span> to get started.</p>
-      <div class="counter-row">
-        <!-- Counter buttons removed. Value updated programmatically. -->
-        <span class="counter-value" id="counter-value">0</span>
+    <main id="race" aria-label="One-button racing game">
+      <canvas
+        id="race-canvas"
+        aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
+      ></canvas>
+      <header class="hud">
+        <div>
+          <p class="eyebrow">DAILY TIME ATTACK</p>
+          <h1>Reddit Racer<span class="title-dot">.</span></h1>
+        </div>
+        <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+      </header>
+      <div class="timing" aria-label="Race telemetry">
+        <p class="eyebrow">LAP TIME</p>
+        <output id="timer">00.000</output>
+        <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
       </div>
-      <footer class="footer">
-        <div class="docs-link" tabindex="0" id="docs-link">Docs</div>
-        <span class="divider">|</span>
-        <div class="docs-link" tabindex="0" id="playtest-link">r/Devvit</div>
-        <span class="divider">|</span>
-        <div class="docs-link" tabindex="0" id="discord-link">Discord</div>
+      <div id="card" class="race-card">
+        <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
+        <h2 id="card-title">Find your rhythm.</h2>
+        <p id="card-copy">Hold to go. Release to slow.</p>
+        <button id="start-button" type="button">
+          Start practice <span aria-hidden="true">↗</span>
+        </button>
+        <button id="retry-button" type="button" hidden>
+          Try again <span aria-hidden="true">↗</span>
+        </button>
+        <p class="card-note">
+          A fresh circuit every day. Ranked racing coming soon.
+        </p>
+      </div>
+      <footer class="race-footer">
+        <span id="status">SPACE OR TOUCH THE TRACK</span
+        ><span class="footer-detail">AUTO STEERING</span>
       </footer>
-    </div>
-    <script type="module" src="game.ts" defer></script>
+      <div id="error" class="error" role="alert" hidden></div>
+    </main>
+    <script type="module" src="game.ts"></script>
   </body>
 </html>

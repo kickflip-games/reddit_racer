@@ -19,12 +19,25 @@ npm run build        # production client and server
 npm run type-check   # TypeScript
 npm run lint
 npm run test:unit
+npm run test:e2e     # browser regression checks (install browsers below)
 npm run check        # formatting, types, lint, unit tests, build
 ```
 
 For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. The existing private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link. Standalone browser success does **not** establish hosted Reddit integration; verified test-post results and blockers are recorded in [the progress log](docs/implementation-progress.md).
 
 `npm run deploy` builds/checks and uploads a **private** Devvit version. Do not run `devvit publish` or submit for general app review. Private upload/playtesting is sufficient for the hackathon development workflow. Never commit credentials.
+
+For automated browser checks, install the pinned Playwright browser runtimes once:
+
+```sh
+npx playwright install chromium webkit
+npm run test:e2e
+npm run test -- src/shared/simulation.test.ts  # one isolated test file
+```
+
+Linux CI uses `npx playwright install --with-deps chromium webkit`. Rendered gameplay checks cover desktop and mobile-sized Chromium; pure authoritative replay fixtures additionally run in WebKit. These checks do not substitute for a physical phone or hosted Reddit test.
+
+The shared simulation runs at 120 Hz with versioned input replays; see [simulation rules](docs/simulation.md) and [canonical geometry](docs/track-geometry.md).
 
 ## Architecture
 

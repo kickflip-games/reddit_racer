@@ -8,8 +8,9 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
-  await page.clock.install();
+  await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html');
+  await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await expect(page.locator('#mode-label')).toContainText('UNRANKED');
   await expect(page.locator('#race-canvas')).toBeVisible();
   await page.locator('#start-button').click();
@@ -24,7 +25,11 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
     acceleratingSpeed
   );
   await page.keyboard.down('Space');
-  await page.clock.runFor(20000);
+  await page.clock.runFor(9000);
+  await page.screenshot({
+    path: `test-results/fixed-step-${test.info().project.name}.png`,
+  });
+  await page.clock.runFor(11000);
   await expect(page.locator('#retry-button')).toBeVisible();
   await page.keyboard.up('Space');
   await page.screenshot({
@@ -41,4 +46,23 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
     )
   ).toBe(true);
   expect(errors).toEqual([]);
+});
+
+test('focus loss and long frame gaps visibly interrupt and allow a fresh retry', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
+  await page.goto('/game.html');
+  await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
+  await page.locator('#start-button').click();
+  await page.keyboard.down('Space');
+  await page.clock.runFor(200);
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(page.locator('#card-title')).toHaveText('Race interrupted.');
+  await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
+  await page.keyboard.up('Space');
+  await page.locator('#retry-button').click();
+  await page.clock.fastForward(1000);
+  await expect(page.locator('#card-title')).toHaveText('Race interrupted.');
+  await expect(page.locator('#retry-button')).toBeVisible();
 });

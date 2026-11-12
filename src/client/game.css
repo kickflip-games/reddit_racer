@@ -173,6 +173,10 @@ button:focus-visible {
 #status[data-held='true'] {
   color: #ffbd59;
 }
+#status[data-condition='off-road'],
+#status[data-condition='sliding'] {
+  color: #ffc38b;
+}
 .error {
   position: absolute;
   inset: 30% 20px auto;

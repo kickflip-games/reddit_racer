@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "rootDir": "..",
+    "outDir": "../dist/types/tests",
+    "tsBuildInfoFile": "../dist/types/tests/tsconfig.tsbuildinfo",
+    "noEmit": true,
+    "rewriteRelativeImportExtensions": false,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "../tests/**/*.ts",
+    "../playwright.config.ts",
+    "../vite.local.config.ts"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.shared.json"
+    },
+    {
+      "path": "./tsconfig.client.json"
+    },
+    {
+      "path": "./tsconfig.server.json"
+    }
+  ]
+}

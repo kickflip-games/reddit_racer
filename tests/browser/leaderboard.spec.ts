@@ -390,6 +390,70 @@ test('presentation fixture keeps responsive results and native standings accessi
   await page.setViewportSize({ width: 640, height: 360 });
   await page.clock.runFor(32);
   await expect(page.locator('#retry-button')).toBeInViewport();
+  await expect(page.locator('#leaderboard-outcome')).toBeVisible();
+  await expect(page.locator('#result-target')).toBeVisible();
+  const compact = await page.locator('#card').evaluate((card) => {
+    const cardBounds = card.getBoundingClientRect();
+    const viewport = {
+      top: cardBounds.top + card.clientTop,
+      left: cardBounds.left + card.clientLeft,
+      right: cardBounds.left + card.clientLeft + card.clientWidth,
+      bottom: cardBounds.top + card.clientTop + card.clientHeight,
+    };
+    const content = [
+      'card-title',
+      'card-copy',
+      'result-summary',
+      'retry-button',
+    ].map((id) => {
+      const element = document.getElementById(id);
+      if (!element) throw new Error(`Missing compact result content: ${id}`);
+      const bounds = element.getBoundingClientRect();
+      return {
+        id,
+        bounds: {
+          left: bounds.left,
+          right: bounds.right,
+          top: bounds.top,
+          bottom: bounds.bottom,
+        },
+      };
+    });
+    const summary = document.getElementById('result-summary');
+    const retry = document.getElementById('retry-button');
+    if (!summary || !retry) throw new Error('Missing compact result actions');
+    const retryBounds = retry.getBoundingClientRect();
+    const hit = document.elementFromPoint(
+      retryBounds.x + retryBounds.width / 2,
+      retryBounds.y + retryBounds.height / 2
+    );
+    return {
+      viewport,
+      content,
+      summaryBottom: summary.getBoundingClientRect().bottom,
+      retryTop: retryBounds.top,
+      retryHit: hit === retry || retry.contains(hit),
+    };
+  });
+  for (const { id, bounds } of compact.content) {
+    expect(bounds.left, `${id} left edge`).toBeGreaterThanOrEqual(
+      compact.viewport.left - 0.5
+    );
+    expect(bounds.right, `${id} right edge`).toBeLessThanOrEqual(
+      compact.viewport.right + 0.5
+    );
+    expect(bounds.top, `${id} top edge`).toBeGreaterThanOrEqual(
+      compact.viewport.top - 0.5
+    );
+    expect(bounds.bottom, `${id} bottom edge`).toBeLessThanOrEqual(
+      compact.viewport.bottom + 0.5
+    );
+  }
+  expect(compact.summaryBottom).toBeLessThanOrEqual(compact.retryTop);
+  expect(compact.retryHit).toBe(true);
+  await page.screenshot({
+    path: `test-results/quick-results-640-presentation-mock-${test.info().project.name}.png`,
+  });
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth

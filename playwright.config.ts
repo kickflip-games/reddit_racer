@@ -28,6 +28,11 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
     {
+      name: 'webkit-audio',
+      testMatch: '**/feedback-audio.spec.ts',
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
       name: 'mobile-chromium',
       testIgnore: '**/gallery-batch.spec.ts',
       use: { ...devices['Pixel 7'], deviceScaleFactor: 1 },

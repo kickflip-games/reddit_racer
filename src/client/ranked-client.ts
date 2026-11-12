@@ -35,7 +35,8 @@ function matchesCourse(
 /** Authenticated session tokens remain private to this controller, never DOM or saved storage. */
 export function createRankedRaceHooks(
   challenge: DailyChallenge,
-  present: (mode: AttemptPresentation) => void
+  present: (mode: AttemptPresentation) => void,
+  onVerified?: (attemptId: number, receipt: VerifiedRunResponse) => void
 ): GameSceneHooks {
   const sessions = new Map<number, StartRankedRaceResponse>();
   let currentAttempt = 0;
@@ -132,6 +133,7 @@ export function createRankedRaceHooks(
               'The verification result does not match this attempt. This time remains unverified.',
           };
         }
+        if (attemptId === currentAttempt) onVerified?.(attemptId, receipt);
         return {
           status: 'verified',
           message: 'Time verified.',

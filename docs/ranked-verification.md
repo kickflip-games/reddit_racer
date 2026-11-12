@@ -16,7 +16,7 @@ The response contains `sessionId`, `challengeId`, `challengeHash`, `trackHash`, 
 { sessionId, replay }
 ```
 
-Replay is the bounded Boolean input-transition schema. A supplied lap time, user, track, date, position or other extra field is rejected. Session IDs are secure UUID v4 values. A verified response contains `sessionId`, `challengeId`, `challengeHash`, `finishTicks`, `simulationHz: 120`, derived `finishTimeMs` and `verifiedAtMs`. It does not claim a leaderboard rank or personal best; those require issue #11's atomic competition storage.
+Replay is the bounded Boolean input-transition schema. A supplied lap time, user, track, date, position or other extra field is rejected. Session IDs are secure UUID v4 values. A verified response contains `sessionId`, `challengeId`, `challengeHash`, `finishTicks`, `simulationHz: 120`, derived `finishTimeMs` and `verifiedAtMs`. It does not claim a leaderboard rank or personal best; those come from the separate [atomic competition storage and results query](leaderboard.md).
 
 The replay limits remain 14,400 ticks (120 seconds) and 2,400 ordered, nonredundant Boolean transitions. Raw request size and per-account request allowances are additional transport/platform controls, not substitutes for these schema/work bounds. Logged-out users may explicitly practise without invoking an insecure ranked identity.
 
@@ -63,11 +63,11 @@ racer:receipt:<subredditId>:<sessionId>
 
 `RankedStore.setNX(key, value, expiresAtMs)` must atomically reserve an expiring value. The default `createNxReceiptCommitter()` writes only if absent, then always reads/parses the stored winner. It never returns an unconfirmed local result. Concurrent identical submissions receive one stored receipt; concurrent different valid tapes leave one winner and a conflict for the loser. Failed verification or an unconfirmed persistence operation does not introduce a separate consumed-session flag.
 
-## Atomic competition boundary for issue #11
+## Atomic competition commitment
 
 `commitVerified({ session, replayFingerprint, response })` is a required injected boundary. It returns the persisted private receipt, which the core checks against its immutable session, fingerprint and calculated time.
 
-The default issue #10 implementation atomically reserves the receipt. Issue #11 must replace this boundary with one atomic receipt-plus-personal-best transaction, using the supported Redis concurrency primitives. Do not consume a receipt and then separately update a leaderboard: a failure between those writes could permanently accept a run without recording its best score. The receipt itself defines consumption; there is no earlier mutable consumed flag.
+Production injects the [competition service](leaderboard.md) at this boundary. It commits the receipt, personal best, sorted score and original improvement outcome together using the supported Redis concurrency primitives. The original NX-only committer remains for isolated verification controls. Never consume a receipt and then separately update a leaderboard: a failure between those writes could accept a run without recording its best score. The receipt itself defines consumption; there is no earlier mutable consumed flag. Retained pre-leaderboard receipts can be adopted by an owner-checked results query without changing their verified response or extending retention.
 
 ## Validation and integration status
 

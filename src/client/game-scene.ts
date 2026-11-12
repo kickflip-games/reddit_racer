@@ -22,6 +22,11 @@ export type VerificationOutcome = {
   finishTicks?: number;
 };
 export type GameSceneHooks = {
+  onAttemptStart?: (attempt: { attemptId: number }) => void;
+  onResults?: (attempt: {
+    attemptId: number;
+    mode: 'practice' | 'ranked';
+  }) => void;
   beforeStart?: (attempt: {
     attemptId: number;
     signal: AbortSignal;
@@ -340,6 +345,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     } else {
       element('card-kicker').textContent = 'LAP COMPLETE · UNVERIFIED';
     }
+    options.onResults?.({ attemptId: id, mode: attemptMode });
   }
   function showOutcome(): void {
     if (!racing || driver.active) return;
@@ -385,6 +391,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
                 'Verification is unavailable. This time remains unverified.',
             });
           });
+      } else {
+        options.onResults?.({ attemptId, mode: attemptMode });
       }
     }
     start.hidden = true;
@@ -421,6 +429,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     release();
     attemptId++;
     attemptMode = 'practice';
+    options.onAttemptStart?.({ attemptId });
     if (!options.beforeStart) {
       verificationStatus('practice', '');
       startCountdown();

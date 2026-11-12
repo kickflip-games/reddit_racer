@@ -4,7 +4,7 @@ import { createServer, getServerPort } from '@devvit/web/server';
 import { menu } from './routes/menu';
 import { triggers } from './routes/triggers';
 import { createApiApp } from './app';
-import { createDevvitRpcContext } from './devvit-daily';
+import { createDevvitRpcContext } from './devvit-context';
 
 const app = createApiApp(createDevvitRpcContext);
 const internal = new Hono();

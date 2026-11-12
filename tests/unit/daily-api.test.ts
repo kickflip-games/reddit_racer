@@ -40,6 +40,9 @@ function setup(getDailyChallenge: RpcContext['getDailyChallenge']) {
     submitRun: async () => {
       throw new Error('Unexpected ranked submission');
     },
+    getLeaderboard: async () => {
+      throw new Error('Unexpected leaderboard query');
+    },
   }));
   const client = createTRPCClient<AppRouter>({
     links: [

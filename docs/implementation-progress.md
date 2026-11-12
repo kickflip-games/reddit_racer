@@ -115,6 +115,19 @@
 - Validation on Hono 4.13.18: `npm run check` passed (88 unit tests, format/types/lint, 200 approved seeds and production build); all 65 browser checks passed. Tests cover bounded HTTP payloads, header/field identity forgery, malformed/oversized replays, expiry, idempotent/concurrent submission, rate ceilings, session preparation cancellation, replay-only finish payloads and late replies after retry.
 - Final targeted server validation with both security patches: Node 22.23.5 passed all 41 daily/session/API/rate-limit tests. Copy-only plain-language verification updates passed the two renderer verification cases; inspected refreshed desktop/mobile stills `docs/screenshots/ranked-verified-mock-*.png`. These use mocked transport and real simulation/rendering, not hosted identity evidence.
 
+- Merged [PR #35](https://github.com/kickflip-games/reddit_racer/pull/35) as `d126452` after CI `43157978079` passed on `5542c13` (all 65 browser checks included). #10 remains open for its real browser identity criterion.
+- Private platform validation: uploaded the exact clean `5542c13` source using `devvit upload`, which created owner-only version `0.0.2`; explicitly installed that version into `r/full_throttle_dev_dev` successfully. Registered identity is unchanged. No public publishing/review submission occurred.
+- Concrete hosted browser blocker: direct Chrome navigation to the configured test subreddit displayed Reddit's “You've been blocked by network security” page. The challenge was not bypassed. Recorded current status on [#20](https://github.com/kickflip-games/reddit_racer/issues/20#issuecomment-6815093722) and [#10](https://github.com/kickflip-games/reddit_racer/issues/10#issuecomment-6815094118). CLI upload/install success does not establish in-game authentication or a verified finish.
+
+## 2026-11-12 — atomic daily leaderboard (#11)
+
+- Started from updated main `d126452` on `hacking/atomic-daily-leaderboard`.
+- Add one strict-minimum personal best per authenticated account/day, integer-tick tied ranks, top/own/nearby reads and original per-run improvement outcomes. Commit the receipt, best score and outcome together; retain the original verification response schema for in-flight clients.
+- The installed SDK's official mock does not enforce WATCH conflicts. Use a revision-aware transaction fake for deterministic races, and a guarded private upgrade diagnostic to exercise real Redis semantics independently of blocked browser access. Reserve explicit private version `0.0.3` for that diagnostic; no result is claimed before it runs.
+- Local validation passed: `npm run check` (123 unit tests, formatting/types/lint, 200 approved circuits and production build), all 71 browser checks, and all 35 competition/adapter/diagnostic/API tests on Node 22.23.5. The first full check stopped on an overly narrow return type in the test double; corrected it without casts and reran the complete check successfully.
+- Inspected `docs/screenshots/leaderboard-mock-desktop.png` and `docs/screenshots/leaderboard-mock-mobile.png`: results/PB/tied ranks fit and Retry remains accessible. Screenshots and local board tests use explicitly mocked transport; real identity/gameplay remains blocked under #20. Public production data contains no seeded mock racers.
+- Private `0.0.3` probe is next: trusted app/version/home guard; five temporary keys plus one bounded marker; raw unchanged/conflicting WATCH controls, actual adapter create/improve controls, sorted reads/TTL and exact TYPE-based cleanup checks. Upload/install alone will not count as probe success; require actual retained/logged results.
+
 ## Next
 
-Finish the #10 implementation, then #11 atomic leaderboard and #12 results UI, followed by private hosted integration #20. Keep #4 external observations open.
+Finish #11, then #12 results UI and private hosted integration #20; continue independent art/feedback/QA work if Reddit browser access remains blocked. Keep #4 physical-phone/newcomer observations open.

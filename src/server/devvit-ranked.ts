@@ -2,9 +2,9 @@ import { context, redis } from '@devvit/web/server';
 import { RankedRaceError } from '../shared/ranked-race';
 import type { DailyChallengeService } from './core/daily-challenges';
 import {
-  createNxReceiptCommitter,
   createRankedRaceService,
   type RankedStore,
+  type RankedRaceServiceDependencies,
 } from './core/ranked-races';
 import {
   consumeRaceBudget,
@@ -29,7 +29,10 @@ const store: RankedStore & RaceBudgetStore = {
 };
 
 /** Identity comes exclusively from Devvit's request-local authenticated context. */
-export function createDevvitRankedService(daily: DailyChallengeService) {
+export function createDevvitRankedService(
+  daily: DailyChallengeService,
+  commitVerified: RankedRaceServiceDependencies['commitVerified']
+) {
   const { userId, subredditId, postId } = context;
   return createRankedRaceService({
     context: {
@@ -63,6 +66,6 @@ export function createDevvitRankedService(daily: DailyChallengeService) {
         operation: 'verify',
       });
     },
-    commitVerified: createNxReceiptCommitter(store),
+    commitVerified,
   });
 }

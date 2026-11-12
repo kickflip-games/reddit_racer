@@ -1,6 +1,6 @@
 # Sound and motion settings
 
-The expanded scene owns one `createFeedbackPreferences()` and one lazy `createDrivingAudio(...)`. The feed teaser imports neither. Sound and Motion are utility settings; holding the canvas or Space remains the only driving input. Space on a focused setting keeps its native action and never holds the accelerator. Safe key release still clears driving input.
+The expanded scene owns one `createFeedbackPreferences()` and one lazy `createDrivingAudio(...)`. The feed teaser imports neither. Sound and Motion live in a native, initially collapsed Settings disclosure; starting or retrying closes it. They are utility settings; holding the canvas or Space remains the only driving input. Space on a focused setting keeps its native action and never holds the accelerator. Safe key release still clears driving input.
 
 ## Activation and lifecycle
 
@@ -18,7 +18,7 @@ Motion defaults to the device's reduced-motion setting. Explicit Reduced and Ful
 
 Preferences use a small validated, versioned local value. Malformed, unavailable or blocked storage falls back in memory without preventing play. Only actual preference changes are written. One media-query listener and one scene subscription are reused through retries and removed on teardown. Settings never mutate a simulation state, replay, immutable challenge or score.
 
-The footer, result card and camera use measured HUD/footer insets, including preference messages and compact layouts. Settings have 44px minimum targets, keyboard focus and accessible names.
+The result card and camera use measured HUD/footer insets. Settings opens a bounded, scrollable overlay above its small disclosure target, so opening it does not zoom the road or displace the race layout. Settings have 44px minimum targets, keyboard focus and accessible names.
 
 ## Verification boundaries
 

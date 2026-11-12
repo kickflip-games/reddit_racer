@@ -20,32 +20,16 @@
       <div id="race-hud" class="race-hud">
         <header class="hud">
           <div class="race-brand">
-            <p class="eyebrow">DAILY TIME ATTACK</p>
             <h1>Reddit Racer<span class="title-dot">.</span></h1>
           </div>
           <div class="mode-stack">
             <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
-            <p id="track-source" data-state="loading" hidden></p>
-            <div id="daily-details" class="daily-details" hidden>
-              <p id="daily-date"></p>
-              <p id="daily-reset"></p>
-            </div>
           </div>
         </header>
-        <div class="timing" aria-label="Race telemetry">
-          <p class="eyebrow">LAP TIME</p>
+        <div class="timing" aria-label="Lap time">
           <output id="timer" aria-label="Lap time in seconds" aria-live="off"
             >00.000</output
           >
-          <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
-          <label
-            id="lap-progress-label"
-            class="lap-progress-label"
-            for="lap-progress"
-          >
-            Gates 0/8 · 0%
-          </label>
-          <progress id="lap-progress" max="1" value="0">0%</progress>
         </div>
         <p
           id="verification-status"
@@ -151,43 +135,63 @@
         </section>
       </div>
       <footer class="race-footer">
-        <div class="drive-feedback">
-          <span id="status">SPACE OR TOUCH THE TRACK</span>
-          <span class="footer-detail">AUTO STEERING</span>
-        </div>
-        <div
-          class="feedback-controls"
-          role="group"
-          aria-label="Sound and motion settings"
-        >
-          <button
-            id="sound-toggle"
-            type="button"
-            aria-pressed="true"
-            aria-describedby="sound-feedback"
-            disabled
-          >
-            Sound on
-          </button>
-          <label class="motion-control">
-            <span class="visually-hidden">Visual motion</span>
-            <select id="motion-select" aria-label="Visual motion" disabled>
-              <option value="system">Motion: device</option>
-              <option value="reduced">Motion: reduced</option>
-              <option value="full">Motion: full</option>
-            </select>
-          </label>
-        </div>
-        <p
-          id="sound-feedback"
-          class="sound-feedback visually-hidden"
-          role="status"
-        >
-          Sound starts when you race.
-        </p>
+        <details id="race-settings" class="race-settings">
+          <summary>Settings</summary>
+          <div class="settings-panel">
+            <div
+              class="feedback-controls"
+              role="group"
+              aria-label="Sound and motion settings"
+            >
+              <button
+                id="sound-toggle"
+                type="button"
+                aria-pressed="true"
+                aria-describedby="sound-feedback"
+                disabled
+              >
+                Sound on
+              </button>
+              <label class="motion-control">
+                <span>Motion</span>
+                <select id="motion-select" aria-label="Visual motion" disabled>
+                  <option value="system">Device</option>
+                  <option value="reduced">Reduced</option>
+                  <option value="full">Full</option>
+                </select>
+              </label>
+            </div>
+            <p id="sound-feedback" class="sound-feedback" role="status">
+              Sound starts when you race.
+            </p>
+            <div class="course-info">
+              <p id="track-source" data-state="loading" hidden></p>
+              <div id="daily-details" class="daily-details" hidden>
+                <p id="daily-date"></p>
+                <p id="daily-reset"></p>
+              </div>
+            </div>
+          </div>
+        </details>
       </footer>
+      <div id="race-diagnostics" hidden aria-hidden="true">
+        <span id="speed">0</span>
+        <label id="lap-progress-label" for="lap-progress">Gates 0/8 · 0%</label>
+        <progress id="lap-progress" max="1" value="0">0%</progress>
+        <span id="status"></span>
+      </div>
       <div id="error" class="error" role="alert" hidden></div>
     </main>
+    <aside
+      id="viewport-message"
+      class="viewport-message"
+      role="status"
+      tabindex="-1"
+      hidden
+    >
+      <h2>More room to race.</h2>
+      <p>Rotate your phone or expand the game, then try again.</p>
+    </aside>
     <script type="module" src="game.ts"></script>
   </body>
 </html>

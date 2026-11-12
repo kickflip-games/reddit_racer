@@ -12,6 +12,12 @@ import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
 import { createFeedbackPreferences } from './feedback-preferences';
 import {
+  createResolutionObserver,
+  resolveRenderPixelRatio,
+  resolveRenderViewport,
+  type RenderViewport,
+} from './render-viewport';
+import {
   loadCarAsset,
   loadSceneryAssets,
   disposeSceneAssets,
@@ -73,12 +79,17 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   const card = element('card');
   const cardTitle = element('card-title');
   const cardCopy = element('card-copy');
+  const viewportMessage = element('viewport-message');
   const inputLabel = element('status');
   const start = element('start-button');
   const retry = element('retry-button');
   const soundToggle = element('sound-toggle');
   const motionSelect = element('motion-select');
   const soundFeedback = element('sound-feedback');
+  const settingsElement = element('race-settings');
+  if (!(settingsElement instanceof HTMLDetailsElement))
+    throw new Error('Missing race settings');
+  const settings = settingsElement;
   if (!(soundToggle instanceof HTMLButtonElement))
     throw new Error('Missing sound control');
   if (!(motionSelect instanceof HTMLSelectElement))
@@ -107,7 +118,6 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       { cause: error }
     );
   }
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   scene.add(new THREE.HemisphereLight('#fff4d8', '#46664f', 2.6));
   const sun = new THREE.DirectionalLight('#fff0cf', 2.1);
@@ -168,6 +178,9 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   let frameHandle = 0;
   let previousFrameTime: number | undefined;
   let sceneReady = false;
+  let sceneDirty = true;
+  let renderViewport: RenderViewport | undefined;
+  let viewportUsable = true;
   const preferences = createFeedbackPreferences();
   function showSoundState(status: DrivingAudioStatus): void {
     if (destroyed) return;
@@ -200,8 +213,9 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     if (snapshot.reducedMotion) drivingVfx.reset();
     viewportDirty = true;
     if (sceneReady) {
+      sceneDirty = true;
       positionCar();
-      if (raceCamera.renderable) renderer.render(scene, camera);
+      renderScene();
     }
   });
   soundToggle.disabled = false;
@@ -256,18 +270,27 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       : 36;
     raceRoot.style.setProperty('--hud-bottom', `${top}px`);
     raceRoot.style.setProperty('--footer-inset', `${bottom}px`);
-    raceCamera.resize({
+    const changed = raceCamera.resize({
       width,
       height,
       insets: { top, bottom, left: 12, right: 12 },
     });
+    sceneDirty ||= changed;
     viewportDirty = false;
+  }
+
+  function renderScene(active = false): void {
+    if (!viewportUsable || !raceCamera.renderable || (!active && !sceneDirty))
+      return;
+    renderer.render(scene, camera);
+    sceneDirty = false;
   }
 
   function renderReadyArt(): void {
     if (!applyPendingAssets()) return;
+    sceneDirty = true;
     positionCar();
-    if (raceCamera.renderable) renderer.render(scene, camera);
+    renderScene();
   }
 
   function held(): boolean {
@@ -276,7 +299,14 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   function feedback(): void {
     const state = driver.state;
     const race = driver.raceState;
-    if (raceRoot.dataset.phase !== race.phase) viewportDirty = true;
+    timer.textContent = formatTime(
+      (state.finishedTick ?? state.tick) / SIMULATION_HZ
+    );
+    speedLabel.textContent = String(Math.round(state.speed * 3.6));
+    if (raceRoot.dataset.phase !== race.phase) {
+      viewportDirty = true;
+      sceneDirty = true;
+    }
     raceRoot.dataset.phase = race.phase;
     raceRoot.dataset.preparing = String(preparing);
     countdown.hidden = race.phase !== 'countdown';
@@ -374,7 +404,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       : 0;
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
-    carVisual.update({
+    const carChanged = carVisual.update({
       x: frame.x + frame.nx * lateral,
       z: frame.z + frame.nz * lateral,
       heading,
@@ -392,7 +422,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       deltaSeconds,
     });
     if (viewportDirty) refreshCameraViewport();
-    raceCamera.update(
+    const cameraChanged = raceCamera.update(
       { distance, lateralOffset: lateral, heading },
       {
         mode:
@@ -406,7 +436,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     needsCameraReset = false;
     carVisual.getRearContacts(rearLeft, rearRight);
     const verticalSpan = camera.top - camera.bottom;
-    drivingVfx.update({
+    const effectsChanged = drivingVfx.update({
       state: current,
       phase,
       held: throttle,
@@ -418,6 +448,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
         verticalSpan > 0 ? canvas.clientHeight / verticalSpan : 0,
       reducedMotion,
     });
+    sceneDirty = sceneDirty || carChanged || cameraChanged || effectsChanged;
     audio.update({
       attemptId,
       phase,
@@ -524,6 +555,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     canvas.focus({ preventScroll: true });
     feedback();
     positionCar();
+    renderScene(true);
   }
   function preparationBlocked(message: string): void {
     audio.silence('abandon');
@@ -541,7 +573,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     cardTitle.focus({ preventScroll: true });
   }
   function beginRace(): void {
-    if (destroyed || preparing || racing) return;
+    if (destroyed || preparing || racing || !viewportUsable) return;
+    settings.open = false;
     attemptId++;
     audio.setForeground(!document.hidden);
     audio.resetAttempt(attemptId);
@@ -662,38 +695,86 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     release();
   }
   window.addEventListener('blur', interruptRace);
-  window.addEventListener('focus', () => audio.setForeground(!document.hidden));
+  window.addEventListener('focus', () => {
+    audio.setForeground(!document.hidden);
+    sceneDirty = true;
+    resize();
+  });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) interruptRace();
-    else audio.setForeground(true);
+    else {
+      audio.setForeground(true);
+      sceneDirty = true;
+      resize();
+    }
   });
 
   function resize(): void {
-    const width = canvas.clientWidth;
-    const height = canvas.clientHeight;
+    if (destroyed) return;
+    resolutionObserver.refresh();
+    const next = resolveRenderViewport(
+      canvas.clientWidth,
+      canvas.clientHeight,
+      window.devicePixelRatio
+    );
+    const usable = next.width >= 320 && next.height >= 320;
+    const restoreFocus =
+      usable &&
+      !viewportUsable &&
+      (document.activeElement === viewportMessage || document.hasFocus());
+    if (usable !== viewportUsable) sceneDirty = true;
+    viewportUsable = usable;
+    viewportMessage.hidden = usable;
+    raceRoot.dataset.viewportUsable = String(usable);
+    if (!usable && (preparing || driver.active)) {
+      // Losing a usable control surface is the same safe abandonment boundary
+      // as focus loss. Never race unseen or resume an interrupted ranked tape.
+      interruptRace();
+      cardCopy.textContent =
+        'The view became too small. Rotate or expand, then try again.';
+      viewportMessage.focus({ preventScroll: true });
+    }
+    raceRoot.inert = !usable;
+    if (restoreFocus && !card.hidden) cardTitle.focus({ preventScroll: true });
     viewportDirty = true;
-    if (width <= 0 || height <= 0) {
+    if (!next.drawable) {
       refreshCameraViewport();
       return;
     }
-    renderer.setSize(width, height, false);
-    // The drawing buffer is cleared even with paused clocks; always redraw it.
+    if (
+      !renderViewport ||
+      renderViewport.width !== next.width ||
+      renderViewport.height !== next.height ||
+      renderViewport.pixelRatio !== next.pixelRatio
+    ) {
+      renderer.setDrawingBufferSize(next.width, next.height, next.pixelRatio);
+      renderViewport = next;
+      sceneDirty = true;
+    }
+    // A changed drawing buffer is cleared, including while clocks are paused.
     positionCar();
-    if (raceCamera.renderable) renderer.render(scene, camera);
+    renderScene();
   }
+  const resolutionObserver = createResolutionObserver(resize);
   window.addEventListener('resize', resize);
   feedback();
   resize();
   sceneReady = true;
   // Daily metadata and asynchronous verification can wrap after initialization.
   // Observe layout changes instead of measuring the HUD on every driving frame.
-  const hudObserver = new ResizeObserver(() => {
+  const hudObserver = new ResizeObserver((entries) => {
     if (destroyed) return;
+    if (entries.some((entry) => entry.target === canvas)) {
+      resize();
+      return;
+    }
     viewportDirty = true;
+    sceneDirty = true;
     positionCar();
-    if (raceCamera.renderable) renderer.render(scene, camera);
+    renderScene();
   });
   hudObserver.observe(hud);
+  hudObserver.observe(canvas);
   if (footer) hudObserver.observe(footer);
 
   void loadCarAsset()
@@ -719,6 +800,12 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
 
   function animate(time: number): void {
     if (destroyed) return;
+    if (
+      renderViewport &&
+      renderViewport.pixelRatio !==
+        resolveRenderPixelRatio(window.devicePixelRatio)
+    )
+      resize();
     const deltaSeconds =
       previousFrameTime === undefined
         ? 0
@@ -726,15 +813,11 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     previousFrameTime = time;
     driver.advance(time);
     showOutcome();
-    applyPendingAssets();
+    sceneDirty = applyPendingAssets() || sceneDirty;
     feedback();
     positionCar(deltaSeconds);
-    const state = driver.state;
-    timer.textContent = formatTime(
-      (state.finishedTick ?? state.tick) / SIMULATION_HZ
-    );
-    speedLabel.textContent = String(Math.round(state.speed * 3.6));
-    if (raceCamera.renderable) renderer.render(scene, camera);
+    // Preserve every scored/countdown frame; only settled inactive draws stop.
+    renderScene(driver.active);
     frameHandle = requestAnimationFrame(animate);
   }
   frameHandle = requestAnimationFrame(animate);
@@ -747,6 +830,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     cancelAnimationFrame(frameHandle);
     preparation?.abort();
     hudObserver.disconnect();
+    resolutionObserver.dispose();
     window.removeEventListener('resize', resize);
     unsubscribePreferences();
     preferences.dispose();

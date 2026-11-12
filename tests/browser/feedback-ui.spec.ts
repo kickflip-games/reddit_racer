@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { setRaceSettingsOpen, waitForSceneAssets } from './scene-ready.ts';
 
 function collectErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -22,19 +22,44 @@ test('sound and motion controls retain native activation without holding the acc
   page,
 }) => {
   const errors = collectErrors(page);
+  await page.setViewportSize(
+    test.info().project.name === 'chromium'
+      ? { width: 640, height: 360 }
+      : { width: 320, height: 568 }
+  );
   await openPausedGame(page);
   const race = page.locator('#race');
   const sound = page.locator('#sound-toggle');
   const motion = page.locator('#motion-select');
+  await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
+  await setRaceSettingsOpen(page, true);
   await expect(sound).toHaveAttribute('aria-pressed', 'true');
   await sound.click();
   await expect(sound).toHaveAttribute('aria-pressed', 'false');
-  await page.locator('#start-button').click();
+  await setRaceSettingsOpen(page, false);
+  await page.screenshot({
+    path: `test-results/minimal-ready-${test.info().project.name}.png`,
+  });
+  await setRaceSettingsOpen(page, true);
+  // Native keyboard activation proves auto-close even when the overlay covers the pointer centre.
+  await page.locator('#start-button').focus();
+  await page.keyboard.press('Enter');
   await page.clock.runFor(3100);
   await expect(race).toHaveAttribute('data-phase', 'racing');
+  await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
+  await expect(sound).toBeHidden();
+  await expect(motion).toBeHidden();
+  await expect(page.locator('#timer')).toBeVisible();
+  await expect(page.locator('.race-brand')).toBeHidden();
+  await expect(page.locator('#daily-details')).toBeHidden();
+  await expect(page.locator('#race-diagnostics')).toBeHidden();
+  await expect(page.locator('#speed')).toBeHidden();
+  await expect(page.locator('#lap-progress')).toBeHidden();
+  await expect(page.locator('#status')).toBeHidden();
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
   await expect(page.locator('#speed')).toHaveText('0');
 
+  await setRaceSettingsOpen(page, true);
   await sound.focus();
   await page.keyboard.press('Space');
   await expect(sound).toHaveAttribute('aria-pressed', 'true');
@@ -56,6 +81,7 @@ test('sound and motion controls retain native activation without holding the acc
   await expect(sound).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
   await sound.click();
+  await setRaceSettingsOpen(page, false);
 
   // Actual canvas input still moves the same live attempt after using utility controls.
   await page.locator('#race-canvas').focus();
@@ -64,6 +90,9 @@ test('sound and motion controls retain native activation without holding the acc
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'true');
   const heldSpeed = Number(await page.locator('#speed').textContent());
   expect(heldSpeed).toBeGreaterThan(0);
+  await page.screenshot({
+    path: `test-results/minimal-driving-${test.info().project.name}.png`,
+  });
   await page.keyboard.up('Space');
   await page.clock.runFor(200);
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
@@ -84,6 +113,8 @@ test('system motion changes, explicit overrides and sound preferences stay indep
   const motion = page.locator('#motion-select');
   const sound = page.locator('#sound-toggle');
   await expect(race).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
+  await setRaceSettingsOpen(page, true);
   await expect(motion).toHaveValue('system');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await motion.selectOption('full');
@@ -101,6 +132,8 @@ test('system motion changes, explicit overrides and sound preferences stay indep
   await waitForSceneAssets(page);
   await page.reload();
   await expect(race).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
+  await setRaceSettingsOpen(page, true);
   await expect(motion).toHaveValue('reduced');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await expect(sound).toHaveAttribute('aria-pressed', 'false');
@@ -146,6 +179,7 @@ test('feedback controls remain reachable at 320 pixels and in compact landscape'
     { width: 640, height: 360 },
   ]) {
     await page.setViewportSize(viewport);
+    await setRaceSettingsOpen(page, true);
     for (const id of ['sound-toggle', 'motion-select']) {
       const control = page.locator(`#${id}`);
       await expect(control).toBeVisible();
@@ -178,6 +212,7 @@ test('feedback controls remain reachable at 320 pixels and in compact landscape'
     await page.screenshot({
       path: `test-results/feedback-controls-${viewport.width}-${test.info().project.name}.png`,
     });
+    await setRaceSettingsOpen(page, false);
   }
   expect(errors).toEqual([]);
 });

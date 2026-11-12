@@ -4,7 +4,7 @@ import {
   dailyChallengeView,
 } from '../../src/shared/daily-challenge.ts';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { setRaceSettingsOpen, waitForSceneAssets } from './scene-ready.ts';
 
 async function layout(page: Page) {
   return page.evaluate(() => {
@@ -140,10 +140,12 @@ test('mocked daily details and later wrapping refit HUD, card and camera inset w
     });
   });
   release();
-  await expect(page.locator('#daily-details')).toBeVisible();
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await setRaceSettingsOpen(page, true);
+  await expect(page.locator('#daily-details')).toBeVisible();
   await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
+  await setRaceSettingsOpen(page, false);
   await expectFreshInsets(page);
   await page.evaluate(() => {
     const kicker = document.getElementById('card-kicker');
@@ -158,9 +160,10 @@ test('mocked daily details and later wrapping refit HUD, card and camera inset w
   const before = await layout(page);
   expect(before.cardMaxHeight).not.toBe('none');
   expect(before.cardHeight).toBeGreaterThan(400);
-  await page.locator('#daily-reset').evaluate((node) => {
+  // Course metadata now lives in an overlay. The remaining badge can still wrap late.
+  await page.locator('#mode-label').evaluate((node) => {
     node.textContent =
-      'This immutable circuit remains available for practice. A new shared race opens at the next UTC reset; check the current post before starting another ranked attempt.';
+      'LAYOUT FIXTURE: late badge text checks that the readable viewing region follows the header without resizing the browser or advancing a race.';
   });
   await expect
     .poll(async () => (await layout(page)).hudHeight)

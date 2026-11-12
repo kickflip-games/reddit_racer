@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { createPreviewState } from '../shared/race';
+import { SIMULATION_HZ } from '../shared/simulation';
+import { createSimulationDriver } from './simulation-driver';
 import { createOvalTrack } from '../shared/track-authoring';
 import { sampleTrack } from '../shared/track';
 import {
@@ -29,7 +30,7 @@ element('mode-label').textContent = import.meta.env.DEV
   ? 'LOCAL · UNRANKED'
   : 'PRACTICE · UNRANKED';
 
-// The shared track is authoritative; this preview car follows its arc length.
+// Shared fixed-step state drives the car; rendering only interpolates snapshots.
 const track = createOvalTrack();
 const bounds = getTrackBounds(track, 0.8);
 const centerX = (bounds.minX + bounds.maxX) / 2;
@@ -165,20 +166,34 @@ let racing = false;
 let pointerHeld = false;
 let keyHeld = false;
 let activePointer: number | undefined;
-let { distance, speed } = createPreviewState();
-let elapsed = 0;
-let previousTime = 0;
+const driver = createSimulationDriver(track);
 
 function held(): boolean {
   return racing && (pointerHeld || keyHeld);
 }
 function feedback(): void {
+  const state = driver.state;
   inputLabel.dataset.held = String(held());
+  inputLabel.dataset.condition = state.offRoad
+    ? 'off-road'
+    : state.slip > 0.05
+      ? 'sliding'
+      : 'gripping';
   inputLabel.textContent = racing
-    ? held()
-      ? 'ACCELERATING'
-      : 'RELEASED · BRAKING'
-    : 'SPACE OR TOUCH THE TRACK';
+    ? state.recovering
+      ? 'RECOVERING · KEEP GOING'
+      : state.offRoad
+        ? 'OFF ROAD · TIME LOST'
+        : state.slip > 0.05
+          ? 'SLIDING · RELEASE TO SLOW'
+          : held()
+            ? 'ACCELERATING'
+            : 'RELEASED · BRAKING'
+    : driver.interrupted
+      ? 'RACE INTERRUPTED · TRY AGAIN'
+      : state.status === 'finished'
+        ? 'LAP COMPLETE'
+        : 'SPACE OR TOUCH THE TRACK';
   brakeMaterial.color.set(held() ? '#672e27' : '#ff302e');
 }
 function release(): void {
@@ -188,38 +203,93 @@ function release(): void {
   feedback();
 }
 function positionCar(): void {
+  const current = driver.state;
+  const previous = driver.previousState;
+  const alpha = driver.alpha;
+  const distance = THREE.MathUtils.lerp(
+    previous.distance,
+    current.distance,
+    alpha
+  );
+  const lateral = THREE.MathUtils.lerp(
+    previous.lateralOffset,
+    current.lateralOffset,
+    alpha
+  );
+  const lateralVelocity = THREE.MathUtils.lerp(
+    previous.lateralVelocity,
+    current.lateralVelocity,
+    alpha
+  );
+  const speed = THREE.MathUtils.lerp(previous.speed, current.speed, alpha);
   const frame = sampleTrack(track, track.startS + distance);
-  car.position.set(frame.x, 0, frame.z);
-  car.rotation.y = Math.atan2(frame.tx, frame.tz);
+  car.position.set(
+    frame.x + frame.nx * lateral,
+    0,
+    frame.z + frame.nz * lateral
+  );
+  const velocityX = frame.tx * speed + frame.nx * lateralVelocity;
+  const velocityZ = frame.tz * speed + frame.nz * lateralVelocity;
+  car.rotation.y =
+    speed > 0.1 || Math.abs(lateralVelocity) > 0.1
+      ? Math.atan2(velocityX, velocityZ)
+      : Math.atan2(frame.tx, frame.tz);
 }
 function formatTime(seconds: number): string {
   return seconds.toFixed(3).padStart(6, '0');
 }
-function beginRace(): void {
-  distance = 0;
-  speed = 0;
-  elapsed = 0;
+function showOutcome(): void {
+  if (!racing || driver.active) return;
+  racing = false;
   release();
+  const state = driver.state;
+  if (driver.interrupted) {
+    cardTitle.textContent = 'Race interrupted.';
+    cardCopy.textContent =
+      driver.interruptionReason === 'focus'
+        ? 'The game lost focus. Try again when you are ready.'
+        : driver.interruptionReason === 'time-limit'
+          ? 'Practice timed out. Try another run.'
+          : 'The race could not continue smoothly. Try another run.';
+    element('card-kicker').textContent = 'ATTEMPT ENDED · UNRANKED';
+  } else {
+    const finishTicks = state.finishedTick ?? state.tick;
+    cardTitle.textContent = `${formatTime(finishTicks / SIMULATION_HZ)} seconds`;
+    cardCopy.textContent = 'Practice complete. Find a faster rhythm.';
+    element('card-kicker').textContent = 'LAP COMPLETE · UNRANKED';
+  }
+  start.hidden = true;
+  retry.hidden = false;
+  card.hidden = false;
+}
+function beginRace(timestamp: number): void {
+  release();
+  driver.start(timestamp);
   racing = true;
   card.hidden = true;
   feedback();
   positionCar();
 }
-start.addEventListener('click', beginRace);
-retry.addEventListener('click', beginRace);
+function updateInput(timestamp: number): void {
+  driver.setInput(pointerHeld || keyHeld, timestamp);
+  showOutcome();
+  feedback();
+}
+start.addEventListener('click', () => beginRace(performance.now()));
+retry.addEventListener('click', () => beginRace(performance.now()));
 canvas.addEventListener('pointerdown', (event) => {
   if (!racing || activePointer !== undefined || event.button !== 0) return;
   event.preventDefault();
   activePointer = event.pointerId;
   pointerHeld = true;
   canvas.setPointerCapture(event.pointerId);
-  feedback();
+  updateInput(performance.now());
 });
 function releasePointer(event: PointerEvent): void {
   if (event.pointerId !== activePointer) return;
   pointerHeld = false;
   activePointer = undefined;
-  feedback();
+  updateInput(performance.now());
 }
 canvas.addEventListener('pointerup', releasePointer);
 canvas.addEventListener('pointercancel', releasePointer);
@@ -228,16 +298,21 @@ window.addEventListener('keydown', (event) => {
   if (event.code !== 'Space' || !racing) return;
   event.preventDefault();
   keyHeld = true;
-  feedback();
+  updateInput(performance.now());
 });
 window.addEventListener('keyup', (event) => {
   if (event.code !== 'Space') return;
   keyHeld = false;
-  feedback();
+  updateInput(performance.now());
 });
-window.addEventListener('blur', release);
+function interruptRace(): void {
+  driver.abandon('focus');
+  showOutcome();
+  release();
+}
+window.addEventListener('blur', interruptRace);
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) release();
+  if (document.hidden) interruptRace();
 });
 
 function resize(): void {
@@ -274,27 +349,15 @@ positionCar();
 feedback();
 
 function animate(time: number): void {
-  const dt = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
-  previousTime = time;
-  if (racing) {
-    speed = Math.max(0, Math.min(18, speed + (held() ? 7 : -9) * dt));
-    distance += speed * dt;
-    elapsed += dt;
-    if (distance >= track.totalLength) {
-      distance = track.totalLength;
-      racing = false;
-      release();
-      cardTitle.textContent = `${formatTime(elapsed)} seconds`;
-      cardCopy.textContent = 'Practice complete. Find a faster rhythm.';
-      element('card-kicker').textContent = 'LAP COMPLETE · UNRANKED';
-      start.hidden = true;
-      retry.hidden = false;
-      card.hidden = false;
-    }
-    positionCar();
-  }
-  timer.textContent = formatTime(elapsed);
-  speedLabel.textContent = String(Math.round(speed * 3.6));
+  driver.advance(time);
+  showOutcome();
+  positionCar();
+  feedback();
+  const state = driver.state;
+  timer.textContent = formatTime(
+    (state.finishedTick ?? state.tick) / SIMULATION_HZ
+  );
+  speedLabel.textContent = String(Math.round(state.speed * 3.6));
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }

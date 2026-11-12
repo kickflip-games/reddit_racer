@@ -26,6 +26,18 @@
 - Corrected downward triangle winding and exact-multiple floating remainder at the seam during validation. Global road clearance/playability remain #7; this PR does not claim WebKit or hosted/physical-device proof.
 - Devvit CLI identity is configured (`devvit whoami` succeeded); no private build uploaded yet. Hosted game/ranking evidence remains pending #20.
 
+- Merged [PR #28](https://github.com/kickflip-games/reddit_racer/pull/28) as `d03c871`; verified #5 closed. CI run `43135537604` passed on `9c79dce` before squash merge.
+
+## 2026-11-12 — fixed-step simulation (#3)
+
+- Started from updated main `d03c871` on `hacking/fixed-step-race-simulation`.
+- Replace preview frame-delta driving with a shared 120 Hz simulation, bounded versioned accelerator-transition replays and an interpolated renderer. Keep client/session times non-authoritative.
+- Implemented quantized shared simulation and strict bounded replay schema, fixed-step browser driver, input-time synchronization, interpolation, off-road/recovery feedback and visible interruption/retry handling. Test code now has its own TypeScript project so browser and Node test sources are checked too.
+- Validation: `npm run check` passed (22 unit tests); 16 browser tests passed, including full desktop/mobile laps, braking/retry, focus/long-gap interruption, geometry checks and exact full-state replay equality in Chromium/WebKit against Node. The 16 shared tests also passed under Node 22 via `npx --package=node@22 node --import tsx --test 'src/shared/*.test.ts'`.
+- Frozen reference replays: hold-only 1867 ticks (15.558 s); a half-second lift at ticks 800–860 finishes in 1590 ticks (13.250 s). This numerical control establishes a braking benefit; it is not human balance evidence. The short reference oval is not the final generated content.
+- Fixed the test clock to pause between scripted actions; auto-running time under parallel rendering correctly tripped the new gap safeguard. Kept dedicated intentional gap tests. Inspected mobile driving capture `docs/screenshots/fixed-step-mobile.png`.
+- Add Node/Chromium/WebKit replay fixtures. WebKit coverage is for pure replay math, separate from rendered-browser and real phone evidence.
+
 ## Next
 
-Finish and merge #5, then #3 fixed-step simulation, #4 handling and #8 lap rules. Begin #23 regression infrastructure with each module; keep it open until its full cross-runtime, generator and server coverage exists.
+Finish and merge #3, then #4 handling/input and #8 lap lifecycle; retain human/physical-device acceptance criteria as explicit pending evidence. Expand #23 tests with each module.

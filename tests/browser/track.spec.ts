@@ -51,7 +51,8 @@ test('road mesh closes with upward faces and matches shared road bounds', async 
       moduleUrl.replace('track.ts', 'track-authoring.ts')
     );
     const { sampleTrack } = await import(moduleUrl);
-    const { buildRoadStripVertices } = await import('/track-renderer.ts');
+    const rendererModuleUrl = '/track-renderer.ts';
+    const { buildRoadStripVertices } = await import(rendererModuleUrl);
     const track = createOvalTrack();
     const { positions, indices } = buildRoadStripVertices(
       track,
@@ -76,10 +77,11 @@ test('road mesh closes with upward faces and matches shared road bounds', async 
       const next = track.samples[index + 1];
       const s = current.s + ((next?.s ?? track.totalLength) - current.s) * 0.37;
       const frame = sampleTrack(track, s);
-      for (const [edge, side] of [
+      const edges: Array<[number, -1 | 1]> = [
         [0, -1],
         [1, 1],
-      ]) {
+      ];
+      for (const [edge, side] of edges) {
         const start = (index * 2 + edge) * 3;
         const end = ((index + 1) * 2 + edge) * 3;
         const x = positions[start] + (positions[end] - positions[start]) * 0.37;

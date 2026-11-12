@@ -20,6 +20,11 @@ export default defineConfig({
       },
     },
     {
+      name: 'webkit-replay',
+      testMatch: '**/replay.spec.ts',
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
       name: 'mobile-chromium',
       use: { ...devices['Pixel 7'], deviceScaleFactor: 1 },
     },

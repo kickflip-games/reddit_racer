@@ -12,7 +12,7 @@
     "login": "devvit login",
     "prettier": "prettier --write .",
     "test:types": "tsc --build",
-    "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:unit": "tsx --test \"src/**/*.test.ts\" \"tests/unit/**/*.test.ts\"",
     "dev:local": "vite --config vite.local.config.ts",
     "type-check": "npm run test:types",
     "test": "tsx --test",

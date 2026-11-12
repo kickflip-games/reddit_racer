@@ -15,12 +15,14 @@ import {
   type LeaderboardQuery,
   type LeaderboardView,
 } from '../shared/leaderboard';
+import type { TodayRacePostView } from '../shared/today-race-post';
 
 export type RpcContext = {
   getDailyChallenge: () => Promise<DailyChallengeView>;
   startRankedRace: () => Promise<StartRankedRaceResponse>;
   submitRun: (input: RankedSubmission) => Promise<VerifiedRunResponse>;
   getLeaderboard: (input: LeaderboardQuery) => Promise<LeaderboardView>;
+  todayRacePost: () => Promise<TodayRacePostView>;
 };
 
 const t = initTRPC.context<RpcContext>().create({ isDev: false });
@@ -78,6 +80,24 @@ function publicRaceError(error: unknown): TRPCError {
 }
 
 export const appRouter = t.router({
+  todayRacePost: t.procedure.input(noInput).query(async ({ ctx }) => {
+    try {
+      return await ctx.todayRacePost();
+    } catch (error) {
+      if (
+        error instanceof DailyChallengeError &&
+        (error.kind === 'integrity' || error.kind === 'unsupported')
+      )
+        throw new TRPCError({
+          code: 'PRECONDITION_FAILED',
+          message: 'Today’s stored race post could not be verified.',
+        });
+      throw new TRPCError({
+        code: 'SERVICE_UNAVAILABLE',
+        message: 'Today’s race post is temporarily unavailable.',
+      });
+    }
+  }),
   dailyChallenge: t.procedure.input(noInput).query(async ({ ctx }) => {
     try {
       return await ctx.getDailyChallenge();

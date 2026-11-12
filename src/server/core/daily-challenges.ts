@@ -81,7 +81,10 @@ function decoded(value: string): unknown {
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
-function parseBinding(value: unknown, expected: DailyPostInput): PostBinding {
+export function parsePostBinding(
+  value: unknown,
+  expected: DailyPostInput
+): PostBinding {
   if (!record(value))
     throw new DailyChallengeError(
       'integrity',
@@ -244,7 +247,8 @@ export function createDailyChallengeService(
     validatePostId(input.postId);
     const key = postBindingsKey(input.subredditId);
     const existing = await readField(key, input.postId);
-    if (existing !== undefined) return parseBinding(decoded(existing), input);
+    if (existing !== undefined)
+      return parsePostBinding(decoded(existing), input);
     let post: TrustedChallengePost;
     try {
       post = await deps.getPost(input.postId);
@@ -287,7 +291,7 @@ export function createDailyChallengeService(
         'unavailable',
         'Post binding storage did not confirm the originating day'
       );
-    return parseBinding(decoded(stored), input);
+    return parsePostBinding(decoded(stored), input);
   }
   async function getForPost(
     input: DailyPostInput

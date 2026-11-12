@@ -14,6 +14,7 @@
     <main id="race" aria-label="One-button racing game" data-phase="loading">
       <canvas
         id="race-canvas"
+        tabindex="0"
         aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
       ></canvas>
       <header class="hud">
@@ -59,17 +60,38 @@
       >
       <div id="card" class="race-card">
         <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
-        <h2 id="card-title">Find your rhythm.</h2>
+        <h2 id="card-title" tabindex="-1">Find your rhythm.</h2>
         <p id="card-copy">Hold to go. Release to slow.</p>
+        <div
+          id="result-summary"
+          class="result-summary"
+          aria-live="polite"
+          hidden
+        >
+          <p id="leaderboard-me"></p>
+          <p id="leaderboard-outcome" hidden></p>
+          <p id="result-target" hidden></p>
+        </div>
         <button id="start-button" type="button" disabled>
-          Start practice <span aria-hidden="true">↗</span>
+          <span id="start-label">Start practice</span
+          ><span aria-hidden="true">↗</span>
         </button>
         <button id="retry-button" type="button" hidden>
-          Try again <span aria-hidden="true">↗</span>
+          <span id="retry-label">Try again</span
+          ><span aria-hidden="true">↗</span>
         </button>
         <p id="track-note" class="card-note">
           A fresh circuit every day. Ranked racing coming soon.
         </p>
+        <section id="today-race" class="today-race" data-state="idle" hidden>
+          <p id="today-race-status" role="status"></p>
+          <button id="today-race-button" type="button" hidden>
+            Open today’s race <span aria-hidden="true">↗</span>
+          </button>
+          <button id="today-race-refresh" type="button" hidden>
+            Check today’s race
+          </button>
+        </section>
         <section
           id="leaderboard"
           class="leaderboard"
@@ -77,30 +99,22 @@
           data-state="idle"
           hidden
         >
-          <div class="leaderboard-heading">
-            <h3 id="leaderboard-title">Daily racers</h3>
-            <button id="leaderboard-refresh" type="button">Refresh</button>
-          </div>
-          <p id="leaderboard-day" class="leaderboard-note"></p>
-          <p id="leaderboard-status" role="status"></p>
-          <p id="leaderboard-outcome" hidden></p>
-          <p id="leaderboard-me"></p>
-          <div id="leaderboard-top" class="leaderboard-rows" hidden>
-            <table aria-label="Fastest daily racers">
-              <thead>
-                <tr>
-                  <th scope="col">Rank</th>
-                  <th scope="col">Racer</th>
-                  <th scope="col">Time</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div id="leaderboard-nearby" hidden>
-            <h4>Near your best</h4>
-            <div class="leaderboard-rows">
-              <table aria-label="Nearby daily racers">
+          <details id="leaderboard-details">
+            <summary id="leaderboard-title">Daily standings</summary>
+            <div class="leaderboard-heading">
+              <p id="leaderboard-day" class="leaderboard-note"></p>
+              <button id="leaderboard-refresh" type="button">Refresh</button>
+            </div>
+            <p id="leaderboard-status" role="status"></p>
+            <div
+              id="leaderboard-top"
+              class="leaderboard-rows"
+              tabindex="0"
+              role="region"
+              aria-label="Fastest racers, scroll for more"
+              hidden
+            >
+              <table aria-label="Fastest daily racers">
                 <thead>
                   <tr>
                     <th scope="col">Rank</th>
@@ -111,7 +125,27 @@
                 <tbody></tbody>
               </table>
             </div>
-          </div>
+            <div id="leaderboard-nearby" hidden>
+              <h4>More racers near your best</h4>
+              <div
+                class="leaderboard-rows"
+                tabindex="0"
+                role="region"
+                aria-label="Nearby racers, scroll for more"
+              >
+                <table aria-label="Nearby daily racers">
+                  <thead>
+                    <tr>
+                      <th scope="col">Rank</th>
+                      <th scope="col">Racer</th>
+                      <th scope="col">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </details>
         </section>
       </div>
       <footer class="race-footer">

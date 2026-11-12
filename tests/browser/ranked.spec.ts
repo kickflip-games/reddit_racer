@@ -64,6 +64,22 @@ async function openDaily(
   nearMidnight = false
 ): Promise<DailyChallengeRecord> {
   const record = await dailyRecord();
+  await page.route('**/api/trpc/todayRacePost*', (route) =>
+    route.fulfill({
+      json: {
+        result: {
+          data: {
+            schemaVersion: 1,
+            currentDay: '2026-11-13',
+            serverNowMs: record.endsAtMs + 12 * 3600_000,
+            nextResetAtMs: record.endsAtMs + 86400_000,
+            status: 'not-ready',
+            post: null,
+          },
+        },
+      },
+    })
+  );
   await page.route('**/api/trpc/getLeaderboard*', async (route) => {
     await route.fulfill({
       json: {
@@ -163,6 +179,7 @@ test('preparation deduplicates Start, preserves a held input and cancels safely 
   });
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute('data-preparing', 'true');
+  await expect(page.locator('#card-title')).toHaveText('Preparing your race…');
   await page.keyboard.down('Space');
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'true');
   await page.evaluate(() => document.getElementById('start-button')?.click());
@@ -320,7 +337,7 @@ test('real renderer inputs submit only the replay and session, verify once, and 
     'practice'
   );
   await expect(page.locator('#mode-label')).toHaveText('ARCHIVE · UNRANKED');
-  expect(starts).toBe(2);
+  expect(starts).toBe(1);
   expect(submissions.length).toBe(1);
 });
 

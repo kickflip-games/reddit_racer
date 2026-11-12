@@ -1,4 +1,5 @@
 import { api } from './api';
+import { withRequestDeadline } from './request-deadline';
 import {
   parseDailyChallengeView,
   type DailyChallengeView,
@@ -29,7 +30,9 @@ function isStoredCourseFailure(error: unknown): boolean {
 export async function fetchDailyChallenge(): Promise<DailyChallengeView> {
   let value: unknown;
   try {
-    value = await api.dailyChallenge.query();
+    value = await withRequestDeadline((signal) =>
+      api.dailyChallenge.query(undefined, { signal })
+    );
   } catch (error) {
     if (isStoredCourseFailure(error)) throw new DailyCourseIntegrityError();
     throw error;

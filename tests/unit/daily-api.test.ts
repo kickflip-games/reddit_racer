@@ -33,6 +33,9 @@ const fixture = createDailyChallengeRecord({
 
 function setup(getDailyChallenge: RpcContext['getDailyChallenge']) {
   const app = createApiApp(() => ({
+    todayRacePost: async () => {
+      throw new Error('Unexpected today post query');
+    },
     getDailyChallenge,
     startRankedRace: async () => {
       throw new Error('Unexpected ranked start');

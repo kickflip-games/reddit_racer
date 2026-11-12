@@ -23,6 +23,22 @@ async function interceptDaily(
   data: unknown
 ): Promise<() => number> {
   let calls = 0;
+  await page.context().route('**/api/trpc/todayRacePost*', (route) =>
+    route.fulfill({
+      json: {
+        result: {
+          data: {
+            schemaVersion: 1,
+            currentDay: '2026-11-13',
+            serverNowMs: Date.parse('2026-11-13T12:00:00Z'),
+            nextResetAtMs: Date.parse('2026-11-14T00:00:00Z'),
+            status: 'not-ready',
+            post: null,
+          },
+        },
+      },
+    })
+  );
   await page.context().route('**/api/trpc/dailyChallenge*', async (route) => {
     calls++;
     await route.fulfill({ json: { result: { data } } });
@@ -62,7 +78,7 @@ test('daily loading disables Start until the saved canonical course is ready', a
   release();
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#start-button')).toBeEnabled();
-  await expect(page.locator('#mode-label')).toHaveText('DAILY · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('DAILY RACE');
   await expect(page.locator('#daily-date')).toHaveText('2026-11-12 · UTC');
   await expect(page.locator('#daily-reset')).toContainText('UTC reset in');
   await expect(page.locator('#race')).toHaveAttribute(
@@ -147,7 +163,7 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
-  await expect(page.locator('#mode-label')).toHaveText('DAILY · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('DAILY RACE');
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-phase',

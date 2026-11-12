@@ -56,7 +56,11 @@ Daily attempts request an authenticated session before countdown. After finishin
 
 Verified results update one personal best per Reddit account and UTC challenge. Receipt, personal best and improvement outcome are committed together. Results show the top 20, your current best/place and nearby racers; equal tick times share places (1, 1, 3). The board loads on results or manual refresh, and a board outage does not undo a verified time or block practice. Results remain readable for 90 days; old course geometry remains retained for practice. [Leaderboard storage](docs/leaderboard.md) documents concurrency, bounded reads and recovery. No development records are inserted into the deployed board.
 
+The finish card puts the result, current personal best/place, this run's improvement and a server-backed target above **Race again**. **Daily standings** expands without another request. The current best can be faster than this run if another attempt already improved it. Network requests have a ten-second deadline: unavailable daily loading offers labelled reference practice, unavailable session preparation keeps the loaded course in practice, and an unconfirmed submission never claims a verified time.
+
 The moderator menu's **Create today's race** action creates a post for the current UTC circuit. There is no recurring post scheduler yet. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
+
+Archived posts start practice immediately. A next-day button opens a server-checked current Reddit post when one is registered; otherwise practice and a manual check remain available. Links expire at the returned UTC boundary and never replace the loaded course. [Today's post navigation](docs/today-race-posts.md) documents first-winner registration, trusted URL checks and safe recovery after a post has already been created.
 
 ```sh
 npm run tracks:check -- --prefix showcase --count 10

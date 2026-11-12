@@ -100,6 +100,21 @@
 - Atomic storage controls race different candidate courses and require every caller to return the persisted winner. Tests also cover deployment reuse, original post date, midnight during generation/in-flight expiry, reserve failure, stale quality approval, corrupt records and unconfirmed writes. New record creation rechecks the copied road against its exact quality policy; stored reads do not rerun generation or bots.
 - Inspected mobile current/archive screenshots: `docs/screenshots/daily-challenge-mobile.png` and `docs/screenshots/archive-practice-mobile.png`. These use explicitly mocked daily transport and real local rendering; they are not hosted or physical-phone evidence. Production client excludes generator/solver code and the splash stays independent of Three.js/tRPC.
 
+- Merged [PR #34](https://github.com/kickflip-games/reddit_racer/pull/34) as `2654aba`; verified #9 closed. CI run `43153085617` passed on `9c7ca28`, including all 47 browser checks and uploaded quality report.
+
+## 2026-11-12 — authenticated replay sessions (#10)
+
+- Started from updated main `2654aba` on `hacking/authenticated-replay-sessions`.
+- Add unpredictable account/post/challenge-bound sessions, strict bounded input replay verification, expiring idempotent receipts and per-account start/verification budgets. The client obtains a session before countdown and reports pending/verified/rejected results without claiming a leaderboard rank.
+- Security dependency PRs #19 and #17 are being reconciled and tested in an isolated managed checkout; integrate their successful merges before accepting the submission transport.
+- Merged [Hono security PR #19](https://github.com/kickflip-games/reddit_racer/pull/19) as `e479044` after fresh CI `43154864822` passed on `9545366`. Integrated its 4.13.18 patch into the feature branch and reinstalled the locked dependencies. Only the intended package/lock entries changed; current tRPC/test tooling was preserved.
+- Merged [Node server security PR #17](https://github.com/kickflip-games/reddit_racer/pull/17) as `4b4220f` after fresh CI `43156124773` passed on `d76bd4e`. Its isolated checks included 47 browsers, 16 Node 22 API/core tests and an actual Node 22 HTTP socket with the current Hono adapter. Fast-forwarded this feature to latest main and reinstalled the lock. The clean dependency checkout was archived after both successful merges.
+- TypeScript major-update [PR #18](https://github.com/kickflip-games/reddit_racer/pull/18) remains open: TypeScript 7.0.2 conflicts with `typescript-eslint@8.72.2`'s supported peer range `>=4.8.4 <6.1.0`; its actual `npm ci` failure is documented on that PR. No forced peer workaround was used.
+- Read-only Devvit setup check succeeded: account `Avivajpeyi` owns `full-throttle-dev`, installed as `0.0.1.3` in `r/full_throttle_dev_dev` (`t5_kv7foq`). No new build has been uploaded; this is connection evidence, not hosted gameplay or authenticated score proof.
+- Keep #10 open until its real Devvit identity acceptance criterion is exercised with #20. Local injected identity and mocked browser responses cannot establish hosted authentication.
+- Validation on Hono 4.13.18: `npm run check` passed (88 unit tests, format/types/lint, 200 approved seeds and production build); all 65 browser checks passed. Tests cover bounded HTTP payloads, header/field identity forgery, malformed/oversized replays, expiry, idempotent/concurrent submission, rate ceilings, session preparation cancellation, replay-only finish payloads and late replies after retry.
+- Final targeted server validation with both security patches: Node 22.23.5 passed all 41 daily/session/API/rate-limit tests. Copy-only plain-language verification updates passed the two renderer verification cases; inspected refreshed desktop/mobile stills `docs/screenshots/ranked-verified-mock-*.png`. These use mocked transport and real simulation/rendering, not hosted identity evidence.
+
 ## Next
 
-Finish and merge #9, then #10 authenticated replay sessions and #11 atomic leaderboard. Keep #4 external observations open.
+Finish the #10 implementation, then #11 atomic leaderboard and #12 results UI, followed by private hosted integration #20. Keep #4 external observations open.

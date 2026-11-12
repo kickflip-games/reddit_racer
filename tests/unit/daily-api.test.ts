@@ -32,7 +32,15 @@ const fixture = createDailyChallengeRecord({
 }));
 
 function setup(getDailyChallenge: RpcContext['getDailyChallenge']) {
-  const app = createApiApp(() => ({ getDailyChallenge }));
+  const app = createApiApp(() => ({
+    getDailyChallenge,
+    startRankedRace: async () => {
+      throw new Error('Unexpected ranked start');
+    },
+    submitRun: async () => {
+      throw new Error('Unexpected ranked submission');
+    },
+  }));
   const client = createTRPCClient<AppRouter>({
     links: [
       httpLink({

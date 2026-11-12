@@ -58,7 +58,7 @@ function setup() {
   const deps: PrivateRedisSmokeDependencies = {
     context: {
       appSlug: 'full-throttle-dev',
-      appVersion: '0.0.4',
+      appVersion: '0.0.5',
       subredditId: 't5_kv7foq',
       subredditName: 'full_throttle_dev_dev',
     },
@@ -85,7 +85,8 @@ void test('diagnostic authorization requires the exact trusted app, private vers
     { appSlug: 'other-app' },
     { appVersion: '0.0.2' },
     { appVersion: '0.0.3' },
-    { appVersion: '0.0.4.1' },
+    { appVersion: '0.0.4' },
+    { appVersion: '0.0.5.1' },
     { appVersion: undefined },
     { subredditId: 't5_other' },
     { subredditName: 'other_home' },
@@ -94,7 +95,7 @@ void test('diagnostic authorization requires the exact trusted app, private vers
     h.deps.context = { ...h.deps.context, ...override };
     assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
       status: 'skipped',
-      version: '0.0.4',
+      version: '0.0.5',
       reason: 'scope',
     });
     assert.equal(h.calls.length, 0);
@@ -106,7 +107,7 @@ void test('an existing per-build marker prevents all diagnostic data writes', as
   h.duplicate();
   assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
     status: 'skipped',
-    version: '0.0.4',
+    version: '0.0.5',
     reason: 'already-ran',
   });
   assert.equal(h.calls.length, 1);
@@ -121,7 +122,7 @@ void test('failed controls clean only their five temporary keys and retain a bou
   assert.equal(cleanup?.keys.length, 5);
   assert.ok(
     cleanup?.keys.every((key) =>
-      key.startsWith('racer:diagnostic:redis-smoke:0.0.4:bounded-probe:')
+      key.startsWith('racer:diagnostic:redis-smoke:0.0.5:bounded-probe:')
     )
   );
   assert.ok(
@@ -251,4 +252,57 @@ void test('hosted score-first member fields and null EXPIRE acknowledgements pas
     assert.equal(result.checks?.adapterCommit, !omitExpiry);
     assert.equal(result.checks?.cleanup, true);
   }
+});
+
+void test('expiry failures retain raw labelled values and clock context before failing closed', async () => {
+  const h = setup(),
+    redis = new RevisionRedis(now);
+  redis.expireTime = async (key) => (key.endsWith(':board') ? 123.5 : -1);
+  h.deps.redis = redis;
+  const result = await runPrivateRedisSmoke(h.deps);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.checks?.expirations, false);
+  assert.equal(result.checks?.adapterCommit, false);
+  assert.equal(result.checks?.cleanup, true);
+  assert.deepEqual(result.expiry, {
+    nowMs: now,
+    nowSeconds: now / 1000,
+    expectedDeadlineMs: now + 120_000,
+    values: [
+      { label: 'control', type: 'number', rawNumber: -1, isSafeInteger: true },
+      { label: 'sentinel', type: 'number', rawNumber: -1, isSafeInteger: true },
+      { label: 'pair', type: 'number', rawNumber: -1, isSafeInteger: true },
+      {
+        label: 'board',
+        type: 'number',
+        rawNumber: 123.5,
+        isSafeInteger: false,
+      },
+    ],
+  });
+  assert.deepEqual(h.logs[0]?.expiry, result.expiry);
+  assert.ok(!JSON.stringify(result.expiry).includes('racer:'));
+  assert.ok(!JSON.stringify(result.expiry).includes('bounded-probe'));
+});
+
+void test('nonfinite expiry observations are JSON-safe and never become successful TTL proof', async () => {
+  const h = setup(),
+    redis = new RevisionRedis(now);
+  redis.expireTime = async () => NaN;
+  h.deps.redis = redis;
+  const result = await runPrivateRedisSmoke(h.deps);
+  assert.equal(result.status, 'failed');
+  assert.equal(result.checks?.expirations, false);
+  assert.ok(
+    result.expiry?.values.every(
+      (value) =>
+        value.rawNumber === null &&
+        value.nonFinite === 'NaN' &&
+        value.type === 'number' &&
+        !value.isSafeInteger
+    )
+  );
+  const retained = [...redis.strings.values()][0];
+  assert.ok(retained?.includes('"nonFinite":"NaN"'));
+  assert.ok(!retained?.includes('secret-token'));
 });

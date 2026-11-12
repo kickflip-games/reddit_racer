@@ -5,7 +5,7 @@ import {
   type CompetitionTransaction,
 } from '../competition-store';
 
-export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.4';
+export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.5';
 export const PRIVATE_REDIS_SMOKE_HOME_ID = 't5_kv7foq';
 export const PRIVATE_REDIS_SMOKE_HOME_NAME = 'full_throttle_dev_dev';
 const DATA_TTL_MS = 120_000;
@@ -41,6 +41,18 @@ export type PrivateRedisSmokeResult = {
     cleanup: boolean;
   };
   exec?: ExecObservation[];
+  expiry?: {
+    nowMs: number;
+    nowSeconds: number;
+    expectedDeadlineMs: number;
+    values: {
+      label: 'control' | 'sentinel' | 'pair' | 'board';
+      type: string;
+      rawNumber: number | null;
+      isSafeInteger: boolean;
+      nonFinite?: 'NaN' | 'Infinity' | '-Infinity';
+    }[];
+  };
   error?: SafeError;
 };
 export type PrivateRedisSmokeDependencies = {
@@ -315,7 +327,35 @@ export async function runPrivateRedisSmoke(
     const expirations = await Promise.all(
       [control, sentinel, pair, board].map((key) => deps.redis.expireTime(key))
     );
-    const nowSeconds = Math.floor(deps.now() / 1000);
+    const expiryNowMs = deps.now();
+    const nowSeconds = Math.floor(expiryNowMs / 1000);
+    const expiryLabels: ('control' | 'sentinel' | 'pair' | 'board')[] = [
+      'control',
+      'sentinel',
+      'pair',
+      'board',
+    ];
+    result.expiry = {
+      nowMs: expiryNowMs,
+      nowSeconds,
+      expectedDeadlineMs: expiresAt.getTime(),
+      values: expirations.map((value, index) => ({
+        label: expiryLabels[index] ?? 'control',
+        type: typeof value,
+        rawNumber:
+          typeof value === 'number' && Number.isFinite(value) ? value : null,
+        isSafeInteger: Number.isSafeInteger(value),
+        ...(typeof value === 'number' && !Number.isFinite(value)
+          ? {
+              nonFinite: Number.isNaN(value)
+                ? 'NaN'
+                : value === Infinity
+                  ? 'Infinity'
+                  : '-Infinity',
+            }
+          : {}),
+      })),
+    };
     checks.expirations = expirations.every(
       (value) =>
         Number.isSafeInteger(value) &&

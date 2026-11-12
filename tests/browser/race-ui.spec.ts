@@ -44,7 +44,9 @@ test('a daily request deadline gives explicit reference practice and ignores a l
   await pauseClock(page);
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#start-button')).toBeDisabled();
-  await page.clock.runFor(10_010);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'loading');
+  // No race exists yet; only the request deadline needs to fire.
+  await page.clock.fastForward(10_010);
   await expect(page.locator('#mode-label')).toHaveText('REFERENCE · UNRANKED');
   await expect(page.locator('#start-label')).toHaveText('Start practice');
   await expect(page.locator('#start-button')).toBeEnabled();
@@ -98,7 +100,10 @@ test('a preparation deadline starts labelled practice on the saved track and a f
   await expect(page.locator('#track-note')).not.toContainText('Sign in');
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
-  await page.clock.runFor(10_010);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute('data-preparing', 'true');
+  // A pending session has not started the countdown or scored simulation.
+  await page.clock.fastForward(10_010);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-phase',
     'countdown'
@@ -181,7 +186,12 @@ test('submission and standings deadlines settle independently without claiming a
     { challenge: toPublicDailyChallenge(record), replay }
   );
   await expect.poll(() => releases.length).toBe(1);
-  await page.clock.runFor(10_010);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-preparing',
+    'false'
+  );
+  await page.clock.fastForward(10_010);
   expect((await submission).status).toBe('unavailable');
   await page.evaluate(async (challenge) => {
     const moduleUrl = '/leaderboard-client.ts';
@@ -191,7 +201,16 @@ test('submission and standings deadlines settle independently without claiming a
     board.onResults({ attemptId: 1, mode: 'practice' });
   }, toPublicDailyChallenge(record));
   await expect.poll(() => releases.length).toBe(2);
-  await page.clock.runFor(10_010);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-preparing',
+    'false'
+  );
+  await expect(page.locator('#leaderboard')).toHaveAttribute(
+    'data-state',
+    'loading'
+  );
+  await page.clock.fastForward(10_010);
   await expect(page.locator('#leaderboard')).toHaveAttribute(
     'data-state',
     'error'
@@ -273,7 +292,13 @@ test('an archived course offers explicit current-post navigation and expires its
   await page.locator('#today-race-refresh').click();
   await expect(page.locator('#today-race-button')).toBeVisible();
   expect(calls).toBe(2);
-  await page.clock.runFor(2100);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#today-race')).toHaveAttribute(
+    'data-state',
+    'ready'
+  );
+  // One UTC display update after expiry is sufficient; no race is advancing.
+  await page.clock.fastForward(2100);
   await expect(page.locator('#today-race-button')).toBeHidden();
   await expect(page.locator('#today-race-status')).toContainText('new UTC day');
   expect(calls).toBe(2);
@@ -303,7 +328,12 @@ test('an archived course offers explicit current-post navigation and expires its
     'data-state',
     'loading'
   );
-  await page.clock.runFor(1100);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-preparing',
+    'false'
+  );
+  await page.clock.fastForward(1100);
   releaseLate();
   await expect(page.locator('#today-race')).toHaveAttribute(
     'data-state',

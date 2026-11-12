@@ -46,6 +46,8 @@ npm run test -- src/shared/simulation.test.ts  # one isolated test file
 
 Linux CI uses `npx playwright install --with-deps chromium webkit`. Rendered gameplay checks cover desktop and mobile-sized Chromium; pure authoritative replay fixtures additionally run in WebKit. These checks do not substitute for a physical phone or hosted Reddit test.
 
+The single CI validation job also runs every unit test on Node 22.23.5 before restoring the pinned Node 24 toolchain for the complete check and browser suite. Browser checks use two workers, no retries and the existing 120-second test budget. Failure screenshots, captured gameplay stills, per-test JSON results and the 200-seed report are retained for seven days. [Validation coverage and evidence boundaries](docs/validation.md) maps the checks to their source files and explains the clock controls.
+
 The shared simulation runs at 120 Hz with versioned input replays; see [simulation rules](docs/simulation.md) and [canonical geometry](docs/track-geometry.md), and [lap lifecycle/checkpoints](docs/race-rules.md).
 
 Inspect procedural courses at http://localhost:5173/track-gallery.html while `npm run dev:local` is running. Enter a seed or generate up to 300 SVG previews. The gallery is excluded from the Devvit production build. Grid cards show structural previews. Check a selected course with the real shared simulator, then use Drive selected seed for local unranked practice. The default local game retains the reference oval.

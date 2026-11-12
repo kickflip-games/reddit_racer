@@ -155,6 +155,16 @@
 - CI `43176903957` on `4f8e0e4` passed unit/type/lint/quality/build checks, then failed one of 79 browser cases: the combined desktop leaderboard scenario exceeded its unchanged 120-second test budget. Its artifact showed the lap already verified, PB/ties displayed and the board error/loading flow reached; 78 other browser cases passed. Do not merge that result.
 - Split the overloaded test into a full real-input/exact-replay/PB/ties/error/stale-response/actual-Retry integration case and an explicitly labelled presentation fixture for responsive layout, screenshots, 44px targets and native keyboard disclosure. All original assertions remain; no timeout, retries, production code or CI configuration changed. Full local validation passed again: 154 unit tests, types/lint/format, 200 approved circuits and build, plus all 81 browser checks with two workers. Fresh GitHub CI is still required.
 
+- Merged [PR #37](https://github.com/kickflip-games/reddit_racer/pull/37) as `04da756ae397b390b04321e8641ea1056d9e9e32`; verified #12 closed. CI `43184330586` passed on exact head `348b1841955e7a559c271a8aa8fc09c56d424f23`, including all 81 browser checks and artifact upload (19m13s job, 16m06s browser step).
+
+## 2026-11-12 — runtime regression gates (#23)
+
+- Started from updated main `04da756` on `hacking/runtime-regression-gates`. Promote this shared QA gate before the next production feature so later changes receive automated Node 22 coverage and useful per-test browser timings.
+- CI runs the complete unit suite on Node 22.23.5, restores the pinned development runtime, then retains the full check/build/browser gate. Use two browser workers, the same 120-second budget and zero retries; upload JSON durations with existing screenshots and quality report. Cancel only superseded runs for the same PR/ref.
+- Six deadline/UTC waits skip idle rendering only after explicit loading/ready/preparing guards. All original assertions and scored-driving/countdown advances remain. No production source or driving rules change.
+- Document existing simulation/replay/geometry/server/browser coverage and distinguish local mocks, actual private Reddit evidence, physical phones and human observations. CI also rejects focused browser tests; retries remain explicitly zero.
+- Validation: `npm run check` passed (154 unit tests, format/types/lint, 200 approved tracks and production build); all 154 units passed on Node 22.23.5. The eight changed deadline/CTA cases passed, then all 81 browser checks passed with the exact two-worker/line+JSON settings (no skipped, flaky or unexpected results). A temporary outside-repository `test.only` fixture was correctly rejected with exit 1 by the actual CI configuration. Independent diff review found no defects. Fresh Linux CI is still required.
+
 ## Next
 
-Finish #12, then the remaining private hosted integration #20; continue art/feedback/QA/mobile/balance work, documenting unavailable real-device/human/platform observations precisely. Keep #4 physical-phone/newcomer observations open.
+Finish #23, then the remaining private hosted integration #20; continue art/feedback/mobile/balance work, documenting unavailable real-device/human/platform observations precisely. Keep #4 physical-phone/newcomer observations open.

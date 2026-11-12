@@ -12,7 +12,8 @@
   "include": [
     "../tests/**/*.ts",
     "../playwright.config.ts",
-    "../vite.local.config.ts"
+    "../vite.local.config.ts",
+    "../scripts/**/*.ts"
   ],
   "references": [
     {

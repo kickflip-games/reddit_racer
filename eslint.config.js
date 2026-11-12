@@ -46,6 +46,10 @@ export default defineConfig([
     files: ['**/*.{js,mjs,cjs,ts,tsx}'],
     rules: {
       '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
       '@typescript-eslint/no-unused-vars': ['off'],
       'no-unused-vars': ['off'],
     },

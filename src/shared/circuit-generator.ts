@@ -66,7 +66,9 @@ export type CircuitCandidate = {
   diagnostics: AcceptedCircuitDiagnostics & { codes: string[] };
 };
 
-function configFor(overrides: Partial<GeneratorConfig> = {}): GeneratorConfig {
+export function normalizeGeneratorConfig(
+  overrides: Partial<GeneratorConfig> = {}
+): GeneratorConfig {
   const config = { ...DEFAULT_GENERATOR_CONFIG, ...overrides };
   if (
     Object.keys(overrides).some(
@@ -328,7 +330,7 @@ export function generateCircuitCandidate(
   overrides: Partial<GeneratorConfig> = {}
 ): CircuitCandidate {
   checkSeed(seed);
-  const config = configFor(overrides);
+  const config = normalizeGeneratorConfig(overrides);
   if (!Number.isInteger(attempt) || attempt < 1 || attempt > 12)
     throw new Error('Candidate attempt must be 1–12');
   const candidateSeed = `${seed}:attempt:${attempt}`;
@@ -451,7 +453,7 @@ export function generateCircuit(
   overrides: Partial<GeneratorConfig> = {}
 ): GeneratedCircuit {
   checkSeed(seed);
-  const config = configFor(overrides);
+  const config = normalizeGeneratorConfig(overrides);
   const rejections: GenerationDiagnostics['rejections'] = [];
   for (let attempt = 1; attempt <= config.maxAttempts; attempt++) {
     const candidate = generateCircuitCandidate(seed, attempt, config);

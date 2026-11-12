@@ -20,7 +20,7 @@ npm run type-check   # TypeScript
 npm run lint
 npm run test:unit
 npm run test:e2e     # browser regression checks (install browsers below)
-npm run tracks:check # 200 fixed-seed structural generator checks
+npm run tracks:check # 200 fixed-seed geometry + driving quality checks
 npm run check        # formatting, types, lint, unit tests, build
 ```
 
@@ -40,14 +40,15 @@ Linux CI uses `npx playwright install --with-deps chromium webkit`. Rendered gam
 
 The shared simulation runs at 120 Hz with versioned input replays; see [simulation rules](docs/simulation.md) and [canonical geometry](docs/track-geometry.md), and [lap lifecycle/checkpoints](docs/race-rules.md).
 
-Inspect procedural courses at http://localhost:5173/track-gallery.html while `npm run dev:local` is running. Enter a seed or generate up to 300 SVG previews. The gallery is excluded from the Devvit production build. Generator structural checks are preliminary; simulation-based approval is added in #7 before ranked daily content.
+Inspect procedural courses at http://localhost:5173/track-gallery.html while `npm run dev:local` is running. Enter a seed or generate up to 300 SVG previews. The gallery is excluded from the Devvit production build. Grid cards show structural previews. Check a selected course with the real shared simulator, then use Drive selected seed for local unranked practice. The default game retains the reference oval; immutable server daily content follows #9.
 
 ```sh
 npm run tracks:check -- --prefix showcase --count 10
+npm run tracks:check -- --structural # faster geometry-only inspection
 npm run tracks:check -- --report /tmp/racer-tracks.json
 ```
 
-See [procedural generation](docs/procedural-generation.md) for motifs, retry/fallback limits and diagnostics.
+See [procedural generation](docs/procedural-generation.md) for motifs and [track quality](docs/track-quality.md) for bounded controller checks, thresholds and reports.
 
 ## Architecture
 

@@ -73,6 +73,20 @@
 - Fixed regression set: 200 structurally valid requests, 3 reserve uses (1.5%), 198 distinct hashes/profiles, mean 3.405 attempts, lengths 350.054–499.404m; 484 radius and 6 shoulder-fold candidate rejections. Reserve repetition is explicit.
 - Independent real-physics/replay-verified release-window probe on showcase-0…9: 24.233–28.225s, 3–5 lifts, 4.267–8.050s faster than hold. This is a bounded control, not final quality approval or human balance evidence. #7 ships the generalized bot/quality gates.
 
+- Merged [PR #32](https://github.com/kickflip-games/reddit_racer/pull/32) as `ad092a1`; verified #6 closed. CI run `43145526452` passed on `524a3b6` before squash merge.
+
+## 2026-11-12 — track quality and playable seeds (#7)
+
+- Started from updated main `ad092a1` on `hacking/track-quality-and-playable-seeds`.
+- Added real shared-rules hold/cautious/bounded fast controllers, replay rechecks, smoothness/clearance gates and versioned acceptance thresholds. Generation caps structural candidates and quality assessments separately; reserve must pass the same quality policy.
+- Local gallery checks selected driving quality and opens the accepted seed in the game. DEV-only async loading prevents early Start; production seed queries cannot select/recompute a course. Retry keeps the loaded track; generated previews omit reference scenery.
+- CLI now defaults to full quality over 200 fixed seeds, retains `--structural`, reports requested/total assessment counts separately, continues after individual failures and exits nonzero with a complete failure report.
+- Quality winning tapes are developer/server diagnostics; the future public daily challenge response must omit solver tapes. This is automated rule/difficulty evidence, not human fun or device performance proof.
+
+- Validation: `npm run check` passed on final code (47 unit tests including 200 approved seeds, types/lint/format, full quality CLI, build). All 31 browser tests passed, including selected quality/candidate hash, generated-course input replay with exact Node finish ticks, retry, rejection loading state and generated replay equality in Chromium/WebKit. Production output excludes gallery/quality search. Inspected approved workshop and mobile driving screenshots.
+- Full CLI report saved with all 200 records/zero failures and CI now uploads it with browser evidence. Result: 3 reserves (1.5%), 198 distinct courses/profiles, mean 3.425 requested structural candidates; fast 22.550–30.208s, 3–6 meaningful lifts, gains 3.775–8.433s. Requested quality average 0.99; reserve-inclusive average 1.005. Machine-specific elapsed time is not phone/hosted performance evidence.
+- Screenshots: `docs/screenshots/approved-gallery.png`, `docs/screenshots/generated-driving-mobile.png`. Bot outcomes are developer diagnostics; none are inserted into a production leaderboard.
+
 ## Next
 
-Finish and merge #6, then #7 structural/playability quality gates, then #9 immutable UTC challenges. Keep #4 external observations open.
+Finish and merge #7, then #9 immutable UTC challenges, #10 authenticated replay sessions and #11 atomic leaderboard. Keep #4 external observations open.

@@ -74,6 +74,27 @@ h1 {
   background: #143c35b8;
   white-space: nowrap;
 }
+.mode-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+  max-width: 46%;
+}
+#track-source {
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: #d3e3cb;
+  font-size: 8px;
+  line-height: 1.4;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+#track-source[data-fallback='true'] {
+  color: #ffbd59;
+}
 .timing {
   position: absolute;
   top: 96px;
@@ -196,6 +217,10 @@ button[hidden] {
 button:hover {
   background: #ffd08b;
 }
+button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
 button:focus-visible {
   outline: 3px solid white;
   outline-offset: 4px;
@@ -205,6 +230,7 @@ button:focus-visible {
   color: #adc9b9;
   font-size: 10px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 .race-footer {
   position: absolute;

@@ -40,3 +40,34 @@ test('local gallery reproduces seeds and shows ten circuit/curvature previews', 
   expect(await page.locator('#selected-track').innerHTML()).toBe(first);
   expect(errors).toEqual([]);
 });
+
+test('selected seed quality updates the accepted diagram and enables local driving', async ({
+  page,
+}) => {
+  const seed = 'showcase-3';
+  await page.goto(`/track-gallery.html?prefix=showcase&count=10&seed=${seed}`);
+  await expect(page.locator('#gallery-status')).toHaveAttribute(
+    'data-state',
+    'complete'
+  );
+  await page.locator('#check-quality').click();
+  await expect(page.locator('#quality-verdict')).toHaveAttribute(
+    'data-state',
+    'passed'
+  );
+  const { generateValidatedCircuit } =
+    await import('../../src/shared/circuit-quality.ts');
+  const approved = generateValidatedCircuit(seed);
+  await expect(page.locator('#selected-hash')).toHaveText(
+    await hashTrack(approved.track)
+  );
+  await expect(page.locator('#quality-metrics tr')).toHaveCount(3);
+  await expect(page.locator('#drive-selected')).toHaveAttribute(
+    'href',
+    new RegExp(`game.html\\?seed=${seed}`)
+  );
+  await page.screenshot({
+    path: `test-results/approved-gallery-${test.info().project.name}.png`,
+    fullPage: true,
+  });
+});

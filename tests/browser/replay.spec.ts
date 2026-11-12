@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { serializeTrack } from '../../src/shared/track.ts';
+import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
 import { runReplay } from '../../src/shared/replay.ts';
 import {
   HOLD_REPLAY,
@@ -12,12 +13,28 @@ import {
 const replayModuleUrl = `/@fs${new URL('../../src/shared/replay.ts', import.meta.url).pathname}`;
 const trackModuleUrl = `/@fs${new URL('../../src/shared/track.ts', import.meta.url).pathname}`;
 
+const generated = generateValidatedCircuit('showcase-3');
+const generatedReplay = generated.quality.fastReplay;
+if (!generatedReplay) throw new Error('Expected an approved generated replay');
+
 for (const fixture of [
-  { name: 'hold only', replay: HOLD_REPLAY, ticks: EXPECTED_HOLD_FINISH_TICKS },
+  {
+    name: 'hold only',
+    replay: HOLD_REPLAY,
+    ticks: EXPECTED_HOLD_FINISH_TICKS,
+    track: createOvalTrack(),
+  },
   {
     name: 'timed release',
     replay: LIFT_REPLAY,
     ticks: EXPECTED_LIFT_FINISH_TICKS,
+    track: createOvalTrack(),
+  },
+  {
+    name: 'generated hairpin',
+    replay: generatedReplay,
+    ticks: generatedReplay.endTick,
+    track: generated.track,
   },
 ]) {
   test(`${fixture.name} replay agrees exactly with Node`, async ({ page }) => {
@@ -29,7 +46,7 @@ for (const fixture of [
       })
     );
     await page.goto('/runtime-fixture.html');
-    const track = createOvalTrack();
+    const track = fixture.track;
     const expected = runReplay(track, fixture.replay);
     expect(expected.finishTicks).toBe(fixture.ticks);
     const actual = await page.evaluate(

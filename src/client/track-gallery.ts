@@ -1,4 +1,5 @@
 import { generateCircuit } from '../shared/circuit-generator';
+import { SIMULATION_HZ } from '../shared/simulation';
 import {
   hashTrack,
   roadPointAt,
@@ -7,12 +8,17 @@ import {
 } from '../shared/track';
 
 type GeneratedCircuit = ReturnType<typeof generateCircuit>;
+type ValidatedCircuit = ReturnType<
+  typeof import('../shared/circuit-quality').generateValidatedCircuit
+>;
+type QualityRun = NonNullable<ValidatedCircuit['quality']['metrics']>['hold'];
 type Point = { x: number; z: number };
 const svgNamespace = 'http://www.w3.org/2000/svg';
 const maximumCourses = 300;
 let batchRun = 0;
 let selectedRun = 0;
 let selectedSeed = '';
+let selectedValidated = false;
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -293,6 +299,8 @@ function updateQuery(seed: string): void {
     'count',
     String(boundedCount(input('gallery-count').valueAsNumber))
   );
+  if (selectedValidated) url.searchParams.set('quality', '1');
+  else url.searchParams.delete('quality');
   history.replaceState(null, '', url);
 }
 function addMetric(parent: HTMLElement, name: string, value: string): void {
@@ -355,40 +363,155 @@ function markSelection(): void {
     );
   }
 }
+function resetQuality(): void {
+  selectedValidated = false;
+  const verdict = element('quality-verdict');
+  verdict.dataset.state = 'unchecked';
+  verdict.textContent =
+    'Driving quality is unchecked for this structural preview.';
+  element('selected-status').dataset.quality = 'unchecked';
+  element('check-quality').removeAttribute('disabled');
+  element('quality-table').hidden = true;
+  element('quality-metrics').replaceChildren();
+  element('drive-selected').hidden = true;
+  element('drive-selected').removeAttribute('href');
+}
+
+async function renderSelection(
+  seed: string,
+  result: GeneratedCircuit,
+  run: number
+): Promise<void> {
+  selectedSeed = seed;
+  input('gallery-seed').value = seed;
+  element('selected-seed').textContent = seed;
+  element('gallery-error').hidden = true;
+  renderMap(svg('selected-track'), result.track, true);
+  renderCurvature(svg('curvature-profile'), result.track);
+  renderDiagnostics(result);
+  markSelection();
+  updateQuery(seed);
+  element('selected-hash').textContent = 'Computing…';
+  if (!globalThis.crypto?.subtle) {
+    element('selected-hash').textContent = globalThis.isSecureContext
+      ? 'Hash unavailable in this browser. Geometry inspection is still available.'
+      : 'Hash unavailable over insecure HTTP; use localhost or HTTPS.';
+    return;
+  }
+  try {
+    const hash = await hashTrack(result.track);
+    if (run === selectedRun) element('selected-hash').textContent = hash;
+  } catch {
+    if (run === selectedRun) {
+      element('selected-hash').textContent =
+        'Hash unavailable. Geometry inspection is still available.';
+    }
+  }
+}
+
 async function inspectSeed(rawSeed: string): Promise<void> {
   const run = ++selectedRun;
+  resetQuality();
   try {
     const seed = rawSeed.trim();
     if (!seed || seed.length > 96)
       throw new Error('Enter a seed containing 1–96 characters.');
-    const result = generateCircuit(seed);
-    selectedSeed = seed;
-    input('gallery-seed').value = seed;
-    element('selected-seed').textContent = seed;
-    element('gallery-error').hidden = true;
-    renderMap(svg('selected-track'), result.track, true);
-    renderCurvature(svg('curvature-profile'), result.track);
-    renderDiagnostics(result);
-    markSelection();
-    updateQuery(seed);
-    element('selected-hash').textContent = 'Computing…';
-    if (!globalThis.crypto?.subtle) {
-      element('selected-hash').textContent = globalThis.isSecureContext
-        ? 'Hash unavailable in this browser. Geometry inspection is still available.'
-        : 'Hash unavailable over insecure HTTP; use localhost or HTTPS.';
-      return;
-    }
-    try {
-      const hash = await hashTrack(result.track);
-      if (run === selectedRun) element('selected-hash').textContent = hash;
-    } catch {
-      if (run === selectedRun) {
-        element('selected-hash').textContent =
-          'Hash unavailable. Geometry inspection is still available.';
-      }
-    }
+    await renderSelection(seed, generateCircuit(seed), run);
   } catch (error) {
     if (run === selectedRun) showError(error);
+  }
+}
+
+function renderQualityMetrics(result: ValidatedCircuit): void {
+  const metrics = result.quality.metrics;
+  const body = element('quality-metrics');
+  body.replaceChildren();
+  element('quality-table').hidden = metrics === null;
+  if (!metrics) return;
+  const rows: { name: string; run: QualityRun }[] = [
+    { name: 'Hold', run: metrics.hold },
+    { name: 'Cautious', run: metrics.cautious },
+    { name: 'Fast', run: metrics.fast },
+  ];
+  for (const strategy of rows) {
+    const row = document.createElement('tr');
+    for (const value of [
+      strategy.name,
+      strategy.run.seconds === null
+        ? 'Incomplete'
+        : `${strategy.run.seconds.toFixed(2)} s`,
+      `${(strategy.run.offRoadTicks / SIMULATION_HZ).toFixed(2)} s`,
+      String(strategy.run.meaningfulLifts),
+    ]) {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.append(cell);
+    }
+    body.append(row);
+  }
+}
+
+async function checkSelectedQuality(): Promise<void> {
+  if (!selectedSeed) return;
+  const seed = selectedSeed;
+  const run = ++selectedRun;
+  selectedValidated = false;
+  const verdict = element('quality-verdict');
+  verdict.dataset.state = 'checking';
+  verdict.textContent =
+    'Running bounded searches with the real shared race simulation…';
+  element('check-quality').setAttribute('disabled', '');
+  element('drive-selected').hidden = true;
+  element('quality-table').hidden = true;
+  try {
+    await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    const { generateValidatedCircuit } =
+      await import('../shared/circuit-quality');
+    if (run !== selectedRun) return;
+    const result = generateValidatedCircuit(seed);
+    if (run !== selectedRun) return;
+    renderQualityMetrics(result);
+    if (!result.quality.valid) {
+      verdict.dataset.state = 'rejected';
+      verdict.textContent = `Driving checks rejected this seed: ${result.quality.codes.join(', ')}.`;
+      return;
+    }
+    selectedValidated = true;
+    await renderSelection(seed, result, run);
+    if (run !== selectedRun) return;
+    const metrics = result.quality.metrics;
+    const gain =
+      metrics && typeof metrics.gainTicks === 'number'
+        ? `${(metrics.gainTicks / SIMULATION_HZ).toFixed(2)} s faster than hold`
+        : 'timing metrics available below';
+    verdict.dataset.state = 'passed';
+    verdict.textContent = `Automated simulation checks passed (${result.quality.version}); ${gain}.${result.diagnostics.fallbackUsed ? ' A prevalidated reserve course was used.' : ''}`;
+    const selectedStatus = element('selected-status');
+    selectedStatus.dataset.quality = 'passed';
+    selectedStatus.textContent = result.diagnostics.fallbackUsed
+      ? 'RESERVE · QUALITY CHECKED'
+      : 'SIMULATION CHECKS PASSED';
+    element('selected-diagnostics').textContent = JSON.stringify(
+      { ...result.diagnostics, quality: result.quality },
+      null,
+      2
+    );
+    const link = element('drive-selected');
+    const destination = new URL('/game.html', window.location.href);
+    destination.searchParams.set('seed', seed);
+    link.setAttribute('href', destination.pathname + destination.search);
+    link.hidden = false;
+  } catch (error) {
+    if (run === selectedRun) {
+      verdict.dataset.state = 'rejected';
+      verdict.textContent =
+        error instanceof Error
+          ? error.message
+          : 'Driving checks could not accept a course for this seed.';
+    }
+  } finally {
+    if (run === selectedRun)
+      element('check-quality').removeAttribute('disabled');
   }
 }
 
@@ -476,7 +599,14 @@ if (import.meta.env.DEV) {
     event.preventDefault();
     void generateGallery();
   });
-  void inspectSeed(input('gallery-seed').value);
+  element('check-quality').addEventListener('click', () => {
+    void checkSelectedQuality();
+  });
+  const initialSeed = input('gallery-seed').value;
+  void inspectSeed(initialSeed).then(() => {
+    if (query.get('quality') === '1' && selectedSeed === initialSeed.trim())
+      void checkSelectedQuality();
+  });
   void generateGallery();
 } else {
   element('gallery-app').textContent =

@@ -53,7 +53,7 @@ Nearby cross-sections intentionally form a single road. The corridor-distance te
 
 `minClearance` reports edge-to-edge free space **after** road widths and shoulders, in metres. `curvatureProfile` contains 64 signed, start-relative samples. The diagnostics also include accepted length, minimum radius, longest/start straight lengths, significant direction changes, control points, intended motifs, rejected-attempt codes and the accepted candidate seed.
 
-These structural gates do not establish fun, fair difficulty or a useful optimal strategy. Issue #7 adds full authoritative simulation controls, braking-pattern quality and accepted-seed reports. The initial ten-course hold/replay smoke only establishes compatibility and recoverability; it is not a substitute for that study or human playtesting.
+These structural gates do not establish fun, fair difficulty or a useful optimal strategy. Full authoritative simulation controls, braking-pattern gates and accepted-seed reports are now described in `docs/track-quality.md`. The initial ten-course hold/replay smoke only establishes compatibility and recoverability; it is not a substitute for that study or human playtesting.
 
 ## Reserve behaviour
 
@@ -67,16 +67,16 @@ Fallback is visible: `diagnostics.fallbackUsed` is true, `diagnostics.requestedS
 
 ## Local inspection and reproducible checks
 
-Run `npm run dev:local`, then open `/track-gallery.html`. Enter one seed to reproduce it, or a prefix/count to generate up to 300 SVG previews with signed curvature profiles and diagnostics. Single seeds are limited to 96 characters and batch prefixes to 88. Select a gallery card to inspect that exact generated seed. The normal game currently retains the reference oval. A development-only drive-the-selected-seed path follows with the full quality gates in issue #7; generated production challenges will subsequently come from the server's immutable record in issue #9.
+Run `npm run dev:local`, then open `/track-gallery.html`. Enter one seed to reproduce it, or a prefix/count to generate up to 300 SVG previews with signed curvature profiles and diagnostics. Single seeds are limited to 96 characters and batch prefixes to 88. Select a gallery card to inspect that exact generated seed. The gallery can check selected driving quality and open `/game.html?seed=...` in local development. That path uses the fully validated candidate and keeps it fixed across retries. Normal no-query practice retains the reference oval; generated production challenges will come from the server's immutable record in issue #9. Production ignores the local seed query.
 
 The command-line structural report is reproducible:
 
 ```sh
-npm run tracks:check
-npm run tracks:check -- --count 200 --prefix regression --report /tmp/circuit-report.json
+npm run tracks:check -- --structural
+npm run tracks:check -- --structural --count 200 --prefix regression --report /tmp/circuit-report.json
 ```
 
-For the fixed `regression-0` through `regression-199` set on this version, the observed report is:
+For the fixed `regression-0` through `regression-199` set on this version, the observed structural-only report is:
 
 | Measurement                                    | Result            |
 | ---------------------------------------------- | ----------------- |
@@ -92,4 +92,4 @@ The repeated reserve accounts for the reduced uniqueness; it is not hidden. Unit
 
 Ten showcased examples are `regression-0` through `regression-9`, exported by `fixtures/showcase-circuits.ts`. Their dimensionless signed curvature sequences differ, their intended motif orders vary, and their observed infield returns turn approximately 148–155 degrees after smoothing. Their initial hold-only smoke laps finish in approximately 31.6–36.9 seconds. Bounded optimized-input probes and genuine human observations are separate evidence; no artificial times or leaderboard records are presented to players.
 
-An independent bounded release-window probe on `showcase-0` through `showcase-9` executed the authoritative shared race rules and reverified each resulting tape with `runReplay`. Tested release strategies finished in 24.233–28.225 seconds, beating hold-only by 4.267–8.050 seconds with 3–5 lifts. These are bounded numerical controls, not globally optimal lap times or human playtests. The shipped general quality/controller gates follow in #7.
+An independent bounded release-window probe on `showcase-0` through `showcase-9` executed the authoritative shared race rules and reverified each resulting tape with `runReplay`. Tested release strategies finished in 24.233–28.225 seconds, beating hold-only by 4.267–8.050 seconds with 3–5 lifts. These are bounded numerical controls, not globally optimal lap times or human playtests. The generalized shipped controller gates are documented in `docs/track-quality.md`.

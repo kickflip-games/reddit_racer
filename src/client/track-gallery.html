@@ -20,9 +20,10 @@
         <span class="development-badge">PRELIMINARY GENERATION</span>
       </header>
       <p class="quality-note">
-        These previews inspect generated geometry. They do not establish lap
-        completion, braking quality or real-device performance. Courses are not
-        approved for ranked daily challenges.
+        Grid cards preview structural geometry. Run selected driving checks to
+        test lap completion and braking with the shared simulation. Automated
+        checks do not establish real-device performance or guarantee that a
+        course is fun. Local previews are unranked.
       </p>
       <section
         class="panel controls"
@@ -113,6 +114,46 @@
           <dl id="selected-metrics" class="metrics"></dl>
           <h3>Driving motifs</h3>
           <p id="selected-motifs" class="motifs">Waiting for a course.</p>
+          <section
+            class="quality-inspection"
+            aria-label="Real simulation quality checks"
+          >
+            <h3>Driving quality</h3>
+            <p
+              id="quality-verdict"
+              role="status"
+              aria-live="polite"
+              data-state="unchecked"
+            >
+              Driving quality is unchecked for this structural preview.
+            </p>
+            <button id="check-quality" type="button">
+              Check selected driving quality
+            </button>
+            <table id="quality-table" hidden>
+              <thead>
+                <tr>
+                  <th scope="col">Controller</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Off road</th>
+                  <th
+                    scope="col"
+                    title="Accelerator releases lasting at least 0.1 seconds"
+                  >
+                    Lifts ≥0.1s
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="quality-metrics"></tbody>
+            </table>
+            <a id="drive-selected" class="drive-link" href="#" hidden
+              >Drive selected seed <span aria-hidden="true">↗</span></a
+            >
+            <p class="quality-limit">
+              Bot results use shared race rules. Human playtesting and phone
+              performance remain unverified.
+            </p>
+          </section>
           <h3>Canonical SHA-256</h3>
           <code id="selected-hash" class="track-hash">Computing…</code>
           <details>

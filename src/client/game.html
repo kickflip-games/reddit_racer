@@ -21,7 +21,10 @@
           <p class="eyebrow">DAILY TIME ATTACK</p>
           <h1>Reddit Racer<span class="title-dot">.</span></h1>
         </div>
-        <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+        <div class="mode-stack">
+          <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+          <p id="track-source" data-state="loading" hidden></p>
+        </div>
       </header>
       <div class="timing" aria-label="Race telemetry">
         <p class="eyebrow">LAP TIME</p>
@@ -48,13 +51,13 @@
         <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
         <h2 id="card-title">Find your rhythm.</h2>
         <p id="card-copy">Hold to go. Release to slow.</p>
-        <button id="start-button" type="button">
+        <button id="start-button" type="button" disabled>
           Start practice <span aria-hidden="true">↗</span>
         </button>
         <button id="retry-button" type="button" hidden>
           Try again <span aria-hidden="true">↗</span>
         </button>
-        <p class="card-note">
+        <p id="track-note" class="card-note">
           A fresh circuit every day. Ranked racing coming soon.
         </p>
       </div>

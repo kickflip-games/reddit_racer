@@ -17,6 +17,8 @@ export class RevisionRedis implements CompetitionRedis {
   loseReply = false;
   omitSet: string | undefined;
   failQueue = false;
+  expireAck: unknown = 'OK';
+  omitExpiry = false;
   private changed(key: string): void {
     this.revisions.set(key, (this.revisions.get(key) ?? 0) + 1);
   }
@@ -75,7 +77,7 @@ export class RevisionRedis implements CompetitionRedis {
     }
   ) {
     const entries = [...(this.sorted.get(key) ?? new Map<string, number>())]
-      .map(([member, score]) => ({ member, score }))
+      .map(([member, score]) => ({ score, member }))
       .sort((a, b) => a.score - b.score || a.member.localeCompare(b.member));
     return options?.by === 'score'
       ? entries
@@ -136,8 +138,9 @@ export class RevisionRedis implements CompetitionRedis {
       },
       expire: async (key, seconds) => {
         commands.push(() => {
-          this.deadlines.set(key, Math.floor(this.nowMs / 1000) + seconds);
-          return 'OK';
+          if (!this.omitExpiry)
+            this.deadlines.set(key, Math.floor(this.nowMs / 1000) + seconds);
+          return this.expireAck;
         });
       },
       exec: async () => {

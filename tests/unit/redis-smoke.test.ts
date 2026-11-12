@@ -58,7 +58,7 @@ function setup() {
   const deps: PrivateRedisSmokeDependencies = {
     context: {
       appSlug: 'full-throttle-dev',
-      appVersion: '0.0.3',
+      appVersion: '0.0.4',
       subredditId: 't5_kv7foq',
       subredditName: 'full_throttle_dev_dev',
     },
@@ -84,7 +84,8 @@ void test('diagnostic authorization requires the exact trusted app, private vers
   for (const override of [
     { appSlug: 'other-app' },
     { appVersion: '0.0.2' },
-    { appVersion: '0.0.3.1' },
+    { appVersion: '0.0.3' },
+    { appVersion: '0.0.4.1' },
     { appVersion: undefined },
     { subredditId: 't5_other' },
     { subredditName: 'other_home' },
@@ -93,7 +94,7 @@ void test('diagnostic authorization requires the exact trusted app, private vers
     h.deps.context = { ...h.deps.context, ...override };
     assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
       status: 'skipped',
-      version: '0.0.3',
+      version: '0.0.4',
       reason: 'scope',
     });
     assert.equal(h.calls.length, 0);
@@ -105,7 +106,7 @@ void test('an existing per-build marker prevents all diagnostic data writes', as
   h.duplicate();
   assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
     status: 'skipped',
-    version: '0.0.3',
+    version: '0.0.4',
     reason: 'already-ran',
   });
   assert.equal(h.calls.length, 1);
@@ -120,7 +121,7 @@ void test('failed controls clean only their five temporary keys and retain a bou
   assert.equal(cleanup?.keys.length, 5);
   assert.ok(
     cleanup?.keys.every((key) =>
-      key.startsWith('racer:diagnostic:redis-smoke:0.0.3:bounded-probe:')
+      key.startsWith('racer:diagnostic:redis-smoke:0.0.4:bounded-probe:')
     )
   );
   assert.ok(
@@ -230,4 +231,24 @@ void test('creating a score alone cannot pass if the existing sorted-set type is
     6,
     'initial adapter creation succeeds; improvement fails closed before EXEC'
   );
+});
+
+void test('hosted score-first member fields and null EXPIRE acknowledgements pass only with real TTLs', async () => {
+  for (const omitExpiry of [false, true]) {
+    const h = setup(),
+      redis = new RevisionRedis(now);
+    redis.expireAck = null;
+    redis.omitExpiry = omitExpiry;
+    h.deps.redis = redis;
+    const result = await runPrivateRedisSmoke(h.deps);
+    assert.equal(result.status, omitExpiry ? 'failed' : 'passed');
+    assert.equal(
+      result.checks?.sortedReads,
+      true,
+      'member property insertion order does not change row equality'
+    );
+    assert.equal(result.checks?.expirations, !omitExpiry);
+    assert.equal(result.checks?.adapterCommit, !omitExpiry);
+    assert.equal(result.checks?.cleanup, true);
+  }
 });

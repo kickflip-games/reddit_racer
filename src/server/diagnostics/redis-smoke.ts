@@ -5,7 +5,7 @@ import {
   type CompetitionTransaction,
 } from '../competition-store';
 
-export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.3';
+export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.4';
 export const PRIVATE_REDIS_SMOKE_HOME_ID = 't5_kv7foq';
 export const PRIVATE_REDIS_SMOKE_HOME_NAME = 'full_throttle_dev_dev';
 const DATA_TTL_MS = 120_000;
@@ -294,13 +294,18 @@ export async function runPrivateRedisSmoke(
     });
     await deps.redis.del(conflict);
     const values = await deps.redis.mGet([control, conflict, pair]);
+    const expectedRows = [
+      { member: 'diagnostic-beta', score: 200 },
+      { member: 'diagnostic-gamma', score: 200 },
+      { member: 'diagnostic-alpha', score: 300 },
+    ];
     checks.sortedReads =
-      JSON.stringify(ranked) ===
-        JSON.stringify([
-          { member: 'diagnostic-beta', score: 200 },
-          { member: 'diagnostic-gamma', score: 200 },
-          { member: 'diagnostic-alpha', score: 300 },
-        ]) &&
+      ranked.length === expectedRows.length &&
+      ranked.every(
+        (entry, index) =>
+          entry.member === expectedRows[index]?.member &&
+          entry.score === expectedRows[index]?.score
+      ) &&
       tied.length === 1 &&
       tied[0]?.member === 'diagnostic-beta' &&
       tied[0]?.score === 200 &&

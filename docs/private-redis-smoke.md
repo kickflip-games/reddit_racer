@@ -5,13 +5,13 @@ This diagnostic verifies the installed Devvit Redis client's actual hosted trans
 `runPrivateRedisSmoke()` is a server-only lifecycle handler helper. It runs only when the trusted request context exactly matches all four values:
 
 - App slug: `full-throttle-dev`
-- App version: `0.0.3`
+- App version: `0.0.4`
 - Subreddit ID: `t5_kv7foq`
 - Subreddit name: `full_throttle_dev_dev`
 
 Context version is compared verbatim. The installed SDK does not normalize that header. There is no caller-selected version, key, account, challenge or leaderboard. The upgrade payload and its optional installer do not authorize the probe.
 
-The registered `onAppUpgrade` route calls `runPrivateRedisSmoke()` without arguments. A different installed version is required to trigger an upgrade; uploading alone and reinstalling the same version do not trigger it. Version `0.0.2` has already been privately uploaded and installed. The planned diagnostic build is the explicit, owner-only version `0.0.3`. Never run `devvit publish` for this test.
+The registered `onAppUpgrade` route calls `runPrivateRedisSmoke()` without arguments. A different installed version is required to trigger an upgrade; uploading alone and reinstalling the same version do not trigger it. Versions `0.0.2` and `0.0.3` have already been privately uploaded and installed. The corrected diagnostic build is the explicit, owner-only version `0.0.4`. Never run `devvit publish` for this test.
 
 ## Bounded work and isolation
 
@@ -30,13 +30,21 @@ Every Redis command is awaited. No retry loop or sleep is used, and new transact
 
 The report has `status: 'passed' | 'failed' | 'skipped'`, check booleans and bounded EXEC observations. It records only known reply literals, finite numbers, value types and safe error names/codes. Arbitrary RPC text, request metadata, credentials, session tokens and replay data are excluded. A `redis: transaction failed` discriminator is recorded as a Boolean rather than logging the raw message.
 
+## Observed private 0.0.3 behavior
+
+The private `0.0.3` build from commit `481ea0c` ran on the guarded test installation at `2026-11-12T06:01:19.214Z`. The unchanged transaction succeeded. Both changed-key and competing-WATCH controls aborted with an `Error` carrying numeric code `2` and the safe `redisTransactionFailed: true` discriminator. All five temporary data keys were confirmed deleted. No real leaderboard or account was written.
+
+The sorted-set transaction returned `[3, null]`: the known queued EXPIRE position uses a nil acknowledgement on this hosted SDK. The adapter now permits nil only in those EXPIRE positions and still requires complete write results, record/score/counter readback and explicit expiration-time checks. A nil SET acknowledgement remains invalid, and nil EXPIRE without a stored TTL cannot confirm a commit.
+
+The `0.0.3` diagnostic failed before the remaining controls completed because sorted-row equality compared JSON property insertion order. The installed protobuf builds rows as `{ score, member }`; the corrected probe compares the member and score fields directly. The complete sorted-read/TTL/adapter sequence remains unverified until the corrected `0.0.4` private run passes. The old version's bounded marker is left to expire normally.
+
 ## Private execution and evidence
 
 After local tests and build checks pass, the authorized private workflow is:
 
 ```sh
-npx devvit upload --version 0.0.3
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.3
+npx devvit upload --version 0.0.4
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.4
 npx devvit logs full_throttle_dev_dev full-throttle-dev --since 30m
 ```
 

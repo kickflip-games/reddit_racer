@@ -96,8 +96,9 @@ function members(value: unknown, maximum: number): CompetitionMember[] {
   });
 }
 function expireReply(value: unknown): boolean {
-  // Redis integer/bool replies and the SDK mock's Empty-command acknowledgement.
-  return value === 1 || value === true || value === 'OK';
+  // Hosted SDK 0.15.3 acknowledges queued EXPIRE with nil. Only these known
+  // EXPIRE positions accept it; mandatory expireTime/readback below proves TTL.
+  return value === null || value === 1 || value === true || value === 'OK';
 }
 
 export function createCompetitionStore(

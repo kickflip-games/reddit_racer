@@ -160,3 +160,18 @@ void test('repair and confirmation mutations may update only the score or revisi
   assert.equal(await store.compareAndSwap(confirm), true);
   assert.equal(redis.strings.get('racer:revision'), '2');
 });
+
+void test('hosted null EXPIRE acknowledgements require installed TTLs; null SET remains invalid', async () => {
+  for (const omitExpiry of [false, true]) {
+    const redis = new RevisionRedis(),
+      store = createCompetitionStore(redis, () => now);
+    redis.expireAck = null;
+    redis.omitExpiry = omitExpiry;
+    assert.equal(await store.compareAndSwap(mutation()), !omitExpiry);
+  }
+  const redis = new RevisionRedis(),
+    store = createCompetitionStore(redis, () => now);
+  redis.expireAck = null;
+  redis.alterReply = (values) => [null, ...values.slice(1)];
+  assert.equal(await store.compareAndSwap(mutation()), false);
+});

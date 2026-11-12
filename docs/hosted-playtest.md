@@ -31,9 +31,23 @@ The first run used the desktop expanded view. The refreshed and slower runs used
 
 The independent private storage diagnostic also passed all seven controls, including real adapter create/improve, conflict rejection, sorted reads, expiry and cleanup. See [the diagnostic report](private-redis-smoke.md). It used separate temporary keys and did not seed player standings.
 
+## 2026-11-12: quick-results UI and moderator post creation
+
+Private `0.0.7` was uploaded and installed from exact source `af6d969d7d8de22e04ce15b670f542d0b53e8e49`. The original private post loaded **Race today** without the earlier sign-in claim. An actual authenticated run completed all eight gates and verified at 49.642 seconds. The compact result correctly showed the retained 43.425-second best, rank 1 and this run's 6.217-second slower delta. Expanding **Daily standings** showed the real account once and no duplicate nearby table. Finish focus moved to the result heading.
+
+From the private community's overflow menu, **Create today's race** created [post 1xu6n05](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xu6n05/reddit_racer_daily_time_attack/) and automatically navigated to its valid Reddit URL. The new teaser included the 2026-11-12 UTC date; Play expanded the saved daily course with **Race today**. This exercised the actual moderator endpoint, canonical URL, post creation, metadata and daily loading. It does not establish an archived-post CTA across midnight.
+
+![Actual updated start in Reddit mobile preview](screenshots/hosted-quick-start-mobile.jpg)
+
+![Actual compact verified result](screenshots/hosted-quick-results-mobile.jpg)
+
+![Actual newly created private post](screenshots/hosted-created-post-mobile.jpg)
+
+This source's temporary loading note still said ranked racing was coming soon. The following copy-only correction changes that note to preparing the circuit; it does not change the observed session, score or navigation behavior.
+
 ## Remaining checks
 
-- The pre-start `Sign in` / `Start practice` copy appeared before requesting a session even for the signed-in owner. The authenticated start itself worked; issue #12 corrects the presentation.
+- The pre-start `Sign in` / `Start practice` issue observed in `0.0.6` was corrected and checked in `0.0.7`.
 - These observations do not cover logged-out private-post access, hosted network-failure/replay-rejection UI or an archived post after UTC rollover. Keep #20 open until those conditions are exercised or their platform restrictions are precisely recorded.
 - Physical phone performance, touch comfort and first-time human playtesting remain separate acceptance criteria under #4, #24 and #25.
 - No public publishing, app review submission, privacy change or public launch occurred.

@@ -15,7 +15,7 @@
     "test:unit": "tsx --test \"src/**/*.test.ts\"",
     "dev:local": "vite --config vite.local.config.ts",
     "type-check": "npm run test:types",
-    "test": "npm run test:unit --",
+    "test": "tsx --test",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
     "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run build",

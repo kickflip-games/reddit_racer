@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 import { createPreviewState } from '../shared/race';
+import { createOvalTrack } from '../shared/track-authoring';
+import { sampleTrack } from '../shared/track';
+import {
+  createTrackDebugOverlay,
+  createTrackRenderer,
+  getTrackBounds,
+} from './track-renderer';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -22,34 +29,18 @@ element('mode-label').textContent = import.meta.env.DEV
   ? 'LOCAL · UNRANKED'
   : 'PRACTICE · UNRANKED';
 
-// Temporary foundation course; the canonical shared track replaces this in #5.
-const radiusX = 28;
-const radiusZ = 42;
-const roadWidth = 7;
-const sampleCount = 192;
-const points = Array.from({ length: sampleCount }, (_, index) => {
-  const angle = Math.PI + (index / sampleCount) * Math.PI * 2;
-  const x = Math.sin(angle) * radiusX;
-  const z = Math.cos(angle) * radiusZ;
-  const tangent = new THREE.Vector3(
-    Math.cos(angle) * radiusX,
-    0,
-    -Math.sin(angle) * radiusZ
-  ).normalize();
-  return { x, z, tangent, normal: new THREE.Vector3(-tangent.z, 0, tangent.x) };
-});
-const courseLength = points.reduce((length, point, index) => {
-  const next = points[(index + 1) % sampleCount];
-  return next
-    ? length + Math.hypot(next.x - point.x, next.z - point.z)
-    : length;
-}, 0);
+// The shared track is authoritative; this preview car follows its arc length.
+const track = createOvalTrack();
+const bounds = getTrackBounds(track, 0.8);
+const centerX = (bounds.minX + bounds.maxX) / 2;
+const centerZ = (bounds.minZ + bounds.maxZ) / 2;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#548365');
 const camera = new THREE.OrthographicCamera(-70, 70, 70, -70, 0.1, 400);
-camera.position.set(0, 115, 55);
-camera.lookAt(0, 0, 0);
+camera.position.set(centerX, 115, centerZ + 55);
+camera.lookAt(centerX, 0, centerZ);
+camera.updateMatrixWorld();
 let renderer: THREE.WebGLRenderer;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
@@ -74,67 +65,28 @@ grass.rotation.x = -Math.PI / 2;
 grass.position.y = -0.05;
 scene.add(grass);
 
-function roadStrip(
-  inner: number,
-  outer: number,
-  color: string,
-  y: number
-): THREE.Mesh {
-  const vertices: number[] = [];
-  const indices: number[] = [];
-  for (let i = 0; i <= sampleCount; i++) {
-    const point = points[i % sampleCount];
-    if (!point) continue;
-    for (const width of [inner, outer]) {
-      vertices.push(
-        point.x + point.normal.x * width,
-        y,
-        point.z + point.normal.z * width
-      );
-    }
-    if (i < sampleCount) {
-      const base = i * 2;
-      indices.push(base, base + 2, base + 1, base + 1, base + 2, base + 3);
-    }
-  }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(vertices, 3)
-  );
-  geometry.setIndex(indices);
-  geometry.computeVertexNormals();
-  return new THREE.Mesh(
-    geometry,
-    new THREE.MeshLambertMaterial({ color, side: THREE.DoubleSide })
-  );
-}
-scene.add(roadStrip(-roadWidth / 2 - 0.8, roadWidth / 2 + 0.8, '#d4c5a0', 0));
-scene.add(roadStrip(-roadWidth / 2, roadWidth / 2, '#394747', 0.03));
-scene.add(
-  roadStrip(-roadWidth / 2 + 0.18, -roadWidth / 2 + 0.32, '#e7e9cc', 0.045)
-);
-scene.add(
-  roadStrip(roadWidth / 2 - 0.32, roadWidth / 2 - 0.18, '#e7e9cc', 0.045)
-);
+scene.add(createTrackRenderer(track));
 
-// Painted start line, with no physics dependency on its visual mesh.
-for (let column = 0; column < 8; column++) {
-  for (let row = 0; row < 2; row++) {
-    const tile = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.65, roadWidth / 8),
-      new THREE.MeshLambertMaterial({
-        color: (column + row) % 2 ? '#f9f3d6' : '#222e30',
-      })
-    );
-    tile.rotation.x = -Math.PI / 2;
-    tile.position.set(
-      row * 0.65 - 0.325,
-      0.06,
-      -radiusZ - roadWidth / 2 + ((column + 0.5) * roadWidth) / 8
-    );
-    scene.add(tile);
-  }
+if (
+  import.meta.env.DEV &&
+  new URLSearchParams(window.location.search).get('debug') === 'track'
+) {
+  scene.add(createTrackDebugOverlay(track));
+  const legend = document.createElement('aside');
+  legend.id = 'track-debug';
+  legend.className = 'track-debug';
+  legend.setAttribute('aria-label', 'Canonical track debug legend');
+  const widthRange = track.samples.map((sample) => sample.width);
+  legend.innerHTML = `
+    <strong>CANONICAL TRACK</strong>
+    <span class="debug-centerline">Centreline</span>
+    <span class="debug-width">Road width</span>
+    <span class="debug-normal">Normals</span>
+    <span class="debug-curvature">Curvature · yellow → red</span>
+    <span class="debug-checkpoint">Checkpoints</span>
+    <small>${track.totalLength.toFixed(1)} m · ${track.samples.length} samples ·
+      ${Math.min(...widthRange).toFixed(1)}–${Math.max(...widthRange).toFixed(1)} m wide</small>`;
+  element('race').append(legend);
 }
 
 const treeTrunkMaterial = new THREE.MeshLambertMaterial({ color: '#7f6551' });
@@ -236,18 +188,9 @@ function release(): void {
   feedback();
 }
 function positionCar(): void {
-  const sample = (distance / courseLength) * sampleCount;
-  const index = Math.floor(sample) % sampleCount;
-  const point = points[index];
-  const next = points[(index + 1) % sampleCount];
-  if (!point || !next) return;
-  const fraction = sample - Math.floor(sample);
-  car.position.set(
-    THREE.MathUtils.lerp(point.x, next.x, fraction),
-    0,
-    THREE.MathUtils.lerp(point.z, next.z, fraction)
-  );
-  car.rotation.y = Math.atan2(next.x - point.x, next.z - point.z);
+  const frame = sampleTrack(track, track.startS + distance);
+  car.position.set(frame.x, 0, frame.z);
+  car.rotation.y = Math.atan2(frame.tx, frame.tz);
 }
 function formatTime(seconds: number): string {
   return seconds.toFixed(3).padStart(6, '0');
@@ -301,7 +244,23 @@ function resize(): void {
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
   const aspect = width / Math.max(height, 1);
-  const halfHeight = Math.max(64, 47 / aspect);
+  // Fit the authoritative road bounds in the camera's angled view.
+  const corners = [
+    new THREE.Vector3(bounds.minX, 0, bounds.minZ),
+    new THREE.Vector3(bounds.minX, 0, bounds.maxZ),
+    new THREE.Vector3(bounds.maxX, 0, bounds.minZ),
+    new THREE.Vector3(bounds.maxX, 0, bounds.maxZ),
+  ].map((point) => point.applyMatrix4(camera.matrixWorldInverse));
+  const projectedWidth =
+    Math.max(...corners.map((point) => point.x)) -
+    Math.min(...corners.map((point) => point.x));
+  const projectedHeight =
+    Math.max(...corners.map((point) => point.y)) -
+    Math.min(...corners.map((point) => point.y));
+  const halfHeight = Math.max(
+    projectedHeight * 0.72,
+    (projectedWidth * 0.72) / aspect
+  );
   camera.left = -halfHeight * aspect;
   camera.right = halfHeight * aspect;
   camera.top = halfHeight;
@@ -321,8 +280,8 @@ function animate(time: number): void {
     speed = Math.max(0, Math.min(18, speed + (held() ? 7 : -9) * dt));
     distance += speed * dt;
     elapsed += dt;
-    if (distance >= courseLength) {
-      distance = courseLength;
+    if (distance >= track.totalLength) {
+      distance = track.totalLength;
       racing = false;
       release();
       cardTitle.textContent = `${formatTime(elapsed)} seconds`;

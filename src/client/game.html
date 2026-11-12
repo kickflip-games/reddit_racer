@@ -15,7 +15,7 @@
       <canvas
         id="race-canvas"
         tabindex="0"
-        aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
+        aria-label="Race circuit. Hold Space or touch to accelerate; release to brake."
       ></canvas>
       <div id="race-hud" class="race-hud">
         <header class="hud">
@@ -34,7 +34,9 @@
         </header>
         <div class="timing" aria-label="Race telemetry">
           <p class="eyebrow">LAP TIME</p>
-          <output id="timer" aria-live="off">00.000</output>
+          <output id="timer" aria-label="Lap time in seconds" aria-live="off"
+            >00.000</output
+          >
           <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
           <label
             id="lap-progress-label"
@@ -149,8 +151,40 @@
         </section>
       </div>
       <footer class="race-footer">
-        <span id="status">SPACE OR TOUCH THE TRACK</span
-        ><span class="footer-detail">AUTO STEERING</span>
+        <div class="drive-feedback">
+          <span id="status">SPACE OR TOUCH THE TRACK</span>
+          <span class="footer-detail">AUTO STEERING</span>
+        </div>
+        <div
+          class="feedback-controls"
+          role="group"
+          aria-label="Sound and motion settings"
+        >
+          <button
+            id="sound-toggle"
+            type="button"
+            aria-pressed="true"
+            aria-describedby="sound-feedback"
+            disabled
+          >
+            Sound on
+          </button>
+          <label class="motion-control">
+            <span class="visually-hidden">Visual motion</span>
+            <select id="motion-select" aria-label="Visual motion" disabled>
+              <option value="system">Motion: device</option>
+              <option value="reduced">Motion: reduced</option>
+              <option value="full">Motion: full</option>
+            </select>
+          </label>
+        </div>
+        <p
+          id="sound-feedback"
+          class="sound-feedback visually-hidden"
+          role="status"
+        >
+          Sound starts when you race.
+        </p>
       </footer>
       <div id="error" class="error" role="alert" hidden></div>
     </main>

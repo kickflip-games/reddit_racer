@@ -174,21 +174,23 @@ function held(): boolean {
 function feedback(): void {
   const state = driver.state;
   inputLabel.dataset.held = String(held());
-  inputLabel.dataset.condition = state.offRoad
-    ? 'off-road'
-    : state.slip > 0.05
-      ? 'sliding'
-      : 'gripping';
+  inputLabel.dataset.condition = state.recovering
+    ? 'recovering'
+    : state.offRoad
+      ? 'off-road'
+      : state.slip > 0.05
+        ? 'sliding'
+        : 'gripping';
+  const driveLabel = held() ? 'ACCELERATING' : 'RELEASED · BRAKING';
+  const surfaceLabel = state.recovering
+    ? 'RECOVERING'
+    : state.offRoad
+      ? 'OFF ROAD'
+      : state.slip > 0.05
+        ? 'SLIDING'
+        : '';
   inputLabel.textContent = racing
-    ? state.recovering
-      ? 'RECOVERING · KEEP GOING'
-      : state.offRoad
-        ? 'OFF ROAD · TIME LOST'
-        : state.slip > 0.05
-          ? 'SLIDING · RELEASE TO SLOW'
-          : held()
-            ? 'ACCELERATING'
-            : 'RELEASED · BRAKING'
+    ? `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
     : driver.interrupted
       ? 'RACE INTERRUPTED · TRY AGAIN'
       : state.status === 'finished'
@@ -196,10 +198,18 @@ function feedback(): void {
         : 'SPACE OR TOUCH THE TRACK';
   brakeMaterial.color.set(held() ? '#672e27' : '#ff302e');
 }
-function release(): void {
-  pointerHeld = false;
-  keyHeld = false;
+function clearPointer(): void {
+  const pointer = activePointer;
+  // Clear ownership before capture release can dispatch lostpointercapture.
   activePointer = undefined;
+  pointerHeld = false;
+  if (pointer !== undefined && canvas.hasPointerCapture(pointer)) {
+    canvas.releasePointerCapture(pointer);
+  }
+}
+function release(): void {
+  keyHeld = false;
+  clearPointer();
   feedback();
 }
 function positionCar(): void {
@@ -285,10 +295,12 @@ canvas.addEventListener('pointerdown', (event) => {
   canvas.setPointerCapture(event.pointerId);
   updateInput(performance.now());
 });
+canvas.addEventListener('contextmenu', (event) => {
+  if (racing && driver.active) event.preventDefault();
+});
 function releasePointer(event: PointerEvent): void {
   if (event.pointerId !== activePointer) return;
-  pointerHeld = false;
-  activePointer = undefined;
+  clearPointer();
   updateInput(performance.now());
 }
 canvas.addEventListener('pointerup', releasePointer);

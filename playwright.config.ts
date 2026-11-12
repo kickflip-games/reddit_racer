@@ -13,6 +13,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: '**/touch.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 960, height: 720 },

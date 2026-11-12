@@ -28,7 +28,11 @@ Superseded runs for the same PR are cancelled; independent PRs and main have sep
 
 See [Playwright's sharding rules](https://playwright.dev/docs/test-sharding), [GitHub dependency and matrix rules](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax), and [status-function context availability](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability) for the underlying scheduling/gate behavior.
 
+The miniature scene adds numerical camera coverage over shoulder vertices, hairpins, car bounds, damping, zero/tiny viewports and resize; car/prop tests cover grounding, wheel direction, lean direction, placement clearance and owned resource disposal. Browser art cases exercise real local model/palette payloads, repeated starts and missing/hung asset fallbacks. Labelled static asset/presentation fixtures do not establish a completed race.
+
 ## Clock and fixture boundaries
+
+Healthy initialized scenes settle local car/scenery asset requests before artificial idle clock jumps, so a test clock leap does not manufacture asset deadlines. Explicit missing/palette/hung-loader cases retain their failure controls. HUD regressions preserve the accessible verification live region and refit late daily text without resize or driving.
 
 Scored driving and countdown checks use Playwright `clock.runFor`, advancing each scheduled render callback through the real shared simulation. Deliberate long-frame-gap tests retain their interruption checks. Six request/UTC deadline waits use `clock.fastForward` only while assertions establish that the scene is loading, ready or waiting for session preparation. No scored run exists at those points. The timer fires at the jumped timestamp, including any newly started countdown; later-response and expiry assertions remain in place. This avoids thousands of idle WebGL frames without skipping driving checks.
 

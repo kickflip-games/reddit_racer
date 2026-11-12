@@ -1,47 +1,55 @@
-# Kenney asset inventory
+# Kenney assets and visual loading
 
-The supplied `assets/3d_models.zip` was inspected before selecting game art. It is approximately 27 MiB compressed and 73 MiB uncompressed, and contains six kits with 595 GLB models plus duplicate FBX/OBJ formats and previews. The archive is source material, not a browser asset bundle.
+The supplied `assets/3d_models.zip` was inspected before selecting game art. It contains six kits with 595 GLB models plus alternate formats and previews, approximately 27 MiB compressed and 73 MiB uncompressed. The archive remains source material; browsers receive only the seven selected files below.
 
-## Road approach
+## Roads and selected art
 
-Use a procedural road mesh derived from the authoritative centreline, with generated kerbs and markings. Use selected Kenney cars, trees, barriers and race furniture for presentation. This preserves smooth, varied corner radii and deterministic reconstruction without making visual meshes part of the physics.
+Road meshes, kerbs, grid and markings are generated from the authoritative centreline. This supports smooth procedural hairpins, sweepers and decreasing-radius corners without constraining simulation to fixed road tiles. The [City Kit Roads](https://kenney.nl/assets/city-kit-roads) and [3D Road Tiles](https://kenney.nl/assets/3d-road-tiles) packs were evaluated as useful visual references and prop sources; fixed tile radii would restrict the generator.
 
-The included road kits offer modular straights, corners, ramps and intersections. They are useful references and decoration sources, but their fixed corner radii would constrain hairpins, sweepers and decreasing-radius corners. City roads include road signs, cones, barriers and street furniture. The separately investigated 3D Road Tiles pack adds 300 tiles but does not remove that geometric constraint.
+The orange Car Kit racer provides strong foreground contrast with dark tyres and one shared palette material. Sparse Racing Kit tree groves, fence runs and start furniture give the circuit a consistent miniature scale.
 
-## Useful archive paths
+All archive paths below begin with `3d_models/`. Browser files live under `src/client/assets/kenney/`.
 
-All paths below are relative to the ZIP root.
+| Browser path                       | Original archive path                                        |   Bytes | Triangles / material primitives |
+| ---------------------------------- | ------------------------------------------------------------ | ------: | ------------------------------: |
+| `car-kit/race.glb`                 | `kenney_car-kit/Models/GLB format/race.glb`                  | 167,272 |                       1,952 / 5 |
+| `car-kit/Textures/colormap.png`    | `kenney_car-kit/Models/GLB format/Textures/colormap.png`     |  12,371 |               512 × 512 palette |
+| `racing-kit/treeSmall.glb`         | `kenney_racing-kit/Models/GLTF format/treeSmall.glb`         |   6,960 |                          72 / 2 |
+| `racing-kit/barrierRed.glb`        | `kenney_racing-kit/Models/GLTF format/barrierRed.glb`        |   3,244 |                          28 / 1 |
+| `racing-kit/barrierWhite.glb`      | `kenney_racing-kit/Models/GLTF format/barrierWhite.glb`      |   3,252 |                          28 / 1 |
+| `racing-kit/pylon.glb`             | `kenney_racing-kit/Models/GLTF format/pylon.glb`             |   8,088 |                         108 / 1 |
+| `racing-kit/flagCheckersSmall.glb` | `kenney_racing-kit/Models/GLTF format/flagCheckersSmall.glb` |  10,604 |                         132 / 4 |
 
-| Asset                   | Archive path                                                                                                              | Size and notes                                                                                                              |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Recommended initial car | `3d_models/kenney_racing-kit/Models/GLTF format/raceCarRed.glb`                                                           | 106,064 bytes; 1,430 triangles; body and four named wheel nodes; no external textures. Other colour variants are available. |
-| Toy racer alternative   | `3d_models/kenney_toy-car-kit/Models/GLB format/vehicle-racer.glb`                                                        | 104,328 bytes; 1,076 triangles; separate wheels; external palette texture.                                                  |
-| Low toy racer           | `3d_models/kenney_toy-car-kit/Models/GLB format/vehicle-racer-low.glb`                                                    | 103,808 bytes; 1,072 triangles; separate wheels; external palette texture.                                                  |
-| Modern race car         | `3d_models/kenney_car-kit/Models/GLB format/race.glb`                                                                     | 167,272 bytes; 1,952 triangles; separate wheels; external palette texture.                                                  |
-| Race barriers           | `3d_models/kenney_racing-kit/Models/GLTF format/barrierRed.glb`, `barrierWhite.glb` in the same directory                 | Approximately 3.2 KB and 28 triangles each.                                                                                 |
-| Race trees              | `3d_models/kenney_racing-kit/Models/GLTF format/treeSmall.glb`, `treeLarge.glb` in the same directory                     | Approximately 7 KB each.                                                                                                    |
-| Toy trees               | `3d_models/kenney_toy-car-kit/Models/GLB format/tree.glb`, `tree-pine.glb` in the same directory                          | 11,032 / 12,640 bytes; 98 / 114 triangles; external palette texture.                                                        |
-| Race furniture          | `3d_models/kenney_racing-kit/Models/GLTF format/`                                                                         | Includes `roadStart.glb`, `pylon.glb`, `flagCheckers.glb`, `grandStand.glb`, gates and pit structures.                      |
-| City road decorations   | `3d_models/kenney_city-kit-roads/Models/GLB format/`                                                                      | Includes `construction-cone.glb`, `construction-barrier.glb`, signs and lights.                                             |
-| Buildings and trees     | `3d_models/kenney_city-kit-suburban_20/Models/GLB format/`, `3d_models/kenney_city-kit-commercial_2.1/Models/GLB format/` | Prefer a small deliberate selection; detailed commercial buildings reach hundreds of KB each.                               |
+The selected payload totals **211,791 bytes, 2,320 template triangles and 14 material primitives** before instancing. [The extraction manifest](../src/client/assets/kenney/manifest.json) records the ZIP SHA-256, exact full archive paths, individual hashes, measurements and wheel facts. Payloads are unmodified. Other cars, buildings, previews, duplicate formats and archive metadata are excluded.
 
-## Loading requirements
+## Loader and materials
 
-- Selectively extract chosen GLBs and their dependencies into a frontend asset directory. Exclude archive previews, alternate formats, `.DS_Store` and `__MACOSX` metadata.
-- Most newer-kit GLBs refer to `Textures/colormap.png` relative to their model URL and use `KHR_texture_transform`. Preserve that path or explicitly remap it. Toy Car, City Roads and Car Kit palettes are different files: 8,706, 11,428 and 12,371 bytes respectively. Do not overwrite one kit's palette with another.
-- Racing Kit models inspected use `KHR_materials_unlit`. Their materials will not respond to scene lighting unless deliberately converted. Preserve colours and evaluate the result visually before enabling shadows.
-- Load Three.js and GLTF assets only in the expanded game entry. Keep the inline splash lightweight. Reuse loaded geometries/materials and instance repeated scenery; cap prop counts and shadows for phones.
-- Normalize model scale, orientation and origin in the visual layer. Derive the car position and effects from shared simulation state; never derive racing collision or checkpoints from art meshes.
+`scene-assets.ts` loads local GLBs only in the expanded game. Car and prop promises are separately cached, and every model gets an independent LoadingManager and ten-second deadline. Missing models or textures keep the immediate primitive fallback; optional props can fall back independently. Loading never delays the race or changes ranked eligibility. Completed art is installed only between attempts.
+
+The Car Kit GLB refers to `Textures/colormap.png`; its exact resolved request is remapped to the separately imported Vite palette URL. The URL remap does not depend on filenames being preserved and avoids remote requests or ambiguous matching of other kits' palettes. The pinned Devvit Vite plugin currently emits stable asset names (`assetFileNames: '[name][extname]'`), so this production build has six named GLBs and `colormap.png`, rather than hashed names. Small GLBs use Vite's `no-inline` asset option. The checker flag's 128 × 128 texture is embedded.
+
+The selected models load as **lit MeshStandardMaterial**. The car keeps its original palette; scenery uses owned material clones to give foliage, bark and red/cream barriers a clearer shared theme while preserving roughness and maps. The Racing GLBs declare `KHR_materials_unlit` in `extensionsUsed`, but attach it to zero actual materials. An earlier inventory inferred unlit shading from that declaration; the actual material bindings and Three.js loader inspection correct that inference. Do not convert based on the top-level declaration alone.
+
+The cache owns imported geometry, materials and textures for scene lifetime. Car clones and instanced scenery borrow those resources. The scenery owns its small set of recoloured material clones and disposes those separately without freeing borrowed textures. Retry resets visual transforms and reuses GPU data; whole-scene disposal releases owned imports once. Three.js LoadingManager aborts supported GLB/image fetches when a deadline or teardown occurs; late unabortable results are ignored and disposed.
+
+## Grounding and visual state
+
+The Car Kit model is Y-up with +Z forward, four named wheels and no animation clips. It is uniformly scaled to 3.8 m long and grounded with its normalized wheel minimum at visual Y=0.045, above asphalt Y=0.03. Wheel spin follows authoritative distance. Bounded body-only pitch and roll leave the axles grounded; rear lamps and unspun rear tread contacts use local -Z. The imported source remains immutable.
+
+Racing prop offsets and barrier corner origins are normalized from actual bounds. Their bases sit near Y=-0.045 over grass Y=-0.05. Deterministic clustered placement is capped at 64 instances and checks every closed-loop road segment, including variable width. Props clear the road half-width, the authoritative 8 m recovery margin, the largest car footprint and each full prop footprint. Rejected positions remain empty. Repeated primitives use instancing rather than individual draw calls.
+
+Visual meshes never define road bounds, collision, checkpoints, grip or scores. The canonical track and shared fixed-step simulation remain authoritative. The lightweight splash imports neither Three.js nor these assets.
 
 ## Provenance and licence
 
-The ZIP contains no licence or README files. Kenney's official support page states that assets on its asset pages use Creative Commons CC0 and attribution is optional. Include a CC0 notice and the relevant source links when assets are extracted. Do not use the Kenney logo.
+Kenney's [Car Kit](https://kenney.nl/assets/car-kit) and [Racing Kit](https://kenney.nl/assets/racing-kit) use [Creative Commons CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). [Kenney support](https://kenney.nl/support) describes optional attribution. The supplied ZIP contains no licence/readme file, so the selected directory includes a [source and CC0 notice](../src/client/assets/kenney/NOTICE.md). No Kenney logo is used. Asset licensing is separate from the repository's source-code licence.
 
-- [Kenney licensing and attribution](https://kenney.nl/support)
-- [Racing Kit](https://kenney.nl/assets/racing-kit)
-- [Toy Car Kit](https://kenney.nl/assets/toy-car-kit)
-- [Car Kit](https://kenney.nl/assets/car-kit)
-- [City Kit Roads](https://kenney.nl/assets/city-kit-roads) — official listing describes CC0, road signs and traffic lights.
-- [3D Road Tiles](https://kenney.nl/assets/3d-road-tiles) — official listing describes 300 CC0 tiles.
+## Rendered checks
 
-No assets have been extracted or added to the browser build by this inventory.
+The generated `showcase-3` browser run uses real keyboard holds/releases, completes all gates at exactly 3,215 shared-simulation ticks (26.792 seconds), then retries. These captures show the actual local renderer; they are unranked automated runs, not concept art or physical-phone observations. The earlier [generated mobile still](screenshots/generated-driving-mobile.png) remains available for comparison.
+
+![Kenney car on a generated hairpin, mobile-sized Chromium](screenshots/kenney-driving-mobile-chromium.png)
+
+![Kenney car on the same generated hairpin, desktop Chromium](screenshots/kenney-driving-chromium.png)
+
+The orthographic camera keeps fixed north at 15 degrees from vertical. Its fit includes every canonical shoulder vertex from 5 m behind to 35 m ahead and the actual oriented car, using measured HUD/footer space. Centre follow is damped, zoom-in eases and zoom-out immediately preserves the required road/car fit. Idle overview and race chase do not affect fixed-step state. Numerical tests cover closed-loop wrap, intervening hairpins, off-road poses, damping, tiny/zero viewports and synchronous resize; browser checks inspect actual normal/mobile layouts and late-wrapping daily details.

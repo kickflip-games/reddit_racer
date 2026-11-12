@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import {
   hashTrack,
@@ -114,6 +115,7 @@ test('local geometry overlay is readable after a mobile resize', async ({
 }) => {
   await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html?debug=track');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await expect(page.locator('#track-debug')).toBeVisible();
   await expect(page.locator('#track-debug')).toContainText('Curvature');

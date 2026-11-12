@@ -100,6 +100,8 @@ See [procedural generation](docs/procedural-generation.md) for motifs and [track
 - `src/server`: Hono and tRPC v11 backend with request-local Devvit identity and installation-scoped Redis. Verified times are calculated by replaying input on the server; client times, user IDs and track data are never accepted as ranking authority.
 - `assets/3d_models.zip`: supplied Kenney models. Selectively extract useful models; do not serve the entire archive.
 
+The expanded scene uses a locally stored Kenney racer, instanced scenery and generated road/kerb meshes. Its orthographic chase camera fits the upcoming 35 m of road around the HUD; visuals do not change canonical road bounds or racing rules. [Asset selection and ownership](docs/assets.md) records source, CC0, payload sizes, fallbacks and disposal.
+
 Keep heavy rendering dependencies out of the inline splash. Use Devvit client navigation/toasts instead of browser navigation/alerts. The project uses Devvit Web, not Blocks or the legacy public API.
 
 ## Daily Games brief

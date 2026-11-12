@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 import {
   createDailyChallengeRecord,
   dailyChallengeView,
@@ -206,6 +207,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#start-label')).toHaveText('Race today');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   expect(boardCalls).toBe(0);
   await page.locator('#start-button').click();
@@ -311,6 +313,7 @@ test('presentation fixture keeps responsive results and native standings accessi
   await page.screenshot({
     path: `test-results/quick-start-mock-${test.info().project.name}.png`,
   });
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   await page.evaluate(
     async ({ challenge, finishTicks, serverNowMs, sessionId }) => {

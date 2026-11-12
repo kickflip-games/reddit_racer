@@ -17,32 +17,34 @@
         tabindex="0"
         aria-label="Race circuit. Hold Space or touch the circuit to accelerate."
       ></canvas>
-      <header class="hud">
-        <div>
-          <p class="eyebrow">DAILY TIME ATTACK</p>
-          <h1>Reddit Racer<span class="title-dot">.</span></h1>
-        </div>
-        <div class="mode-stack">
-          <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
-          <p id="track-source" data-state="loading" hidden></p>
-          <div id="daily-details" class="daily-details" hidden>
-            <p id="daily-date"></p>
-            <p id="daily-reset"></p>
+      <div id="race-hud" class="race-hud">
+        <header class="hud">
+          <div class="race-brand">
+            <p class="eyebrow">DAILY TIME ATTACK</p>
+            <h1>Reddit Racer<span class="title-dot">.</span></h1>
           </div>
+          <div class="mode-stack">
+            <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+            <p id="track-source" data-state="loading" hidden></p>
+            <div id="daily-details" class="daily-details" hidden>
+              <p id="daily-date"></p>
+              <p id="daily-reset"></p>
+            </div>
+          </div>
+        </header>
+        <div class="timing" aria-label="Race telemetry">
+          <p class="eyebrow">LAP TIME</p>
+          <output id="timer" aria-live="off">00.000</output>
+          <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
+          <label
+            id="lap-progress-label"
+            class="lap-progress-label"
+            for="lap-progress"
+          >
+            Gates 0/8 · 0%
+          </label>
+          <progress id="lap-progress" max="1" value="0">0%</progress>
         </div>
-      </header>
-      <div class="timing" aria-label="Race telemetry">
-        <p class="eyebrow">LAP TIME</p>
-        <output id="timer">00.000</output>
-        <div class="speed"><span id="speed">0</span> <span>km/h</span></div>
-        <label
-          id="lap-progress-label"
-          class="lap-progress-label"
-          for="lap-progress"
-        >
-          Gates 0/8 · 0%
-        </label>
-        <progress id="lap-progress" max="1" value="0">0%</progress>
         <p
           id="verification-status"
           class="verification-status"

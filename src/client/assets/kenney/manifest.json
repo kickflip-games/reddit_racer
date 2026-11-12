@@ -1,0 +1,473 @@
+{
+  "schemaVersion": 1,
+  "archive": {
+    "repositoryPath": "assets/3d_models.zip",
+    "bytes": 27934627,
+    "sha256": "b40e54fb42cba5f95fd46daf03a3c9dd9e1dc8ef9097d730d1270f5cf770595a",
+    "embeddedLicenseFiles": []
+  },
+  "selectedFileCount": 7,
+  "selectedBytes": 211791,
+  "selectedTriangles": 2320,
+  "selectedMaterialPrimitives": 14,
+  "assets": [
+    {
+      "role": "vehicle",
+      "archivePath": "3d_models/kenney_car-kit/Models/GLB format/race.glb",
+      "destination": "src/client/assets/kenney/car-kit/race.glb",
+      "bytes": 167272,
+      "sha256": "e1408c4c6e135f5a39c5f34cbfbcac9ae21c5c491e793fdee74bccac8334d942",
+      "upstreamPack": "car-kit",
+      "sourceUrl": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 1952,
+      "meshCount": 5,
+      "materialPrimitiveCount": 5,
+      "materialCount": 1,
+      "materialNames": [
+        "colormap"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_texture_transform"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [
+        {
+          "uri": "Textures/colormap.png",
+          "name": "colormap"
+        }
+      ],
+      "sourceBounds": {
+        "min": [
+          -0.6500000119209289,
+          -1.1920928966180355e-08,
+          -1.2798862457275395
+        ],
+        "max": [
+          0.6500000119209289,
+          0.7325442790985107,
+          1.2798862457275386
+        ],
+        "size": [
+          1.3000000238418579,
+          0.7325442910194397,
+          2.559772491455078
+        ],
+        "center": [
+          0,
+          0.36627213358879085,
+          -4.440892098500626e-16
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0,
+          1.1920928966180355e-08,
+          4.440892098500626e-16
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "forwardAxis": "+Z",
+        "yawNormalizationRadians": 0,
+        "rearAxis": "-Z",
+        "wheelSpinAxisLocal": "+X"
+      },
+      "rig": {
+        "bodyNode": "body",
+        "wheelNodes": [
+          "wheel-front-left",
+          "wheel-front-right",
+          "wheel-back-left",
+          "wheel-back-right"
+        ],
+        "wheelPivots": {
+          "wheel-front-left": [
+            0.35,
+            0.3,
+            0.6398862
+          ],
+          "wheel-front-right": [
+            -0.35,
+            0.3,
+            0.6398862
+          ],
+          "wheel-back-left": [
+            0.35,
+            0.3,
+            -0.8801137
+          ],
+          "wheel-back-right": [
+            -0.35,
+            0.3,
+            -0.8801137
+          ]
+        },
+        "wheelGeometryCenters": {
+          "wheel-front-left": [
+            0.5000000059603278,
+            0.30000000000000004,
+            0.6398862
+          ],
+          "wheel-front-right": [
+            -0.5000000059604399,
+            0.30000000000000004,
+            0.6398862
+          ],
+          "wheel-back-left": [
+            0.5000000059603278,
+            0.30000000000000004,
+            -0.8801136999999999
+          ],
+          "wheel-back-right": [
+            -0.5000000059604399,
+            0.30000000000000004,
+            -0.8801136999999999
+          ]
+        },
+        "wheelRadiusUnscaled": 0.30000001192092896,
+        "note": "Wheel node origins are at the inner axle edge along X; derive tread contacts from unspun geometry centres, not getWorldPosition(wheel) alone. Body-only lean keeps wheel bases grounded."
+      }
+    },
+    {
+      "role": "vehicle-palette",
+      "archivePath": "3d_models/kenney_car-kit/Models/GLB format/Textures/colormap.png",
+      "destination": "src/client/assets/kenney/car-kit/Textures/colormap.png",
+      "bytes": 12371,
+      "sha256": "f3622a03a20c6696065cae9cbe391351be873508af190c2ebd1d420c055787a5",
+      "upstreamPack": "car-kit",
+      "sourceUrl": "https://kenney.nl/assets/car-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "image": {
+        "format": "PNG",
+        "width": 512,
+        "height": 512
+      }
+    },
+    {
+      "role": "scenery",
+      "archivePath": "3d_models/kenney_racing-kit/Models/GLTF format/treeSmall.glb",
+      "destination": "src/client/assets/kenney/racing-kit/treeSmall.glb",
+      "bytes": 6960,
+      "sha256": "151d1556b762768433ed9610589650ae8110cac2ed99a3fe1e4da53e1335be23",
+      "upstreamPack": "racing-kit",
+      "sourceUrl": "https://kenney.nl/assets/racing-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 72,
+      "meshCount": 1,
+      "materialPrimitiveCount": 2,
+      "materialCount": 2,
+      "materialNames": [
+        "grass",
+        "bark"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_materials_unlit"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [],
+      "sourceBounds": {
+        "min": [
+          -0.47664552,
+          -0.01,
+          -0.796237656
+        ],
+        "max": [
+          -0.22335447999999997,
+          1.0598247,
+          -0.5037623440000001
+        ],
+        "size": [
+          0.25329104,
+          1.0698247,
+          0.2924753119999999
+        ],
+        "center": [
+          -0.35,
+          0.52491235,
+          -0.65
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0.35,
+          0.01,
+          0.65
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "forwardAxis": null
+      }
+    },
+    {
+      "role": "scenery",
+      "archivePath": "3d_models/kenney_racing-kit/Models/GLTF format/barrierRed.glb",
+      "destination": "src/client/assets/kenney/racing-kit/barrierRed.glb",
+      "bytes": 3244,
+      "sha256": "6d7de595a92507af6fcb40fe5a62730925ea23f1f8c727b8ecdec9eba9b98156",
+      "upstreamPack": "racing-kit",
+      "sourceUrl": "https://kenney.nl/assets/racing-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 28,
+      "meshCount": 1,
+      "materialPrimitiveCount": 1,
+      "materialCount": 1,
+      "materialNames": [
+        "red"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_materials_unlit"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [],
+      "sourceBounds": {
+        "min": [
+          -0.35,
+          -0.01,
+          -0.773
+        ],
+        "max": [
+          -0.09999999999999998,
+          0.12120000000000002,
+          -0.65
+        ],
+        "size": [
+          0.25,
+          0.1312,
+          0.123
+        ],
+        "center": [
+          -0.22499999999999998,
+          0.05560000000000001,
+          -0.7115
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0.22499999999999998,
+          0.01,
+          0.7115
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "longAxis": "+X",
+        "forwardAxis": null
+      }
+    },
+    {
+      "role": "scenery",
+      "archivePath": "3d_models/kenney_racing-kit/Models/GLTF format/barrierWhite.glb",
+      "destination": "src/client/assets/kenney/racing-kit/barrierWhite.glb",
+      "bytes": 3252,
+      "sha256": "44bf654b08bb96bd0e9a70c00dab35b0b23df955d3390ec8ede89c20ad64871a",
+      "upstreamPack": "racing-kit",
+      "sourceUrl": "https://kenney.nl/assets/racing-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 28,
+      "meshCount": 1,
+      "materialPrimitiveCount": 1,
+      "materialCount": 1,
+      "materialNames": [
+        "grey"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_materials_unlit"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [],
+      "sourceBounds": {
+        "min": [
+          -0.35,
+          -0.01,
+          -0.773
+        ],
+        "max": [
+          -0.09999999999999998,
+          0.12120000000000002,
+          -0.65
+        ],
+        "size": [
+          0.25,
+          0.1312,
+          0.123
+        ],
+        "center": [
+          -0.22499999999999998,
+          0.05560000000000001,
+          -0.7115
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0.22499999999999998,
+          0.01,
+          0.7115
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "longAxis": "+X",
+        "forwardAxis": null
+      }
+    },
+    {
+      "role": "scenery",
+      "archivePath": "3d_models/kenney_racing-kit/Models/GLTF format/pylon.glb",
+      "destination": "src/client/assets/kenney/racing-kit/pylon.glb",
+      "bytes": 8088,
+      "sha256": "d554671f5ab372cef0e1083b83dc270c03f32bfa0dbc3978c40206faf5608b89",
+      "upstreamPack": "racing-kit",
+      "sourceUrl": "https://kenney.nl/assets/racing-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 108,
+      "meshCount": 1,
+      "materialPrimitiveCount": 1,
+      "materialCount": 1,
+      "materialNames": [
+        "pylon"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_materials_unlit"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [],
+      "sourceBounds": {
+        "min": [
+          -0.4100000024,
+          -0.01,
+          -0.7100000024
+        ],
+        "max": [
+          -0.28999999759999995,
+          0.12200000000000001,
+          -0.5899999976
+        ],
+        "size": [
+          0.12000000480000006,
+          0.132,
+          0.12000000480000006
+        ],
+        "center": [
+          -0.35,
+          0.05600000000000001,
+          -0.65
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0.35,
+          0.01,
+          0.65
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "forwardAxis": null
+      }
+    },
+    {
+      "role": "scenery",
+      "archivePath": "3d_models/kenney_racing-kit/Models/GLTF format/flagCheckersSmall.glb",
+      "destination": "src/client/assets/kenney/racing-kit/flagCheckersSmall.glb",
+      "bytes": 10604,
+      "sha256": "a66a124e0e25ce9bfe9eb6229f57363a96683f8f88606c901d11565638e096df",
+      "upstreamPack": "racing-kit",
+      "sourceUrl": "https://kenney.nl/assets/racing-kit",
+      "license": "CC0-1.0",
+      "payloadIsUnmodified": true,
+      "triangles": 132,
+      "meshCount": 1,
+      "materialPrimitiveCount": 4,
+      "materialCount": 4,
+      "materialNames": [
+        "checkers",
+        "_defaultMat",
+        "grey",
+        "road"
+      ],
+      "animations": 0,
+      "declaredExtensions": [
+        "KHR_materials_unlit"
+      ],
+      "materialUnlitBindings": 0,
+      "loadedMaterialTypes": [
+        "MeshStandardMaterial"
+      ],
+      "images": [
+        {
+          "name": "checkers",
+          "bufferView": 0,
+          "mimeType": "image/png"
+        }
+      ],
+      "sourceBounds": {
+        "min": [
+          -0.35,
+          -0.01,
+          -0.6775999978
+        ],
+        "max": [
+          -0.15999999999999998,
+          0.29,
+          -0.6424
+        ],
+        "size": [
+          0.19,
+          0.3,
+          0.03519999780000005
+        ],
+        "center": [
+          -0.255,
+          0.13999999999999999,
+          -0.6599999989
+        ]
+      },
+      "normalization": {
+        "yUp": true,
+        "translationUnscaled": [
+          0.255,
+          0.01,
+          0.6599999989
+        ],
+        "scalePolicy": "Uniform visual scale chosen during integration; preserve source node hierarchy and physics unchanged."
+      },
+      "orientation": {
+        "forwardAxis": null
+      }
+    }
+  ],
+  "status": "Selected original payloads shipped by issue 21; runtime transforms are visual only."
+}

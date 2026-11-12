@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForSceneAssets } from './scene-ready.ts';
 
 test('local racer renders, accelerates, brakes, completes and retries', async ({
   page,
@@ -10,6 +11,7 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   });
   await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await expect(page.locator('#mode-label')).toContainText('UNRANKED');
   await expect(page.locator('#race-canvas')).toBeVisible();
@@ -74,6 +76,7 @@ test('focus loss and long frame gaps visibly interrupt and allow a fresh retry',
 }) => {
   await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
   await page.goto('/game.html');
+  await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await page.locator('#start-button').click();
   await page.clock.runFor(3100);

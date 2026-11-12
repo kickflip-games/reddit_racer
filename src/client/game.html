@@ -70,6 +70,49 @@
         <p id="track-note" class="card-note">
           A fresh circuit every day. Ranked racing coming soon.
         </p>
+        <section
+          id="leaderboard"
+          class="leaderboard"
+          aria-labelledby="leaderboard-title"
+          data-state="idle"
+          hidden
+        >
+          <div class="leaderboard-heading">
+            <h3 id="leaderboard-title">Daily racers</h3>
+            <button id="leaderboard-refresh" type="button">Refresh</button>
+          </div>
+          <p id="leaderboard-day" class="leaderboard-note"></p>
+          <p id="leaderboard-status" role="status"></p>
+          <p id="leaderboard-outcome" hidden></p>
+          <p id="leaderboard-me"></p>
+          <div id="leaderboard-top" class="leaderboard-rows" hidden>
+            <table aria-label="Fastest daily racers">
+              <thead>
+                <tr>
+                  <th scope="col">Rank</th>
+                  <th scope="col">Racer</th>
+                  <th scope="col">Time</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div id="leaderboard-nearby" hidden>
+            <h4>Near your best</h4>
+            <div class="leaderboard-rows">
+              <table aria-label="Nearby daily racers">
+                <thead>
+                  <tr>
+                    <th scope="col">Rank</th>
+                    <th scope="col">Racer</th>
+                    <th scope="col">Time</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
       <footer class="race-footer">
         <span id="status">SPACE OR TOUCH THE TRACK</span

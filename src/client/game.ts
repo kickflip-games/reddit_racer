@@ -11,6 +11,7 @@ import {
   createRankedRaceHooks,
   type AttemptPresentation,
 } from './ranked-client';
+import { createLeaderboardController } from './leaderboard-client';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -158,13 +159,29 @@ function showDailyCourse(view: DailyChallengeView): void {
 
 async function boot(): Promise<void> {
   const course = await loadCourse();
+  const leaderboard = course.daily
+    ? createLeaderboardController(course.daily.challenge)
+    : null;
   const hooks = course.daily
-    ? createRankedRaceHooks(course.daily.challenge, (mode) => {
-        attemptPresentation = mode;
-        renderDailyMode();
-      })
+    ? createRankedRaceHooks(
+        course.daily.challenge,
+        (mode) => {
+          attemptPresentation = mode;
+          renderDailyMode();
+        },
+        leaderboard?.recordVerified
+      )
     : {};
-  initializeGame(course.track, { generated: course.generated, ...hooks });
+  initializeGame(course.track, {
+    generated: course.generated,
+    ...hooks,
+    ...(leaderboard
+      ? {
+          onAttemptStart: leaderboard.onAttemptStart,
+          onResults: leaderboard.onResults,
+        }
+      : {}),
+  });
   source.dataset.state = 'ready';
   source.dataset.fallback = String(course.fallbackUsed);
   if (course.daily) {

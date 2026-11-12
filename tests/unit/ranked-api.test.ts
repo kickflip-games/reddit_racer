@@ -126,6 +126,9 @@ function setup() {
       getDailyChallenge: async () => dailyChallengeView(await fixture, now),
       startRankedRace: () => service.start(),
       submitRun: (input) => service.submit(input),
+      getLeaderboard: async () => {
+        throw new Error('Unexpected leaderboard query');
+      },
     };
   });
   const client = createTRPCClient<AppRouter>({

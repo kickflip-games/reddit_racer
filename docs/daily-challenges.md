@@ -70,7 +70,7 @@ All windows use server UTC calendar days, independent of player timezone or dayl
 min(startedAtMs + 5 minutes, endsAtMs + 3 minutes)
 ```
 
-Sessions pin the challenge ID/hash, runtime versions and authenticated account at start. A pre-midnight session may finish against its original challenge until that bounded expiry. Starting after midnight on an old post is practice. [Ranked verification](ranked-verification.md) implements persistence and authoritative replay; leaderboard storage follows in #11.
+Sessions pin the challenge ID/hash, runtime versions and authenticated account at start. A pre-midnight session may finish against its original challenge until that bounded expiry. Starting after midnight on an old post is practice. [Ranked verification](ranked-verification.md) implements persistence and authoritative replay; [leaderboard storage](leaderboard.md) commits personal bests and retains results for 90 days while course geometry remains available.
 
 The client can display reset time using `serverNowMs` plus monotonic elapsed time. That display never determines the authoritative day, track or lap time.
 

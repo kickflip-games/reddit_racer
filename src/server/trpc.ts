@@ -10,11 +10,17 @@ import {
   type StartRankedRaceResponse,
   type VerifiedRunResponse,
 } from '../shared/ranked-race';
+import {
+  parseLeaderboardQuery,
+  type LeaderboardQuery,
+  type LeaderboardView,
+} from '../shared/leaderboard';
 
 export type RpcContext = {
   getDailyChallenge: () => Promise<DailyChallengeView>;
   startRankedRace: () => Promise<StartRankedRaceResponse>;
   submitRun: (input: RankedSubmission) => Promise<VerifiedRunResponse>;
+  getLeaderboard: (input: LeaderboardQuery) => Promise<LeaderboardView>;
 };
 
 const t = initTRPC.context<RpcContext>().create({ isDev: false });
@@ -105,6 +111,15 @@ export const appRouter = t.router({
     .mutation(async ({ ctx, input }) => {
       try {
         return await ctx.submitRun(input);
+      } catch (error) {
+        throw publicRaceError(error);
+      }
+    }),
+  getLeaderboard: t.procedure
+    .input(parseLeaderboardQuery)
+    .query(async ({ ctx, input }) => {
+      try {
+        return await ctx.getLeaderboard(input);
       } catch (error) {
         throw publicRaceError(error);
       }

@@ -266,6 +266,102 @@ button:focus-visible {
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+.race-card[data-leaderboard='true'] {
+  max-height: calc(100% - 144px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.race-card[data-leaderboard='true'] #retry-button {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.leaderboard {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #b3d3b63d;
+  font-size: 11px;
+  line-height: 1.5;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.leaderboard[hidden],
+.leaderboard [hidden] {
+  display: none;
+}
+.leaderboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.leaderboard h3,
+.leaderboard h4 {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.leaderboard h4 {
+  margin: 12px 0 4px;
+  font-size: 11px;
+  color: #d3e3cb;
+}
+#leaderboard-refresh {
+  width: auto;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: #fff9e8;
+  background: #356254;
+}
+.leaderboard p {
+  margin: 4px 0;
+}
+.leaderboard-note,
+#leaderboard-status {
+  color: #adc9b9;
+}
+#leaderboard-outcome {
+  color: #ffcf7b;
+}
+#leaderboard-me {
+  color: #d3e3cb;
+}
+.leaderboard-rows {
+  max-height: 142px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.leaderboard table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.leaderboard th,
+.leaderboard td {
+  padding: 4px;
+  text-align: left;
+}
+.leaderboard th {
+  color: #adc9b9;
+  font-size: 9px;
+  font-weight: 500;
+}
+.leaderboard th:last-child,
+.leaderboard td:last-child {
+  text-align: right;
+  white-space: nowrap;
+}
+.leaderboard td:nth-child(2) {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.leaderboard tr[data-self='true'] {
+  color: #ffcf7b;
+  background: #ffbd5912;
+}
 .race-footer {
   position: absolute;
   bottom: max(20px, env(safe-area-inset-bottom));
@@ -371,6 +467,9 @@ button:focus-visible {
     width: 260px;
     bottom: 46px;
     padding: 16px;
+  }
+  .race-card[data-leaderboard='true'] {
+    max-height: calc(100% - 100px);
   }
   h2 {
     font-size: 22px;

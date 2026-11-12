@@ -64,6 +64,28 @@ async function openDaily(
   nearMidnight = false
 ): Promise<DailyChallengeRecord> {
   const record = await dailyRecord();
+  await page.route('**/api/trpc/getLeaderboard*', async (route) => {
+    await route.fulfill({
+      json: {
+        result: {
+          data: {
+            challengeId: record.id,
+            challengeHash: record.challengeHash,
+            day: record.day,
+            simulationHz: 120,
+            serverNowMs: record.startsAtMs + 18 * 3600_000,
+            retainedUntilMs: record.endsAtMs + 90 * 86400_000,
+            status: 'available',
+            viewer: 'signed-in',
+            top: [],
+            me: null,
+            nearby: [],
+            outcome: null,
+          },
+        },
+      },
+    });
+  });
   await page.route('**/api/trpc/dailyChallenge*', async (route) => {
     await route.fulfill({
       json: {

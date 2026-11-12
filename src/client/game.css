@@ -95,6 +95,22 @@ h1 {
 #track-source[data-fallback='true'] {
   color: #ffbd59;
 }
+.daily-details {
+  text-align: right;
+  font-size: 8px;
+  line-height: 1.5;
+  color: #d3e3cb;
+}
+.daily-details p {
+  margin: 0;
+}
+#daily-reset {
+  color: #ffbd59;
+  font-variant-numeric: tabular-nums;
+}
+.daily-details[hidden] {
+  display: none;
+}
 .timing {
   position: absolute;
   top: 96px;

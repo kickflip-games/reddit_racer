@@ -87,6 +87,19 @@
 - Full CLI report saved with all 200 records/zero failures and CI now uploads it with browser evidence. Result: 3 reserves (1.5%), 198 distinct courses/profiles, mean 3.425 requested structural candidates; fast 22.550–30.208s, 3–6 meaningful lifts, gains 3.775–8.433s. Requested quality average 0.99; reserve-inclusive average 1.005. Machine-specific elapsed time is not phone/hosted performance evidence.
 - Screenshots: `docs/screenshots/approved-gallery.png`, `docs/screenshots/generated-driving-mobile.png`. Bot outcomes are developer diagnostics; none are inserted into a production leaderboard.
 
+- Merged [PR #33](https://github.com/kickflip-games/reddit_racer/pull/33) as `5708c1b`; verified #7 closed. CI run `43150201623` passed on `1db04af`, including all browser checks and uploaded quality report.
+
+## 2026-11-12 — immutable daily challenges (#9)
+
+- Started from updated main `5708c1b` on `hacking/immutable-daily-challenges`.
+- Persist the complete accepted canonical course, hashes, UTC window, versions, initial conditions and acceptance configuration. Atomic hash insertion plus winner read-back prevents competing requests or deployments from replacing an existing day.
+- Bind posts permanently using trusted Reddit creation time; handle a post creation crossing midnight by updating its small public metadata after binding. Old posts offer practice. A loaded course stays fixed across reset and retries.
+- Added Hono/tRPC v11 transport, removed unused starter counter/forms, and explicitly enabled Redis. Client-provided dates/posts/geometry cannot select the bound daily record. Public data excludes quality search solution tapes.
+- Daily post creation remains a moderator action; recurring posting is deferred to hosted setup. Registered app identity remains `full-throttle-dev`. No upload or hosted validation is claimed in this step.
+- Validation: `npm run check` passed (63 unit tests, types/lint/format, 200 approved seeds and production build); all 47 browser checks passed. Node 22.23.5 passed 26 daily/API/simulation/replay tests. Installed Devvit configuration parsing confirmed the menu, trigger, entrypoints and Redis permission without uploading.
+- Atomic storage controls race different candidate courses and require every caller to return the persisted winner. Tests also cover deployment reuse, original post date, midnight during generation/in-flight expiry, reserve failure, stale quality approval, corrupt records and unconfirmed writes. New record creation rechecks the copied road against its exact quality policy; stored reads do not rerun generation or bots.
+- Inspected mobile current/archive screenshots: `docs/screenshots/daily-challenge-mobile.png` and `docs/screenshots/archive-practice-mobile.png`. These use explicitly mocked daily transport and real local rendering; they are not hosted or physical-phone evidence. Production client excludes generator/solver code and the splash stays independent of Three.js/tRPC.
+
 ## Next
 
-Finish and merge #7, then #9 immutable UTC challenges, #10 authenticated replay sessions and #11 atomic leaderboard. Keep #4 external observations open.
+Finish and merge #9, then #10 authenticated replay sessions and #11 atomic leaderboard. Keep #4 external observations open.

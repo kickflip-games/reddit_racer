@@ -1,6 +1,9 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
   "name": "full-throttle-dev",
+  "permissions": {
+    "redis": true
+  },
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -20,23 +23,13 @@
   "menu": {
     "items": [
       {
-        "label": "Create a new post",
-        "description": "full-throttle-dev",
+        "label": "Create today's race",
+        "description": "Create a post bound to today's UTC circuit",
         "location": "subreddit",
         "forUserType": "moderator",
         "endpoint": "/internal/menu/post-create"
-      },
-      {
-        "label": "Example form",
-        "description": "Show a simple form",
-        "location": "subreddit",
-        "forUserType": "moderator",
-        "endpoint": "/internal/menu/example-form"
       }
     ]
-  },
-  "forms": {
-    "exampleForm": "/internal/form/example-submit"
   },
   "triggers": {
     "onAppInstall": "/internal/triggers/on-app-install"

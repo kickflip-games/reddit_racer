@@ -5,3 +5,4 @@ dist
 playwright-report
 test-results
 /artifacts/track-quality.json
+/artifacts/browser-results.json

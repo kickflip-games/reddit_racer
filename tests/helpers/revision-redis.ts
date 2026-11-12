@@ -62,7 +62,9 @@ export class RevisionRedis implements CompetitionRedis {
         : 'none';
   }
   async expireTime(key: string) {
-    return this.deadlines.get(key) ?? -1;
+    const deadline = this.deadlines.get(key);
+    if (deadline === undefined) return -1;
+    return Math.max(-2, deadline - Math.floor(this.nowMs / 1000));
   }
   async zScore(key: string, member: string) {
     return this.sorted.get(key)?.get(member);

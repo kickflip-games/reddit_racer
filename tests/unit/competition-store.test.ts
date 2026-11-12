@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createCompetitionStore } from '../../src/server/competition-store.ts';
+import {
+  createCompetitionStore,
+  hasExpectedRemainingTtl,
+} from '../../src/server/competition-store.ts';
 import { RevisionRedis } from '../helpers/revision-redis.ts';
 import type { CompetitionMutation } from '../../src/server/core/competition.ts';
 import { RankedRaceError } from '../../src/shared/ranked-race.ts';
@@ -174,4 +177,55 @@ void test('hosted null EXPIRE acknowledgements require installed TTLs; null SET 
   redis.expireAck = null;
   redis.alterReply = (values) => [null, ...values.slice(1)];
   assert.equal(await store.compareAndSwap(mutation()), false);
+});
+
+void test('remaining TTL contract rejects epochs, missing, short, overlong and invalid expirations', async () => {
+  const intended = now + 120_000;
+  for (const valid of [119, 120, 121, 125])
+    assert.equal(hasExpectedRemainingTtl(valid, intended, now), true);
+  for (const invalid of [
+    -2,
+    -1,
+    0,
+    1,
+    118,
+    126,
+    1200,
+    intended / 1000,
+    119.5,
+    NaN,
+    Infinity,
+    -Infinity,
+  ]) {
+    assert.equal(hasExpectedRemainingTtl(invalid, intended, now), false);
+    const redis = new RevisionRedis(),
+      store = createCompetitionStore(redis, () => now);
+    redis.expireAck = null;
+    redis.expireTime = async () => invalid;
+    const candidate = mutation();
+    for (const entry of [...candidate.sets, ...candidate.increments])
+      entry.expiresAtMs = intended;
+    if (candidate.sortedSet) candidate.sortedSet.expiresAtMs = intended;
+    assert.equal(await store.compareAndSwap(candidate), false);
+  }
+});
+
+void test('fractional-second relative deadlines round upward without expiring board or revision early', async () => {
+  const redis = new RevisionRedis(),
+    store = createCompetitionStore(redis, () => now);
+  const candidate = mutation();
+  const intended = now + 120_001;
+  for (const entry of [...candidate.sets, ...candidate.increments])
+    entry.expiresAtMs = intended;
+  if (candidate.sortedSet) candidate.sortedSet.expiresAtMs = intended;
+  assert.equal(await store.compareAndSwap(candidate), true);
+  assert.equal(redis.deadlines.get('racer:board'), now / 1000 + 121);
+  assert.equal(redis.deadlines.get('racer:revision'), now / 1000 + 121);
+  assert.equal(await redis.expireTime('racer:board'), 121);
+  for (const entry of candidate.sets) {
+    const storedDeadline = redis.deadlines.get(entry.key);
+    assert.ok(storedDeadline !== undefined);
+    assert.ok(storedDeadline * 1000 >= intended);
+    assert.ok(storedDeadline * 1000 <= intended + 1000);
+  }
 });

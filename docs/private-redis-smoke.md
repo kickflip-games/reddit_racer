@@ -5,13 +5,13 @@ This diagnostic verifies the installed Devvit Redis client's actual hosted trans
 `runPrivateRedisSmoke()` is a server-only lifecycle handler helper. It runs only when the trusted request context exactly matches all four values:
 
 - App slug: `full-throttle-dev`
-- App version: `0.0.5`
+- App version: `0.0.6`
 - Subreddit ID: `t5_kv7foq`
 - Subreddit name: `full_throttle_dev_dev`
 
 Context version is compared verbatim. The installed SDK does not normalize that header. There is no caller-selected version, key, account, challenge or leaderboard. The upgrade payload and its optional installer do not authorize the probe.
 
-The registered `onAppUpgrade` route calls `runPrivateRedisSmoke()` without arguments. A different installed version is required to trigger an upgrade; uploading alone and reinstalling the same version do not trigger it. Versions `0.0.2`, `0.0.3` and `0.0.4` have already been privately uploaded and installed. The corrected diagnostic build is the explicit, owner-only version `0.0.5`. Never run `devvit publish` for this test.
+The registered `onAppUpgrade` route calls `runPrivateRedisSmoke()` without arguments. A different installed version is required to trigger an upgrade; uploading alone and reinstalling the same version do not trigger it. Versions `0.0.2`, `0.0.3`, `0.0.4` and `0.0.5` have already been privately uploaded and installed. The corrected diagnostic build is the explicit, owner-only version `0.0.6`. Never run `devvit publish` for this test.
 
 ## Bounded work and isolation
 
@@ -42,11 +42,15 @@ The private `0.0.4` build from commit `55da31f` ran at `2026-11-12T06:12:14.975Z
 
 ## Private execution and evidence
 
+The private `0.0.5` build from commit `599c10a` reported definitive TTL observations at `2026-11-12T06:23:29.883Z`: `nowMs=1794464609868`, `nowSeconds=1794464609`, `expectedDeadlineMs=1794464729698`, and raw values `119, 119, 119, 120` for control, sentinel, pair and board. All were safe integers. The pinned hosted SDK's `expireTime` therefore returns remaining TTL seconds, contrary to its documented absolute Unix timestamp. Expiration assignment worked; the timestamp-based readback assertion was incorrect. Cleanup succeeded; hosted adapter create/improve remained untested in that run.
+
+Version `0.0.6` uses that explicit remaining-seconds contract in both adapter and probe, with no unit autodetection. Positive safe-integer readbacks must be at least `max(1, floor((deadlineMs-nowMs)/1000)-1)` and at most `ceil((deadlineMs-nowMs)/1000)+5`. The lower allowance covers second rounding; the upper allowance covers the platform's bounded five-second transaction queue interval. Missing/permanent TTLs, a one-second TTL for a 120-second target, overlong values, fractional/nonfinite numbers and absolute epoch timestamps fail closed. Queued relative EXPIRE uses ceil so board/revision keys do not expire before fractional-second logical deadlines. The SDK also floors SET's expiration Date into relative seconds; the adapter passes a one-second allowance to prevent the same early-deletion edge. The core still enforces the exact logical retention boundary. Nil is accepted only in known EXPIRE reply slots and never replaces TTL proof. Complete hosted adapter success remains pending the `0.0.6` run.
+
 After local tests and build checks pass, the authorized private workflow is:
 
 ```sh
-npx devvit upload --version 0.0.5
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.5
+npx devvit upload --version 0.0.6
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.6
 npx devvit logs full_throttle_dev_dev full-throttle-dev --since 30m
 ```
 

@@ -34,6 +34,7 @@ export type CompetitionRedis = {
   ) => Promise<CompetitionMember[]>;
   zRank: (key: string, member: string) => Promise<number | null | undefined>;
   zScore: (key: string, member: string) => Promise<number | null | undefined>;
+  /** Pinned hosted SDK 0.15.3 returns remaining TTL seconds, despite this name. */
   expireTime: (key: string) => Promise<number>;
 };
 
@@ -99,6 +100,27 @@ function expireReply(value: unknown): boolean {
   // Hosted SDK 0.15.3 acknowledges queued EXPIRE with nil. Only these known
   // EXPIRE positions accept it; mandatory expireTime/readback below proves TTL.
   return value === null || value === 1 || value === true || value === 'OK';
+}
+
+/** Fixed hosted contract: remaining seconds, never an absolute epoch timestamp. */
+export function hasExpectedRemainingTtl(
+  remainingSeconds: unknown,
+  expiresAtMs: number,
+  nowMs: number
+): boolean {
+  if (
+    !integer(remainingSeconds, 1) ||
+    !integer(expiresAtMs) ||
+    !integer(nowMs) ||
+    expiresAtMs <= nowMs
+  )
+    return false;
+  const expected = (expiresAtMs - nowMs) / 1000;
+  // One second accounts for SET/TTL rounding. Queued relative expiry may start
+  // later, bounded by the platform's five-second transaction execution budget.
+  const minimum = Math.max(1, Math.floor(expected) - 1);
+  const maximum = Math.ceil(expected) + 5;
+  return remainingSeconds >= minimum && remainingSeconds <= maximum;
 }
 
 export function createCompetitionStore(
@@ -213,7 +235,7 @@ export function createCompetitionStore(
         expiring.every(
           (entry) =>
             integer(entry.expiresAtMs, now() + 1) &&
-            Number.isFinite(new Date(entry.expiresAtMs).getTime())
+            Number.isFinite(new Date(entry.expiresAtMs + 1000).getTime())
         );
       if (!validDeadlines()) return false;
 
@@ -269,7 +291,9 @@ export function createCompetitionStore(
         queued = true;
         for (const entry of mutation.sets)
           await tx.set(entry.key, entry.value, {
-            expiration: new Date(entry.expiresAtMs),
+            // SDK 0.15.3 floors this Date into relative seconds. A one-second
+            // allowance prevents physical deletion before the logical deadline.
+            expiration: new Date(entry.expiresAtMs + 1000),
           });
         if (mutation.sortedSet) {
           await tx.zAdd(mutation.sortedSet.key, {
@@ -280,7 +304,7 @@ export function createCompetitionStore(
             mutation.sortedSet.key,
             Math.max(
               1,
-              Math.floor((mutation.sortedSet.expiresAtMs - now()) / 1000)
+              Math.ceil((mutation.sortedSet.expiresAtMs - now()) / 1000)
             )
           );
         }
@@ -288,7 +312,7 @@ export function createCompetitionStore(
           await tx.incrBy(entry.key, 1);
           await tx.expire(
             entry.key,
-            Math.max(1, Math.floor((entry.expiresAtMs - now()) / 1000))
+            Math.max(1, Math.ceil((entry.expiresAtMs - now()) / 1000))
           );
         }
         let reply: unknown;
@@ -350,10 +374,7 @@ export function createCompetitionStore(
         }
         for (const entry of expiring) {
           const expiration = await client.expireTime(entry.key);
-          if (
-            !integer(expiration, Math.floor(now() / 1000) + 1) ||
-            expiration > Math.ceil(entry.expiresAtMs / 1000) + 6
-          )
+          if (!hasExpectedRemainingTtl(expiration, entry.expiresAtMs, now()))
             return false;
         }
         return true;

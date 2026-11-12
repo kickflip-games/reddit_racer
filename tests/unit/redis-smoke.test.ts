@@ -58,7 +58,7 @@ function setup() {
   const deps: PrivateRedisSmokeDependencies = {
     context: {
       appSlug: 'full-throttle-dev',
-      appVersion: '0.0.5',
+      appVersion: '0.0.6',
       subredditId: 't5_kv7foq',
       subredditName: 'full_throttle_dev_dev',
     },
@@ -86,7 +86,8 @@ void test('diagnostic authorization requires the exact trusted app, private vers
     { appVersion: '0.0.2' },
     { appVersion: '0.0.3' },
     { appVersion: '0.0.4' },
-    { appVersion: '0.0.5.1' },
+    { appVersion: '0.0.5' },
+    { appVersion: '0.0.6.1' },
     { appVersion: undefined },
     { subredditId: 't5_other' },
     { subredditName: 'other_home' },
@@ -95,7 +96,7 @@ void test('diagnostic authorization requires the exact trusted app, private vers
     h.deps.context = { ...h.deps.context, ...override };
     assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
       status: 'skipped',
-      version: '0.0.5',
+      version: '0.0.6',
       reason: 'scope',
     });
     assert.equal(h.calls.length, 0);
@@ -107,7 +108,7 @@ void test('an existing per-build marker prevents all diagnostic data writes', as
   h.duplicate();
   assert.deepEqual(await runPrivateRedisSmoke(h.deps), {
     status: 'skipped',
-    version: '0.0.5',
+    version: '0.0.6',
     reason: 'already-ran',
   });
   assert.equal(h.calls.length, 1);
@@ -122,7 +123,7 @@ void test('failed controls clean only their five temporary keys and retain a bou
   assert.equal(cleanup?.keys.length, 5);
   assert.ok(
     cleanup?.keys.every((key) =>
-      key.startsWith('racer:diagnostic:redis-smoke:0.0.5:bounded-probe:')
+      key.startsWith('racer:diagnostic:redis-smoke:0.0.6:bounded-probe:')
     )
   );
   assert.ok(
@@ -305,4 +306,29 @@ void test('nonfinite expiry observations are JSON-safe and never become successf
   const retained = [...redis.strings.values()][0];
   assert.ok(retained?.includes('"nonFinite":"NaN"'));
   assert.ok(!retained?.includes('secret-token'));
+});
+
+void test('observed hosted TTL seconds pass while an arbitrary one-second expiry cannot pass', async () => {
+  for (const short of [false, true]) {
+    const h = setup(),
+      redis = new RevisionRedis(now);
+    redis.expireAck = null;
+    const remaining = redis.expireTime.bind(redis);
+    redis.expireTime = async (key) =>
+      short
+        ? 1
+        : key.endsWith(':board')
+          ? remaining(key)
+          : (await remaining(key)) - 1;
+    h.deps.redis = redis;
+    const result = await runPrivateRedisSmoke(h.deps);
+    assert.equal(result.status, short ? 'failed' : 'passed');
+    assert.equal(result.checks?.expirations, !short);
+    assert.equal(result.checks?.adapterCommit, !short);
+    assert.equal(result.checks?.cleanup, true);
+    assert.deepEqual(
+      result.expiry?.values.map((entry) => entry.rawNumber),
+      short ? [1, 1, 1, 1] : [119, 119, 119, 120]
+    );
+  }
 });

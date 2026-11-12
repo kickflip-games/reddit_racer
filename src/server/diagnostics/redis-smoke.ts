@@ -1,11 +1,12 @@
 import { context, redis } from '@devvit/web/server';
 import {
   createCompetitionStore,
+  hasExpectedRemainingTtl,
   type CompetitionRedis,
   type CompetitionTransaction,
 } from '../competition-store';
 
-export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.5';
+export const PRIVATE_REDIS_SMOKE_VERSION = '0.0.6';
 export const PRIVATE_REDIS_SMOKE_HOME_ID = 't5_kv7foq';
 export const PRIVATE_REDIS_SMOKE_HOME_NAME = 'full_throttle_dev_dev';
 const DATA_TTL_MS = 120_000;
@@ -356,11 +357,8 @@ export async function runPrivateRedisSmoke(
           : {}),
       })),
     };
-    checks.expirations = expirations.every(
-      (value) =>
-        Number.isSafeInteger(value) &&
-        value > nowSeconds &&
-        value <= nowSeconds + 125
+    checks.expirations = expirations.every((value) =>
+      hasExpectedRemainingTtl(value, expiresAt.getTime(), expiryNowMs)
     );
     requireCheck(checks.expirations);
     // Reuse precisely the same owned keys to exercise the deployed adapter too.

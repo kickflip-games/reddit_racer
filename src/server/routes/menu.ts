@@ -15,8 +15,8 @@ menu.post('/post-create', async (c) => {
       },
       200
     );
-  } catch (error) {
-    console.error(`Error creating post: ${error}`);
+  } catch {
+    console.error('Race post creation failed from the moderator menu.');
     return c.json<UiResponse>(
       {
         showToast: 'Failed to create post',

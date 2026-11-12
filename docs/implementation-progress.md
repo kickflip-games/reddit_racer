@@ -60,6 +60,19 @@
 - Validation: `npm run check` passed (31 unit tests); all 19 browser checks passed, including held countdown with zero score/speed, ordered progress to 100%, full keyboard/touch laps, retry, interruptions and Node/Chromium/WebKit replay equality. Countdown and finish mobile screenshots inspected: `docs/screenshots/lap-countdown-mobile.png` and `docs/screenshots/lap-finish-mobile.png`.
 - `fixed-step-v2` identifies the new verifier/lap rules; `arcade-v1` physics and golden hold/lift outcomes remain exactly unchanged. `advanceLapProgress` is an extra trajectory guard; verification still computes every next state through shared physics and never accepts snapshots.
 
+- Merged [PR #31](https://github.com/kickflip-games/reddit_racer/pull/31) as `c35c22b`; verified #8 closed. CI run `43140903751` passed on `49140db` before squash merge.
+
+## 2026-11-12 — procedural circuits (#6)
+
+- Started from updated main `c35c22b` on `hacking/procedural-circuit-generator`.
+- Built a deterministic closed periodic spline from driving-motif control groups. Validate accepted road geometry, bound retries and fallback, and expose reproducible seed diagnostics.
+- Added a separate local SVG gallery for hundreds of canonical courses; keep it outside the production Devvit entrypoints. Full simulation-based quality gates follow #7 before immutable ranked daily content in #9.
+
+- Initial rounded-polygon layouts had shallow motif geometry; refined one genuine infield U and stronger S controls, then reran all checks. Observed opposing turns are tested at >=140 degrees. Intermediate reserve-radius failure was corrected before committing; failed source was never merged.
+- Final validation: `npm run check` passed (39 unit tests, types, lint, format, 200-seed structural CLI, production build); all 22 browser tests passed, including Node/browser seed hashes, safe seed text, 10-course gallery and 200-card inspection. Workshop HTML/code confirmed absent from production output. Inspected `docs/screenshots/generator-gallery.png`.
+- Fixed regression set: 200 structurally valid requests, 3 reserve uses (1.5%), 198 distinct hashes/profiles, mean 3.405 attempts, lengths 350.054–499.404m; 484 radius and 6 shoulder-fold candidate rejections. Reserve repetition is explicit.
+- Independent real-physics/replay-verified release-window probe on showcase-0…9: 24.233–28.225s, 3–5 lifts, 4.267–8.050s faster than hold. This is a bounded control, not final quality approval or human balance evidence. #7 ships the generalized bot/quality gates.
+
 ## Next
 
-Finish and merge #8, then #6 procedural generation and #7 full quality validation. Keep #4 external verification open; expand #23 with each module.
+Finish and merge #6, then #7 structural/playability quality gates, then #9 immutable UTC challenges. Keep #4 external observations open.

@@ -27,6 +27,7 @@ export default defineConfig({
     },
     {
       name: 'mobile-chromium',
+      testIgnore: '**/gallery-batch.spec.ts',
       use: { ...devices['Pixel 7'], deviceScaleFactor: 1 },
     },
   ],

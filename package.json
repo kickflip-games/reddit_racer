@@ -18,8 +18,9 @@
     "test": "tsx --test",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run build",
-    "test:e2e": "playwright test"
+    "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run tracks:check && npm run build",
+    "test:e2e": "playwright test",
+    "tracks:check": "tsx scripts/tracks-check.ts"
   },
   "engines": {
     "node": "24.22.x"

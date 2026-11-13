@@ -57,11 +57,33 @@ export function createEnvironment(
       ] ?? palette[0];
     if (color) colors.push(color.r, color.g, color.b);
   }
-  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   geometry.computeVertexNormals();
+  // The sun and hemisphere are static. Bake their diffuse light into the ground
+  // once, avoiding derivative normals and lighting across the whole screen each frame.
+  const normals = geometry.getAttribute('normal');
+  const skyLight = new THREE.Color('#fff1d3').multiplyScalar(2.1);
+  const groundLight = new THREE.Color('#71806a').multiplyScalar(2.1);
+  const sunLight = new THREE.Color('#fff0d6').multiplyScalar(2.4);
+  const sunDirection = new THREE.Vector3(-30, 80, 30).normalize();
+  const normal = new THREE.Vector3(),
+    lighting = new THREE.Color(),
+    direct = new THREE.Color();
+  for (let i = 0; i < position.count; i++) {
+    normal.fromBufferAttribute(normals, i);
+    direct.copy(sunLight).multiplyScalar(Math.max(0, normal.dot(sunDirection)));
+    lighting
+      .copy(groundLight)
+      .lerp(skyLight, (normal.y + 1) / 2)
+      .add(direct)
+      .multiplyScalar(1 / Math.PI);
+    colors[i * 3] = (colors[i * 3] ?? 0) * lighting.r;
+    colors[i * 3 + 1] = (colors[i * 3 + 1] ?? 0) * lighting.g;
+    colors[i * 3 + 2] = (colors[i * 3 + 2] ?? 0) * lighting.b;
+  }
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   const ground = new THREE.Mesh(
     geometry,
-    new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })
+    new THREE.MeshBasicMaterial({ vertexColors: true })
   );
   ground.name = 'diorama-terrain';
   group.add(ground);

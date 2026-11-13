@@ -19,9 +19,14 @@ export async function setRaceSettingsOpen(
       throw new Error('Missing native race settings');
     return element.open;
   });
-  if (current !== open) await settings.locator(':scope > summary').click();
-  if (open) await expect(settings).toHaveAttribute('open');
-  else await expect(settings).not.toHaveAttribute('open');
+  if (current !== open) {
+    if (open) await settings.locator(':scope > summary').click();
+    else await page.locator('#settings-close').click();
+  }
+  if (open) {
+    await expect(settings).toHaveAttribute('open');
+    await expect(page.locator('#settings-dialog')).toBeVisible();
+  } else await expect(settings).not.toHaveAttribute('open');
 }
 
 /** Read the real game context for CI evidence; no renderer or driver is replaced. */
@@ -57,4 +62,14 @@ export async function readSceneGraphics(page: Page) {
       attributes: gl.getContextAttributes(),
     };
   });
+}
+
+export async function openPracticeModes(page: Page): Promise<void> {
+  const modes = page.locator('#practice-modes');
+  if (!(await modes.getAttribute('open'))) {
+    const open = await modes.evaluate(
+      (e) => e instanceof HTMLDetailsElement && e.open
+    );
+    if (!open) await modes.locator(':scope > summary').click();
+  }
 }

@@ -307,3 +307,30 @@ void test('input timestamps use old input before transitions and reads never adv
   assert.deepEqual(driver.state, state);
   assert.throws(() => driver.advance(Infinity), /Invalid frame/);
 });
+
+void test('dynamic-grip practice preserves continuous laps and resets at 30/60/120 Hz', () => {
+  const outcomes = [];
+  for (const hz of [30, 60, 120]) {
+    const driver = createPracticeDriver(createOvalTrack(), [], {
+      dynamicGrip: true,
+    });
+    driver.start(0);
+    driver.setInput(true, 0);
+    const go = finishCountdown(driver);
+    for (let frame = 1; frame <= hz * 50; frame++)
+      driver.advance(go + (frame * 1000) / hz);
+    assert.ok(driver.completedLaps >= 2);
+    assert.equal(driver.raceState.phase, 'racing');
+    outcomes.push({
+      state: driver.state,
+      laps: driver.completedLaps,
+      last: driver.lastLapTicks,
+    });
+    driver.start(60000);
+    assert.equal(driver.completedLaps, 0);
+    assert.equal(driver.elevation, 0);
+    assert.deepEqual(driver.state, createSimulationState());
+  }
+  assert.deepEqual(outcomes[0], outcomes[1]);
+  assert.deepEqual(outcomes[1], outcomes[2]);
+});

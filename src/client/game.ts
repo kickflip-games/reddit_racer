@@ -1,3 +1,4 @@
+import { createStuntCourse } from '../shared/stunt-course';
 import { createOvalTrack } from '../shared/track-authoring';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
@@ -31,8 +32,8 @@ const title = element('card-title');
 const copy = element('card-copy');
 start.disabled = true;
 element('mode-label').textContent = import.meta.env.DEV
-  ? 'LOCAL · UNRANKED'
-  : 'PRACTICE · UNRANKED';
+  ? 'Practice'
+  : 'Practice';
 
 type LoadedCourse = {
   track: Track;
@@ -121,41 +122,31 @@ function resetLabel(seconds: number): string {
 }
 
 let dailyArchived = false;
-let dailyDay = '';
 let attemptPresentation: AttemptPresentation = 'ready';
 function renderDailyMode(): void {
   element('mode-label').textContent =
     attemptPresentation === 'ranked'
-      ? 'RANKED · DAILY'
+      ? 'Daily'
       : attemptPresentation === 'preparing'
-        ? 'GETTING READY'
+        ? 'Loading'
         : dailyArchived
-          ? 'ARCHIVE · UNRANKED'
+          ? 'Archive'
           : attemptPresentation === 'practice'
-            ? 'DAILY · UNRANKED'
-            : 'DAILY RACE';
+            ? 'Practice'
+            : 'Daily';
   element('start-label').textContent =
     attemptPresentation === 'preparing'
       ? 'Preparing…'
       : dailyArchived
-        ? 'Start practice'
-        : 'Race today';
+        ? 'Start'
+        : 'Race';
   element('retry-label').textContent =
     attemptPresentation === 'preparing'
       ? 'Preparing…'
       : dailyArchived
-        ? 'Practise again'
-        : 'Race again';
-  element('track-note').textContent =
-    attemptPresentation === 'ranked'
-      ? dailyArchived
-        ? `Current race keeps the ${dailyDay} circuit. New attempts use practice.`
-        : `${dailyDay} daily race. Your time is checked after finishing.`
-      : dailyArchived
-        ? `This post keeps its ${dailyDay} circuit. Unranked practice.`
-        : attemptPresentation === 'practice'
-          ? `Shared ${dailyDay} UTC circuit. This attempt is unranked practice.`
-          : `Shared ${dailyDay} UTC circuit. Your time is checked after finishing.`;
+        ? 'Retry'
+        : 'Retry';
+  element('track-note').textContent = '';
 }
 function showDailyCourse(view: DailyChallengeView): () => void {
   const challenge = view.challenge;
@@ -163,12 +154,13 @@ function showDailyCourse(view: DailyChallengeView): () => void {
   race.dataset.challengeHash = challenge.challengeHash;
   race.dataset.trackHash = challenge.trackHash;
   source.hidden = true;
+  element('challenge-heading').hidden = false;
+  element('challenge-heading').textContent = challenge.day;
   element('daily-details').hidden = false;
   element('daily-date').textContent = `${challenge.day} · UTC`;
   const todayRace = createTodayRaceController(challenge.day);
   const stopClock = startDailyClock(view, (clock) => {
     dailyArchived = clock.archived;
-    dailyDay = challenge.day;
     renderDailyMode();
     todayRace.updateArchived(clock.archived);
     element('daily-reset').textContent = clock.archived
@@ -183,7 +175,8 @@ function showDailyCourse(view: DailyChallengeView): () => void {
   };
 }
 
-type PlayMode = 'daily' | 'practice';
+type PlayMode = 'daily' | 'practice' | 'stunt' | 'slot';
+let mirroredStunts = false;
 let scene: GameSceneController | undefined;
 let cleanupDaily: (() => void) | undefined;
 let cleanupLeaderboard: (() => void) | undefined;
@@ -199,7 +192,6 @@ function prepareCourse(mode: PlayMode): void {
   cleanupLeaderboard?.();
   cleanupLeaderboard = undefined;
   dailyArchived = false;
-  dailyDay = '';
   attemptPresentation = 'ready';
   playMode = mode;
   race.dataset.playMode = mode;
@@ -223,10 +215,20 @@ function prepareCourse(mode: PlayMode): void {
     element(id).hidden = true;
   const settings = element('race-settings');
   if (settings instanceof HTMLDetailsElement) settings.open = false;
+  element('challenge-heading').hidden = true;
+  element('card-kicker').textContent = '';
+  element('card').dataset.best = 'false';
+  element('card').dataset.result = 'false';
+  element('finish-time').hidden = true;
+  element('practice-result').hidden = true;
+  const modes = element('practice-modes');
+  if (modes instanceof HTMLDetailsElement) modes.open = false;
   element('card').hidden = false;
   element('card').scrollTop = 0;
   element('practice-button').hidden = mode === 'practice';
-  element('practice-settings').hidden = mode !== 'practice';
+  element('stunt-button').hidden = mode === 'stunt';
+  element('slot-button').hidden = mode === 'slot';
+  element('practice-settings').hidden = mode === 'daily';
   element('verification-status').hidden = true;
   element('verification-status').textContent = '';
   source.hidden = true;
@@ -241,16 +243,11 @@ function prepareCourse(mode: PlayMode): void {
   element('motion-select').toggleAttribute('disabled', true);
   element('next-practice-button').toggleAttribute('disabled', true);
   element('mode-label').textContent =
-    mode === 'practice'
-      ? 'PRACTICE · UNRANKED'
-      : import.meta.env.DEV
-        ? 'LOCAL · UNRANKED'
-        : 'DAILY RACE';
-  element('start-label').textContent = 'Start practice';
-  element('retry-label').textContent =
-    mode === 'practice' ? 'Resume practice' : 'Try again';
+    mode !== 'daily' ? 'Practice' : import.meta.env.DEV ? 'Practice' : 'Daily';
+  element('start-label').textContent = 'Start';
+  element('retry-label').textContent = mode !== 'daily' ? 'Resume' : 'Retry';
   title.textContent =
-    mode === 'practice' ? 'Preparing practice…' : 'Preparing circuit…';
+    mode !== 'daily' ? 'Preparing practice…' : 'Preparing circuit…';
   copy.textContent = 'Hold to go. Release to slow.';
 }
 
@@ -259,19 +256,33 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
   const version = ++courseGeneration;
   prepareCourse(mode);
   try {
-    if (mode === 'practice') {
-      const course = await generatePracticeCourse(seed, lastPracticeTrackHash);
+    if (mode !== 'daily') {
+      const stunt =
+        mode === 'stunt'
+          ? createStuntCourse((mirroredStunts = !mirroredStunts))
+          : null;
+      const course = stunt
+        ? {
+            track: stunt.track,
+            seed: stunt.track.seed,
+            fallbackUsed: false,
+            trackHash: stunt.track.seed,
+          }
+        : await generatePracticeCourse(seed, lastPracticeTrackHash);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
         generated: true,
         continuousPractice: true,
+        dynamicGrip: mode === 'slot' || mode === 'stunt',
+        gripZones: stunt?.gripZones ?? [],
+        ...(stunt ? { jumps: stunt.jumps } : {}),
       });
       race.dataset.trackHash = course.trackHash;
       race.dataset.practiceLaps = '0';
-      element('mode-label').textContent = 'PRACTICE · LAP 1';
-      element('start-label').textContent = 'Start practice';
-      element('retry-label').textContent = 'Resume practice';
+      element('mode-label').textContent = 'Lap 1';
+      element('start-label').textContent = 'Start';
+      element('retry-label').textContent = 'Resume';
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
       practiceSeed.textContent = `Unranked · ${course.seed}`;
@@ -282,12 +293,12 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
         ? 'Validated reserve circuit'
         : '';
       source.hidden = !course.fallbackUsed;
-      element('track-note').textContent = 'Unlimited laps. No leaderboard.';
-      title.textContent = 'Practice.';
-      copy.textContent =
-        'Hold to go. Release to slow. Keep driving for another lap.';
+      element('track-note').textContent = '';
+      title.textContent = '';
+      copy.textContent = 'Hold to go. Release to brake.';
       start.disabled = false;
-      if (focusWhenReady) title.focus({ preventScroll: true });
+      if (focusWhenReady)
+        (title.textContent ? title : start).focus({ preventScroll: true });
       return;
     }
     const course = await loadCourse();
@@ -323,7 +334,7 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
     if (course.daily) {
       cleanupDaily = showDailyCourse(course.daily);
     } else if (course.dailyUnavailable) {
-      element('mode-label').textContent = 'REFERENCE · UNRANKED';
+      element('mode-label').textContent = 'Practice';
       source.hidden = false;
       source.textContent = 'DAILY SERVICE UNAVAILABLE';
       source.dataset.mode = 'reference-fallback';
@@ -344,17 +355,14 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
         ? `Prevalidated reserve used for ${course.seed}. Retries keep this course.`
         : `Local procedural seed ${course.seed}. Retries keep this course.`;
     }
-    if (!course.generated && !course.dailyUnavailable)
-      element('track-note').textContent =
-        'Local reference practice. Procedural seeds are available in the circuit workshop.';
-    title.textContent = course.dailyUnavailable
-      ? 'Daily course unavailable.'
-      : 'Find your rhythm.';
+    element('track-note').textContent = '';
+    title.textContent = course.dailyUnavailable ? 'Daily unavailable' : '';
     copy.textContent = course.dailyUnavailable
-      ? 'Try the reference course in unranked practice.'
-      : 'Hold to go. Release to slow.';
+      ? 'Practice is available.'
+      : 'Hold to go. Release to brake.';
     start.disabled = false;
-    if (focusWhenReady) title.focus({ preventScroll: true });
+    if (focusWhenReady)
+      (title.textContent ? title : start).focus({ preventScroll: true });
   } catch (error: unknown) {
     if (version !== courseGeneration) return;
     race.dataset.phase = 'abandoned';
@@ -363,7 +371,7 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
     source.textContent = 'CIRCUIT UNAVAILABLE';
     title.textContent = 'Circuit unavailable.';
     copy.textContent =
-      mode === 'practice'
+      mode !== 'daily'
         ? 'Try New track in Settings, or return to the daily race.'
         : 'The race could not start. Please reload and try again.';
     element('status').textContent = 'CIRCUIT UNAVAILABLE';
@@ -374,20 +382,26 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
         : 'The circuit could not be loaded.';
     notice.hidden = false;
     start.disabled = true;
-    if (focusWhenReady) title.focus({ preventScroll: true });
+    if (focusWhenReady)
+      (title.textContent ? title : start).focus({ preventScroll: true });
   } finally {
     if (version === courseGeneration)
       element('next-practice-button').toggleAttribute('disabled', false);
   }
 }
 
+element('slot-button').addEventListener('click', () => void boot('slot'));
+element('stunt-button').addEventListener('click', () => void boot('stunt'));
 element('practice-button').addEventListener(
   'click',
   () => void boot('practice')
 );
 element('next-practice-button').addEventListener(
   'click',
-  () => void boot('practice')
+  () =>
+    void boot(
+      playMode === 'stunt' ? 'stunt' : playMode === 'slot' ? 'slot' : 'practice'
+    )
 );
 element('daily-mode-button').addEventListener(
   'click',
@@ -404,6 +418,14 @@ const query = import.meta.env.DEV
   ? new URLSearchParams(window.location.search)
   : null;
 void boot(
-  query?.get('practice') === '1' ? 'practice' : 'daily',
-  query?.get('practice') === '1' ? (query.get('seed') ?? undefined) : undefined
+  query?.get('grip') === '1'
+    ? 'slot'
+    : query?.get('stunt') === '1'
+      ? 'stunt'
+      : query?.get('practice') === '1'
+        ? 'practice'
+        : 'daily',
+  query?.get('practice') === '1' || query?.get('grip') === '1'
+    ? (query.get('seed') ?? undefined)
+    : undefined
 );

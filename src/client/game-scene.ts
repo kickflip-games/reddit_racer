@@ -1,3 +1,10 @@
+import {
+  createPracticeBestStore,
+  practiceBestKey,
+  type LocalBestResult,
+} from './practice-best';
+import type { GripZone } from '../shared/slot-grip';
+import { jumpRoadHeight, type GapJump } from '../shared/stunt-course';
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
 import {
@@ -8,7 +15,8 @@ import { createPracticeDriver } from './practice-driver';
 import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
-import { createScenery } from './scenery';
+import { createScenery, buildSceneryPlacements } from './scenery';
+import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
 import { createFeedbackPreferences } from './feedback-preferences';
@@ -54,6 +62,9 @@ export type GameSceneHooks = {
 export type GameSceneOptions = GameSceneHooks & {
   generated: boolean;
   continuousPractice?: boolean;
+  jumps?: readonly GapJump[];
+  dynamicGrip?: boolean;
+  gripZones?: readonly GripZone[];
 };
 export type GameSceneController = { dispose(): void };
 
@@ -96,19 +107,135 @@ export function initializeGame(
   if (!(settingsElement instanceof HTMLDetailsElement))
     throw new Error('Missing race settings');
   const settings = settingsElement;
+  const dialogElement = element('settings-dialog');
+  if (!(dialogElement instanceof HTMLDialogElement))
+    throw new Error('Missing settings dialog');
+  const settingsDialog = dialogElement;
+  let storage: Storage | undefined;
+  try {
+    storage = window.localStorage;
+  } catch {
+    /* Session bests remain available. */
+  }
+  const localBests = createPracticeBestStore(storage);
+  const localBestKey = practiceBestKey(track, options);
+  let seenPracticeLaps = 0;
+  function showLocalBest(): void {
+    const best = localBests.best(localBestKey);
+    const label = element('practice-best-lap');
+    label.hidden = best === null;
+    if (
+      best !== null &&
+      card.dataset.result !== 'true' &&
+      !options.beforeStart
+    ) {
+      element('practice-result').hidden = false;
+      element('practice-result').textContent =
+        `Best ${formatTime(best / SIMULATION_HZ)} s`;
+    }
+    label.textContent =
+      best === null ? '' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
+  }
+  function recordLocalLap(ticks: number): LocalBestResult {
+    const result = localBests.record(localBestKey, ticks);
+    showLocalBest();
+    return result;
+  }
+  function localResultText(result: LocalBestResult, ticks: number): string {
+    const delta = ticks - result.bestTicks;
+    return `Best ${formatTime(result.bestTicks / SIMULATION_HZ)} s${delta > 0 ? ` · +${formatTime(delta / SIMULATION_HZ)} s` : ''}`;
+  }
+  function showFinishTime(ticks: number): void {
+    card.dataset.result = 'true';
+    element('finish-value').textContent = formatTime(ticks / SIMULATION_HZ);
+    element('finish-time').hidden = false;
+  }
+  function closeSettings(): void {
+    settings.open = false;
+    if (settingsDialog.open) settingsDialog.close();
+    raceRoot.dataset.settingsOpen = 'false';
+  }
+  function openSettings(): void {
+    settings.open = true;
+    release();
+    if (driver.active) driver.setInput(false, performance.now());
+    raceRoot.dataset.settingsOpen = 'true';
+    if (!settingsDialog.open) settingsDialog.showModal();
+    element('settings-close').focus({ preventScroll: true });
+  }
+  settings.querySelector('summary')?.addEventListener(
+    'click',
+    (event) => {
+      event.preventDefault();
+      if (settingsDialog.open) closeSettings();
+      else openSettings();
+    },
+    eventOptions
+  );
+  settings.addEventListener(
+    'toggle',
+    () => {
+      if (settings.open && !settingsDialog.open) openSettings();
+      else if (!settings.open) closeSettings();
+    },
+    eventOptions
+  );
+  settingsDialog.addEventListener(
+    'cancel',
+    (event) => {
+      event.preventDefault();
+      closeSettings();
+    },
+    eventOptions
+  );
+  element('settings-close').addEventListener(
+    'click',
+    closeSettings,
+    eventOptions
+  );
+  settingsDialog.addEventListener(
+    'close',
+    () => {
+      if (settingsDialog.open) return; // Ignore a queued close from an earlier opening.
+      const wasOpen = settings.open;
+      settings.open = false;
+      raceRoot.dataset.settingsOpen = 'false';
+      if (wasOpen)
+        settings.querySelector('summary')?.focus({ preventScroll: true });
+    },
+    eventOptions
+  );
+  settingsDialog.addEventListener(
+    'click',
+    (event) => {
+      if (event.target === settingsDialog) {
+        const bounds = settingsDialog.getBoundingClientRect();
+        if (
+          event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom
+        )
+          closeSettings();
+      }
+    },
+    eventOptions
+  );
+  showLocalBest();
   if (!(soundToggle instanceof HTMLButtonElement))
     throw new Error('Missing sound control');
   if (!(motionSelect instanceof HTMLSelectElement))
     throw new Error('Missing motion control');
   element('mode-label').textContent = import.meta.env.DEV
-    ? 'LOCAL · UNRANKED'
-    : 'PRACTICE · UNRANKED';
+    ? 'Practice'
+    : 'Practice';
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
   const scene = new THREE.Scene();
   // The uniformly lit field receives no shadows; match it with the clear color
   // to avoid a redundant full-screen ground draw on every racing frame.
-  scene.background = new THREE.Color('#77a55b');
+  scene.background = new THREE.Color('#a5b18d');
+  scene.add(createEnvironment(track, buildSceneryPlacements(track)));
   const raceCamera = createRaceCamera(track);
   const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
@@ -125,12 +252,17 @@ export function initializeGame(
     );
   }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  scene.add(new THREE.HemisphereLight('#fff4d8', '#46664f', 2.6));
-  const sun = new THREE.DirectionalLight('#fff0cf', 2.1);
+  scene.add(new THREE.HemisphereLight('#fff1d3', '#71806a', 2.1));
+  const sun = new THREE.DirectionalLight('#fff0d6', 2.4);
   sun.position.set(-30, 80, 30);
   scene.add(sun);
 
-  scene.add(createTrackRenderer(track));
+  scene.add(
+    createTrackRenderer(track, options.jumps, {
+      dynamicGrip: options.dynamicGrip ?? false,
+      zones: options.gripZones ?? [],
+    })
+  );
 
   if (
     import.meta.env.DEV &&
@@ -156,7 +288,9 @@ export function initializeGame(
 
   const carVisual = createCarVisual();
   const scenery = createScenery(track);
-  const drivingVfx = createDrivingVfx(track);
+  const drivingVfx = createDrivingVfx(track, {
+    followContactHeight: options.dynamicGrip ?? false,
+  });
   const rearLeft = new THREE.Vector3();
   const rearRight = new THREE.Vector3();
   scene.add(carVisual.object, scenery.object, drivingVfx.object);
@@ -175,7 +309,10 @@ export function initializeGame(
   let activePointer: number | undefined;
   const rankedDriver = createSimulationDriver(track);
   const practiceDriver = options.continuousPractice
-    ? createPracticeDriver(track)
+    ? createPracticeDriver(track, options.jumps, {
+        dynamicGrip: options.dynamicGrip ?? false,
+        zones: options.gripZones ?? [],
+      })
     : null;
   const driver = practiceDriver ?? rankedDriver;
   const hud = element('race-hud');
@@ -195,11 +332,11 @@ export function initializeGame(
   function showSoundState(status: DrivingAudioStatus): void {
     if (destroyed) return;
     const messages: Record<DrivingAudioStatus, string> = {
-      locked: 'Sound starts when you race.',
-      starting: 'Starting sound…',
-      running: 'Sound ready.',
-      muted: 'Sound off.',
-      unavailable: 'Sound is unavailable. You can keep racing.',
+      locked: '',
+      starting: '',
+      running: '',
+      muted: '',
+      unavailable: 'Sound unavailable',
       disposed: '',
     };
     raceRoot.dataset.audioState = status;
@@ -281,17 +418,20 @@ export function initializeGame(
     const height = canvas.clientHeight;
     const canvasBounds = canvas.getBoundingClientRect();
     const hudBounds = hud.getBoundingClientRect();
-    const footerBounds = footer?.getBoundingClientRect();
+    const cardBounds = card.hidden ? null : card.getBoundingClientRect();
     const top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
-    const bottom = footerBounds
-      ? Math.max(12, canvasBounds.bottom - footerBounds.top + 8)
-      : 36;
+    const portrait = width <= 700 && height > 480;
+    const bottom =
+      portrait && cardBounds
+        ? Math.max(20, canvasBounds.bottom - cardBounds.top + 14)
+        : 28;
+    const left = !portrait && cardBounds ? cardBounds.right + 24 : 14;
     raceRoot.style.setProperty('--hud-bottom', `${top}px`);
     raceRoot.style.setProperty('--footer-inset', `${bottom}px`);
     const changed = raceCamera.resize({
       width,
       height,
-      insets: { top, bottom, left: 12, right: 12 },
+      insets: { top, bottom, left, right: 14 },
     });
     sceneDirty ||= changed;
     viewportDirty = false;
@@ -301,6 +441,8 @@ export function initializeGame(
     if (!viewportUsable || !raceCamera.renderable || (!active && !sceneDirty))
       return;
     renderer.render(scene, camera);
+    raceRoot.dataset.drawCalls = String(renderer.info.render.calls);
+    raceRoot.dataset.triangles = String(renderer.info.render.triangles);
     sceneDirty = false;
   }
 
@@ -316,6 +458,25 @@ export function initializeGame(
   }
   function feedback(): void {
     const state = driver.state;
+    element('practice-best-lap').hidden =
+      attemptMode === 'ranked' || localBests.best(localBestKey) === null;
+    const gripWarning = element('grip-warning');
+    const grip = practiceDriver?.grip;
+    raceRoot.dataset.gripUsage = String(grip?.usage ?? 0);
+    raceRoot.dataset.surface = grip?.surface ?? 'dry';
+    gripWarning.hidden =
+      !options.dynamicGrip ||
+      driver.raceState.phase !== 'racing' ||
+      state.slip < 0.2 ||
+      state.recovering ||
+      !!practiceDriver?.airborne;
+    gripWarning.textContent = state.offRoad
+      ? 'Release'
+      : grip?.surface === 'wet'
+        ? 'Wet'
+        : 'Lift';
+    raceRoot.dataset.gripModel = options.dynamicGrip ? 'dynamic' : 'classic';
+    raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
     timer.textContent = formatTime(
       (practiceDriver
@@ -324,8 +485,16 @@ export function initializeGame(
     );
     if (practiceDriver) {
       const completed = practiceDriver.completedLaps;
+      if (
+        completed > seenPracticeLaps &&
+        practiceDriver.lastLapTicks !== null
+      ) {
+        recordLocalLap(practiceDriver.lastLapTicks);
+      }
+      seenPracticeLaps = completed;
+      element('practice-lap-notice').hidden = true;
       raceRoot.dataset.practiceLaps = String(completed);
-      element('mode-label').textContent = `PRACTICE · LAP ${completed + 1}`;
+      element('mode-label').textContent = `Lap ${completed + 1}`;
       const last = element('practice-last-lap');
       last.hidden = practiceDriver.lastLapTicks === null;
       const message =
@@ -363,21 +532,25 @@ export function initializeGame(
     lapProgress.textContent = `${percentage}%`;
     lapProgressLabel.textContent = `Gates ${race.nextCheckpointIndex}/${track.checkpoints.length} · ${percentage}%`;
     inputLabel.dataset.held = String(held());
-    inputLabel.dataset.condition = state.recovering
-      ? 'recovering'
-      : state.offRoad
-        ? 'off-road'
-        : state.slip > 0.05
-          ? 'sliding'
-          : 'gripping';
+    inputLabel.dataset.condition = practiceDriver?.airborne
+      ? 'airborne'
+      : state.recovering
+        ? 'recovering'
+        : state.offRoad
+          ? 'off-road'
+          : state.slip > 0.05
+            ? 'sliding'
+            : 'gripping';
     const driveLabel = held() ? 'ACCELERATING' : 'RELEASED · BRAKING';
-    const surfaceLabel = state.recovering
-      ? 'RECOVERING'
-      : state.offRoad
-        ? 'OFF ROAD'
-        : state.slip > 0.05
-          ? 'SLIDING'
-          : '';
+    const surfaceLabel = practiceDriver?.airborne
+      ? 'AIRBORNE'
+      : state.recovering
+        ? 'RECOVERING'
+        : state.offRoad
+          ? 'OFF ROAD'
+          : state.slip > 0.05
+            ? 'SLIDING'
+            : '';
     inputLabel.textContent = preparing
       ? held()
         ? 'HOLDING · GETTING READY'
@@ -431,10 +604,15 @@ export function initializeGame(
     const frame = sampleTrack(track, track.startS + distance);
     const velocityX = frame.tx * speed + frame.nx * lateralVelocity;
     const velocityZ = frame.tz * speed + frame.nz * lateralVelocity;
-    const heading =
+    const trajectoryHeading =
       speed > 0.1 || Math.abs(lateralVelocity) > 0.1
         ? Math.atan2(velocityX, velocityZ)
         : Math.atan2(frame.tx, frame.tz);
+    const heading =
+      trajectoryHeading -
+      (options.dynamicGrip && !practiceDriver?.airborne
+        ? Math.sign(frame.curvature) * current.slip * 0.12
+        : 0);
     const phase = driver.raceState.phase;
     const scored = phase === 'racing';
     const acceleration = scored
@@ -443,6 +621,17 @@ export function initializeGame(
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
     const carChanged = carVisual.update({
+      elevation: practiceDriver?.elevation ?? 0,
+      bank: practiceDriver?.airborne ? 0 : (practiceDriver?.roadBank ?? 0),
+      jumpPitch:
+        !reducedMotion && options.jumps?.length
+          ? practiceDriver?.airborne
+            ? -Math.atan2(practiceDriver.verticalVelocity, Math.max(1, speed))
+            : -Math.atan(
+                jumpRoadHeight(options.jumps, frame.s + 0.5) -
+                  jumpRoadHeight(options.jumps, frame.s - 0.5)
+              )
+          : 0,
       x: frame.x + frame.nx * lateral,
       z: frame.z + frame.nz * lateral,
       heading,
@@ -461,7 +650,13 @@ export function initializeGame(
     });
     if (viewportDirty) refreshCameraViewport();
     const cameraChanged = raceCamera.update(
-      { distance, lateralOffset: lateral, heading },
+      {
+        distance,
+        lateralOffset: lateral,
+        heading,
+        speed,
+        elevation: practiceDriver?.elevation ?? 0,
+      },
       {
         mode:
           phase === 'countdown' || phase === 'racing' || phase === 'finished'
@@ -469,14 +664,16 @@ export function initializeGame(
             : 'overview',
         deltaSeconds,
         reset: needsCameraReset,
+        reducedMotion,
       }
     );
     needsCameraReset = false;
     carVisual.getRearContacts(rearLeft, rearRight);
     const verticalSpan = camera.top - camera.bottom;
+    if (practiceDriver?.airborne) drivingVfx.reset();
     const effectsChanged = drivingVfx.update({
       state: current,
-      phase,
+      phase: practiceDriver?.airborne ? 'ready' : phase,
       held: throttle,
       acceleration,
       rearLeft,
@@ -489,7 +686,7 @@ export function initializeGame(
     sceneDirty = sceneDirty || carChanged || cameraChanged || effectsChanged;
     audio.update({
       attemptId,
-      phase,
+      phase: practiceDriver?.airborne ? 'ready' : phase,
       state: current,
       held: throttle,
       acceleration,
@@ -511,12 +708,13 @@ export function initializeGame(
   function applyVerification(id: number, result: VerificationOutcome): void {
     if (destroyed || id !== attemptId) return;
     verificationStatus(result.status, result.message);
-    cardCopy.textContent = result.message;
+    cardCopy.textContent = result.status === 'verified' ? '' : result.message;
     if (result.status === 'verified' && result.finishTicks !== undefined) {
+      showFinishTime(result.finishTicks);
       cardTitle.textContent = `${formatTime(result.finishTicks / SIMULATION_HZ)} seconds`;
-      element('card-kicker').textContent = 'VERIFIED TIME';
+      element('card-kicker').textContent = 'Verified';
     } else {
-      element('card-kicker').textContent = 'LAP COMPLETE · UNVERIFIED';
+      element('card-kicker').textContent = 'Unverified';
     }
     options.onResults?.({ attemptId: id, mode: attemptMode });
   }
@@ -525,6 +723,9 @@ export function initializeGame(
     racing = false;
     release();
     const state = driver.state;
+    card.dataset.result = 'false';
+    element('finish-time').hidden = true;
+    element('practice-result').hidden = true;
     if (driver.interrupted) {
       audio.silence('abandon');
       options.onAbandon?.({
@@ -544,18 +745,19 @@ export function initializeGame(
             : driver.interruptionReason === 'invalid-progress'
               ? 'This lap missed a gate. Try another run.'
               : 'The race could not continue smoothly. Try another run.';
-      element('card-kicker').textContent = 'ATTEMPT ENDED · UNRANKED';
+      element('card-kicker').textContent = '';
     } else {
       audio.finish(attemptId);
       const finishTicks = state.finishedTick ?? state.tick;
+      showFinishTime(finishTicks);
       cardTitle.textContent = `${formatTime(finishTicks / SIMULATION_HZ)} seconds`;
-      cardCopy.textContent = 'Practice complete. Find a faster rhythm.';
-      element('card-kicker').textContent = 'LAP COMPLETE · UNRANKED';
+      cardCopy.textContent = '';
+      element('card-kicker').textContent = '';
       if (attemptMode === 'ranked' && options.onFinish) {
         const id = attemptId;
         verificationStatus('pending', 'Checking your time…');
         cardCopy.textContent = 'Checking your time…';
-        element('card-kicker').textContent = 'CHECKING TIME';
+        element('card-kicker').textContent = '';
         const result = {
           attemptId: id,
           replay: rankedDriver.replay,
@@ -572,6 +774,14 @@ export function initializeGame(
             });
           });
       } else {
+        const result = recordLocalLap(finishTicks);
+        element('practice-result').hidden = false;
+        element('practice-result').textContent = localResultText(
+          result,
+          finishTicks
+        );
+        card.dataset.best = String(result.isNewBest);
+        element('card-kicker').textContent = '';
         options.onResults?.({ attemptId, mode: attemptMode });
       }
     }
@@ -582,11 +792,17 @@ export function initializeGame(
     cardTitle.focus({ preventScroll: true });
   }
   function startCountdown(): void {
+    closeSettings();
     preparing = false;
     preparation = undefined;
     enableAttemptButtons(true);
     const timestamp = performance.now();
     driver.start(timestamp);
+    seenPracticeLaps = 0;
+    card.dataset.result = 'false';
+    card.dataset.best = 'false';
+    element('finish-time').hidden = true;
+    element('practice-result').hidden = true;
     carVisual.reset();
     drivingVfx.reset();
     needsCameraReset = true;
@@ -616,7 +832,9 @@ export function initializeGame(
   }
   function beginRace(): void {
     if (destroyed || preparing || racing || !viewportUsable) return;
-    settings.open = false;
+    closeSettings();
+    const modes = element('practice-modes');
+    if (modes instanceof HTMLDetailsElement) modes.open = false;
     attemptId++;
     audio.setForeground(!document.hidden);
     audio.resetAttempt(attemptId);
@@ -637,8 +855,8 @@ export function initializeGame(
     preparation = controller;
     preparing = true;
     cardTitle.textContent = 'Preparing your race…';
-    cardCopy.textContent = 'Hold to go. Release to slow when the race begins.';
-    element('card-kicker').textContent = 'GETTING READY';
+    cardCopy.textContent = '';
+    element('card-kicker').textContent = '';
     enableAttemptButtons(false);
     verificationStatus('preparing', 'Preparing your daily race…');
     feedback();
@@ -710,7 +928,12 @@ export function initializeGame(
   window.addEventListener(
     'keydown',
     (event) => {
-      if (event.code !== 'Space' || (!racing && !preparing)) return;
+      if (
+        event.code !== 'Space' ||
+        (!racing && !preparing) ||
+        settingsDialog.open
+      )
+        return;
       const target = event.target;
       if (
         target instanceof Element &&
@@ -842,6 +1065,7 @@ export function initializeGame(
   hudObserver.observe(hud);
   hudObserver.observe(canvas);
   if (footer) hudObserver.observe(footer);
+  hudObserver.observe(card);
 
   void sceneAssets
     .loadCarAsset()
@@ -892,6 +1116,7 @@ export function initializeGame(
 
   function dispose(): void {
     if (destroyed) return;
+    closeSettings();
     interruptRace();
     destroyed = true;
     lifetime.abort();
@@ -909,6 +1134,7 @@ export function initializeGame(
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
     sceneAssets.dispose();
     scene.traverse((node) => {
+      if (node instanceof THREE.InstancedMesh) node.dispose();
       if (node instanceof THREE.Mesh || node instanceof THREE.LineSegments) {
         node.geometry.dispose();
         for (const material of Array.isArray(node.material)

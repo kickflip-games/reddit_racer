@@ -56,14 +56,11 @@ function outcomeText(
 ): string {
   const outcome = view.outcome;
   if (!outcome || !receipt) return '';
-  if (outcome.previousBestTicks === null)
-    return 'First verified daily best. Keep finding your rhythm.';
+  if (outcome.previousBestTicks === null) return '';
   if (outcome.isPersonalBest)
-    return `This run: ${seconds(outcome.improvementTicks ?? 0)} faster than your prior best.`;
+    return `−${seconds(outcome.improvementTicks ?? 0)}`;
   const delta = receipt.finishTicks - outcome.previousBestTicks;
-  return delta === 0
-    ? 'This run matched your prior best.'
-    : `This run: ${seconds(delta)} slower than your prior best.`;
+  return delta === 0 ? 'Tied best' : `+${seconds(delta)}`;
 }
 
 /** Only post-bound board queries leave this controller. Session tokens stay in memory. */
@@ -143,7 +140,7 @@ export function createLeaderboardController(
     if (view.viewer === 'signed-out') {
       me.textContent = 'Sign in to save a daily best and see your position.';
     } else if (view.me) {
-      me.textContent = `Your current best: ${seconds(view.me.finishTicks)} · #${view.me.rank}`;
+      me.textContent = `Best ${seconds(view.me.finishTicks)} · #${view.me.rank}`;
       const additional = view.nearby.filter(
         (row) =>
           !view.top.some(
@@ -164,6 +161,11 @@ export function createLeaderboardController(
       }
     } else {
       me.textContent = 'You have no verified daily time yet.';
+    }
+    if (receipt && view.outcome) {
+      card.dataset.best = String(view.outcome.isPersonalBest);
+      const kicker = document.getElementById('card-kicker');
+      if (kicker) kicker.textContent = 'Verified';
     }
     outcome.textContent = outcomeText(view, receipt);
     outcome.hidden = !outcome.textContent;

@@ -404,6 +404,8 @@ test('PRESENTATION FIXTURE keeps enlarged text, native safe areas, settings and 
     await page.setViewportSize(viewport);
     await setRaceSettingsOpen(page, true);
     for (const id of ['sound-toggle', 'motion-select']) {
+      await page.locator(`#${id}`).focus();
+      await page.locator(`#${id}`).scrollIntoViewIfNeeded();
       await expectControlHit(page, id);
       const box = await page.locator(`#${id}`).boundingBox();
       if (!box) throw new Error('Missing enlarged setting');

@@ -7,6 +7,7 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="theme-color" content="#183b35" />
+    <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
     <title>Reddit Racer</title>
   </head>
@@ -23,13 +24,25 @@
             <h1>Reddit Racer<span class="title-dot">.</span></h1>
           </div>
           <div class="mode-stack">
-            <span id="mode-label" class="mode">PRACTICE · UNRANKED</span>
+            <span id="mode-label" class="mode">Practice</span>
           </div>
         </header>
         <div class="timing" aria-label="Lap time">
           <output id="timer" aria-label="Lap time in seconds" aria-live="off"
             >00.000</output
           >
+          <output
+            id="practice-best-lap"
+            class="practice-best-lap"
+            aria-live="off"
+            hidden
+          ></output>
+          <output
+            id="practice-lap-notice"
+            class="practice-lap-notice"
+            aria-live="polite"
+            hidden
+          ></output>
           <output id="practice-last-lap" aria-live="polite" hidden></output>
         </div>
         <p
@@ -39,6 +52,9 @@
           hidden
         ></p>
       </div>
+      <output id="grip-warning" class="grip-warning" hidden
+        >GRIP LIMIT · LIFT TO TIGHTEN</output
+      >
       <output
         id="race-countdown"
         class="race-countdown"
@@ -48,9 +64,14 @@
         >3</output
       >
       <div id="card" class="race-card">
-        <p id="card-kicker" class="eyebrow">ONE CAR. ONE BUTTON.</p>
-        <h2 id="card-title" tabindex="-1">Find your rhythm.</h2>
-        <p id="card-copy">Hold to go. Release to slow.</p>
+        <p id="card-kicker" class="eyebrow"></p>
+        <p id="challenge-heading" class="challenge-heading" hidden></p>
+        <h2 id="card-title" tabindex="-1"></h2>
+        <output id="finish-time" class="finish-time" hidden
+          ><span id="finish-value"></span><small>s</small></output
+        >
+        <p id="practice-result" class="practice-result" hidden></p>
+        <p id="card-copy">Hold to accelerate. Release to brake.</p>
         <div
           id="result-summary"
           class="result-summary"
@@ -69,7 +90,7 @@
           <span id="retry-label">Try again</span
           ><span aria-hidden="true">↗</span>
         </button>
-        <p id="track-note" class="card-note">Preparing the circuit…</p>
+        <p id="track-note" class="card-note"></p>
         <section id="today-race" class="today-race" data-state="idle" hidden>
           <p id="today-race-status" role="status"></p>
           <button id="today-race-button" type="button" hidden>
@@ -134,14 +155,38 @@
             </div>
           </details>
         </section>
-        <button id="practice-button" class="secondary-button" type="button">
-          Practice tracks
-        </button>
+        <details id="practice-modes" class="practice-modes">
+          <summary>Tracks <span aria-hidden="true">+</span></summary>
+          <button id="slot-button" class="secondary-button" type="button">
+            Slot car
+          </button>
+          <button id="stunt-button" class="secondary-button" type="button">
+            Stunts
+          </button>
+          <button id="practice-button" class="secondary-button" type="button">
+            Practice
+          </button>
+        </details>
       </div>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary>Settings</summary>
-          <div class="settings-panel">
+          <dialog
+            id="settings-dialog"
+            class="settings-panel"
+            aria-labelledby="settings-title"
+          >
+            <div class="settings-heading">
+              <h2 id="settings-title">Settings</h2>
+              <button
+                id="settings-close"
+                type="button"
+                aria-label="Close settings"
+                autofocus
+              >
+                Close ×
+              </button>
+            </div>
             <div
               class="feedback-controls"
               role="group"
@@ -165,9 +210,7 @@
                 </select>
               </label>
             </div>
-            <p id="sound-feedback" class="sound-feedback" role="status">
-              Sound starts when you race.
-            </p>
+            <p id="sound-feedback" class="sound-feedback" role="status"></p>
             <div class="course-info">
               <div id="practice-settings" hidden>
                 <p id="practice-seed"></p>
@@ -182,7 +225,7 @@
                 <p id="daily-reset"></p>
               </div>
             </div>
-          </div>
+          </dialog>
         </details>
       </footer>
       <div id="race-diagnostics" hidden aria-hidden="true">

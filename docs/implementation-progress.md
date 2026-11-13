@@ -272,3 +272,28 @@
 ## Next
 
 The remaining app criteria need hosted negative/anonymous-access observations and real phone/first-time player sessions. Keep #20, #4, #22, #24 and #25 open for those exact conditions; the public demo part of #1 is deferred by the private-only authorization. Private version `0.0.13` remains installed; next unused version `0.0.14`. No further deployment is needed for offline tooling; keep the UI simple.
+
+## 2026-11-14 — local visual refresh (#54–#57) and practice bests
+
+The local working version now uses an ivory/charcoal/coral miniature-racer theme shared by inline splash and expanded view. Today's race is the primary action when a daily challenge is available; local practice keeps its truthful label. Optional practice/stunt choices live behind a disclosure. The entry preview frames the car and a local section rather than fitting the entire map.
+
+Results show a large tabular time, a distinct result reveal, a prominent retry action and verified server improvement/rank details when available. Options use a native modal sheet with backdrop, close/Escape behavior, explicit initial focus, restoration, safe-area constraints and scrolling for enlarged text. Opening options releases the accelerator. Local practice bests persist for up to 64 course/rules combinations on this device; unavailable storage falls back to session bests. Continuous laps show last and best times without stopping the race. Local bests are labelled as practice and are kept separate from verified daily records, handling versions, surface/jump profiles and standing/flying-lap modes.
+
+The camera tilts 32 degrees off vertical, follows the direction of the upcoming road smoothly and preserves a readable car scale, including during recovery and jumps. Reduced motion retains a stable viewing orientation. Terrain uses a bounded coloured mesh, distant low relief, grouped existing Kenney props and one batched soft-shadow buffer. Raised ramps have visible cutaway lips, launch chevrons and landing paint; the car's shadow remains on the ground in flight. There is no decorative rectangular pit. These presentation changes preserve canonical road geometry and ranked simulation outcomes.
+
+Validation: 320 unit tests; 41 final Chromium desktop/emulated-mobile cases covering options, verified/unverified results, practice best persistence, continuous laps, 320px/portrait/desktop/short landscape, enlarged text, safe areas, touch cancellation and DPR/idle-render behavior. Additional generated-road/race/track regressions passed during the refresh. Types, lint and production build pass. The build retains the existing large-chunk advisory. No CI or physical-phone performance result is claimed.
+
+[Before references](https://github.com/kickflip-games/reddit_racer/issues/51) and [world/jump references](https://github.com/kickflip-games/reddit_racer/issues/53) remain unchanged. Current local evidence:
+
+- [Inline, 512×320](screenshots/visual-refresh/inline-final.png), [desktop entry](screenshots/visual-refresh/desktop-ready-chromium.png), [portrait entry](screenshots/visual-refresh/portrait-ready-chromium.png), [320px entry](screenshots/visual-refresh/small-ready-chromium.png).
+- [Portrait options](screenshots/visual-refresh/portrait-settings-chromium.png), [practice result](screenshots/visual-refresh/portrait-results-chromium.png), [continuous-lap best](screenshots/visual-refresh/practice-best-mobile-chromium.png).
+- [Verified daily results fixture](screenshots/visual-refresh/fixture-verified-daily-mobile-chromium.png): actual client and replay-driven lap with mocked transport; not a hosted score or authentication proof.
+- [Portrait gap flight](screenshots/visual-refresh/portrait-stunt-flight.png), [desktop gap flight](screenshots/visual-refresh/desktop-stunt-flight.png), [hairpin](screenshots/visual-refresh/portrait-hairpin.png), [wet chicane](screenshots/visual-refresh/portrait-wet-chicane.png).
+- [Complete desktop race](screenshots/visual-refresh/video/desktop-complete-race.webm) and [complete portrait race](screenshots/visual-refresh/video/portrait-complete-race.webm): actual real-time headless Chromium with scripted held input; both finish at the unchanged 15.558 s reference result. These are automated captures, not human playtests or hosted Reddit footage.
+- [Performance measurements](screenshots/visual-refresh/performance.json): real-time samples during those recordings averaged 16.7 ms with 21–26 draw calls. Adjacent portrait/DPR1 samples of baseline `7c5ea3b` and the refresh averaged 16.95/16.67 ms, both p95 16.7 ms. This small Mac/headless sample showed no regression; it does not establish physical-phone FPS. The baseline was served from an isolated temporary archive with its own Vite cache.
+
+This evidence describes the current local working tree, including the previously authored unranked stunt/grip prototype. It does not complete the separate ranked-elevation work in #49 or change the installed private app version.
+
+### Minimal UI follow-up
+
+Removed routine slogans, completion sentences and first-best announcements. Entry/result panels and the brand, timing and mode badges no longer have box backgrounds; short controls, one-line instructions, timing values and actionable verification/error feedback remain. Practice best storage and continuous last/best timings are unchanged. [Portrait entry](screenshots/minimal-ui/portrait-ready.png), [result](screenshots/minimal-ui/portrait-result.png), [practice timing](screenshots/minimal-ui/practice-timing.png) and [inline splash](screenshots/minimal-ui/inline.png) show the simplified UI. Types, lint, build and the two focused entry/result/persistence and continuous-practice browser checks passed.

@@ -41,7 +41,9 @@ test('sound and motion controls retain native activation without holding the acc
     path: `test-results/minimal-ready-${test.info().project.name}.png`,
   });
   await setRaceSettingsOpen(page, true);
-  // Native keyboard activation proves auto-close even when the overlay covers the pointer centre.
+  // Modal settings explicitly close and restore focus before the primary action.
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#race-settings > summary')).toBeFocused();
   await page.locator('#start-button').focus();
   await page.keyboard.press('Enter');
   await page.clock.runFor(3100);
@@ -75,6 +77,8 @@ test('sound and motion controls retain native activation without holding the acc
   await page.clock.runFor(120);
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
   await expect(page.locator('#speed')).toHaveText('0');
+  // Escape may dismiss the options sheet as well as the native select popup.
+  await setRaceSettingsOpen(page, true);
   await motion.selectOption('reduced');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await sound.click();

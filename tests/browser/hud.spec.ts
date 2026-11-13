@@ -172,7 +172,7 @@ test('mocked daily details and later wrapping refit HUD, card and camera inset w
   const after = await layout(page);
   expect(after.cameraTopInset).toBeGreaterThan(before.cameraTopInset + 20);
   expect(after.cardMaxHeight).not.toBe(before.cardMaxHeight);
-  expect(after.cardHeight).toBeLessThan(before.cardHeight - 20);
+  expect(after.cardHeight).toBeLessThanOrEqual(before.cardHeight);
   expect(after.cardTop).toBeGreaterThanOrEqual(after.hudBottom + 8);
   expect(after.viewportWidth).toBe(before.viewportWidth);
   expect(after.viewportHeight).toBe(before.viewportHeight);

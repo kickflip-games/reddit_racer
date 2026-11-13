@@ -206,7 +206,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#start-label')).toHaveText('Race today');
+  await expect(page.locator('#start-label')).toHaveText('Race');
   await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   expect(boardCalls).toBe(0);
@@ -227,15 +227,13 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
     'data-state',
     'ready'
   );
-  await expect(page.locator('#card-kicker')).toHaveText('VERIFIED TIME');
+  await expect(page.locator('#card-kicker')).toHaveText('Verified');
   await expect(page.locator('#card-title')).toBeFocused();
   await page.keyboard.press('Space');
   expect(starts).toBe(1);
-  await expect(page.locator('#leaderboard-outcome')).toContainText(
-    '1.000s faster than your prior best'
-  );
+  await expect(page.locator('#leaderboard-outcome')).toContainText('−1.000s');
   await expect(page.locator('#leaderboard-me')).toHaveText(
-    `Your current best: ${(currentBestTicks / 120).toFixed(3)}s · #3`
+    `Best ${(currentBestTicks / 120).toFixed(3)}s · #3`
   );
   await expect(page.locator('#leaderboard-details')).not.toHaveAttribute(
     'open'
@@ -309,7 +307,7 @@ test('presentation fixture keeps responsive results and native standings accessi
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#start-label')).toHaveText('Race today');
+  await expect(page.locator('#start-label')).toHaveText('Race');
   await page.screenshot({
     path: `test-results/quick-start-mock-${test.info().project.name}.png`,
   });
@@ -598,13 +596,11 @@ test('a stored slower-run outcome never claims a new best from a newer current P
     'data-state',
     'ready'
   );
-  await expect(page.locator('#leaderboard-outcome')).toHaveText(
-    'This run: 1.000s slower than your prior best.'
-  );
+  await expect(page.locator('#leaderboard-outcome')).toHaveText('+1.000s');
   await expect(page.locator('#leaderboard-outcome')).not.toContainText(
     'improved'
   );
   await expect(page.locator('#leaderboard-me')).toHaveText(
-    `Your current best: ${((personalBestTicks - 60) / 120).toFixed(3)}s · #1`
+    `Best ${((personalBestTicks - 60) / 120).toFixed(3)}s · #1`
   );
 });

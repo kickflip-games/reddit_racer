@@ -535,7 +535,7 @@ void test('scenery theme clones preserve source maps and roughness and dispose o
     assert.notEqual(material, foliage);
     assert.notEqual(material, bark);
     if (material.name === 'grass') {
-      assert.equal(material.color.getHexString(), '3b7650');
+      assert.equal(material.color.getHexString(), '647c55');
       assert.equal(material.map, texture);
       assert.equal(material.roughness, foliage.roughness);
     } else {

@@ -13,7 +13,7 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   await page.goto('/game.html');
   await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
-  await expect(page.locator('#mode-label')).toContainText('UNRANKED');
+  await expect(page.locator('#mode-label')).toContainText('Practice');
   await expect(page.locator('#race-canvas')).toBeVisible();
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute(

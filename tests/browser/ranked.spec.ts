@@ -309,7 +309,7 @@ test('real renderer inputs submit only the replay and session, verify once, and 
     'data-state',
     'pending'
   );
-  await expect(page.locator('#mode-label')).toHaveText('RANKED · DAILY');
+  await expect(page.locator('#mode-label')).toHaveText('Daily');
   await expect(page.locator('#daily-reset')).toContainText(
     'Current race keeps'
   );
@@ -338,7 +338,7 @@ test('real renderer inputs submit only the replay and session, verify once, and 
     'data-state',
     'practice'
   );
-  await expect(page.locator('#mode-label')).toHaveText('ARCHIVE · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('Archive');
   expect(starts).toBe(1);
   expect(submissions.length).toBe(1);
 });
@@ -419,9 +419,7 @@ test('signed-out practice can finish without submitting a score', async ({
     'unranked practice'
   );
   await driveFast(page);
-  await expect(page.locator('#card-kicker')).toHaveText(
-    'LAP COMPLETE · UNRANKED'
-  );
+  await expect(page.locator('#card-kicker')).toHaveText('');
   expect(submits).toBe(0);
 });
 
@@ -460,9 +458,7 @@ for (const failure of [
       'data-state',
       failure === 'expired-receipt' ? 'rejected' : 'unavailable'
     );
-    await expect(page.locator('#card-kicker')).toHaveText(
-      'LAP COMPLETE · UNVERIFIED'
-    );
+    await expect(page.locator('#card-kicker')).toHaveText('Unverified');
     await expect(page.locator('#retry-button')).toBeEnabled();
   });
 }

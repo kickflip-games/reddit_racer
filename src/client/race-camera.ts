@@ -2,14 +2,13 @@ import { OrthographicCamera } from 'three';
 import { sampleTrack, validateTrack, type Track } from '../shared/track';
 
 export type RaceCameraPose = {
-  /** Unwrapped metres from the start; camera sampling wraps around the circuit. */
   distance: number;
   lateralOffset: number;
-  /** Visual car.rotation.y in radians: forward is (sin(heading), cos(heading)). */
   heading: number;
+  speed?: number;
+  elevation?: number;
 };
 export type RaceCameraViewport = {
-  /** Canvas CSS pixels, independent of the renderer's device pixel ratio. */
   width: number;
   height: number;
   insets: { top: number; right: number; bottom: number; left: number };
@@ -18,365 +17,230 @@ export type RaceCameraUpdate = {
   mode: 'overview' | 'chase';
   deltaSeconds: number;
   reset?: boolean;
+  reducedMotion?: boolean;
 };
 export type RaceCamera = {
   camera: OrthographicCamera;
   readonly renderable: boolean;
-  /** Refits synchronously, including when animation/simulation clocks are paused. */
   resize(viewport: RaceCameraViewport): boolean;
-  /** True only when camera matrices or renderability change. */
   update(pose: RaceCameraPose, options: RaceCameraUpdate): boolean;
 };
-
-type RoadSection = {
-  s: number;
-  leftX: number;
-  leftZ: number;
-  rightX: number;
-  rightZ: number;
+const pitch = (32 * Math.PI) / 180;
+const cosine = Math.cos(pitch),
+  sine = Math.sin(pitch);
+const finite = (n: number): void => {
+  if (!Number.isFinite(n)) throw new Error('Camera fields must be finite');
 };
-type ProjectedBounds = {
-  minU: number;
-  maxU: number;
-  minV: number;
-  maxV: number;
-  minDepth: number;
-  maxDepth: number;
-};
-type CameraProjection = {
-  anchorU: number;
-  anchorV: number;
-  scale: number;
-  width: number;
-  height: number;
-  centerX: number;
-  centerY: number;
-  eyeDistance: number;
-  far: number;
-};
-const projectionFields: readonly (keyof CameraProjection)[] = [
-  'anchorU',
-  'anchorV',
-  'scale',
-  'width',
-  'height',
-  'centerX',
-  'centerY',
-  'eyeDistance',
-  'far',
-];
 
-const pitch = (15 * Math.PI) / 180;
-const cosine = Math.cos(pitch);
-const sine = Math.sin(pitch);
-const lookBehind = 5;
-const lookAhead = 35;
-const shoulder = 0.8;
-const roadHeight = 0.08;
-const maximumScale = 9;
-// Below a millionth of a CSS pixel there is no usable drawing area. This also
-// prevents subnormal viewport numbers from underflowing the projection scale.
-const minimumUsablePixels = 0.000001;
-// Snap residual easing in screen space so unchanged idle scenes really settle.
-const settlingPixels = 0.05;
-
-function finite(value: number, label: string): void {
-  if (!Number.isFinite(value)) throw new Error(`${label} must be finite`);
-}
-
-function addPoint(
-  bounds: ProjectedBounds,
-  x: number,
-  y: number,
-  z: number
-): void {
-  const v = -z * cosine + y * sine;
-  const depth = y * cosine + z * sine;
-  bounds.minU = Math.min(bounds.minU, x);
-  bounds.maxU = Math.max(bounds.maxU, x);
-  bounds.minV = Math.min(bounds.minV, v);
-  bounds.maxV = Math.max(bounds.maxV, v);
-  bounds.minDepth = Math.min(bounds.minDepth, depth);
-  bounds.maxDepth = Math.max(bounds.maxDepth, depth);
-}
-
-function emptyBounds(): ProjectedBounds {
-  return {
-    minU: Infinity,
-    maxU: -Infinity,
-    minV: Infinity,
-    maxV: -Infinity,
-    minDepth: Infinity,
-    maxDepth: -Infinity,
-  };
-}
-
-function addSection(bounds: ProjectedBounds, section: RoadSection): void {
-  addPoint(bounds, section.leftX, roadHeight, section.leftZ);
-  addPoint(bounds, section.rightX, roadHeight, section.rightZ);
-}
-
-/** Essential framing only: no clock, input, preference or simulation ownership. */
+/** Stable car-relative framing. Preview is a hero section, rather than a whole-map thumbnail. */
 export function createRaceCamera(track: Track): RaceCamera {
   validateTrack(track);
-  const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
-  const sections: RoadSection[] = track.samples.map((sample) => ({
-    s: sample.s,
-    leftX: sample.x + sample.tz * (sample.width / 2 + shoulder),
-    leftZ: sample.z - sample.tx * (sample.width / 2 + shoulder),
-    rightX: sample.x - sample.tz * (sample.width / 2 + shoulder),
-    rightZ: sample.z + sample.tx * (sample.width / 2 + shoulder),
-  }));
-  const overview = emptyBounds();
-  for (const section of sections) addSection(overview, section);
-  const start = sampleTrack(track, track.startS);
+  const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 1000);
+  const start = sampleTrack(track, 0);
   let pose: RaceCameraPose = {
     distance: 0,
     lateralOffset: 0,
     heading: Math.atan2(start.tx, start.tz),
   };
-  let mode: RaceCameraUpdate['mode'] = 'overview';
   let viewport: RaceCameraViewport = {
     width: 0,
     height: 0,
-    insets: { top: 0, right: 0, bottom: 0, left: 0 },
+    insets: { top: 0, left: 0, right: 0, bottom: 0 },
   };
-  let renderable = false;
+  let mode: RaceCameraUpdate['mode'] = 'overview';
+  let reducedMotion = false;
   let initialized = false;
-  let pendingReset = false;
-  let anchorU = 0;
-  let anchorV = 0;
-  let scale = 1;
-  let previousProjection: CameraProjection | undefined;
+  let renderable = false;
+  let forwardX = start.tx,
+    forwardZ = start.tz;
+  let anchorX = 0,
+    anchorZ = 0,
+    scale = 14;
+  let previous = '';
 
-  function wrap(distance: number): number {
-    const wrapped =
-      ((distance % track.totalLength) + track.totalLength) % track.totalLength;
-    return wrapped < 1e-9 || track.totalLength - wrapped < 1e-9 ? 0 : wrapped;
-  }
-
-  /** Index of the section at/before s, in O(log n). */
-  function sectionIndex(s: number): number {
-    let low = 0;
-    let high = sections.length;
-    while (low + 1 < high) {
-      const middle = Math.floor((low + high) / 2);
-      const sample = sections[middle];
-      if (!sample) throw new Error('Missing camera road section');
-      if (sample.s <= s) low = middle;
-      else high = middle;
+  function fit(dt: number, reset: boolean): boolean {
+    if (!renderable) return false;
+    const frame = sampleTrack(track, pose.distance);
+    const carX = frame.x + frame.nx * pose.lateralOffset,
+      carZ = frame.z + frame.nz * pose.lateralOffset;
+    const ahead =
+      mode === 'overview'
+        ? 21
+        : Math.min(36, Math.max(25, (pose.speed ?? 18) * 1.7));
+    const aim = sampleTrack(
+      track,
+      pose.distance + (mode === 'overview' ? 8 : 6)
+    );
+    const targetX = mode === 'overview' ? frame.tx : aim.tx;
+    const targetZ = mode === 'overview' ? frame.tz : aim.tz;
+    const elapsed = Math.min(0.1, dt);
+    const snap = reset || !initialized;
+    // Keep world orientation in Reduced mode; normal mode turns gently with the course.
+    if (snap) {
+      forwardX = targetX;
+      forwardZ = targetZ;
+    } else if (elapsed > 0 && !reducedMotion) {
+      const angle =
+        Math.atan2(targetX, targetZ) - Math.atan2(forwardX, forwardZ);
+      const wrapped = Math.atan2(Math.sin(angle), Math.cos(angle));
+      const step = Math.max(
+        -elapsed * 1.8,
+        Math.min(elapsed * 1.8, wrapped * (1 - Math.exp(-elapsed / 0.24)))
+      );
+      const heading = Math.atan2(forwardX, forwardZ) + step;
+      forwardX = Math.sin(heading);
+      forwardZ = Math.cos(heading);
     }
-    return low;
-  }
-
-  function addCut(bounds: ProjectedBounds, distance: number): void {
-    const s = wrap(distance);
-    const index = sectionIndex(s);
-    const current = sections[index];
-    const next = sections[(index + 1) % sections.length];
-    if (!current || !next) throw new Error('Missing camera road section');
-    const end = index + 1 === sections.length ? track.totalLength : next.s;
-    const blend = (s - current.s) / (end - current.s);
-    // Interpolate the actual rendered shoulder edges, rather than offsetting an
-    // interpolated unit normal, which would bow away from the linear strip.
-    addPoint(
-      bounds,
-      current.leftX + (next.leftX - current.leftX) * blend,
-      roadHeight,
-      current.leftZ + (next.leftZ - current.leftZ) * blend
-    );
-    addPoint(
-      bounds,
-      current.rightX + (next.rightX - current.rightX) * blend,
-      roadHeight,
-      current.rightZ + (next.rightZ - current.rightZ) * blend
-    );
-  }
-
-  function requiredBounds(): ProjectedBounds {
-    let bounds: ProjectedBounds;
-    if (mode === 'overview' || track.totalLength <= lookBehind + lookAhead) {
-      bounds = { ...overview };
+    const rightX = forwardZ,
+      rightZ = -forwardX;
+    const points: { x: number; z: number; y: number }[] = [];
+    for (let i = 0; i <= 20; i++) {
+      const road = sampleTrack(
+        track,
+        pose.distance - 4 + ((ahead + 4) * i) / 20
+      );
+      for (const side of [-1, 1])
+        points.push({
+          x: road.x + road.nx * (road.halfWidth + 0.8) * side,
+          z: road.z + road.nz * (road.halfWidth + 0.8) * side,
+          y: 0,
+        });
+    }
+    for (const x of [-2.6, 2.6])
+      for (const z of [-2.6, 2.6])
+        for (const y of [0, (pose.elevation ?? 0) + 2])
+          points.push({ x: carX + x, z: carZ + z, y });
+    let minU = Infinity,
+      maxU = -Infinity,
+      minV = Infinity,
+      maxV = -Infinity;
+    for (const point of points) {
+      const u = point.x * rightX + point.z * rightZ;
+      const v =
+        (point.x * forwardX + point.z * forwardZ) * cosine + point.y * sine;
+      minU = Math.min(minU, u);
+      maxU = Math.max(maxU, u);
+      minV = Math.min(minV, v);
+      maxV = Math.max(maxV, v);
+    }
+    const targetU = (minU + maxU) / 2;
+    const targetV = (minV + maxV) / 2;
+    const desiredX = targetU * rightX + (targetV / cosine) * forwardX;
+    const desiredZ = targetU * rightZ + (targetV / cosine) * forwardZ;
+    if (snap) {
+      anchorX = desiredX;
+      anchorZ = desiredZ;
     } else {
-      bounds = emptyBounds();
-      const from = wrap(pose.distance + track.startS - lookBehind);
-      const to = from + lookBehind + lookAhead;
-      addCut(bounds, from);
-      addCut(bounds, to);
-      let index = sectionIndex(from) + 1;
-      // At most one lap is visited, even for short tracks or seam-crossing views.
-      for (let visited = 0; visited < sections.length; visited++, index++) {
-        const sample = sections[index % sections.length];
-        if (!sample) throw new Error('Missing camera road section');
-        const unwrapped =
-          sample.s + (index >= sections.length ? track.totalLength : 0);
-        if (unwrapped >= to) break;
-        addSection(bounds, sample);
+      const blend = 1 - Math.exp(-elapsed / 0.12);
+      anchorX += (desiredX - anchorX) * blend;
+      anchorZ += (desiredZ - anchorZ) * blend;
+      if (Math.hypot(desiredX - anchorX, desiredZ - anchorZ) * scale < 0.03) {
+        anchorX = desiredX;
+        anchorZ = desiredZ;
       }
     }
-    const frame = sampleTrack(track, track.startS + pose.distance);
-    const centerX = frame.x + frame.nx * pose.lateralOffset;
-    const centerZ = frame.z + frame.nz * pose.lateralOffset;
-    const forwardX = Math.sin(pose.heading);
-    const forwardZ = Math.cos(pose.heading);
-    for (const fore of [-2, 2]) {
-      for (const side of [-1.1, 1.1]) {
-        for (const height of [0, 1.8]) {
-          addPoint(
-            bounds,
-            centerX + forwardX * fore - forwardZ * side,
-            height,
-            centerZ + forwardZ * fore + forwardX * side
-          );
-        }
-      }
-    }
-    return bounds;
-  }
-
-  function applyProjection(bounds: ProjectedBounds): boolean {
-    const { width, height, insets } = viewport;
-    const centerX = insets.left + (width - insets.left - insets.right) / 2;
-    const centerY = insets.top + (height - insets.top - insets.bottom) / 2;
-    const anchorZ = -anchorV / cosine;
-    const anchorDepth = anchorZ * sine;
-    // Keep the depth envelope in front of the near plane even in large overviews.
-    const eyeDistance = Math.max(
-      72 / cosine,
-      bounds.maxDepth - anchorDepth + 2
+    const width = viewport.width - viewport.insets.left - viewport.insets.right;
+    const height =
+      viewport.height - viewport.insets.top - viewport.insets.bottom;
+    const u = anchorX * rightX + anchorZ * rightZ,
+      v = (anchorX * forwardX + anchorZ * forwardZ) * cosine;
+    const radiusU = Math.max(Math.abs(minU - u), Math.abs(maxU - u), 1);
+    const radiusV = Math.max(Math.abs(minV - v), Math.abs(maxV - v), 1);
+    const fitScale = Math.min(
+      width / (2 * radiusU * 1.08),
+      height / (2 * radiusV * 1.08),
+      mode === 'overview' ? 22 : 19
     );
-    const far = Math.max(400, eyeDistance + anchorDepth - bounds.minDepth + 10);
-    const projection: CameraProjection = {
-      anchorU,
-      anchorV,
+    // The car always fits. Far road edges may crop gently instead of shrinking the car to a speck.
+    const carU = carX * rightX + carZ * rightZ,
+      carV =
+        (carX * forwardX + carZ * forwardZ) * cosine +
+        (pose.elevation ?? 0) * sine;
+    const carScale = Math.min(
+      width / (2 * (Math.abs(carU - u) + 3.4)),
+      height / (2 * (Math.abs(carV - v) + 3.4))
+    );
+    const minimumScale =
+      viewport.width < 380 ? 10 : viewport.width < 700 ? 12 : 15;
+    const desiredScale = Math.min(
+      carScale,
+      Math.max(Math.min(minimumScale, height / 26), fitScale)
+    );
+    if (snap) scale = desiredScale;
+    else {
+      scale += (desiredScale - scale) * (1 - Math.exp(-elapsed / 0.45));
+      if (Math.abs(desiredScale - scale) < 0.0001) scale = desiredScale;
+    }
+    scale = Math.min(scale, carScale);
+    const centerX = viewport.insets.left + width / 2,
+      centerY = viewport.insets.top + height / 2;
+    const signature = JSON.stringify([
+      anchorX,
+      anchorZ,
+      forwardX,
+      forwardZ,
       scale,
-      width,
-      height,
-      centerX,
-      centerY,
-      eyeDistance,
-      far,
-    };
-    const previous = previousProjection;
-    if (
-      previous &&
-      projectionFields.every((key) => projection[key] === previous[key])
-    ) {
-      return false;
-    }
+      viewport,
+      pose.elevation ?? 0,
+    ]);
+    if (signature === previous) return false;
+    previous = signature;
     camera.left = -centerX / scale;
-    camera.right = (width - centerX) / scale;
+    camera.right = (viewport.width - centerX) / scale;
     camera.top = centerY / scale;
-    camera.bottom = -(height - centerY) / scale;
-    camera.far = far;
+    camera.bottom = -(viewport.height - centerY) / scale;
     camera.position.set(
-      anchorU,
-      eyeDistance * cosine,
-      anchorZ + eyeDistance * sine
+      anchorX - forwardX * 100 * sine,
+      100 * cosine,
+      anchorZ - forwardZ * 100 * sine
     );
-    camera.lookAt(anchorU, 0, anchorZ);
+    camera.lookAt(anchorX, 0, anchorZ);
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld(true);
-    previousProjection = projection;
+    initialized = true;
     return true;
   }
-
-  function fit(deltaSeconds: number, reset: boolean, resize: boolean): boolean {
-    if (!renderable) return false;
-    const bounds = requiredBounds();
-    const targetU = (bounds.minU + bounds.maxU) / 2;
-    const targetV = (bounds.minV + bounds.maxV) / 2;
-    const snap = reset || pendingReset || !initialized;
-    const shortLandscape = viewport.width > viewport.height;
-    // Long-gap race handling belongs to the caller; only visual easing is bounded.
-    const elapsed = Math.min(deltaSeconds, 0.1);
-    if (snap) {
-      anchorU = targetU;
-      anchorV = targetV;
-    } else if (elapsed > 0) {
-      const blend = 1 - Math.exp(-elapsed / (shortLandscape ? 0.08 : 0.14));
-      anchorU += (targetU - anchorU) * blend;
-      anchorV += (targetV - anchorV) * blend;
-      if (
-        Math.hypot(targetU - anchorU, targetV - anchorV) * scale <
-        settlingPixels
-      ) {
-        anchorU = targetU;
-        anchorV = targetV;
-      }
-    }
-    const radiusU = Math.max(
-      Math.abs(bounds.minU - anchorU),
-      Math.abs(bounds.maxU - anchorU)
-    );
-    const radiusV = Math.max(
-      Math.abs(bounds.minV - anchorV),
-      Math.abs(bounds.maxV - anchorV)
-    );
-    const margin = shortLandscape ? 1.1 : 1.12;
-    const halfWidth =
-      (viewport.width - viewport.insets.left - viewport.insets.right) / 2;
-    const halfHeight =
-      (viewport.height - viewport.insets.top - viewport.insets.bottom) / 2;
-    const requiredScale = Math.min(
-      halfWidth / (radiusU * margin),
-      halfHeight / (radiusV * margin),
-      maximumScale
-    );
-    if (snap || resize || requiredScale < scale) scale = requiredScale;
-    else if (elapsed > 0) {
-      scale += (requiredScale - scale) * (1 - Math.exp(-elapsed / 0.8));
-      if (
-        (requiredScale - scale) * Math.max(radiusU, radiusV) <
-        settlingPixels
-      ) {
-        scale = requiredScale;
-      }
-    }
-    // Safety always wins over easing, including after an abrupt off-road pose.
-    scale = Math.min(scale, requiredScale);
-    pendingReset = false;
-    initialized = true;
-    return applyProjection(bounds);
-  }
-
   return {
     camera,
-    get renderable(): boolean {
+    get renderable() {
       return renderable;
     },
-    resize(next: RaceCameraViewport): boolean {
-      for (const [name, value] of Object.entries({
-        width: next.width,
-        height: next.height,
-        ...next.insets,
-      })) {
-        finite(value, `Camera ${name}`);
-        if (value < 0) throw new Error(`Camera ${name} must be nonnegative`);
+    resize(next) {
+      for (const n of [
+        next.width,
+        next.height,
+        ...Object.values(next.insets),
+      ]) {
+        finite(n);
+        if (n < 0) throw new Error('Camera dimensions must be nonnegative');
       }
-      const previouslyRenderable = renderable;
       viewport = { ...next, insets: { ...next.insets } };
+      const was = renderable;
       renderable =
-        next.width - next.insets.left - next.insets.right >
-          minimumUsablePixels &&
-        next.height - next.insets.top - next.insets.bottom >
-          minimumUsablePixels;
-      const changed = fit(0, !previouslyRenderable, true);
-      return changed || previouslyRenderable !== renderable;
+        next.width - next.insets.left - next.insets.right > 0.000001 &&
+        next.height - next.insets.top - next.insets.bottom > 0.000001;
+      return fit(0, !initialized) || was !== renderable;
     },
-    update(next: RaceCameraPose, options: RaceCameraUpdate): boolean {
-      finite(next.distance, 'Camera distance');
-      finite(next.lateralOffset, 'Camera lateral offset');
-      finite(next.heading, 'Camera heading');
-      finite(options.deltaSeconds, 'Camera elapsed time');
-      if (options.deltaSeconds < 0)
-        throw new Error('Camera elapsed time must be nonnegative');
-      if (options.mode !== 'overview' && options.mode !== 'chase')
-        throw new Error('Invalid camera mode');
-      pendingReset ||= options.reset === true || options.mode !== mode;
+    update(next, options) {
+      for (const n of [
+        next.distance,
+        next.lateralOffset,
+        next.heading,
+        next.speed ?? 0,
+        next.elevation ?? 0,
+        options.deltaSeconds,
+      ])
+        finite(n);
+      if (
+        options.deltaSeconds < 0 ||
+        (options.mode !== 'overview' && options.mode !== 'chase')
+      )
+        throw new Error('Invalid camera update');
+      const changedMode = mode !== options.mode;
       pose = { ...next };
       mode = options.mode;
-      return fit(options.deltaSeconds, false, false);
+      reducedMotion = options.reducedMotion ?? false;
+      return fit(options.deltaSeconds, options.reset === true || changedMode);
     },
   };
 }

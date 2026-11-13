@@ -9,7 +9,11 @@ import {
 } from '../../src/shared/daily-challenge.ts';
 import type { LeaderboardView } from '../../src/shared/leaderboard.ts';
 import { hashTrack } from '../../src/shared/track.ts';
-import { setRaceSettingsOpen, waitForSceneAssets } from './scene-ready.ts';
+import {
+  setRaceSettingsOpen,
+  waitForSceneAssets,
+  openPracticeModes,
+} from './scene-ready.ts';
 
 const seed = 'practice-1';
 const generated = generateValidatedCircuit(seed);
@@ -177,6 +181,7 @@ test('New track changes unranked geometry and returning Daily restores the immut
     'data-track-hash',
     record.trackHash
   );
+  await openPracticeModes(page);
   await page.locator('#practice-button').click();
   await ready(page);
   const practiceHash = await page
@@ -226,6 +231,7 @@ test('New track changes unranked geometry and returning Daily restores the immut
     'data-challenge-hash',
     record.challengeHash
   );
+  await openPracticeModes(page);
   await page.locator('#practice-button').click();
   await ready(page);
   await setRaceSettingsOpen(page, true);

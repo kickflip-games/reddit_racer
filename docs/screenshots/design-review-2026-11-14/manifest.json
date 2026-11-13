@@ -1,0 +1,326 @@
+{
+  "capturedAt": "2026-11-13T12:42:42.091Z",
+  "sourceBaseCommit": "7c5ea3bf28fb900fe9c55af4d5146909c89ced53",
+  "source": "Local current working tree including uncommitted stunt prototype. No deployed Reddit UI, mocked leaderboard, or physical-phone captures.",
+  "method": "Headless Chromium, actual WebGL game and loaded Kenney assets, scripted keyboard hold input, virtual clock advanced through normal animation frames; no car pose, camera or CSS overrides.",
+  "errors": [],
+  "captures": [
+    {
+      "file": "desktop-01-reference-ready.png",
+      "description": "Reference course entry screen, local unranked mode.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 78730,
+      "sha256": "2387e7b9080e272d23ec66ca0c2dc558e5f5daf226cd0e64e0a594a2d33865ae"
+    },
+    {
+      "file": "desktop-02-settings.png",
+      "description": "Expanded settings and feedback controls on the entry screen.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 89998,
+      "sha256": "8db0a72175fc2ca74eb7b0a09e602a057ffc9041886fb69d990c9e09125178f0"
+    },
+    {
+      "file": "desktop-03-reference-finish.png",
+      "description": "Completed reference lap and retry card; scripted hold input.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "finished",
+      "condition": "sliding",
+      "timer": "15.558",
+      "distance": 222.1072,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 76099,
+      "sha256": "5bc1f779ef2c59985dae60c71e7407fcb4b0b45319f904f88501e5b5c33c560b"
+    },
+    {
+      "file": "desktop-04-generated-overview.png",
+      "description": "Existing generated circuit, showcase-3 seed, before racing.",
+      "url": "http://127.0.0.1:5173/game.html?seed=showcase-3",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 452.447,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 86187,
+      "sha256": "0a914c6e1285a390fdc87c773525b56bdb0d3d888765f2f5519cf8db651c1162"
+    },
+    {
+      "file": "desktop-05-generated-driving.png",
+      "description": "Existing generated circuit during driving; actual car, camera and roadside props.",
+      "url": "http://127.0.0.1:5173/game.html?seed=showcase-3",
+      "phase": "racing",
+      "condition": "sliding",
+      "timer": "06.833",
+      "distance": 100.257484,
+      "courseLength": 452.447,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 51972,
+      "sha256": "d3ac04860f066dce248d762640813fce8505673a757fdbb9d23d8220d9be1be3"
+    },
+    {
+      "file": "desktop-06-stunt-overview.png",
+      "description": "Working-tree stunt prototype: full layout and entry card; not deployed.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 80339,
+      "sha256": "5c2f43fbee514f23715a7a4c9551c775680ee2dc070524380962c393ae4c64b3"
+    },
+    {
+      "file": "desktop-07-stunt-gap-flight.png",
+      "description": "Actual ballistic flight over the gap, raised launch and landing ramps.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "airborne",
+      "timer": "04.033",
+      "distance": 44.632684,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 28289,
+      "sha256": "308269d621b4763f438b90925d56b8d891d2515f01473a807916bfea34377015"
+    },
+    {
+      "file": "desktop-08-stunt-hairpin.png",
+      "description": "Authored hairpin under scripted hold-only driving, including any actual slide/runoff.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "off-road",
+      "timer": "12.783",
+      "distance": 163.521111,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 53331,
+      "sha256": "1874a5e9c761f46a116fead2524f8e8b7b102de67115d992a8d6ac8806fae1c6"
+    },
+    {
+      "file": "desktop-09-stunt-sweeper.png",
+      "description": "Broad horizontal looping sweeper and chase-camera framing.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "sliding",
+      "timer": "26.033",
+      "distance": 314.519465,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 46296,
+      "sha256": "988bcb7b8887223f997bace500a89fcbe96f84cb98cd60193cd4e0d8bcb0485d"
+    },
+    {
+      "file": "desktop-10-stunt-chicane.png",
+      "description": "Authored chicane and track surroundings during driving.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "sliding",
+      "timer": "33.283",
+      "distance": 460.944848,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bytes": 35995,
+      "sha256": "fe4f1bb2031a398e2a3812c9d8270618256a82ebe5e809fa80fe0da4ff0540d2"
+    },
+    {
+      "file": "mobile-01-reference-ready.png",
+      "description": "Reference course entry screen, local unranked mode.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 56972,
+      "sha256": "a22bdd8b168a768cd05651125b60cba0a2f81df63a7e94a419cf0a78117ce614"
+    },
+    {
+      "file": "mobile-02-settings.png",
+      "description": "Expanded settings and feedback controls on the entry screen.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 59302,
+      "sha256": "e7bc4a625d73872361a1a09032ffbc75f63294cb856c3d93ee6d1382541f6422"
+    },
+    {
+      "file": "mobile-03-reference-finish.png",
+      "description": "Completed reference lap and retry card; scripted hold input.",
+      "url": "http://127.0.0.1:5173/game.html",
+      "phase": "finished",
+      "condition": "sliding",
+      "timer": "15.558",
+      "distance": 222.1072,
+      "courseLength": 222.1072,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 55437,
+      "sha256": "5a6a321c2de7f64f7c190b1a80710ef23281cfc2c2e48909aa94a62dcc9dfa18"
+    },
+    {
+      "file": "mobile-06-stunt-overview.png",
+      "description": "Working-tree stunt prototype: full layout and entry card; not deployed.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "ready",
+      "condition": "gripping",
+      "timer": "00.000",
+      "distance": 0,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 41991,
+      "sha256": "bbc9f2a238ae373239fff1603da0e6ab2fbbb4254c6bee60860b6c616145c342"
+    },
+    {
+      "file": "mobile-07-stunt-gap-flight.png",
+      "description": "Actual ballistic flight over the gap, raised launch and landing ramps.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "airborne",
+      "timer": "04.133",
+      "distance": 46.433956,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 14773,
+      "sha256": "183bab174941954854ec984c0543ccb0e260a55b076ec6444b8418d4dc2943c2"
+    },
+    {
+      "file": "mobile-08-stunt-hairpin.png",
+      "description": "Authored hairpin under scripted hold-only driving, including any actual slide/runoff.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "sliding",
+      "timer": "12.633",
+      "distance": 161.115402,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 38619,
+      "sha256": "b8541420e6f5e844ac75da04286a3aec1b013fdf651969e2eaeb16cd12ea5870"
+    },
+    {
+      "file": "mobile-10-stunt-chicane.png",
+      "description": "Authored chicane and track surroundings during driving.",
+      "url": "http://127.0.0.1:5173/game.html?stunt=1",
+      "phase": "racing",
+      "condition": "sliding",
+      "timer": "33.383",
+      "distance": 462.090607,
+      "courseLength": 730.3537,
+      "car": "kenney",
+      "scenery": "kenney",
+      "viewport": {
+        "width": 412,
+        "height": 839
+      },
+      "bytes": 25163,
+      "sha256": "8f2e4d34acd6f8b2804ec438d46d9938c06813ce4f33cd2afae670bdbd6b7958"
+    },
+    {
+      "file": "inline-11-splash.png",
+      "description": "Standalone local inline splash at 512\u00d7320; not a screenshot of Reddit feed chrome.",
+      "url": "http://127.0.0.1:5173/splash.html",
+      "viewport": {
+        "width": 512,
+        "height": 320
+      },
+      "bytes": 33753,
+      "sha256": "2891ef40eec96eb910f1e450d460b59406f948643a47fffb11a967e7705df3be"
+    }
+  ]
+}

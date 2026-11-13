@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import {
   createPracticeCourseGenerator,
   generatePracticeCourse,
+  generateFlatPracticeCourse,
   practiceTrackFingerprint,
 } from '../../src/client/practice-course.ts';
 import { assessTrackQuality } from '../../src/shared/circuit-quality.ts';
@@ -126,4 +127,12 @@ void test('failing optional crypto capabilities still permit unranked practice',
   const course = await generate();
   assert.match(course.seed, /^practice-/);
   assert.equal(course.trackHash, practiceTrackFingerprint(course.track));
+});
+
+void test('normal practice uses elevation while experimental grip practice retains its flat runtime', async () => {
+  const elevated = await generatePracticeCourse('practice-runtime-separation');
+  const flat = await generateFlatPracticeCourse('practice-runtime-separation');
+  assert.equal(elevated.track.schemaVersion, 2);
+  assert.equal(flat.track.schemaVersion, 1);
+  assert.notEqual(elevated.trackHash, flat.trackHash);
 });

@@ -47,12 +47,12 @@ test('a daily request deadline gives explicit reference practice and ignores a l
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'loading');
   // No race exists yet; only the request deadline needs to fire.
   await page.clock.fastForward(10_010);
-  await expect(page.locator('#mode-label')).toHaveText('REFERENCE · UNRANKED');
-  await expect(page.locator('#start-label')).toHaveText('Start practice');
+  await expect(page.locator('#mode-label')).toHaveText('Practice');
+  await expect(page.locator('#start-label')).toHaveText('Start');
   await expect(page.locator('#start-button')).toBeEnabled();
   release();
   await page.clock.runFor(32);
-  await expect(page.locator('#mode-label')).toHaveText('REFERENCE · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('Practice');
   await expect(page.locator('#race')).not.toHaveAttribute('data-challenge-id');
 });
 
@@ -96,7 +96,7 @@ test('a preparation deadline starts labelled practice on the saved track and a f
   });
   await pauseClock(page);
   await page.goto('/game.html?daily=1');
-  await expect(page.locator('#start-label')).toHaveText('Race today');
+  await expect(page.locator('#start-label')).toHaveText('Race');
   await expect(page.locator('#track-note')).not.toContainText('Sign in');
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
@@ -285,7 +285,7 @@ test('an archived course offers explicit current-post navigation and expires its
     'data-state',
     'not-ready'
   );
-  await expect(page.locator('#start-label')).toHaveText('Start practice');
+  await expect(page.locator('#start-label')).toHaveText('Start');
   await expect(page.locator('#today-race-status')).toContainText(
     'not ready yet'
   );

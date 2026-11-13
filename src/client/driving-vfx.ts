@@ -347,7 +347,7 @@ function createParticlePool(
 
 export function createDrivingVfx(
   track: Track,
-  options: { noiseSeed?: number } = {}
+  options: { noiseSeed?: number; followContactHeight?: boolean } = {}
 ): DrivingVfx {
   if (track.samples.length < 8 || track.samples.length > 16_384)
     throw new Error('Effects require a bounded canonical track');
@@ -523,9 +523,9 @@ export function createDrivingVfx(
   }
   function addSkid(wheel: number, point: ContactPoint): void {
     const offset = wheel * 3,
+      ay = trail[offset + 1] ?? point.y,
       ax = trail[offset] ?? point.x,
-      az = trail[offset + 2] ?? point.z,
-      ay = trail[offset + 1] ?? point.y;
+      az = trail[offset + 2] ?? point.z;
     const dx = point.x - ax,
       dz = point.z - az,
       length = Math.hypot(dx, dz);
@@ -562,7 +562,7 @@ export function createDrivingVfx(
     for (let corner = 0; corner < 4; corner++) {
       positions[slot * 12 + corner * 3] = quad[corner * 2] ?? 0;
       positions[slot * 12 + corner * 3 + 1] =
-        track.schemaVersion === 2
+        options.followContactHeight || track.schemaVersion === 2
           ? (corner < 2 ? ay : point.y) - 0.002
           : skidHeight;
       positions[slot * 12 + corner * 3 + 2] = quad[corner * 2 + 1] ?? 0;

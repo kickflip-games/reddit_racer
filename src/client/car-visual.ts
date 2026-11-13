@@ -7,12 +7,13 @@ export const CAR_VISUAL_SETTLE_EPSILON = 0.00001;
 /** Conservative radius shared by both fallback and imported art placements. */
 export const CAR_VISUAL_FOOTPRINT = 2.3;
 export type CarVisualFrame = {
+  elevation?: number;
+  surfaceHeight?: number;
+  bank?: number;
+  jumpPitch?: number;
   x: number;
   z: number;
   heading: number;
-  height?: number;
-  surfaceHeight?: number;
-  roadPitch?: number;
   distance: number;
   speed: number;
   acceleration: number;
@@ -56,6 +57,7 @@ const wheelNames = [
 export function createCarVisual(): CarVisual {
   const object = new THREE.Group();
   object.name = 'race-car';
+  object.rotation.order = 'YXZ';
   object.position.y = CAR_VISUAL_GROUND_Y;
   let kind: 'fallback' | 'kenney' = 'fallback';
   let disposed = false;
@@ -68,9 +70,9 @@ export function createCarVisual(): CarVisual {
   const fallbackMaterials = new Set<THREE.Material>();
   const lampGeometry = new THREE.BoxGeometry(0.35, 0.14, 0.16);
   const lampMaterial = new THREE.MeshBasicMaterial({ color: '#6f231c' });
-  const shadowGeometry = new THREE.PlaneGeometry(2.65, 4.3);
+  const shadowGeometry = new THREE.CircleGeometry(1, 24);
   const shadowMaterial = new THREE.MeshBasicMaterial({
-    color: '#183529',
+    color: '#292d32',
     transparent: true,
     opacity: 0.23,
     depthWrite: false,
@@ -78,7 +80,12 @@ export function createCarVisual(): CarVisual {
   const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
   shadow.name = 'car-contact-shadow';
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = -0.003;
+  shadow.matrixAutoUpdate = false;
+  const groundMatrix = new THREE.Matrix4();
+  const groundPosition = new THREE.Vector3();
+  const groundRotation = new THREE.Quaternion();
+  const groundScale = new THREE.Vector3();
+  const groundEuler = new THREE.Euler();
   object.add(shadow);
 
   function ownedMesh(
@@ -218,7 +225,6 @@ export function createCarVisual(): CarVisual {
   object.add(rig.object);
   const spin = new THREE.Quaternion();
   const axle = new THREE.Vector3(1, 0, 0);
-  const roadRotation = new THREE.Matrix4();
   const clamp = THREE.MathUtils.clamp;
   function releaseFallback(): void {
     for (const geometry of fallbackGeometries) geometry.dispose();
@@ -260,41 +266,48 @@ export function createCarVisual(): CarVisual {
       if (disposed) return false;
       let changed = pendingChanged;
       pendingChanged = false;
-      const height = frame.height ?? 0;
-      const groundY = CAR_VISUAL_GROUND_Y + height;
       if (
         object.position.x !== frame.x ||
-        object.position.y !== groundY ||
+        object.position.y !== CAR_VISUAL_GROUND_Y + (frame.elevation ?? 0) ||
         object.position.z !== frame.z
       ) {
-        object.position.set(frame.x, groundY, frame.z);
+        object.position.set(
+          frame.x,
+          CAR_VISUAL_GROUND_Y + (frame.elevation ?? 0),
+          frame.z
+        );
+        changed = true;
+      }
+      if (object.rotation.x !== (frame.jumpPitch ?? 0)) {
+        object.rotation.x = frame.jumpPitch ?? 0;
+        changed = true;
+      }
+      if (object.rotation.z !== (frame.bank ?? 0)) {
+        object.rotation.z = frame.bank ?? 0;
         changed = true;
       }
       if (object.rotation.y !== frame.heading) {
         object.rotation.y = frame.heading;
         changed = true;
       }
-      const roadPitch = -(frame.roadPitch ?? 0);
-      if (rig.object.rotation.x !== roadPitch) {
-        rig.object.rotation.x = roadPitch;
-        changed = true;
-      }
-      const shadowY = (frame.surfaceHeight ?? height) - height - 0.003;
-      const altitude = Math.max(0, height - (frame.surfaceHeight ?? height));
-      const opacity = 0.23 / (1 + altitude * 0.35);
-      const shadowScale = 1 + Math.min(altitude, 4) * 0.08;
-      if (
-        shadow.position.y !== shadowY ||
-        shadowMaterial.opacity !== opacity ||
-        shadow.scale.x !== shadowScale ||
-        shadow.rotation.x !== -Math.PI / 2 + roadPitch
-      ) {
-        shadow.position.y = shadowY;
-        shadowMaterial.opacity = opacity;
-        shadow.scale.setScalar(shadowScale);
-        shadow.rotation.x = -Math.PI / 2 + roadPitch;
-        changed = true;
-      }
+      // The shadow stays on the ground as the car rises into the air.
+      const altitude = Math.max(
+        0,
+        (frame.elevation ?? 0) - (frame.surfaceHeight ?? 0)
+      );
+      groundPosition.set(
+        frame.x + altitude * 0.25,
+        (frame.surfaceHeight ?? 0) + 0.038,
+        frame.z + altitude * 0.18
+      );
+      groundRotation.setFromEuler(
+        groundEuler.set(-Math.PI / 2, 0, -frame.heading)
+      );
+      groundScale.set(1.45 + altitude * 0.12, 2.3 + altitude * 0.17, 1);
+      object.updateMatrix();
+      groundMatrix.compose(groundPosition, groundRotation, groundScale);
+      shadow.matrix.copy(object.matrix).invert().multiply(groundMatrix);
+      shadowMaterial.opacity = 0.29 / (1 + altitude * 0.12);
       const active = frame.racing && !frame.reducedMotion;
       let targetPitch = active
         ? clamp(-frame.acceleration * 0.003, -0.055, 0.055)
@@ -345,15 +358,8 @@ export function createCarVisual(): CarVisual {
     reset,
     getRearContacts(leftOut, rightOut) {
       object.updateWorldMatrix(true, false);
-      roadRotation.makeRotationX(rig.object.rotation.x);
-      leftOut
-        .copy(rig.rearLeft)
-        .applyMatrix4(roadRotation)
-        .applyMatrix4(object.matrixWorld);
-      rightOut
-        .copy(rig.rearRight)
-        .applyMatrix4(roadRotation)
-        .applyMatrix4(object.matrixWorld);
+      leftOut.copy(rig.rearLeft).applyMatrix4(object.matrixWorld);
+      rightOut.copy(rig.rearRight).applyMatrix4(object.matrixWorld);
     },
     dispose() {
       if (disposed) return;

@@ -79,7 +79,7 @@ test('daily loading disables Start until the saved canonical course is ready', a
   release();
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#start-button')).toBeEnabled();
-  await expect(page.locator('#mode-label')).toHaveText('DAILY RACE');
+  await expect(page.locator('#mode-label')).toHaveText('Daily');
   await expect(page.locator('#daily-date')).toHaveText('2026-11-12 · UTC');
   await expect(page.locator('#daily-reset')).toContainText('UTC reset in');
   await expect(page.locator('#race')).toHaveAttribute(
@@ -136,7 +136,7 @@ test('old posts retain their original day and course as unranked practice', asyn
     dailyChallengeView(record, Date.parse('2026-11-13T12:00:00Z'))
   );
   await page.goto('/game.html?daily=1');
-  await expect(page.locator('#mode-label')).toHaveText('ARCHIVE · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('Archive');
   await expect(page.locator('#daily-date')).toHaveText('2026-11-12 · UTC');
   await expect(page.locator('#daily-reset')).toHaveText(
     'Archived course · practice'
@@ -165,7 +165,7 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
-  await expect(page.locator('#mode-label')).toHaveText('DAILY RACE');
+  await expect(page.locator('#mode-label')).toHaveText('Daily');
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-phase',
@@ -174,7 +174,7 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
   await page.keyboard.down('Space');
   await page.clock.runFor(7000);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
-  await expect(page.locator('#mode-label')).toHaveText('ARCHIVE · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('Archive');
   await expect(page.locator('#daily-date')).toHaveText('2026-11-12 · UTC');
   await expect(page.locator('#race')).toHaveAttribute(
     'data-track-hash',
@@ -212,12 +212,12 @@ test('daily service failure offers explicitly labelled unranked reference practi
   });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#mode-label')).toHaveText('REFERENCE · UNRANKED');
+  await expect(page.locator('#mode-label')).toHaveText('Practice');
   await expect(page.locator('#track-source')).toHaveAttribute(
     'data-mode',
     'reference-fallback'
   );
-  await expect(page.locator('#card-copy')).toContainText('reference course');
+  await expect(page.locator('#card-copy')).toHaveText('Practice is available.');
   await expect(page.locator('#daily-details')).toBeHidden();
   await expect(page.locator('#start-button')).toBeEnabled();
   expect(

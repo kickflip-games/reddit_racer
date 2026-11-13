@@ -94,9 +94,7 @@ test('native touch holds, captures outside movement, brakes, finishes and retrie
   await page.clock.runFor(9000);
   await page.screenshot({ path: 'test-results/touch-driving-mobile.png' });
   await page.clock.runFor(11000);
-  await expect(page.locator('#card-kicker')).toHaveText(
-    'LAP COMPLETE · UNRANKED'
-  );
+  await expect(page.locator('#card-kicker')).toHaveText('');
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
   const lastPointer = Number(await canvas.getAttribute('data-test-primary'));
   expect(

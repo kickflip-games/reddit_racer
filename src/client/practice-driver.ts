@@ -1,4 +1,16 @@
+import {
+  stepSlotSimulation,
+  slotGripTelemetry,
+  gripSurfaceAt,
+  validateGripZones,
+  type GripZone,
+} from '../shared/slot-grip.ts';
+import {
+  createFlight,
+  stepStuntSimulation,
+} from '../shared/stunt-simulation.ts';
 import { handlingForTrack } from '../shared/scored-runtime.ts';
+import type { GapJump } from '../shared/stunt-course.ts';
 import { sampleTrack, type Track } from '../shared/track.ts';
 import {
   createSimulationState,
@@ -22,13 +34,47 @@ const maximumFrameGap = 250;
 const clockTolerance = 0.000001;
 
 /**
- * Unranked flying laps reuse the authoritative movement step, but never produce
+ * Unranked flying laps select classic or dynamic-grip movement, but never produce
  * a scored replay. Public snapshots have monotonic ticks/unwrapped distance for
  * interpolation, wheel motion, audio and trails; physics keeps local distance.
  */
 export class PracticeDriver {
   private race: RaceState;
   private physics = createSimulationState();
+  private flight = createFlight();
+  private readonly stepGrounded: typeof stepSimulation;
+  get grip() {
+    return this.handling.dynamicGrip
+      ? slotGripTelemetry(
+          this.track,
+          this.physics,
+          this.inputHeld,
+          this.handling.zones
+        )
+      : null;
+  }
+  get roadBank(): number {
+    return gripSurfaceAt(
+      this.track,
+      this.handling.zones ?? [],
+      this.physics.distance
+    ).bank;
+  }
+  get elevation(): number {
+    if (this.physics.vertical) return this.physics.vertical.height;
+    return (
+      this.flight.height -
+      (this.flight.airborne
+        ? 0
+        : this.physics.lateralOffset * Math.tan(this.roadBank))
+    );
+  }
+  get verticalVelocity(): number {
+    return this.physics.vertical?.velocity ?? this.flight.velocity;
+  }
+  get airborne(): boolean {
+    return this.physics.vertical?.airborne ?? this.flight.airborne;
+  }
   private previous: SimulationState;
   private lastTimestamp: number | undefined;
   private accumulatedMilliseconds = 0;
@@ -37,7 +83,23 @@ export class PracticeDriver {
   private currentLapTicks = 0;
   private lastCompletedLapTicks: number | null = null;
 
-  constructor(private readonly track: Track) {
+  constructor(
+    private readonly track: Track,
+    private readonly jumps: readonly GapJump[] = [],
+    private readonly handling: {
+      dynamicGrip?: boolean;
+      zones?: readonly GripZone[];
+    } = {}
+  ) {
+    if (track.schemaVersion === 2 && (handling.dynamicGrip || jumps.length))
+      throw new Error(
+        'Prototype grip and gap rules require a flat practice course'
+      );
+    validateGripZones(track, handling.zones ?? []);
+    this.stepGrounded = handling.dynamicGrip
+      ? (track, state, held) =>
+          stepSlotSimulation(track, state, held, handling.zones)
+      : stepSimulation;
     this.race = prepareRace(track);
     // Every accepted game circuit is much longer than one tick's travel. Keep
     // seam work bounded to one crossing even for independently supplied tracks.
@@ -99,6 +161,7 @@ export class PracticeDriver {
       throw new Error('Invalid start time');
     this.race = startRace(prepareRace(this.track));
     this.physics = createSimulationState(this.track);
+    this.flight = createFlight();
     this.previous = this.race.simulation;
     this.lastTimestamp = timestampMilliseconds;
     this.accumulatedMilliseconds = 0;
@@ -115,7 +178,20 @@ export class PracticeDriver {
       return;
     }
 
-    const next = stepSimulation(this.track, this.physics, this.inputHeld);
+    const result = this.jumps.length
+      ? stepStuntSimulation(
+          this.track,
+          this.jumps,
+          this.physics,
+          this.flight,
+          this.inputHeld,
+          this.stepGrounded
+        )
+      : null;
+    const next =
+      result?.simulation ??
+      this.stepGrounded(this.track, this.physics, this.inputHeld);
+    if (result) this.flight = result.flight;
     this.currentLapTicks++;
     let nextCheckpointIndex = this.race.nextCheckpointIndex;
     let checkpointTicks = this.race.checkpointTicks;
@@ -132,9 +208,21 @@ export class PracticeDriver {
       if (nextCheckpointIndex !== this.track.checkpoints.length)
         throw new Error('Practice lap missed a checkpoint');
       // The scored one-lap step clamps at the line. Retain its sub-tick travel
-      // beyond the line for seamless practice; movement/handling is unchanged.
+      // beyond the line for seamless practice using the selected path metric.
       const unclippedDistance = quantizeSimulation(
-        this.physics.distance + next.speed / SIMULATION_HZ
+        this.physics.distance +
+          (this.handling.dynamicGrip && !this.flight.airborne
+            ? Math.sqrt(
+                Math.max(0, next.speed ** 2 - next.lateralVelocity ** 2)
+              ) /
+              Math.max(
+                0.35,
+                1 -
+                  sampleTrack(this.track, this.physics.distance).curvature *
+                    this.physics.lateralOffset
+              )
+            : next.speed) /
+            SIMULATION_HZ
       );
       localDistance = Math.max(
         0,
@@ -226,6 +314,10 @@ export class PracticeDriver {
   }
 }
 
-export function createPracticeDriver(track: Track): PracticeDriver {
-  return new PracticeDriver(track);
+export function createPracticeDriver(
+  track: Track,
+  jumps: readonly GapJump[] = [],
+  handling: { dynamicGrip?: boolean; zones?: readonly GripZone[] } = {}
+): PracticeDriver {
+  return new PracticeDriver(track, jumps, handling);
 }

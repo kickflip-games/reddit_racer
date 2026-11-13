@@ -7,6 +7,7 @@ export type PracticeCourse = {
   trackHash: string;
 };
 export type PracticeCourseCapabilities = {
+  layout?: 'flat' | 'elevated';
   randomValues?: (values: Uint8Array<ArrayBuffer>) => void;
   hash?: (track: Track) => Promise<string>;
   now?: () => number;
@@ -71,15 +72,18 @@ export function createPracticeCourseGenerator(
         'Practice track seeds must contain 1–96 characters.'
       );
     // Heavy generator/controller search code is downloaded only when choosing practice.
-    const { generateElevatedCircuit } =
-      await import('../shared/elevated-generator');
+    const generate =
+      capabilities.layout === 'flat'
+        ? (await import('../shared/circuit-quality')).generateValidatedCircuit
+        : (await import('../shared/elevated-generator'))
+            .generateElevatedCircuit;
     for (
       let attempt = 0;
       attempt < (explicit ? 1 : maximumAttempts);
       attempt++
     ) {
       const selectedSeed = seed ?? freshSeed();
-      const result = generateElevatedCircuit(selectedSeed);
+      const result = generate(selectedSeed);
       if (!result.quality.valid)
         throw new Error(
           'This practice course did not pass the driving checks.'
@@ -99,14 +103,25 @@ export function createPracticeCourseGenerator(
   };
 }
 
-const browserGenerator = createPracticeCourseGenerator({
+const browserCapabilities: PracticeCourseCapabilities = {
   randomValues: (values) => {
     if (!globalThis.crypto?.getRandomValues)
       throw new Error('Secure random values are unavailable.');
     globalThis.crypto.getRandomValues(values);
   },
   hash: hashTrack,
+};
+const browserGenerator = createPracticeCourseGenerator(browserCapabilities);
+const flatBrowserGenerator = createPracticeCourseGenerator({
+  ...browserCapabilities,
+  layout: 'flat',
 });
+export async function generateFlatPracticeCourse(
+  seed?: string,
+  avoidTrackHash?: string
+): Promise<PracticeCourse> {
+  return flatBrowserGenerator(seed, avoidTrackHash);
+}
 
 export async function generatePracticeCourse(
   seed?: string,

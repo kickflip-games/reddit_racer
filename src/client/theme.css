@@ -1,0 +1,19 @@
+:root {
+  --ink: #292d32;
+  --muted: #62665f;
+  --paper: #fff7e8;
+  --paper-soft: #eee4cf;
+  --accent: #c8492d;
+  --accent-hover: #bf3923;
+  --asphalt: #363b40;
+  --radius: 18px;
+  --shadow: 0 16px 40px #292d322b;
+  font-family:
+    'Avenir Next',
+    'Trebuchet MS',
+    -apple-system,
+    sans-serif;
+  color: var(--ink);
+  background: #8e9e7e;
+  font-synthesis: none;
+}

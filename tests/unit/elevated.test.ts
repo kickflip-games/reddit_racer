@@ -241,7 +241,7 @@ void test('canonical elevated mesh and camera include road height and airborne c
         distance: 46,
         lateralOffset: 0,
         heading: Math.atan2(frame.tx, frame.tz),
-        height: 5,
+        elevation: 5,
       },
       { mode: 'chase', deltaSeconds: 0, reset: true }
     );

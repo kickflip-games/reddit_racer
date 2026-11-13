@@ -1,3 +1,4 @@
+import { slotBrakingMarkers } from '../shared/slot-grip';
 import * as THREE from 'three';
 import { handlingForTrack } from '../shared/scored-runtime';
 import { circuitTerrainHeight } from './circuit-terrain';
@@ -119,9 +120,19 @@ export function buildSceneryPlacements(track: Track): SceneryPlacement[] {
   for (const character of track.seed)
     seedHash = Math.imul(seedHash ^ character.charCodeAt(0), 16777619);
   const shift = ((seedHash >>> 0) % 23) / 230;
-  for (let cluster = 0; cluster < 10; cluster++) {
-    const distance = track.totalLength * ((cluster / 10 + shift) % 1);
-    const side = cluster % 2 === 0 ? 1 : -1;
+  const corners = slotBrakingMarkers(track).map((marker) => marker.cornerS);
+  const groveDistances = [
+    track.totalLength * 0.04,
+    ...corners,
+    ...Array.from(
+      { length: 8 },
+      (_, index) => track.totalLength * ((index / 8 + shift) % 1)
+    ),
+  ].slice(0, 12);
+  for (const [cluster, distance] of groveDistances.entries()) {
+    const bend = sampleTrack(track, distance).curvature;
+    const side =
+      Math.abs(bend) > 0.015 ? -Math.sign(bend) : cluster % 2 === 0 ? 1 : -1;
     for (const [along, extra] of [
       [-3, 0],
       [0, 3.5],
@@ -132,7 +143,8 @@ export function buildSceneryPlacements(track: Track): SceneryPlacement[] {
     }
   }
   for (let section = 0; section < 3; section++) {
-    const distance = track.totalLength * (0.16 + section * 0.29);
+    const distance =
+      corners[section] ?? track.totalLength * (0.16 + section * 0.29);
     const side = section % 2 === 0 ? -1 : 1;
     for (let fence = 0; fence < 4; fence++)
       place(
@@ -172,7 +184,7 @@ export function createScenery(track: Track): SceneryVisual {
       '#896e50'
     );
     trunk.position.y = 1.2;
-    const crown = mesh(new THREE.ConeGeometry(1.3, 5.1, 6), '#397b56');
+    const crown = mesh(new THREE.ConeGeometry(1.3, 5.1, 6), '#557650');
     crown.position.y = 4.45;
     tree.add(trunk, crown);
     function barrier(color: string): THREE.Group {
@@ -222,7 +234,7 @@ export function createScenery(track: Track): SceneryVisual {
     const color =
       kind === 'treeSmall'
         ? material.name === 'grass'
-          ? '#3b7650'
+          ? '#647c55'
           : material.name === 'bark'
             ? '#8a6746'
             : undefined

@@ -1,0 +1,54 @@
+{
+  "capturedAt": "2026-11-13T16:42:31.332Z",
+  "measurements": [
+    {
+      "name": "desktop",
+      "method": "Actual real-time headless Chromium race with scripted held keyboard input and video encoding. Desktop GPU with portrait viewport is not physical phone evidence.",
+      "finish": "15.558",
+      "profile": {
+        "meanMs": 16.66610169491526,
+        "p95Ms": 16.700000000000728,
+        "drawCalls": "26",
+        "triangles": "10662",
+        "viewport": [1280, 800],
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36"
+      },
+      "errors": []
+    },
+    {
+      "name": "portrait",
+      "method": "Actual real-time headless Chromium race with scripted held keyboard input and video encoding. Desktop GPU with portrait viewport is not physical phone evidence.",
+      "finish": "15.558",
+      "profile": {
+        "meanMs": 16.665254237288135,
+        "p95Ms": 16.700000000000728,
+        "drawCalls": "21",
+        "triangles": "10418",
+        "viewport": [412, 839],
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36"
+      },
+      "errors": []
+    }
+  ],
+  "comparison": {
+    "scope": "Adjacent native-RAF samples at 412×839/DPR1 in headless Chromium on this Mac, using actual held-input driving, concurrent with automated validation; not a physical-phone benchmark or general FPS guarantee.",
+    "runs": [
+      {
+        "name": "baseline",
+        "profile": {
+          "meanMs": 16.947457627118645,
+          "p95Ms": 16.700000000000728
+        },
+        "source": "7c5ea3bf28fb900fe9c55af4d5146909c89ced53"
+      },
+      {
+        "name": "refresh",
+        "profile": {
+          "meanMs": 16.66610169491525,
+          "p95Ms": 16.700000000000728
+        },
+        "source": "current local working tree"
+      }
+    ]
+  }
+}

@@ -97,3 +97,79 @@ void test('road art creation cannot change the canonical track used by replay ve
   createTrackRenderer(track);
   assert.equal(serializeTrack(track), before);
 });
+
+void test('stunt road has elevated ramps and no triangles spanning the gap', async () => {
+  const { createStuntCourse, jumpRoadHeight } =
+    await import('../../src/shared/stunt-course.ts');
+  const { track, jumps } = createStuntCourse();
+  const group = createTrackRenderer(track, jumps);
+  const road = group.children[1];
+  assert.ok(road instanceof THREE.Mesh);
+  const positions = road.geometry.getAttribute('position');
+  const indices = road.geometry.getIndex();
+  assert.ok(indices);
+  let rampVertices = 0;
+  for (let i = 0; i < positions.count; i++) {
+    const x = positions.getX(i),
+      z = positions.getZ(i);
+    if (x >= 32 && x <= 64 && Math.abs(z) < 4) {
+      assert.ok(
+        Math.abs(positions.getY(i) - jumpRoadHeight(jumps, x) - 0.03) < 0.0001
+      );
+      if (positions.getY(i) > 1) rampVertices++;
+    }
+  }
+  assert.ok(rampVertices > 10);
+  for (let i = 0; i < indices.count; i += 3) {
+    const vertices = [0, 1, 2].map((offset) => indices.getX(i + offset));
+    if (vertices.every((vertex) => Math.abs(positions.getZ(vertex)) < 4)) {
+      const midpoint =
+        vertices.reduce((sum, vertex) => sum + positions.getX(vertex), 0) / 3;
+      assert.ok(midpoint <= 42 || midpoint >= 52);
+    }
+  }
+});
+
+void test('dynamic-grip camber, wet asphalt and braking markers agree with the profile', async () => {
+  const { createStuntCourse } =
+    await import('../../src/shared/stunt-course.ts');
+  const { gripSurfaceAt } = await import('../../src/shared/slot-grip.ts');
+  const { buildRoadStripVertices } =
+    await import('../../src/client/track-renderer.ts');
+  const { track, jumps, gripZones } = createStuntCourse();
+  const strip = buildRoadStripVertices(
+    track,
+    { side: -1, offset: 0 },
+    { side: 1, offset: 0 },
+    0.03,
+    jumps,
+    gripZones
+  );
+  const index = track.samples.findIndex((sample) => sample.s > 162);
+  const sample = track.samples[index];
+  assert.ok(sample);
+  const bank = gripSurfaceAt(track, gripZones, sample.s).bank;
+  assert.ok(bank < 0);
+  assert.ok(
+    Math.abs(
+      (strip.positions[index * 6 + 4] ?? 0) -
+        (strip.positions[index * 6 + 1] ?? 0) +
+        sample.width * Math.tan(bank)
+    ) < 1e-8
+  );
+  const group = createTrackRenderer(track, jumps, {
+    dynamicGrip: true,
+    zones: gripZones,
+  });
+  assert.ok(group.getObjectByName('grip-braking-markers'));
+  const road = group.children[1];
+  assert.ok(road instanceof THREE.Mesh);
+  const colors = road.geometry.getAttribute('color');
+  assert.ok(colors);
+  const wetIndex = track.samples.findIndex((sample) => sample.s > 460);
+  // Renderer inserts four jump boundaries before this point.
+  let blue = 0;
+  for (let i = wetIndex * 2; i < wetIndex * 2 + 20; i++)
+    if (colors.getZ(i) > colors.getX(i)) blue++;
+  assert.ok(blue > 10);
+});

@@ -73,3 +73,16 @@ export async function openPracticeModes(page: Page): Promise<void> {
     if (!open) await modes.locator(':scope > summary').click();
   }
 }
+
+/** Advance every real rendered frame, stopping as soon as the observed state is reached. */
+export async function advanceRaceClockUntil(
+  page: Page,
+  condition: () => Promise<boolean>,
+  maximumMilliseconds: number
+): Promise<void> {
+  for (let elapsed = 0; elapsed < maximumMilliseconds; elapsed += 1000) {
+    if (await condition()) return;
+    await page.clock.runFor(Math.min(1000, maximumMilliseconds - elapsed));
+  }
+  expect(await condition()).toBe(true);
+}

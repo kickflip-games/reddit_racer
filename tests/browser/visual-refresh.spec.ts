@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { waitForSceneAssets, advanceRaceClockUntil } from './scene-ready.ts';
 for (const [name, width, height] of [
   ['portrait', 412, 839],
   ['small', 320, 568],
@@ -19,21 +19,26 @@ for (const [name, width, height] of [
     await expect(page.locator('#start-label')).toHaveText('Start');
     await expect(page.locator('#practice-button')).toBeHidden();
     await page.screenshot({
-      path: `docs/screenshots/visual-refresh/${name}-ready-${info.project.name}.png`,
+      path: `test-results/visual-refresh/${name}-ready-${info.project.name}.png`,
     });
     await page.locator('#race-settings > summary').click();
     await expect(page.locator('#settings-dialog')).toBeVisible();
     await expect(page.locator('#card')).toBeHidden();
     await expect(page.locator('#settings-close')).toBeFocused();
     await page.screenshot({
-      path: `docs/screenshots/visual-refresh/${name}-settings-${info.project.name}.png`,
+      path: `test-results/visual-refresh/${name}-settings-${info.project.name}.png`,
     });
     await page.keyboard.press('Escape');
     await expect(page.locator('#settings-dialog')).toBeHidden();
     await expect(page.locator('#race-settings > summary')).toBeFocused();
     await page.locator('#start-button').click();
     await page.keyboard.down('Space');
-    await page.clock.runFor(25000);
+    await advanceRaceClockUntil(
+      page,
+      async () =>
+        (await page.locator('#race').getAttribute('data-phase')) === 'finished',
+      25000
+    );
     await expect(page.locator('#race')).toHaveAttribute(
       'data-phase',
       'finished'
@@ -46,7 +51,7 @@ for (const [name, width, height] of [
     expect(button).toBeTruthy();
     expect(button!.y + button!.height).toBeLessThanOrEqual(height);
     await page.screenshot({
-      path: `docs/screenshots/visual-refresh/${name}-results-${info.project.name}.png`,
+      path: `test-results/visual-refresh/${name}-results-${info.project.name}.png`,
     });
     await page.keyboard.up('Space');
     await page.reload();
@@ -66,7 +71,15 @@ test('continuous practice displays last and best laps while driving and retains 
   await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
-  await page.clock.runFor(85000);
+  // Full-size visual states are covered above; bound two-lap software rendering.
+  await page.setViewportSize({ width: 320, height: 320 });
+  await advanceRaceClockUntil(
+    page,
+    async () =>
+      Number(await page.locator('#race').getAttribute('data-practice-laps')) >=
+      2,
+    85000
+  );
   expect(
     Number(await page.locator('#race').getAttribute('data-practice-laps'))
   ).toBeGreaterThanOrEqual(2);
@@ -75,7 +88,7 @@ test('continuous practice displays last and best laps while driving and retains 
   const best = await page.locator('#practice-best-lap').textContent();
   expect(best).toContain('Best');
   await page.screenshot({
-    path: `docs/screenshots/visual-refresh/practice-best-${info.project.name}.png`,
+    path: `test-results/visual-refresh/practice-best-${info.project.name}.png`,
   });
   await page.keyboard.up('Space');
   await page.reload();

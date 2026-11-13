@@ -1,5 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { waitForSceneAssets, openPracticeModes } from './scene-ready.ts';
+import {
+  waitForSceneAssets,
+  openPracticeModes,
+  advanceRaceClockUntil,
+} from './scene-ready.ts';
 
 test('slot-car practice warns before runoff and lifting restores grip, then continues laps', async ({
   page,
@@ -33,7 +37,7 @@ test('slot-car practice warns before runoff and lifting restores grip, then cont
     await page.locator('#race').getAttribute('data-grip-usage')
   );
   await page.screenshot({
-    path: `docs/screenshots/slot-grip-limit-${testInfo.project.name}.png`,
+    path: `test-results/slot-grip-limit-${testInfo.project.name}.png`,
   });
   const speedBeforeLift = Number(await page.locator('#speed').textContent());
   await page.keyboard.up('Space');
@@ -47,10 +51,18 @@ test('slot-car practice warns before runoff and lifting restores grip, then cont
     speedBeforeLift
   );
   await page.screenshot({
-    path: `docs/screenshots/slot-grip-lift-${testInfo.project.name}.png`,
+    path: `test-results/slot-grip-lift-${testInfo.project.name}.png`,
   });
   await page.keyboard.down('Space');
-  await page.clock.runFor(85000);
+  // Full-size visual states are covered above; bound two-lap software rendering.
+  await page.setViewportSize({ width: 320, height: 320 });
+  await advanceRaceClockUntil(
+    page,
+    async () =>
+      Number(await page.locator('#race').getAttribute('data-practice-laps')) >=
+      2,
+    85000
+  );
   expect(
     Number(await page.locator('#race').getAttribute('data-practice-laps'))
   ).toBeGreaterThanOrEqual(2);

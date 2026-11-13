@@ -10,7 +10,7 @@ test('stunt circuit renders and a held launch flies across the gap', async ({
   await expect(page.locator('#card-title')).toHaveText('');
   await expect(page.locator('#start-button')).toBeEnabled();
   await page.screenshot({
-    path: `docs/screenshots/stunt-circuit-${testInfo.project.name}.png`,
+    path: `test-results/stunt-circuit-${testInfo.project.name}.png`,
   });
   await page.locator('#start-button').click();
   await page.locator('#race-canvas').focus();
@@ -21,7 +21,7 @@ test('stunt circuit renders and a held launch flies across the gap', async ({
     { timeout: 20000 }
   );
   await page.screenshot({
-    path: `docs/screenshots/stunt-jump-${testInfo.project.name}.png`,
+    path: `test-results/stunt-jump-${testInfo.project.name}.png`,
   });
   await expect(page.locator('#status')).not.toHaveAttribute(
     'data-condition',

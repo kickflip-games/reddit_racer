@@ -80,7 +80,7 @@
     "q": "?stunt=1",
     "w": 960,
     "h": 720,
-    "ms": 6000,
+    "ms": 40000,
     "errors": [],
     "state": {
       "phase": "racing",
@@ -95,7 +95,7 @@
       "gripUsage": "0",
       "surface": "dry",
       "gripModel": "dynamic",
-      "lateralOffset": "0",
+      "lateralOffset": "0.385934",
       "practiceLaps": "0",
       "viewportUsable": "true",
       "airborne": "false",
@@ -103,14 +103,14 @@
       "roadHeight": "0",
       "landings": "0",
       "trackSchema": "1",
-      "drawCalls": "41",
-      "triangles": "27996",
+      "drawCalls": "22",
+      "triangles": "27928",
       "trackHash": "stunt-mirrored",
       "settingsOpen": "false",
       "attemptMode": "practice"
     },
     "progress": {
-      "value": 26.898545,
+      "value": 426.730398,
       "max": 730.3537
     }
   },

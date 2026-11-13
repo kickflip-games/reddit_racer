@@ -2,6 +2,17 @@
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { cpus, platform, release } from 'node:os';
+const sourceCommit = execFileSync('git', ['rev-parse', 'HEAD'], {
+  encoding: 'utf8',
+}).trim();
+const machine = {
+  cpu: cpus()[0]?.model,
+  logicalCores: cpus().length,
+  platform: platform(),
+  release: release(),
+};
 const output = process.argv[2];
 if (!output)
   throw new Error(
@@ -163,6 +174,10 @@ for (const [label, url, width, height] of [
     }
   records.push({
     label,
+    sourceCommit: label.startsWith('before')
+      ? '27922a1477301fd99ae87c88aa210aa32c5fb656'
+      : sourceCommit,
+    machine,
     scope:
       'Mac headless Chromium; development server; native input and real-time frames; instrumentation shared by both sources; no physical-phone claim',
     width,

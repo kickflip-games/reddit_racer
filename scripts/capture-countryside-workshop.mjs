@@ -15,6 +15,9 @@ page.on('console', (e) => {
 await page.goto(`${base}/environment-gallery.html`);
 await page.locator('#environment-status[data-state=ready]').waitFor();
 await page.locator('#wind').uncheck();
+await page.locator('#course').selectOption('classic');
+await page.locator('#seed').fill('showcase-3');
+await page.locator('#progress').fill('18');
 await page.getByRole('button', { name: 'Regenerate', exact: true }).click();
 await page.locator('#environment-status[data-state=ready]').waitFor();
 await page
@@ -27,6 +30,9 @@ await page
   .locator('#environment-canvas')
   .screenshot({ path: `${output}/toon-light.png` });
 await page.locator('#lighting').selectOption('soft');
+await page.locator('#course').selectOption('elevated');
+await page.locator('#seed').fill('flow-probe-21');
+await page.locator('#progress').fill('6');
 for (const overlay of ['regions', 'clearance', 'none']) {
   await page.locator('#overlay').selectOption(overlay);
   await page.getByRole('button', { name: 'Regenerate', exact: true }).click();

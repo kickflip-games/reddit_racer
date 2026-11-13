@@ -39,13 +39,17 @@ Generation tries at most 32 structural candidates and eight requested quality se
 
 The committed [200-course observation](evidence/elevated-circuits/validation.json) records all seeds, hashes, selected candidates, work summaries and source hashes. It accepted 200/200, with two reserve uses and 199 distinct profiles/hashes. The fast controller completed in 22.8–29.7 seconds (median 26.25), with three to five meaningful releases; it improved over holding throughout by 1.275–7.075 seconds. These are scripted controls, not first-time-player or physical-phone measurements.
 
-Local checks pass 319 unit cases on Node 24.22.2 and Node 22.23.5, including retained legacy goldens, elevation bounds, gravity, recovery, immutable storage, HTTP session verification and duplicate receipts. Browser checks include real WebGL rendering, native key input, takeoff/landing, continuous practice, and Chromium/Safari replay agreement. Full CI and private installation outcomes are recorded in the progress log when complete.
+Local checks pass 319 unit cases on Node 24.22.2 and Node 22.23.5, including retained legacy goldens, elevation bounds, gravity, recovery, immutable storage, HTTP session verification and duplicate receipts. Browser checks include real WebGL rendering, native key input, takeoff/landing, continuous practice, and Chromium/Safari replay agreement. The fixed-source full local browser run passes all 134 cases, retaining all 127 earlier identities with no retry, skip or flake. Private `0.0.14`, built from clean source `11bc719`, is installed. [Native observations](evidence/elevated-circuits/private-playtest.json) record the retained daily verification/PB, two practice laps, a different generated course, and actual takeoff/landing. The current UTC daily stays on schema 1; the next new daily receives schema 2. A live elevated ranked day has not been fabricated to replace the immutable current day. CI remains a required merge gate on the final PR head.
 
 ![Actual local elevated course overview](evidence/elevated-circuits/overview-desktop.png)
 
 ![Actual local jump with ground shadow](evidence/elevated-circuits/jump-desktop.png)
 
 These captures use the production renderer and ordinary input with a scripted browser clock. They establish visual rendering, not device FPS or human handling comfort.
+
+![Actual private Reddit practice jump](evidence/elevated-circuits/private-practice-jump.png)
+
+The private observation uses Reddit's desktop Mobile preview, not a physical phone. Native lap times include operator idle and are not used to tune pace. Batched immediate post-Start key input did not accelerate; canvas-targeted input after observing the running phase did. The automated start-to-hold tests passed. Four returned outer-page log entries had no game-origin entries; this does not establish comprehensive hosted error capture.
 
 ## Reference decisions
 

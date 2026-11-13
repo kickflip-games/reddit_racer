@@ -41,6 +41,11 @@ export type TodayRacePostsDependencies = {
   getPost: (postId: string) => Promise<TrustedRacePost | undefined>;
 };
 export type TodayRacePostsService = {
+  /** Trusted internal read; absence and an unavailable registered post differ. */
+  readRegisteredPost: (input: {
+    subredditId: string;
+    day: string;
+  }) => Promise<TrustedRacePost | undefined>;
   registerCreatedPost: (
     input: DailyPostInput
   ) => Promise<DailyRacePostPointer | null>;
@@ -258,27 +263,41 @@ export function createTodayRacePostsService(
     await validateStored(winner);
     return winner;
   }
+  async function readRegisteredPost(input: {
+    subredditId: string;
+    day: string;
+  }): Promise<TrustedRacePost | undefined> {
+    utcDayWindow(input.day);
+    const key = dailyRacePostsKey(input.subredditId);
+    const raw = await storage(() => deps.store.hGet(key, input.day));
+    if (raw === undefined) return undefined;
+    const pointer = parseDailyRacePostPointer(raw, input);
+    await validateStored(pointer);
+    const found = await trustedPost(pointer.postId, pointer);
+    return (
+      found ?? {
+        id: pointer.postId,
+        subredditId: pointer.subredditId,
+        createdAtMs: pointer.createdAtMs,
+        available: false,
+      }
+    );
+  }
   async function getTodayPost(input: {
     subredditId: string;
   }): Promise<TodayRacePostView> {
-    const key = dailyRacePostsKey(input.subredditId);
     for (let attempt = 0; attempt < MAX_TODAY_POST_READ_ATTEMPTS; attempt++) {
       const day = utcDay(now());
-      const raw = await storage(() => deps.store.hGet(key, day));
+      const post = await readRegisteredPost({
+        subredditId: input.subredditId,
+        day,
+      });
       let link: TodayRacePostView['post'] = null;
-      if (raw !== undefined) {
-        const pointer = parseDailyRacePostPointer(raw, {
-          subredditId: input.subredditId,
-          day,
-        });
-        await validateStored(pointer);
-        const post = await trustedPost(pointer.postId, pointer);
-        if (post?.available)
-          link = {
-            postId: pointer.postId,
-            url: canonicalRacePostUrl(pointer.postId),
-          };
-      }
+      if (post?.available)
+        link = {
+          postId: post.id,
+          url: canonicalRacePostUrl(post.id),
+        };
       const serverNowMs = now();
       if (utcDay(serverNowMs) !== day) continue;
       return parseTodayRacePostView({
@@ -295,5 +314,5 @@ export function createTodayRacePostsService(
       'The UTC day changed while loading today’s race; refresh to try again'
     );
   }
-  return { registerCreatedPost, getTodayPost };
+  return { registerCreatedPost, getTodayPost, readRegisteredPost };
 }

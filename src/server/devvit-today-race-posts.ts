@@ -52,7 +52,9 @@ export async function readTrustedRacePost(
 /** Stored post IDs, rather than browser selectors, select this trusted lookup. */
 export function createDevvitTodayRacePostsService(
   daily: Pick<DailyChallengeService, 'bindPost' | 'read'>,
-  createdPost?: Post
+  createdPost?: Post,
+  lookup: (postId: `t3_${string}`) => Promise<Post> = (postId) =>
+    reddit.getPostById(postId)
 ) {
   return createTodayRacePostsService({
     store: redis,
@@ -62,7 +64,7 @@ export function createDevvitTodayRacePostsService(
       readTrustedRacePost(postId, (trustedId) =>
         createdPost?.id === trustedId
           ? Promise.resolve(createdPost)
-          : reddit.getPostById(trustedId)
+          : lookup(trustedId)
       ),
   });
 }

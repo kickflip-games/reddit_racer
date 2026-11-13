@@ -26,26 +26,26 @@ npm run check        # formatting, types, lint, units, 200-track quality, build
 
 For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. This starts the Devvit watch session: saved changes are built and installed as development versions, and logs stream in the terminal. Stopping the watcher leaves its last test version installed; it does not restore a previously installed build.
 
-The private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link, or open [the original test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xtz9oc/fullthrottledev/) or [the moderator-created daily post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xu6n05/reddit_racer_daily_time_attack/) while signed in with access. If Reddit redirects to login, use its normal sign-in flow. Use the subreddit moderator menu's **Create today's race** action for a fresh UTC-day post. There is no recurring post scheduler.
+The private test subreddit is `r/full_throttle_dev_dev`; a developer account needs access to that subreddit and app. Follow the CLI's test-post link, or open [the original test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xtz9oc/fullthrottledev/) or [the moderator-created daily post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xu6n05/reddit_racer_daily_time_attack/) while signed in with access. If Reddit redirects to login, use its normal sign-in flow. Once the automatic-daily build is installed, the server prepares the current UTC post on installation/upgrade and checks it every five minutes. The moderator menu's **Create today's race** action opens the existing healthy post or safely creates the missing one. [Automatic daily availability](docs/daily-race-availability.md) describes private scope, scheduling and recovery.
 
 For a reproducible private build, choose a new unused version and upload/install that exact version after checks pass. The value below is an example for the next upload, not a claim that it has been tested:
 
 ```sh
-RACER_TEST_VERSION=0.0.13
+RACER_TEST_VERSION=0.0.14
 npm run check
 npx devvit upload --version "$RACER_TEST_VERSION"
 npx devvit install full_throttle_dev_dev "full-throttle-dev@$RACER_TEST_VERSION"
 ```
 
-An explicit install does not run the development watcher. To reinstall the already observed `0.0.12` build instead:
+An explicit install does not run the development watcher. To reinstall the already observed `0.0.13` build instead:
 
 ```sh
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.12
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.13
 ```
 
 These commands upload an owner-visible build and install it only in the existing private test community. They do not publish the app or change community privacy. Keep the app identifier `full-throttle-dev` unchanged.
 
-On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup; and `0.0.11` verified the simpler clock-only driving UI, collapsed Settings and a fresh ranked finish/retry. Build `0.0.12` checked continuous generated practice, New track and restoration of the original archived daily course. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
+On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup; and `0.0.11` verified the simpler clock-only driving UI, collapsed Settings and a fresh ranked finish/retry. Build `0.0.12` checked continuous generated practice, New track and restoration of the original archived daily course; `0.0.13` observed automatic upgrade creation, two genuine scheduled checks reusing that post, archive-to-today navigation and a new verified November 13 standing. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
 
 Read private server logs with:
 
@@ -83,7 +83,7 @@ The finish card puts the result, current personal best/place, this run's improve
 
 The app-install handler validates JSON and the `AppInstall` event type before creating a post. Invalid requests return 400 without creation; a creation failure returns a fixed 500 response and safe log message. If Reddit already created the post and later metadata repair or link registration fails, the existing creation helper returns that post with a safe warning so opening it can retry binding and current-post registration. These route semantics have automated coverage; they are not a claim of a newly exercised hosted install event.
 
-The moderator menu's **Create today's race** action creates a post for the current UTC circuit. There is no recurring post scheduler yet. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
+The moderator menu's **Create today's race** action shares the durable daily coordinator with install/upgrade and the five-minute internal scheduler. Existing healthy posts are reused; unknown submission outcomes stay guarded rather than causing duplicate posts. On first access, older starter posts bind to their trusted Reddit creation date. See [daily challenge storage and rollover](docs/daily-challenges.md) for persistence, fallback and session-expiry policy. `?daily=1` in local development exercises the same daily transport, requiring a connected backend or explicitly mocked test response; it does not create a local fake leaderboard.
 
 Archived posts start practice immediately. A next-day button opens a server-checked current Reddit post when one is registered; otherwise practice and a manual check remain available. Links expire at the returned UTC boundary and never replace the loaded course. [Today's post navigation](docs/today-race-posts.md) documents first-winner registration, trusted URL checks and safe recovery after a post has already been created.
 

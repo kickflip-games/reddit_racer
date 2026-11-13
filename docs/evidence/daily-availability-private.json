@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "d40ffe7a78e3d257d6e7cdd33921f254d134e9c9",
+  "privateVersion": "0.0.13",
+  "app": "full-throttle-dev",
+  "community": "full_throttle_dev_dev",
+  "events": [
+    {
+      "severity": 1,
+      "message": "DAILY_RACE_BOOTSTRAP {\"status\":\"ready\",\"day\":\"2026-11-13\",\"postId\":\"t3_1xv0icy\"}",
+      "timestamp": "2026-11-13T06:24:48.234Z",
+      "tags": ["Console"]
+    },
+    {
+      "severity": 1,
+      "message": "DAILY_RACE_SCHEDULED {\"status\":\"ready\",\"day\":\"2026-11-13\",\"postId\":\"t3_1xv0icy\"}",
+      "timestamp": "2026-11-13T06:25:12.613Z",
+      "tags": ["Console"]
+    },
+    {
+      "severity": 1,
+      "message": "DAILY_RACE_SCHEDULED {\"status\":\"ready\",\"day\":\"2026-11-13\",\"postId\":\"t3_1xv0icy\"}",
+      "timestamp": "2026-11-13T06:30:08.522Z",
+      "tags": ["Console"]
+    }
+  ],
+  "limits": [
+    "Actual upgrade bootstrap and two genuine scheduled callbacks; not a future midnight or fresh AppInstall.",
+    "Owner Mobile preview on desktop Chrome; no physical-phone or anonymous-access claim."
+  ]
+}

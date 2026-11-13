@@ -14,6 +14,7 @@ import {
 import { createPracticeDriver } from './practice-driver';
 import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
+import { createCircuitMinimap } from './circuit-minimap';
 import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
@@ -95,6 +96,7 @@ export function initializeGame(
   const timer = element('timer');
   const speedLabel = element('speed');
   const raceRoot = element('race');
+  const minimap = createCircuitMinimap(element('circuit-minimap'), track);
   const countdown = element('race-countdown');
   const progressElement = element('lap-progress');
   if (!(progressElement instanceof HTMLProgressElement))
@@ -567,6 +569,11 @@ export function initializeGame(
       100,
       Math.floor((lapDistance / track.totalLength) * 100)
     );
+    minimap.update({
+      phase: race.phase,
+      distance: state.distance,
+      completedLaps: practiceDriver?.completedLaps ?? 0,
+    });
     lapProgress.max = track.totalLength;
     lapProgress.value = lapDistance;
     lapProgress.textContent = `${percentage}%`;
@@ -1232,6 +1239,7 @@ export function initializeGame(
     carVisual.dispose();
     scenery.dispose();
     vegetation.dispose();
+    minimap.dispose();
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
     sceneAssets.dispose();
     scene.traverse((node) => {

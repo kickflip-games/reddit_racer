@@ -35,6 +35,15 @@
     "onAppInstall": "/internal/triggers/on-app-install",
     "onAppUpgrade": "/internal/triggers/on-app-upgrade"
   },
+  "scheduler": {
+    "tasks": {
+      "ensure-daily-race": {
+        "endpoint": "/internal/scheduler/ensure-daily-race",
+        "cron": "*/5 * * * *",
+        "data": { "schemaVersion": 1 }
+      }
+    }
+  },
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"

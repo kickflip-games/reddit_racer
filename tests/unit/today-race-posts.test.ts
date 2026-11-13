@@ -411,3 +411,57 @@ void test('SDK post lookup distinguishes explicit absence/removal from an accoun
     kind('integrity')
   );
 });
+
+void test('a registered historical day is read unchanged after later UTC days without generating or rebinding', async () => {
+  const h = await todayPostFixture();
+  const original = h.addPost('t3_historical');
+  await h.service.registerCreatedPost(input(original.id));
+  const before = structuredClone(h.store.values);
+  const writes = h.store.writes.length;
+  h.setClock(midnight + 5 * DAY_MILLISECONDS);
+
+  assert.deepEqual(
+    await h.service.readRegisteredPost({ subredditId: todayPostScope, day }),
+    original
+  );
+  assert.deepEqual(h.store.values, before);
+  assert.equal(h.store.writes.length, writes);
+  assert.equal(h.generateCalls, 0);
+  assert.ok(await h.store.hGet(postBindingsKey(todayPostScope), original.id));
+  assert.ok(
+    await h.store.hGet(dailyChallengeKey(todayPostScope, day), 'record')
+  );
+  assert.ok(await h.store.hGet(todayKey, day));
+  assert.equal(await h.store.hGet(todayKey, '2026-11-18'), undefined);
+});
+
+void test('internal reads distinguish no pointer from an unavailable registered post and preserve its metadata', async () => {
+  const h = await todayPostFixture();
+  const initial = structuredClone(h.store.values);
+  assert.equal(
+    await h.service.readRegisteredPost({ subredditId: todayPostScope, day }),
+    undefined
+  );
+  assert.deepEqual(h.store.values, initial);
+  assert.equal(h.store.writes.length, 0);
+
+  const post = h.addPost('t3_unavailable');
+  await h.service.registerCreatedPost(input(post.id));
+  const registered = structuredClone(h.store.values);
+  const writes = h.store.writes.length;
+  const expected = { ...post, available: false };
+  h.setClock(midnight + 5 * DAY_MILLISECONDS);
+  post.available = false;
+  assert.deepEqual(
+    await h.service.readRegisteredPost({ subredditId: todayPostScope, day }),
+    expected
+  );
+  h.posts.delete(post.id);
+  assert.deepEqual(
+    await h.service.readRegisteredPost({ subredditId: todayPostScope, day }),
+    expected
+  );
+  assert.deepEqual(h.store.values, registered);
+  assert.equal(h.store.writes.length, writes);
+  assert.equal(h.generateCalls, 0);
+});

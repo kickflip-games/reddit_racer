@@ -1,0 +1,72 @@
+{
+  "checks": [
+    {
+      "label": "hold",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          }
+        ],
+        "endTick": 1867
+      },
+      "finishTicks": 1867,
+      "state": {
+        "tick": 1867,
+        "distance": 222.1072,
+        "speed": 20.725456,
+        "lateralOffset": 2.689002,
+        "lateralVelocity": 4.030506,
+        "slip": 1,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 1867,
+        "status": "finished"
+      }
+    },
+    {
+      "label": "deliberate-lift",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 800,
+            "held": false
+          },
+          {
+            "tick": 860,
+            "held": true
+          }
+        ],
+        "endTick": 1590
+      },
+      "finishTicks": 1590,
+      "state": {
+        "tick": 1590,
+        "distance": 222.1072,
+        "speed": 21.105213,
+        "lateralOffset": 3.327484,
+        "lateralVelocity": 4.083442,
+        "slip": 1,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 1590,
+        "status": "finished"
+      }
+    }
+  ]
+}

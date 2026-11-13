@@ -1,0 +1,1462 @@
+{
+  "checks": [
+    {
+      "label": "hold",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          }
+        ],
+        "endTick": 3996
+      },
+      "state": {
+        "tick": 3996,
+        "distance": 459.7799,
+        "speed": 20.988102,
+        "lateralOffset": 1.691518,
+        "lateralVelocity": -0.621282,
+        "slip": 0,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 3996,
+        "status": "finished"
+      },
+      "finishTicks": 3996
+    },
+    {
+      "label": "cautious",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 465,
+            "held": false
+          },
+          {
+            "tick": 478,
+            "held": true
+          },
+          {
+            "tick": 481,
+            "held": false
+          },
+          {
+            "tick": 490,
+            "held": true
+          },
+          {
+            "tick": 494,
+            "held": false
+          },
+          {
+            "tick": 503,
+            "held": true
+          },
+          {
+            "tick": 507,
+            "held": false
+          },
+          {
+            "tick": 514,
+            "held": true
+          },
+          {
+            "tick": 519,
+            "held": false
+          },
+          {
+            "tick": 526,
+            "held": true
+          },
+          {
+            "tick": 532,
+            "held": false
+          },
+          {
+            "tick": 539,
+            "held": true
+          },
+          {
+            "tick": 546,
+            "held": false
+          },
+          {
+            "tick": 552,
+            "held": true
+          },
+          {
+            "tick": 560,
+            "held": false
+          },
+          {
+            "tick": 566,
+            "held": true
+          },
+          {
+            "tick": 575,
+            "held": false
+          },
+          {
+            "tick": 581,
+            "held": true
+          },
+          {
+            "tick": 597,
+            "held": false
+          },
+          {
+            "tick": 603,
+            "held": true
+          },
+          {
+            "tick": 619,
+            "held": false
+          },
+          {
+            "tick": 624,
+            "held": true
+          },
+          {
+            "tick": 638,
+            "held": false
+          },
+          {
+            "tick": 644,
+            "held": true
+          },
+          {
+            "tick": 659,
+            "held": false
+          },
+          {
+            "tick": 665,
+            "held": true
+          },
+          {
+            "tick": 761,
+            "held": false
+          },
+          {
+            "tick": 766,
+            "held": true
+          },
+          {
+            "tick": 783,
+            "held": false
+          },
+          {
+            "tick": 788,
+            "held": true
+          },
+          {
+            "tick": 803,
+            "held": false
+          },
+          {
+            "tick": 808,
+            "held": true
+          },
+          {
+            "tick": 824,
+            "held": false
+          },
+          {
+            "tick": 830,
+            "held": true
+          },
+          {
+            "tick": 847,
+            "held": false
+          },
+          {
+            "tick": 852,
+            "held": true
+          },
+          {
+            "tick": 864,
+            "held": false
+          },
+          {
+            "tick": 870,
+            "held": true
+          },
+          {
+            "tick": 884,
+            "held": false
+          },
+          {
+            "tick": 890,
+            "held": true
+          },
+          {
+            "tick": 901,
+            "held": false
+          },
+          {
+            "tick": 907,
+            "held": true
+          },
+          {
+            "tick": 921,
+            "held": false
+          },
+          {
+            "tick": 927,
+            "held": true
+          },
+          {
+            "tick": 942,
+            "held": false
+          },
+          {
+            "tick": 948,
+            "held": true
+          },
+          {
+            "tick": 966,
+            "held": false
+          },
+          {
+            "tick": 972,
+            "held": true
+          },
+          {
+            "tick": 990,
+            "held": false
+          },
+          {
+            "tick": 995,
+            "held": true
+          },
+          {
+            "tick": 1010,
+            "held": false
+          },
+          {
+            "tick": 1015,
+            "held": true
+          },
+          {
+            "tick": 1031,
+            "held": false
+          },
+          {
+            "tick": 1037,
+            "held": true
+          },
+          {
+            "tick": 1056,
+            "held": false
+          },
+          {
+            "tick": 1061,
+            "held": true
+          },
+          {
+            "tick": 1084,
+            "held": false
+          },
+          {
+            "tick": 1090,
+            "held": true
+          },
+          {
+            "tick": 1102,
+            "held": false
+          },
+          {
+            "tick": 1108,
+            "held": true
+          },
+          {
+            "tick": 1117,
+            "held": false
+          },
+          {
+            "tick": 1124,
+            "held": true
+          },
+          {
+            "tick": 1136,
+            "held": false
+          },
+          {
+            "tick": 1142,
+            "held": true
+          },
+          {
+            "tick": 1151,
+            "held": false
+          },
+          {
+            "tick": 1158,
+            "held": true
+          },
+          {
+            "tick": 1167,
+            "held": false
+          },
+          {
+            "tick": 1173,
+            "held": true
+          },
+          {
+            "tick": 1184,
+            "held": false
+          },
+          {
+            "tick": 1190,
+            "held": true
+          },
+          {
+            "tick": 1206,
+            "held": false
+          },
+          {
+            "tick": 1212,
+            "held": true
+          },
+          {
+            "tick": 1227,
+            "held": false
+          },
+          {
+            "tick": 1232,
+            "held": true
+          },
+          {
+            "tick": 1246,
+            "held": false
+          },
+          {
+            "tick": 1252,
+            "held": true
+          },
+          {
+            "tick": 1268,
+            "held": false
+          },
+          {
+            "tick": 1274,
+            "held": true
+          },
+          {
+            "tick": 1303,
+            "held": false
+          },
+          {
+            "tick": 1307,
+            "held": true
+          },
+          {
+            "tick": 1338,
+            "held": false
+          },
+          {
+            "tick": 1342,
+            "held": true
+          },
+          {
+            "tick": 1367,
+            "held": false
+          },
+          {
+            "tick": 1373,
+            "held": true
+          },
+          {
+            "tick": 1384,
+            "held": false
+          },
+          {
+            "tick": 1390,
+            "held": true
+          },
+          {
+            "tick": 1401,
+            "held": false
+          },
+          {
+            "tick": 1407,
+            "held": true
+          },
+          {
+            "tick": 1417,
+            "held": false
+          },
+          {
+            "tick": 1424,
+            "held": true
+          },
+          {
+            "tick": 1435,
+            "held": false
+          },
+          {
+            "tick": 1441,
+            "held": true
+          },
+          {
+            "tick": 1451,
+            "held": false
+          },
+          {
+            "tick": 1458,
+            "held": true
+          },
+          {
+            "tick": 1467,
+            "held": false
+          },
+          {
+            "tick": 1473,
+            "held": true
+          },
+          {
+            "tick": 1483,
+            "held": false
+          },
+          {
+            "tick": 1489,
+            "held": true
+          },
+          {
+            "tick": 1496,
+            "held": false
+          },
+          {
+            "tick": 1503,
+            "held": true
+          },
+          {
+            "tick": 1513,
+            "held": false
+          },
+          {
+            "tick": 1520,
+            "held": true
+          },
+          {
+            "tick": 1527,
+            "held": false
+          },
+          {
+            "tick": 1533,
+            "held": true
+          },
+          {
+            "tick": 1540,
+            "held": false
+          },
+          {
+            "tick": 1547,
+            "held": true
+          },
+          {
+            "tick": 1555,
+            "held": false
+          },
+          {
+            "tick": 1562,
+            "held": true
+          },
+          {
+            "tick": 1569,
+            "held": false
+          },
+          {
+            "tick": 1575,
+            "held": true
+          },
+          {
+            "tick": 1582,
+            "held": false
+          },
+          {
+            "tick": 1589,
+            "held": true
+          },
+          {
+            "tick": 1597,
+            "held": false
+          },
+          {
+            "tick": 1604,
+            "held": true
+          },
+          {
+            "tick": 1612,
+            "held": false
+          },
+          {
+            "tick": 1619,
+            "held": true
+          },
+          {
+            "tick": 1627,
+            "held": false
+          },
+          {
+            "tick": 1633,
+            "held": true
+          },
+          {
+            "tick": 1641,
+            "held": false
+          },
+          {
+            "tick": 1648,
+            "held": true
+          },
+          {
+            "tick": 1657,
+            "held": false
+          },
+          {
+            "tick": 1664,
+            "held": true
+          },
+          {
+            "tick": 1675,
+            "held": false
+          },
+          {
+            "tick": 1681,
+            "held": true
+          },
+          {
+            "tick": 1693,
+            "held": false
+          },
+          {
+            "tick": 1700,
+            "held": true
+          },
+          {
+            "tick": 1713,
+            "held": false
+          },
+          {
+            "tick": 1720,
+            "held": true
+          },
+          {
+            "tick": 1733,
+            "held": false
+          },
+          {
+            "tick": 1740,
+            "held": true
+          },
+          {
+            "tick": 1753,
+            "held": false
+          },
+          {
+            "tick": 1759,
+            "held": true
+          },
+          {
+            "tick": 1773,
+            "held": false
+          },
+          {
+            "tick": 1778,
+            "held": true
+          },
+          {
+            "tick": 1919,
+            "held": false
+          },
+          {
+            "tick": 1928,
+            "held": true
+          },
+          {
+            "tick": 1932,
+            "held": false
+          },
+          {
+            "tick": 1940,
+            "held": true
+          },
+          {
+            "tick": 1945,
+            "held": false
+          },
+          {
+            "tick": 1954,
+            "held": true
+          },
+          {
+            "tick": 1959,
+            "held": false
+          },
+          {
+            "tick": 1966,
+            "held": true
+          },
+          {
+            "tick": 1972,
+            "held": false
+          },
+          {
+            "tick": 1979,
+            "held": true
+          },
+          {
+            "tick": 1985,
+            "held": false
+          },
+          {
+            "tick": 1992,
+            "held": true
+          },
+          {
+            "tick": 1999,
+            "held": false
+          },
+          {
+            "tick": 2005,
+            "held": true
+          },
+          {
+            "tick": 2016,
+            "held": false
+          },
+          {
+            "tick": 2022,
+            "held": true
+          },
+          {
+            "tick": 2034,
+            "held": false
+          },
+          {
+            "tick": 2040,
+            "held": true
+          },
+          {
+            "tick": 2053,
+            "held": false
+          },
+          {
+            "tick": 2059,
+            "held": true
+          },
+          {
+            "tick": 2072,
+            "held": false
+          },
+          {
+            "tick": 2078,
+            "held": true
+          },
+          {
+            "tick": 2092,
+            "held": false
+          },
+          {
+            "tick": 2099,
+            "held": true
+          },
+          {
+            "tick": 2120,
+            "held": false
+          },
+          {
+            "tick": 2125,
+            "held": true
+          },
+          {
+            "tick": 2140,
+            "held": false
+          },
+          {
+            "tick": 2146,
+            "held": true
+          },
+          {
+            "tick": 2155,
+            "held": false
+          },
+          {
+            "tick": 2161,
+            "held": true
+          },
+          {
+            "tick": 2170,
+            "held": false
+          },
+          {
+            "tick": 2176,
+            "held": true
+          },
+          {
+            "tick": 2185,
+            "held": false
+          },
+          {
+            "tick": 2191,
+            "held": true
+          },
+          {
+            "tick": 2204,
+            "held": false
+          },
+          {
+            "tick": 2210,
+            "held": true
+          },
+          {
+            "tick": 2223,
+            "held": false
+          },
+          {
+            "tick": 2229,
+            "held": true
+          },
+          {
+            "tick": 2242,
+            "held": false
+          },
+          {
+            "tick": 2248,
+            "held": true
+          },
+          {
+            "tick": 2261,
+            "held": false
+          },
+          {
+            "tick": 2267,
+            "held": true
+          },
+          {
+            "tick": 2280,
+            "held": false
+          },
+          {
+            "tick": 2286,
+            "held": true
+          },
+          {
+            "tick": 2299,
+            "held": false
+          },
+          {
+            "tick": 2305,
+            "held": true
+          },
+          {
+            "tick": 2318,
+            "held": false
+          },
+          {
+            "tick": 2324,
+            "held": true
+          },
+          {
+            "tick": 2337,
+            "held": false
+          },
+          {
+            "tick": 2343,
+            "held": true
+          },
+          {
+            "tick": 2356,
+            "held": false
+          },
+          {
+            "tick": 2362,
+            "held": true
+          },
+          {
+            "tick": 2374,
+            "held": false
+          },
+          {
+            "tick": 2380,
+            "held": true
+          },
+          {
+            "tick": 2393,
+            "held": false
+          },
+          {
+            "tick": 2399,
+            "held": true
+          },
+          {
+            "tick": 2412,
+            "held": false
+          },
+          {
+            "tick": 2418,
+            "held": true
+          },
+          {
+            "tick": 2431,
+            "held": false
+          },
+          {
+            "tick": 2437,
+            "held": true
+          },
+          {
+            "tick": 2453,
+            "held": false
+          },
+          {
+            "tick": 2459,
+            "held": true
+          },
+          {
+            "tick": 2481,
+            "held": false
+          },
+          {
+            "tick": 2486,
+            "held": true
+          },
+          {
+            "tick": 2496,
+            "held": false
+          },
+          {
+            "tick": 2502,
+            "held": true
+          },
+          {
+            "tick": 2511,
+            "held": false
+          },
+          {
+            "tick": 2517,
+            "held": true
+          },
+          {
+            "tick": 2526,
+            "held": false
+          },
+          {
+            "tick": 2532,
+            "held": true
+          },
+          {
+            "tick": 2545,
+            "held": false
+          },
+          {
+            "tick": 2551,
+            "held": true
+          },
+          {
+            "tick": 2565,
+            "held": false
+          },
+          {
+            "tick": 2572,
+            "held": true
+          },
+          {
+            "tick": 2587,
+            "held": false
+          },
+          {
+            "tick": 2594,
+            "held": true
+          },
+          {
+            "tick": 2609,
+            "held": false
+          },
+          {
+            "tick": 2616,
+            "held": true
+          },
+          {
+            "tick": 2753,
+            "held": false
+          },
+          {
+            "tick": 2761,
+            "held": true
+          },
+          {
+            "tick": 2766,
+            "held": false
+          },
+          {
+            "tick": 2773,
+            "held": true
+          },
+          {
+            "tick": 2779,
+            "held": false
+          },
+          {
+            "tick": 2786,
+            "held": true
+          },
+          {
+            "tick": 2792,
+            "held": false
+          },
+          {
+            "tick": 2798,
+            "held": true
+          },
+          {
+            "tick": 2805,
+            "held": false
+          },
+          {
+            "tick": 2811,
+            "held": true
+          },
+          {
+            "tick": 2820,
+            "held": false
+          },
+          {
+            "tick": 2826,
+            "held": true
+          },
+          {
+            "tick": 2841,
+            "held": false
+          },
+          {
+            "tick": 2847,
+            "held": true
+          },
+          {
+            "tick": 2863,
+            "held": false
+          },
+          {
+            "tick": 2869,
+            "held": true
+          },
+          {
+            "tick": 2885,
+            "held": false
+          },
+          {
+            "tick": 2891,
+            "held": true
+          },
+          {
+            "tick": 2907,
+            "held": false
+          },
+          {
+            "tick": 2913,
+            "held": true
+          },
+          {
+            "tick": 2996,
+            "held": false
+          },
+          {
+            "tick": 3002,
+            "held": true
+          },
+          {
+            "tick": 3010,
+            "held": false
+          },
+          {
+            "tick": 3017,
+            "held": true
+          },
+          {
+            "tick": 3025,
+            "held": false
+          },
+          {
+            "tick": 3032,
+            "held": true
+          },
+          {
+            "tick": 3038,
+            "held": false
+          },
+          {
+            "tick": 3044,
+            "held": true
+          },
+          {
+            "tick": 3051,
+            "held": false
+          },
+          {
+            "tick": 3057,
+            "held": true
+          },
+          {
+            "tick": 3063,
+            "held": false
+          },
+          {
+            "tick": 3070,
+            "held": true
+          },
+          {
+            "tick": 3077,
+            "held": false
+          },
+          {
+            "tick": 3084,
+            "held": true
+          },
+          {
+            "tick": 3091,
+            "held": false
+          },
+          {
+            "tick": 3097,
+            "held": true
+          },
+          {
+            "tick": 3103,
+            "held": false
+          },
+          {
+            "tick": 3109,
+            "held": true
+          },
+          {
+            "tick": 3116,
+            "held": false
+          },
+          {
+            "tick": 3123,
+            "held": true
+          },
+          {
+            "tick": 3130,
+            "held": false
+          },
+          {
+            "tick": 3136,
+            "held": true
+          },
+          {
+            "tick": 3143,
+            "held": false
+          },
+          {
+            "tick": 3150,
+            "held": true
+          },
+          {
+            "tick": 3158,
+            "held": false
+          },
+          {
+            "tick": 3164,
+            "held": true
+          },
+          {
+            "tick": 3172,
+            "held": false
+          },
+          {
+            "tick": 3179,
+            "held": true
+          },
+          {
+            "tick": 3189,
+            "held": false
+          },
+          {
+            "tick": 3196,
+            "held": true
+          },
+          {
+            "tick": 3210,
+            "held": false
+          },
+          {
+            "tick": 3216,
+            "held": true
+          },
+          {
+            "tick": 3229,
+            "held": false
+          },
+          {
+            "tick": 3236,
+            "held": true
+          },
+          {
+            "tick": 3250,
+            "held": false
+          },
+          {
+            "tick": 3257,
+            "held": true
+          },
+          {
+            "tick": 3271,
+            "held": false
+          },
+          {
+            "tick": 3278,
+            "held": true
+          },
+          {
+            "tick": 3298,
+            "held": false
+          },
+          {
+            "tick": 3303,
+            "held": true
+          },
+          {
+            "tick": 3331,
+            "held": false
+          },
+          {
+            "tick": 3336,
+            "held": true
+          },
+          {
+            "tick": 3458,
+            "held": false
+          },
+          {
+            "tick": 3465,
+            "held": true
+          },
+          {
+            "tick": 3475,
+            "held": false
+          },
+          {
+            "tick": 3482,
+            "held": true
+          },
+          {
+            "tick": 3490,
+            "held": false
+          },
+          {
+            "tick": 3496,
+            "held": true
+          },
+          {
+            "tick": 3502,
+            "held": false
+          },
+          {
+            "tick": 3509,
+            "held": true
+          },
+          {
+            "tick": 3516,
+            "held": false
+          },
+          {
+            "tick": 3523,
+            "held": true
+          },
+          {
+            "tick": 3531,
+            "held": false
+          },
+          {
+            "tick": 3538,
+            "held": true
+          },
+          {
+            "tick": 3552,
+            "held": false
+          },
+          {
+            "tick": 3558,
+            "held": true
+          },
+          {
+            "tick": 3573,
+            "held": false
+          },
+          {
+            "tick": 3579,
+            "held": true
+          },
+          {
+            "tick": 3595,
+            "held": false
+          },
+          {
+            "tick": 3601,
+            "held": true
+          },
+          {
+            "tick": 3616,
+            "held": false
+          },
+          {
+            "tick": 3622,
+            "held": true
+          },
+          {
+            "tick": 3638,
+            "held": false
+          },
+          {
+            "tick": 3644,
+            "held": true
+          },
+          {
+            "tick": 3808,
+            "held": false
+          },
+          {
+            "tick": 3815,
+            "held": true
+          },
+          {
+            "tick": 3836,
+            "held": false
+          },
+          {
+            "tick": 3843,
+            "held": true
+          },
+          {
+            "tick": 3866,
+            "held": false
+          },
+          {
+            "tick": 3871,
+            "held": true
+          },
+          {
+            "tick": 3901,
+            "held": false
+          },
+          {
+            "tick": 3908,
+            "held": true
+          },
+          {
+            "tick": 3964,
+            "held": false
+          },
+          {
+            "tick": 3973,
+            "held": true
+          },
+          {
+            "tick": 3978,
+            "held": false
+          },
+          {
+            "tick": 3985,
+            "held": true
+          },
+          {
+            "tick": 3990,
+            "held": false
+          },
+          {
+            "tick": 3999,
+            "held": true
+          },
+          {
+            "tick": 4005,
+            "held": false
+          },
+          {
+            "tick": 4012,
+            "held": true
+          },
+          {
+            "tick": 4018,
+            "held": false
+          },
+          {
+            "tick": 4026,
+            "held": true
+          },
+          {
+            "tick": 4033,
+            "held": false
+          },
+          {
+            "tick": 4040,
+            "held": true
+          },
+          {
+            "tick": 4047,
+            "held": false
+          },
+          {
+            "tick": 4054,
+            "held": true
+          },
+          {
+            "tick": 4062,
+            "held": false
+          },
+          {
+            "tick": 4068,
+            "held": true
+          },
+          {
+            "tick": 4075,
+            "held": false
+          },
+          {
+            "tick": 4081,
+            "held": true
+          },
+          {
+            "tick": 4092,
+            "held": false
+          },
+          {
+            "tick": 4098,
+            "held": true
+          },
+          {
+            "tick": 4109,
+            "held": false
+          },
+          {
+            "tick": 4115,
+            "held": true
+          },
+          {
+            "tick": 4130,
+            "held": false
+          },
+          {
+            "tick": 4136,
+            "held": true
+          },
+          {
+            "tick": 4151,
+            "held": false
+          },
+          {
+            "tick": 4157,
+            "held": true
+          },
+          {
+            "tick": 4171,
+            "held": false
+          },
+          {
+            "tick": 4177,
+            "held": true
+          },
+          {
+            "tick": 4192,
+            "held": false
+          },
+          {
+            "tick": 4198,
+            "held": true
+          }
+        ],
+        "endTick": 4453
+      },
+      "state": {
+        "tick": 4453,
+        "distance": 459.7799,
+        "speed": 18.255129,
+        "lateralOffset": 0,
+        "lateralVelocity": 0,
+        "slip": 0,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 4453,
+        "status": "finished"
+      },
+      "finishTicks": 4453
+    },
+    {
+      "label": "fast",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 569,
+            "held": false
+          },
+          {
+            "tick": 621,
+            "held": true
+          },
+          {
+            "tick": 1744,
+            "held": false
+          },
+          {
+            "tick": 1803,
+            "held": true
+          },
+          {
+            "tick": 1886,
+            "held": false
+          },
+          {
+            "tick": 1927,
+            "held": true
+          },
+          {
+            "tick": 2438,
+            "held": false
+          },
+          {
+            "tick": 2495,
+            "held": true
+          }
+        ],
+        "endTick": 3326
+      },
+      "state": {
+        "tick": 3326,
+        "distance": 459.7799,
+        "speed": 21.184839,
+        "lateralOffset": 2.306689,
+        "lateralVelocity": -0.88788,
+        "slip": 0,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 3326,
+        "status": "finished"
+      },
+      "finishTicks": 3326
+    }
+  ]
+}

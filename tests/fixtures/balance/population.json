@@ -1,0 +1,82 @@
+{
+  "label": "Original200-seed report summary, not a new20-seed generator population estimate",
+  "sourceReportSha256": "a4e2b0609e473eeb253640a09fc3de9394384b9eca0d273bc5abd0b5ebeb650a",
+  "summary": {
+    "scope": "Structural geometry and authoritative simulation quality.",
+    "prefix": "regression",
+    "count": 200,
+    "acceptedCount": 200,
+    "failedCount": 0,
+    "failedSeedPreview": [],
+    "fallbackCount": 3,
+    "fallbackRate": 0.015,
+    "meanAttempts": 3.425,
+    "meanRequestedQualityAssessments": 0.99,
+    "meanQualityAssessments": 1.005,
+    "rejectionHistogram": {
+      "corner-radius": 487,
+      "corridor-fold": 6,
+      "quality:braking-opportunities": 1
+    },
+    "qualityRejectionHistogram": {
+      "braking-opportunities": 1
+    },
+    "distinctCurvatureProfiles": 198,
+    "uniqueHashes": 198,
+    "lengthMetres": {
+      "min": 350.054,
+      "p10": 384.855,
+      "median": 451.252,
+      "p90": 489.434,
+      "max": 499.404,
+      "mean": 443.268
+    },
+    "holdSeconds": {
+      "min": 27.65,
+      "p10": 29.9,
+      "median": 33,
+      "p90": 35.208,
+      "max": 38.017,
+      "mean": 32.765
+    },
+    "cautiousSeconds": {
+      "min": 32,
+      "p10": 33.992,
+      "median": 37,
+      "p90": 39,
+      "max": 40.167,
+      "mean": 36.728
+    },
+    "fastSeconds": {
+      "min": 22.55,
+      "p10": 24.183,
+      "median": 26.875,
+      "p90": 28.733,
+      "max": 30.208,
+      "mean": 26.597
+    },
+    "gainSeconds": {
+      "min": 3.775,
+      "p10": 5.267,
+      "median": 6.142,
+      "p90": 7.383,
+      "max": 8.433,
+      "mean": 6.168
+    },
+    "meaningfulLifts": {
+      "min": 3,
+      "p10": 3,
+      "median": 4,
+      "p90": 5,
+      "max": 6,
+      "mean": 3.71
+    },
+    "elapsedMilliseconds": 61935
+  },
+  "meaningfulLiftHistogram": {
+    "4": 78,
+    "5": 26,
+    "3": 92,
+    "6": 4
+  }
+}

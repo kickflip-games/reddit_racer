@@ -1,0 +1,771 @@
+{
+  "schemaVersion": 1,
+  "label": "Frozen diagnostic reference subset; no human or production daily results",
+  "sourceReportPath": "/tmp/reddit-racer-ci38-artifacts/artifacts/track-quality.json",
+  "sourceReportSha256": "a4e2b0609e473eeb253640a09fc3de9394384b9eca0d273bc5abd0b5ebeb650a",
+  "selectedCsvSha256": "89ab5511bcfc593b3667ddc3cdba36be9ac1c02eba79eba13551e057a5802f39",
+  "expectedCourseCount": 20,
+  "selection": "Existing deterministic diagnostic/extreme/stratum subset; not a random population sample",
+  "entries": [
+    {
+      "requestedSeed": "regression-154",
+      "expectedTrackHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "expectedCandidateSeed": "regression-154:attempt:6",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4147,
+        "cautious": 4529,
+        "fast": 3389
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Quality rejection/retry observed in existing report"
+    },
+    {
+      "requestedSeed": "regression-24",
+      "expectedTrackHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "expectedCandidateSeed": "reserve-motif-v1:attempt:1",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3318,
+        "cautious": 4044,
+        "fast": 2848
+      },
+      "expectedFallback": true,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Representative reserve fallback (three requests share this course hash)"
+    },
+    {
+      "requestedSeed": "regression-68",
+      "expectedTrackHash": "35893fdd17b5de3120aea572418f1fa042083b3e0aa1f5c00222db5ab4f49190",
+      "expectedCandidateSeed": "regression-68:attempt:7",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3377,
+        "cautious": 3878,
+        "fast": 2706
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Minimum course length; Minimum bounded fast duration; Fast-duration quantile anchor q=0.000"
+    },
+    {
+      "requestedSeed": "regression-19",
+      "expectedTrackHash": "b11322e306ce989686c281015bb663cee977c540b6ab8c9a64bbf46165a2752e",
+      "expectedCandidateSeed": "regression-19:attempt:2",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4242,
+        "cautious": 4690,
+        "fast": 3495
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum course length"
+    },
+    {
+      "requestedSeed": "regression-97",
+      "expectedTrackHash": "80e10d43997ea4633c0f462dbca0267705aa3276449917c4e268033a864c4a91",
+      "expectedCandidateSeed": "regression-97:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4562,
+        "cautious": 4748,
+        "fast": 3625
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum bounded fast duration"
+    },
+    {
+      "requestedSeed": "regression-87",
+      "expectedTrackHash": "91fc3cf971d3b087ecc2df3e41ada3d7f2f7dd10f7ae56beed650e2703b6a9a9",
+      "expectedCandidateSeed": "regression-87:attempt:4",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3397,
+        "cautious": 4089,
+        "fast": 2944
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Minimum braking gain; 5 meaningful lifts: lowest braking gain"
+    },
+    {
+      "requestedSeed": "regression-131",
+      "expectedTrackHash": "3bd8c1e906121f38f7c166b0acf1829f58c44b9aa3032b34f58f8c1610a8f0b2",
+      "expectedCandidateSeed": "regression-131:attempt:1",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4339,
+        "cautious": 4543,
+        "fast": 3327
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum braking gain; 4 meaningful lifts: highest braking gain"
+    },
+    {
+      "requestedSeed": "regression-159",
+      "expectedTrackHash": "6b75246b732246824ab66fda87e01f77cb2feb92337113029e6c12795a227213",
+      "expectedCandidateSeed": "regression-159:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4331,
+        "cautious": 4611,
+        "fast": 3578
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum fast off-road fraction"
+    },
+    {
+      "requestedSeed": "regression-40",
+      "expectedTrackHash": "c202aadf974d25b044948f84b5956dc4d5709267b3893ad6b049dc5996a49aab",
+      "expectedCandidateSeed": "regression-40:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4123,
+        "cautious": 4820,
+        "fast": 3401
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum signed direction changes"
+    },
+    {
+      "requestedSeed": "regression-133",
+      "expectedTrackHash": "2fffb8fa9e151418447db30222b8a132f50e7d10c6759e578d0f1142462f5f1e",
+      "expectedCandidateSeed": "regression-133:attempt:12",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4168,
+        "cautious": 4665,
+        "fast": 3401
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Maximum requested structural attempts without fallback"
+    },
+    {
+      "requestedSeed": "regression-82",
+      "expectedTrackHash": "65299519b4d98e797998c554d7fe2c21aa1347d64a341490c4f062c2b083b18b",
+      "expectedCandidateSeed": "regression-82:attempt:2",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3870,
+        "cautious": 4580,
+        "fast": 3403
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "3 meaningful lifts: lowest braking gain"
+    },
+    {
+      "requestedSeed": "regression-116",
+      "expectedTrackHash": "e8e6ca75a89c423f79a6c1c5cd783fd7d06bfca821239594c1a6a31058365dab",
+      "expectedCandidateSeed": "regression-116:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4028,
+        "cautious": 4403,
+        "fast": 3205
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "3 meaningful lifts: highest braking gain"
+    },
+    {
+      "requestedSeed": "regression-132",
+      "expectedTrackHash": "78808a20fa187590fc0e0681075dca48931c64469164aa182b94e5a30efc4fff",
+      "expectedCandidateSeed": "regression-132:attempt:1",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3983,
+        "cautious": 4737,
+        "fast": 3509
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "4 meaningful lifts: lowest braking gain"
+    },
+    {
+      "requestedSeed": "regression-197",
+      "expectedTrackHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "expectedCandidateSeed": "regression-197:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4240,
+        "cautious": 4479,
+        "fast": 3283
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "5 meaningful lifts: highest braking gain"
+    },
+    {
+      "requestedSeed": "regression-195",
+      "expectedTrackHash": "588feaa44c083db68f15fd4cca27aa5eb1e42af4daae660557b699ead8237f44",
+      "expectedCandidateSeed": "regression-195:attempt:10",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3645,
+        "cautious": 4230,
+        "fast": 3054
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "6 meaningful lifts: lowest braking gain"
+    },
+    {
+      "requestedSeed": "regression-84",
+      "expectedTrackHash": "9c6f9470cca18e677f92a3177aeff456e79e6ee84cdb9eee1776201593a0117d",
+      "expectedCandidateSeed": "regression-84:attempt:1",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3950,
+        "cautious": 4359,
+        "fast": 3228
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "6 meaningful lifts: highest braking gain"
+    },
+    {
+      "requestedSeed": "regression-112",
+      "expectedTrackHash": "5ef7355b4a5755f35c93133b98df1a07f466341568a7393cd129a7b0d323bb72",
+      "expectedCandidateSeed": "regression-112:attempt:3",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4084,
+        "cautious": 4440,
+        "fast": 3286
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Representative 2 direction changes: median fast duration within that group"
+    },
+    {
+      "requestedSeed": "regression-4",
+      "expectedTrackHash": "8d5e05bb403ca29f6d6302bf35af6eb81b0966c091a9e96e3bab90bcb1a9064b",
+      "expectedCandidateSeed": "regression-4:attempt:4",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 4174,
+        "cautious": 4567,
+        "fast": 3393
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Representative 3 direction changes: median fast duration within that group"
+    },
+    {
+      "requestedSeed": "regression-127",
+      "expectedTrackHash": "53aa35dfcdc3a545da6cb07281934d42f1ceba344bcaa1bb73e66961fe635f5e",
+      "expectedCandidateSeed": "regression-127:attempt:1",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3498,
+        "cautious": 4152,
+        "fast": 2858
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Fast-duration quantile anchor q=0.053"
+    },
+    {
+      "requestedSeed": "regression-157",
+      "expectedTrackHash": "81c6801a2b92f2fa7539864e0d43eccc98c03a79011fa3059496ed557d67bc41",
+      "expectedCandidateSeed": "regression-157:attempt:2",
+      "expectedGeneratorVersion": "motif-loop-v1",
+      "expectedQualityVersion": "quality-v1",
+      "expectedSimulationVersion": "fixed-step-v2",
+      "expectedHandlingVersion": "arcade-v1",
+      "expectedFinishTicks": {
+        "hold": 3564,
+        "cautious": 4228,
+        "fast": 2927
+      },
+      "expectedFallback": false,
+      "expectedGeneratorConfig": {
+        "width": 7,
+        "lengthMin": 350,
+        "lengthMax": 500,
+        "minRadius": 10,
+        "clearance": 2,
+        "shoulder": 0.8,
+        "maxAttempts": 12
+      },
+      "expectedQualityThresholds": {
+        "minFastSeconds": 20,
+        "maxFastSeconds": 40,
+        "minGainTicks": 60,
+        "minMeaningfulLifts": 3,
+        "maxMeaningfulLifts": 8,
+        "minLiftTicks": 12,
+        "maxFastOffRoadFraction": 0.15,
+        "minDirectionChanges": 2,
+        "maxCurvatureSlope": 0.05,
+        "maxSeamTangentAngle": 0.02,
+        "maxSeamCurvatureSlope": 0.005
+      },
+      "selectionReasons": "Fast-duration quantile anchor q=0.105"
+    }
+  ]
+}

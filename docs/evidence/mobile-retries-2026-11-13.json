@@ -1,0 +1,481 @@
+{
+  "passed": true,
+  "sourceAtRun": {
+    "head": "b7ef8ebdc3adf4a924abb5f46cd3d64e7724a5c2",
+    "retrieval": "Read-only existing worktree metadata files; no Git command or mutation",
+    "operatorReportedProductionSource": "d40ffe7a78e3d257d6e7cdd33921f254d134e9c9",
+    "operatorReportedDocOnlyHead": "b7ef8ebdc3adf4a924abb5f46cd3d64e7724a5c2",
+    "buildProvenance": "Root reports final check and private0.0.13 upload rebuilt from clean d40ffe7; no builds since. Current later head changes docs only.",
+    "warning": "Source/build linkage is operator-reported. Exact served production inventory and current source hashes are independently recorded."
+  },
+  "distInventorySHA256": "59a32a4a620d8c3d11f076b097e93707786e6c7f90b793a73c37c3250dae989d",
+  "distFileCount": 19,
+  "harnessSHA256": "4b1d9f5dec35390eec3fbf3715af0a8f3d139f13ee8f054437d83e9957527f83",
+  "browser": "158.0.8127.18",
+  "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+  "viewport": {
+    "width": 393,
+    "height": 852
+  },
+  "dpr": 1,
+  "wallRuntimeMs": 176211.69945800002,
+  "completeLaps": 21,
+  "actualRetries": 21,
+  "exactFinishTicks": 3215,
+  "exactDisplayedSeconds": "26.792",
+  "trackHash": "33634c03d16e3d50a73f74c2a82ecbd6c53235ddc21b27e829ce61a43ad7e06e",
+  "challengeHash": "d34764693cd9defc1345e6c7d46153ee3f4ba6dc0229a3ed02829ef51c833976",
+  "pageErrors": [],
+  "GLerrors": 0,
+  "contexts": 1,
+  "nativeLiveHandlesStable": {
+    "Buffer": 125,
+    "Texture": 8,
+    "Program": 9,
+    "Shader": 0,
+    "VertexArray": 25,
+    "Framebuffer": 0,
+    "Renderbuffer": 0,
+    "Sampler": 0,
+    "Query": 0,
+    "TransformFeedback": 0,
+    "Sync": 0
+  },
+  "explicitGCListeners": [61],
+  "perCycleNonGCListeners": [61, 68],
+  "perCycleNonGCNodesRange": [379, 6340],
+  "perCycleRafPending": [1],
+  "trustedInputs": {
+    "spaceDown": 105,
+    "spaceUp": 84,
+    "startClicks": 1,
+    "retryClicks": 21,
+    "untrusted": 0
+  },
+  "handled404s": 22,
+  "apiRequests": {
+    "dailyChallenge": 1,
+    "todayRacePost": 1,
+    "getLeaderboard": 21
+  },
+  "heapCheckpoints": [
+    {
+      "label": "whole-scene after one complete warm-up lap",
+      "wallMs": 10119.440583000001,
+      "heap": {
+        "usedSize": 6789972,
+        "totalSize": 7766016,
+        "embedderHeapUsedSize": 1286264,
+        "backingStorageSize": 1406749
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 339,
+        "jsEventListeners": 61
+      },
+      "raf": {
+        "requested": 1868,
+        "callbacks": 1867,
+        "cancelled": 0,
+        "pending": 1,
+        "observed": true
+      },
+      "resources": {
+        "Buffer": {
+          "created": 146,
+          "explicitlyDeleted": 21,
+          "observedBalance": 125
+        },
+        "Texture": {
+          "created": 8,
+          "explicitlyDeleted": 0,
+          "observedBalance": 8
+        },
+        "Program": {
+          "created": 10,
+          "explicitlyDeleted": 1,
+          "observedBalance": 9
+        },
+        "Shader": {
+          "created": 20,
+          "explicitlyDeleted": 20,
+          "observedBalance": 0
+        },
+        "VertexArray": {
+          "created": 37,
+          "explicitlyDeleted": 12,
+          "observedBalance": 25
+        },
+        "Framebuffer": {
+          "created": 3,
+          "explicitlyDeleted": 0,
+          "observedBalance": 3
+        },
+        "Renderbuffer": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sampler": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Query": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "TransformFeedback": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sync": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        }
+      },
+      "liveNativeHandles": {
+        "Buffer": {
+          "live": 125,
+          "weakReferences": 125,
+          "collectedDuringSnapshot": 0
+        },
+        "Texture": {
+          "live": 8,
+          "weakReferences": 8,
+          "collectedDuringSnapshot": 0
+        },
+        "Program": {
+          "live": 9,
+          "weakReferences": 9,
+          "collectedDuringSnapshot": 0
+        },
+        "Shader": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "VertexArray": {
+          "live": 25,
+          "weakReferences": 25,
+          "collectedDuringSnapshot": 0
+        },
+        "Framebuffer": {
+          "live": 0,
+          "weakReferences": 3,
+          "collectedDuringSnapshot": 0
+        },
+        "Renderbuffer": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sampler": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Query": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "TransformFeedback": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sync": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        }
+      }
+    },
+    {
+      "label": "after warm-up plus 10 complete laps",
+      "wallMs": 93066.15641699999,
+      "heap": {
+        "usedSize": 7146872,
+        "totalSize": 8290304,
+        "embedderHeapUsedSize": 1374696,
+        "backingStorageSize": 1406749
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 341,
+        "jsEventListeners": 61
+      },
+      "raf": {
+        "requested": 20510,
+        "callbacks": 20509,
+        "cancelled": 0,
+        "pending": 1,
+        "observed": true
+      },
+      "resources": {
+        "Buffer": {
+          "created": 146,
+          "explicitlyDeleted": 21,
+          "observedBalance": 125
+        },
+        "Texture": {
+          "created": 8,
+          "explicitlyDeleted": 0,
+          "observedBalance": 8
+        },
+        "Program": {
+          "created": 10,
+          "explicitlyDeleted": 1,
+          "observedBalance": 9
+        },
+        "Shader": {
+          "created": 20,
+          "explicitlyDeleted": 20,
+          "observedBalance": 0
+        },
+        "VertexArray": {
+          "created": 37,
+          "explicitlyDeleted": 12,
+          "observedBalance": 25
+        },
+        "Framebuffer": {
+          "created": 3,
+          "explicitlyDeleted": 0,
+          "observedBalance": 3
+        },
+        "Renderbuffer": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sampler": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Query": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "TransformFeedback": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sync": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        }
+      },
+      "liveNativeHandles": {
+        "Buffer": {
+          "live": 125,
+          "weakReferences": 125,
+          "collectedDuringSnapshot": 0
+        },
+        "Texture": {
+          "live": 8,
+          "weakReferences": 8,
+          "collectedDuringSnapshot": 0
+        },
+        "Program": {
+          "live": 9,
+          "weakReferences": 9,
+          "collectedDuringSnapshot": 0
+        },
+        "Shader": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "VertexArray": {
+          "live": 25,
+          "weakReferences": 25,
+          "collectedDuringSnapshot": 0
+        },
+        "Framebuffer": {
+          "live": 0,
+          "weakReferences": 3,
+          "collectedDuringSnapshot": 0
+        },
+        "Renderbuffer": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sampler": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Query": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "TransformFeedback": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sync": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        }
+      }
+    },
+    {
+      "label": "after warm-up plus 20 complete laps",
+      "wallMs": 176068.661625,
+      "heap": {
+        "usedSize": 7208036,
+        "totalSize": 8290304,
+        "embedderHeapUsedSize": 1503632,
+        "backingStorageSize": 1406749
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 341,
+        "jsEventListeners": 61
+      },
+      "raf": {
+        "requested": 39152,
+        "callbacks": 39151,
+        "cancelled": 0,
+        "pending": 1,
+        "observed": true
+      },
+      "resources": {
+        "Buffer": {
+          "created": 146,
+          "explicitlyDeleted": 21,
+          "observedBalance": 125
+        },
+        "Texture": {
+          "created": 8,
+          "explicitlyDeleted": 0,
+          "observedBalance": 8
+        },
+        "Program": {
+          "created": 10,
+          "explicitlyDeleted": 1,
+          "observedBalance": 9
+        },
+        "Shader": {
+          "created": 20,
+          "explicitlyDeleted": 20,
+          "observedBalance": 0
+        },
+        "VertexArray": {
+          "created": 37,
+          "explicitlyDeleted": 12,
+          "observedBalance": 25
+        },
+        "Framebuffer": {
+          "created": 3,
+          "explicitlyDeleted": 0,
+          "observedBalance": 3
+        },
+        "Renderbuffer": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sampler": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Query": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "TransformFeedback": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        },
+        "Sync": {
+          "created": 0,
+          "explicitlyDeleted": 0,
+          "observedBalance": 0
+        }
+      },
+      "liveNativeHandles": {
+        "Buffer": {
+          "live": 125,
+          "weakReferences": 125,
+          "collectedDuringSnapshot": 0
+        },
+        "Texture": {
+          "live": 8,
+          "weakReferences": 8,
+          "collectedDuringSnapshot": 0
+        },
+        "Program": {
+          "live": 9,
+          "weakReferences": 9,
+          "collectedDuringSnapshot": 0
+        },
+        "Shader": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "VertexArray": {
+          "live": 25,
+          "weakReferences": 25,
+          "collectedDuringSnapshot": 0
+        },
+        "Framebuffer": {
+          "live": 0,
+          "weakReferences": 3,
+          "collectedDuringSnapshot": 0
+        },
+        "Renderbuffer": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sampler": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Query": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "TransformFeedback": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        },
+        "Sync": {
+          "live": 0,
+          "weakReferences": 0,
+          "collectedDuringSnapshot": 0
+        }
+      }
+    }
+  ],
+  "serverPortClosed": true,
+  "ownedProcessesClosed": true,
+  "renderedInventoryUnchangedAfterRun": true,
+  "sourceHashesMatchCorrectedControl": true,
+  "metadataCorrection": "Initial offline verifier incorrectly compared collected and uncollected DOM/listener samples. It is preserved; final verification compares equivalent explicit-GC checkpoints and reports all non-GC variation. No probe/UI assertion or recorded value changed.",
+  "limits": "One local desktop/software-rendered clock-driven production resource probe; not phone/FPS/GPU bytes/audio audibility/human balance or a universal leak bound.",
+  "rootVerifiedSourceCommit": "d40ffe7a78e3d257d6e7cdd33921f254d134e9c9",
+  "rootSourceAndDistHashesMatch": true,
+  "rawMeasurementSHA256": "667c88fd4af7716903f43e2743bfd58fb21beba4689a9c22c6f52789e10fa362",
+  "rawMeasurementBytes": 261713
+}

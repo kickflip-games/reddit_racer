@@ -1,0 +1,968 @@
+{
+  "label": "SCRIPTED CURRENT-GENERATOR LOCAL DRIVING PREVIEWS MATCHING FROZEN GEOMETRY; NOT FROZEN-LOADER, PHONE, HUMAN OR OPTIMAL-RUN EVIDENCE",
+  "sourceHead": "75019ab13d2e1d9610de83d2f4061e973cb6ebdc",
+  "sourceHashes": {
+    "src/shared/circuit-generator.ts": "0f547f7c2085b73b393901a9283e60a714cca77ab484286bdb7d8d4d84ba3156",
+    "src/shared/circuit-quality.ts": "7ec214e502d6a5468f41621b52f0823513fcaf2030dd16fdf1977cd09dbb9709",
+    "src/shared/driving-bots.ts": "47714abaa7a0e17fd9472d1d87694534fd0f9db58ab35f6c165056f7502b446a",
+    "src/shared/simulation.ts": "fe4df7e38a6ca288e0bd802548ec95ae549545cfb817914d158975e17a36a61d",
+    "src/shared/race-rules.ts": "71768b1eec2d711951e8cf70786c22ec745ac3e383267c30171f5ff27f1b6a8e",
+    "src/shared/track.ts": "0ffeed0664bce27775173e91f8d18a9bb64340ff2c78183ffdd0c3dd03ee97fe",
+    "src/client/game.ts": "2b60b31459974b3e411f74b0e00c170a3bae28651700e52704f4635215c2bf55",
+    "src/client/game-scene.ts": "b018797481346322fa13543ee0330b6888d87c8c39c720ae8faf4e3132880bd3",
+    "src/client/race-camera.ts": "c5f5e7f7f53e9f41650dfadaeaf8eaab30d920baa0d144a65e55121c895d70a8",
+    "package-lock.json": "2105b0ca11628843ada17ea77371de543bd818675163acd26371e4a5debaa622"
+  },
+  "manifestSHA256": "23d85ee8cb78253ea968e48feb4c894db557badb41dcd2d99d6bb399d21dd50b",
+  "harnessSHA256": "7881a1b1bf7780ebf4e7032857b3ce25f3fb439ebb7c77720d96fedf4942375b",
+  "startedAt": "2026-11-13T06:57:56.846Z",
+  "origin": "http://127.0.0.1:5173",
+  "viewport": {
+    "width": 393,
+    "height": 852
+  },
+  "dpr": 1,
+  "preflight": [
+    {
+      "seed": "regression-154",
+      "currentGeneratorAcceptedHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "frozenExpectedHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "matched": true,
+      "candidateSeed": "regression-154:attempt:6",
+      "fallbackUsed": false,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1272,
+        "seconds": 10.6,
+        "score": 0.1724815378918919,
+        "nodeDistance": 148.361161,
+        "nodeSpeed": 12.780357,
+        "nodeLateralOffset": -0.920984,
+        "nodeCurvature": -0.08624076894594596,
+        "nodeAheadCurvature": 0.08624076894594596,
+        "nodeHeld": true
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-154-mobile.png"
+    },
+    {
+      "seed": "regression-197",
+      "currentGeneratorAcceptedHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "frozenExpectedHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "matched": true,
+      "candidateSeed": "regression-197:attempt:3",
+      "fallbackUsed": false,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1848,
+        "seconds": 15.4,
+        "score": 0.18090571003503855,
+        "nodeDistance": 235.778681,
+        "nodeSpeed": 13.803859,
+        "nodeLateralOffset": -1.174055,
+        "nodeCurvature": 0.09045285501751928,
+        "nodeAheadCurvature": 0.09045285501751928,
+        "nodeHeld": false
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-197-mobile.png"
+    },
+    {
+      "seed": "regression-24",
+      "currentGeneratorAcceptedHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "frozenExpectedHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "matched": true,
+      "candidateSeed": "reserve-motif-v1:attempt:1",
+      "fallbackUsed": true,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1932,
+        "seconds": 16.1,
+        "score": 0.13721002085631204,
+        "nodeDistance": 268.641805,
+        "nodeSpeed": 12.388139,
+        "nodeLateralOffset": -2.169099,
+        "nodeCurvature": -0.06860501042815602,
+        "nodeAheadCurvature": 0.06860501042815602,
+        "nodeHeld": true
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-24-mobile.png"
+    }
+  ],
+  "examples": [
+    {
+      "seed": "regression-154",
+      "currentGeneratorAcceptedHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "frozenExpectedHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "matched": true,
+      "candidateSeed": "regression-154:attempt:6",
+      "fallbackUsed": false,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1272,
+        "seconds": 10.6,
+        "score": 0.1724815378918919,
+        "nodeDistance": 148.361161,
+        "nodeSpeed": 12.780357,
+        "nodeLateralOffset": -0.920984,
+        "nodeCurvature": -0.08624076894594596,
+        "nodeAheadCurvature": 0.08624076894594596,
+        "nodeHeld": true
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-154-mobile.png",
+      "observed": {
+        "phase": "racing",
+        "carArt": "kenney",
+        "sceneryArt": "kenney",
+        "audioState": "running",
+        "held": "true",
+        "timer": "10.625",
+        "mode": "LOCAL \u00b7 UNRANKED",
+        "progress": 148.682478,
+        "progressMax": 478.6681,
+        "settingsOpen": false,
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvasCss": [393, 852],
+        "drawingBuffer": [393, 852],
+        "dpr": 1,
+        "glError": 0
+      },
+      "schedule": {
+        "countdownMs": 3000,
+        "captureTargetTick": 1272,
+        "additionalRenderedMs": 32,
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 761,
+            "held": false
+          },
+          {
+            "tick": 856,
+            "held": true
+          },
+          {
+            "tick": 1097,
+            "held": false
+          },
+          {
+            "tick": 1181,
+            "held": true
+          }
+        ],
+        "description": "Trusted Start click and Space key events; every countdown/driving callback delivered by clock.runFor. No race state or replay array injected into page."
+      },
+      "errors": [],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "/game.html"
+        },
+        {
+          "method": "GET",
+          "url": "/@vite/client"
+        },
+        {
+          "method": "GET",
+          "url": "/game.css"
+        },
+        {
+          "method": "GET",
+          "url": "/game.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track-authoring.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/game-scene.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-course.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/daily-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/ranked-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/leaderboard-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/today-race-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/Documents/game_dev/reddit_racer/node_modules/vite/dist/client/env.mjs"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/simulation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/simulation-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/race-camera.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/car-visual.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scenery.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-vfx.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/feedback-preferences.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/render-viewport.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scene-assets.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/track-renderer.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/api.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/request-deadline.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/daily-challenge.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/ranked-race.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/replay.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/race-rules.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.module-CD1NSdCa.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/leaderboard.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@devvit_web_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/today-race-post.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio-graph.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three_addons_loaders_GLTFLoader__js.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@trpc_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-quality.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-generator.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-validation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/driving-bots.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/race.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/treeSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierRed.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierWhite.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/pylon.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/flagCheckersSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/Textures/colormap.png"
+        },
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5173/e17ceadf-92e0-4cec-bf8c-5a51652adc88"
+        }
+      ],
+      "wallMs": 4854.666958,
+      "screenshotSHA256": "12eaa69360411798b2069e72b47663eaea3d063afe9f6f27b94b7e1bf9d0ba13"
+    },
+    {
+      "seed": "regression-197",
+      "currentGeneratorAcceptedHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "frozenExpectedHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "matched": true,
+      "candidateSeed": "regression-197:attempt:3",
+      "fallbackUsed": false,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1848,
+        "seconds": 15.4,
+        "score": 0.18090571003503855,
+        "nodeDistance": 235.778681,
+        "nodeSpeed": 13.803859,
+        "nodeLateralOffset": -1.174055,
+        "nodeCurvature": 0.09045285501751928,
+        "nodeAheadCurvature": 0.09045285501751928,
+        "nodeHeld": false
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-197-mobile.png",
+      "observed": {
+        "phase": "racing",
+        "carArt": "kenney",
+        "sceneryArt": "kenney",
+        "audioState": "running",
+        "held": "false",
+        "timer": "15.425",
+        "mode": "LOCAL \u00b7 UNRANKED",
+        "progress": 236.11864,
+        "progressMax": 445.6042,
+        "settingsOpen": false,
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvasCss": [393, 852],
+        "drawingBuffer": [393, 852],
+        "dpr": 1,
+        "glError": 0
+      },
+      "schedule": {
+        "countdownMs": 3000,
+        "captureTargetTick": 1848,
+        "additionalRenderedMs": 32,
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 870,
+            "held": false
+          },
+          {
+            "tick": 964,
+            "held": true
+          },
+          {
+            "tick": 1368,
+            "held": false
+          },
+          {
+            "tick": 1465,
+            "held": true
+          },
+          {
+            "tick": 1804,
+            "held": false
+          }
+        ],
+        "description": "Trusted Start click and Space key events; every countdown/driving callback delivered by clock.runFor. No race state or replay array injected into page."
+      },
+      "errors": [],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "/game.html"
+        },
+        {
+          "method": "GET",
+          "url": "/@vite/client"
+        },
+        {
+          "method": "GET",
+          "url": "/game.css"
+        },
+        {
+          "method": "GET",
+          "url": "/game.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track-authoring.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/game-scene.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-course.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/daily-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/ranked-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/leaderboard-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/today-race-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/Documents/game_dev/reddit_racer/node_modules/vite/dist/client/env.mjs"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/simulation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/simulation-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/race-camera.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/car-visual.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scenery.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-vfx.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/feedback-preferences.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/render-viewport.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scene-assets.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/track-renderer.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/api.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/leaderboard.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/request-deadline.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/daily-challenge.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.module-CD1NSdCa.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/replay.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/race-rules.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/ranked-race.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@devvit_web_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/today-race-post.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio-graph.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three_addons_loaders_GLTFLoader__js.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@trpc_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-quality.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-generator.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-validation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/driving-bots.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/race.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/treeSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierRed.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierWhite.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/pylon.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/flagCheckersSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/Textures/colormap.png"
+        },
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5173/a0e3bf40-b5a7-4089-99be-b2bd62f05e2c"
+        }
+      ],
+      "wallMs": 6030.895375,
+      "screenshotSHA256": "0c03b16e290f730d2ffaf3e80fcd4a2d36ba10a3cb62c261315e3986bdd89386"
+    },
+    {
+      "seed": "regression-24",
+      "currentGeneratorAcceptedHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "frozenExpectedHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "matched": true,
+      "candidateSeed": "reserve-motif-v1:attempt:1",
+      "fallbackUsed": true,
+      "versions": {
+        "generator": "motif-loop-v1",
+        "quality": "quality-v1",
+        "simulation": "fixed-step-v2",
+        "handling": "arcade-v1"
+      },
+      "captureSelection": {
+        "tick": 1932,
+        "seconds": 16.1,
+        "score": 0.13721002085631204,
+        "nodeDistance": 268.641805,
+        "nodeSpeed": 12.388139,
+        "nodeLateralOffset": -2.169099,
+        "nodeCurvature": -0.06860501042815602,
+        "nodeAheadCurvature": 0.06860501042815602,
+        "nodeHeld": true
+      },
+      "screenshot": "/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/docs/screenshots/balance-regression-24-mobile.png",
+      "observed": {
+        "phase": "racing",
+        "carArt": "kenney",
+        "sceneryArt": "kenney",
+        "audioState": "running",
+        "held": "true",
+        "timer": "16.117",
+        "mode": "LOCAL \u00b7 UNRANKED",
+        "progress": 268.84921,
+        "progressMax": 392.0195,
+        "settingsOpen": false,
+        "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)",
+        "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+        "canvasCss": [393, 852],
+        "drawingBuffer": [393, 852],
+        "dpr": 1,
+        "glError": 0
+      },
+      "schedule": {
+        "countdownMs": 3000,
+        "captureTargetTick": 1932,
+        "additionalRenderedMs": 32,
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1440,
+            "held": false
+          },
+          {
+            "tick": 1536,
+            "held": true
+          },
+          {
+            "tick": 1797,
+            "held": false
+          },
+          {
+            "tick": 1874,
+            "held": true
+          }
+        ],
+        "description": "Trusted Start click and Space key events; every countdown/driving callback delivered by clock.runFor. No race state or replay array injected into page."
+      },
+      "errors": [],
+      "requests": [
+        {
+          "method": "GET",
+          "url": "/game.html"
+        },
+        {
+          "method": "GET",
+          "url": "/@vite/client"
+        },
+        {
+          "method": "GET",
+          "url": "/game.css"
+        },
+        {
+          "method": "GET",
+          "url": "/game.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track-authoring.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/game-scene.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-course.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/daily-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/ranked-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/leaderboard-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/today-race-client.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/Documents/game_dev/reddit_racer/node_modules/vite/dist/client/env.mjs"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/track.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/simulation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/simulation-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/practice-driver.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/race-camera.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/car-visual.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scenery.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-vfx.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/feedback-preferences.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/render-viewport.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/scene-assets.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/track-renderer.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/api.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/leaderboard.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/request-deadline.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/daily-challenge.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/replay.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/race-rules.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three.module-CD1NSdCa.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/ranked-race.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@devvit_web_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/today-race-post.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/driving-audio-graph.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/three_addons_loaders_GLTFLoader__js.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/node_modules/.vite/deps/@trpc_client.js"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-quality.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-generator.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/circuit-validation.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/@fs/Users/avaj040/.codex/worktrees/racer-render-baseline/reddit_racer/src/shared/driving-bots.ts"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/race.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/treeSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierRed.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/barrierWhite.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/pylon.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/racing-kit/flagCheckersSmall.glb"
+        },
+        {
+          "method": "GET",
+          "url": "/assets/kenney/car-kit/Textures/colormap.png"
+        },
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:5173/52a30fde-c7b0-4b03-8d76-15beafdee819"
+        }
+      ],
+      "wallMs": 5813.704459000002,
+      "screenshotSHA256": "15adc1951a8dbce1c0ef2d1ba14951024fe5aea24d9c854644511dd022e9206f"
+    }
+  ],
+  "errors": [],
+  "limitations": [
+    "Existing Vite development server, not production delivery or Reddit.",
+    "No source/physics/driver state, score, auth, finish, renderer or material replacement/injection.",
+    "Only three partial actual render/control examples, not a full-lap/retry/performance/balance or human test.",
+    "Node current-generation hashes match frozen literals before any browser capture. Browser observed selection/fallback and actual game context are recorded separately.",
+    "The existing bounded bot tape schedules ordinary native controls; it is not a global optimum or human strategy."
+  ],
+  "allHashesCheckedBeforeBrowserAt": "2026-11-13T06:57:57.417Z",
+  "browser": "158.0.8127.18",
+  "finishedAt": "2026-11-13T06:58:14.967Z",
+  "ownedBrowserClosed": true,
+  "rootServer5173Untouched": true,
+  "browserWallMs": 16836.865458
+}

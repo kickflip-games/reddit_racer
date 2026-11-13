@@ -1,0 +1,113 @@
+{
+  "label": "Offline kit leaves the rebuilt production client/server byte-identical to the private0.0.13 build",
+  "privateBuildSource": "d40ffe7a78e3d257d6e7cdd33921f254d134e9c9",
+  "baseMainCommit": "75019ab13d2e1d9610de83d2f4061e973cb6ebdc",
+  "allFilesMatch": true,
+  "files": [
+    {
+      "path": "dist/client/barrierRed.glb",
+      "bytes": 3244,
+      "sha256": "6d7de595a92507af6fcb40fe5a62730925ea23f1f8c727b8ecdec9eba9b98156"
+    },
+    {
+      "path": "dist/client/barrierWhite.glb",
+      "bytes": 3252,
+      "sha256": "44bf654b08bb96bd0e9a70c00dab35b0b23df955d3390ec8ede89c20ad64871a"
+    },
+    {
+      "path": "dist/client/circuit-quality.js",
+      "bytes": 17041,
+      "sha256": "eb7342bf136c62b50a3b9d0e330488921a87f85af786759136aa1d805e81a891"
+    },
+    {
+      "path": "dist/client/circuit-quality.js.map",
+      "bytes": 73416,
+      "sha256": "87ea31175ffc9899725dcdb5bdee6f3daa733c32ad31dd4152bd0872028589b2"
+    },
+    {
+      "path": "dist/client/client.js",
+      "bytes": 9353,
+      "sha256": "c4e550d994cd43d295a000fd5db5adf81b3428422e9966829d462ca438c86044"
+    },
+    {
+      "path": "dist/client/client.js.map",
+      "bytes": 57326,
+      "sha256": "175417c87a059938ebe50f6d362d817cc51c621533fc82c6ddaded1a2215747a"
+    },
+    {
+      "path": "dist/client/colormap.png",
+      "bytes": 12371,
+      "sha256": "f3622a03a20c6696065cae9cbe391351be873508af190c2ebd1d420c055787a5"
+    },
+    {
+      "path": "dist/client/default.css",
+      "bytes": 1957,
+      "sha256": "03f5aa02491f57fb7203abc26491142ed4ee33348687541b02f27d8742af5de8"
+    },
+    {
+      "path": "dist/client/default.js",
+      "bytes": 540,
+      "sha256": "aa9853d9ff4cbeb98c80a17827ce87830c5025c63ef4621160867acfc6c3fd52"
+    },
+    {
+      "path": "dist/client/default.js.map",
+      "bytes": 1772,
+      "sha256": "efeac90bc086e66500efcfc2bd66bc5545e2d2584547b33deba393419a4e0713"
+    },
+    {
+      "path": "dist/client/flagCheckersSmall.glb",
+      "bytes": 10604,
+      "sha256": "a66a124e0e25ce9bfe9eb6229f57363a96683f8f88606c901d11565638e096df"
+    },
+    {
+      "path": "dist/client/game.css",
+      "bytes": 9654,
+      "sha256": "07226bb2ab8fcc628f4ca17a262bd222b248d4fe905790323acec617ef157358"
+    },
+    {
+      "path": "dist/client/game.html",
+      "bytes": 7425,
+      "sha256": "b7f090be8f7818b4bbc9e15ec3d8a9d06db13585b520e78d29daebe960b3bad0"
+    },
+    {
+      "path": "dist/client/game.js",
+      "bytes": 739716,
+      "sha256": "fe5e3f09911c7c3d82b7ae5406540a72a2fa50f48447def32a70afc0b0fddd1a"
+    },
+    {
+      "path": "dist/client/game.js.map",
+      "bytes": 3719752,
+      "sha256": "9c3fe61966b74ebdd5ee91297cedb046996e9c84472af59268fb159387aa322d"
+    },
+    {
+      "path": "dist/client/pylon.glb",
+      "bytes": 8088,
+      "sha256": "d554671f5ab372cef0e1083b83dc270c03f32bfa0dbc3978c40206faf5608b89"
+    },
+    {
+      "path": "dist/client/race.glb",
+      "bytes": 167272,
+      "sha256": "e1408c4c6e135f5a39c5f34cbfbcac9ae21c5c491e793fdee74bccac8334d942"
+    },
+    {
+      "path": "dist/client/splash.html",
+      "bytes": 1136,
+      "sha256": "8f9aeecdb169ed93c8dcaa3cd2ba072cb1e101f58004475d11cb2301927eb684"
+    },
+    {
+      "path": "dist/client/treeSmall.glb",
+      "bytes": 6960,
+      "sha256": "151d1556b762768433ed9610589650ae8110cac2ed99a3fe1e4da53e1335be23"
+    },
+    {
+      "path": "dist/server/index.cjs",
+      "bytes": 1669157,
+      "sha256": "ec659db9abf21a2299e7fae97e388f5f1c1af85ad5872535b7a08f3d8628ac55"
+    },
+    {
+      "path": "dist/server/index.cjs.map",
+      "bytes": 6784143,
+      "sha256": "b6852cfc01624eb037bf1c30664ae4ebc09526d2db5da38914fea0bcbefa953c"
+    }
+  ]
+}

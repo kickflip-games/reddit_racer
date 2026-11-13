@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "label": "Frozen developer evaluation courses and automated controls; no player scores or human observations",
+  "runtime": {
+    "simulationVersion": "fixed-step-v2",
+    "handlingVersion": "arcade-v1",
+    "simulationHz": 120,
+    "qualityVersion": "quality-v1"
+  },
+  "origin": {
+    "sourceReportSha256": "a4e2b0609e473eeb253640a09fc3de9394384b9eca0d273bc5abd0b5ebeb650a",
+    "selectedCsvSha256": "89ab5511bcfc593b3667ddc3cdba36be9ac1c02eba79eba13551e057a5802f39",
+    "generatedSelectionFile": "generated-selection.json",
+    "selectedCsvFile": "selected-seeds.csv",
+    "populationFile": "population.json"
+  },
+  "entries": [
+    {
+      "id": "gentle-reference",
+      "role": "gentle",
+      "trackHash": "4a17865c1bbb3e3ff830795dc2ba12d434ac98b1bedc9d731e777e5f268d9109",
+      "generatorVersion": "reference-oval-v1",
+      "qualityVersion": null,
+      "expectedFinishTicks": {
+        "hold": 1867,
+        "cautious": null,
+        "fast": null
+      },
+      "selectionReasons": "Existing short standing-start control; deliberate-lift replay remains1590ticks. Not a validated human tutorial or daily-quality target.",
+      "trackFile": "courses/gentle-reference.track.json",
+      "replayFile": "replays/gentle-reference.json"
+    },
+    {
+      "id": "handmade-reference",
+      "role": "handmade",
+      "trackHash": "90c4b77426a957e6f5c7ed9e296a125f177b3ab20d616e357ddb726eb7df2f4c",
+      "generatorVersion": "handmade-reference-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3996,
+        "cautious": 4453,
+        "fast": 3326
+      },
+      "selectionReasons": "Independently authored Cartesian control loop with start straight, heavy braking, inward U, opposing turns, decreasing radius and recovery.",
+      "trackFile": "courses/handmade-reference.track.json",
+      "replayFile": "replays/handmade-reference.json"
+    },
+    {
+      "id": "regression-154",
+      "role": "generated",
+      "trackHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4147,
+        "cautious": 4529,
+        "fast": 3389
+      },
+      "selectionReasons": "Quality rejection/retry observed in existing report",
+      "trackFile": "courses/regression-154.track.json",
+      "replayFile": "replays/regression-154.json"
+    },
+    {
+      "id": "regression-24",
+      "role": "generated",
+      "trackHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3318,
+        "cautious": 4044,
+        "fast": 2848
+      },
+      "selectionReasons": "Representative reserve fallback (three requests share this course hash)",
+      "trackFile": "courses/regression-24.track.json",
+      "replayFile": "replays/regression-24.json"
+    },
+    {
+      "id": "regression-68",
+      "role": "generated",
+      "trackHash": "35893fdd17b5de3120aea572418f1fa042083b3e0aa1f5c00222db5ab4f49190",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3377,
+        "cautious": 3878,
+        "fast": 2706
+      },
+      "selectionReasons": "Minimum course length; Minimum bounded fast duration; Fast-duration quantile anchor q=0.000",
+      "trackFile": "courses/regression-68.track.json",
+      "replayFile": "replays/regression-68.json"
+    },
+    {
+      "id": "regression-19",
+      "role": "generated",
+      "trackHash": "b11322e306ce989686c281015bb663cee977c540b6ab8c9a64bbf46165a2752e",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4242,
+        "cautious": 4690,
+        "fast": 3495
+      },
+      "selectionReasons": "Maximum course length",
+      "trackFile": "courses/regression-19.track.json",
+      "replayFile": "replays/regression-19.json"
+    },
+    {
+      "id": "regression-97",
+      "role": "generated",
+      "trackHash": "80e10d43997ea4633c0f462dbca0267705aa3276449917c4e268033a864c4a91",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4562,
+        "cautious": 4748,
+        "fast": 3625
+      },
+      "selectionReasons": "Maximum bounded fast duration",
+      "trackFile": "courses/regression-97.track.json",
+      "replayFile": "replays/regression-97.json"
+    },
+    {
+      "id": "regression-87",
+      "role": "generated",
+      "trackHash": "91fc3cf971d3b087ecc2df3e41ada3d7f2f7dd10f7ae56beed650e2703b6a9a9",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3397,
+        "cautious": 4089,
+        "fast": 2944
+      },
+      "selectionReasons": "Minimum braking gain; 5 meaningful lifts: lowest braking gain",
+      "trackFile": "courses/regression-87.track.json",
+      "replayFile": "replays/regression-87.json"
+    },
+    {
+      "id": "regression-131",
+      "role": "generated",
+      "trackHash": "3bd8c1e906121f38f7c166b0acf1829f58c44b9aa3032b34f58f8c1610a8f0b2",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4339,
+        "cautious": 4543,
+        "fast": 3327
+      },
+      "selectionReasons": "Maximum braking gain; 4 meaningful lifts: highest braking gain",
+      "trackFile": "courses/regression-131.track.json",
+      "replayFile": "replays/regression-131.json"
+    },
+    {
+      "id": "regression-159",
+      "role": "generated",
+      "trackHash": "6b75246b732246824ab66fda87e01f77cb2feb92337113029e6c12795a227213",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4331,
+        "cautious": 4611,
+        "fast": 3578
+      },
+      "selectionReasons": "Maximum fast off-road fraction",
+      "trackFile": "courses/regression-159.track.json",
+      "replayFile": "replays/regression-159.json"
+    },
+    {
+      "id": "regression-40",
+      "role": "generated",
+      "trackHash": "c202aadf974d25b044948f84b5956dc4d5709267b3893ad6b049dc5996a49aab",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4123,
+        "cautious": 4820,
+        "fast": 3401
+      },
+      "selectionReasons": "Maximum signed direction changes",
+      "trackFile": "courses/regression-40.track.json",
+      "replayFile": "replays/regression-40.json"
+    },
+    {
+      "id": "regression-133",
+      "role": "generated",
+      "trackHash": "2fffb8fa9e151418447db30222b8a132f50e7d10c6759e578d0f1142462f5f1e",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4168,
+        "cautious": 4665,
+        "fast": 3401
+      },
+      "selectionReasons": "Maximum requested structural attempts without fallback",
+      "trackFile": "courses/regression-133.track.json",
+      "replayFile": "replays/regression-133.json"
+    },
+    {
+      "id": "regression-82",
+      "role": "generated",
+      "trackHash": "65299519b4d98e797998c554d7fe2c21aa1347d64a341490c4f062c2b083b18b",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3870,
+        "cautious": 4580,
+        "fast": 3403
+      },
+      "selectionReasons": "3 meaningful lifts: lowest braking gain",
+      "trackFile": "courses/regression-82.track.json",
+      "replayFile": "replays/regression-82.json"
+    },
+    {
+      "id": "regression-116",
+      "role": "generated",
+      "trackHash": "e8e6ca75a89c423f79a6c1c5cd783fd7d06bfca821239594c1a6a31058365dab",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4028,
+        "cautious": 4403,
+        "fast": 3205
+      },
+      "selectionReasons": "3 meaningful lifts: highest braking gain",
+      "trackFile": "courses/regression-116.track.json",
+      "replayFile": "replays/regression-116.json"
+    },
+    {
+      "id": "regression-132",
+      "role": "generated",
+      "trackHash": "78808a20fa187590fc0e0681075dca48931c64469164aa182b94e5a30efc4fff",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3983,
+        "cautious": 4737,
+        "fast": 3509
+      },
+      "selectionReasons": "4 meaningful lifts: lowest braking gain",
+      "trackFile": "courses/regression-132.track.json",
+      "replayFile": "replays/regression-132.json"
+    },
+    {
+      "id": "regression-197",
+      "role": "generated",
+      "trackHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4240,
+        "cautious": 4479,
+        "fast": 3283
+      },
+      "selectionReasons": "5 meaningful lifts: highest braking gain",
+      "trackFile": "courses/regression-197.track.json",
+      "replayFile": "replays/regression-197.json"
+    },
+    {
+      "id": "regression-195",
+      "role": "generated",
+      "trackHash": "588feaa44c083db68f15fd4cca27aa5eb1e42af4daae660557b699ead8237f44",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3645,
+        "cautious": 4230,
+        "fast": 3054
+      },
+      "selectionReasons": "6 meaningful lifts: lowest braking gain",
+      "trackFile": "courses/regression-195.track.json",
+      "replayFile": "replays/regression-195.json"
+    },
+    {
+      "id": "regression-84",
+      "role": "generated",
+      "trackHash": "9c6f9470cca18e677f92a3177aeff456e79e6ee84cdb9eee1776201593a0117d",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3950,
+        "cautious": 4359,
+        "fast": 3228
+      },
+      "selectionReasons": "6 meaningful lifts: highest braking gain",
+      "trackFile": "courses/regression-84.track.json",
+      "replayFile": "replays/regression-84.json"
+    },
+    {
+      "id": "regression-112",
+      "role": "generated",
+      "trackHash": "5ef7355b4a5755f35c93133b98df1a07f466341568a7393cd129a7b0d323bb72",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4084,
+        "cautious": 4440,
+        "fast": 3286
+      },
+      "selectionReasons": "Representative 2 direction changes: median fast duration within that group",
+      "trackFile": "courses/regression-112.track.json",
+      "replayFile": "replays/regression-112.json"
+    },
+    {
+      "id": "regression-4",
+      "role": "generated",
+      "trackHash": "8d5e05bb403ca29f6d6302bf35af6eb81b0966c091a9e96e3bab90bcb1a9064b",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 4174,
+        "cautious": 4567,
+        "fast": 3393
+      },
+      "selectionReasons": "Representative 3 direction changes: median fast duration within that group",
+      "trackFile": "courses/regression-4.track.json",
+      "replayFile": "replays/regression-4.json"
+    },
+    {
+      "id": "regression-127",
+      "role": "generated",
+      "trackHash": "53aa35dfcdc3a545da6cb07281934d42f1ceba344bcaa1bb73e66961fe635f5e",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3498,
+        "cautious": 4152,
+        "fast": 2858
+      },
+      "selectionReasons": "Fast-duration quantile anchor q=0.053",
+      "trackFile": "courses/regression-127.track.json",
+      "replayFile": "replays/regression-127.json"
+    },
+    {
+      "id": "regression-157",
+      "role": "generated",
+      "trackHash": "81c6801a2b92f2fa7539864e0d43eccc98c03a79011fa3059496ed557d67bc41",
+      "generatorVersion": "motif-loop-v1",
+      "qualityVersion": "quality-v1",
+      "expectedFinishTicks": {
+        "hold": 3564,
+        "cautious": 4228,
+        "fast": 2927
+      },
+      "selectionReasons": "Fast-duration quantile anchor q=0.105",
+      "trackFile": "courses/regression-157.track.json",
+      "replayFile": "replays/regression-157.json"
+    }
+  ]
+}

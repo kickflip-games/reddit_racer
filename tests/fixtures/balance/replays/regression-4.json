@@ -1,0 +1,58 @@
+{
+  "checks": [
+    {
+      "label": "fast",
+      "replay": {
+        "schemaVersion": 1,
+        "simulationVersion": "fixed-step-v2",
+        "handlingVersion": "arcade-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1527,
+            "held": false
+          },
+          {
+            "tick": 1638,
+            "held": true
+          },
+          {
+            "tick": 1996,
+            "held": false
+          },
+          {
+            "tick": 2059,
+            "held": true
+          },
+          {
+            "tick": 2572,
+            "held": false
+          },
+          {
+            "tick": 2668,
+            "held": true
+          }
+        ],
+        "endTick": 3393
+      },
+      "state": {
+        "tick": 3393,
+        "distance": 488.6186,
+        "speed": 20.976977,
+        "lateralOffset": 0.75264,
+        "lateralVelocity": -0.128259,
+        "slip": 0,
+        "offRoad": false,
+        "recovering": false,
+        "recoveryTicksRemaining": 0,
+        "recoveryCount": 0,
+        "finishedTick": 3393,
+        "status": "finished"
+      },
+      "finishTicks": 3393
+    }
+  ]
+}

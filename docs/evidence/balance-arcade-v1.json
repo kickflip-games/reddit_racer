@@ -1,0 +1,2767 @@
+{
+  "label": "Explicit offline shared-runtime evaluation; no human, phone or player leaderboard results",
+  "baseMainCommit": "75019ab13d2e1d9610de83d2f4061e973cb6ebdc",
+  "node": "22.23.5",
+  "sourceSHA256": {
+    "scripts/balance-kit.ts": "83585d31c3865fa168eb7630c43da682e4c71125fa186b14773c209074a265ef",
+    "scripts/balance-check.ts": "62fee569a5b377a3b2d0f40ca253be50bbfb3db9f1b801c8519c7d7a1db4d097",
+    "tests/fixtures/balance/manifest.json": "20c77955d78e71c873f89824151df59c9a8714cb9208cbece95bb4f577574970",
+    "src/shared/simulation.ts": "fe4df7e38a6ca288e0bd802548ec95ae549545cfb817914d158975e17a36a61d",
+    "src/shared/driving-bots.ts": "47714abaa7a0e17fd9472d1d87694534fd0f9db58ab35f6c165056f7502b446a",
+    "src/shared/replay.ts": "0b15ec474cbf929b0ebc6c8de30b5b17fbda7c7d632d7916633e92f2ee763546"
+  },
+  "report": {
+    "schemaVersion": 1,
+    "kind": "frozen-driving-evaluation",
+    "scope": "Shared standing-start automated controls on frozen geometry; bounded fast is not a global optimum, human learning or player standings. Gentle control is intentionally outside daily quality targets.",
+    "runtime": {
+      "simulationVersion": "fixed-step-v2",
+      "handlingVersion": "arcade-v1",
+      "simulationHz": 120,
+      "qualityVersion": "quality-v1"
+    },
+    "origin": {
+      "sourceReportSha256": "a4e2b0609e473eeb253640a09fc3de9394384b9eca0d273bc5abd0b5ebeb650a",
+      "selectedCsvSha256": "89ab5511bcfc593b3667ddc3cdba36be9ac1c02eba79eba13551e057a5802f39",
+      "population": {
+        "label": "Original200-seed report summary, not a new20-seed generator population estimate",
+        "sourceReportSha256": "a4e2b0609e473eeb253640a09fc3de9394384b9eca0d273bc5abd0b5ebeb650a",
+        "summary": {
+          "scope": "Structural geometry and authoritative simulation quality.",
+          "prefix": "regression",
+          "count": 200,
+          "acceptedCount": 200,
+          "failedCount": 0,
+          "failedSeedPreview": [],
+          "fallbackCount": 3,
+          "fallbackRate": 0.015,
+          "meanAttempts": 3.425,
+          "meanRequestedQualityAssessments": 0.99,
+          "meanQualityAssessments": 1.005,
+          "rejectionHistogram": {
+            "corner-radius": 487,
+            "corridor-fold": 6,
+            "quality:braking-opportunities": 1
+          },
+          "qualityRejectionHistogram": {
+            "braking-opportunities": 1
+          },
+          "distinctCurvatureProfiles": 198,
+          "uniqueHashes": 198,
+          "lengthMetres": {
+            "min": 350.054,
+            "p10": 384.855,
+            "median": 451.252,
+            "p90": 489.434,
+            "max": 499.404,
+            "mean": 443.268
+          },
+          "holdSeconds": {
+            "min": 27.65,
+            "p10": 29.9,
+            "median": 33,
+            "p90": 35.208,
+            "max": 38.017,
+            "mean": 32.765
+          },
+          "cautiousSeconds": {
+            "min": 32,
+            "p10": 33.992,
+            "median": 37,
+            "p90": 39,
+            "max": 40.167,
+            "mean": 36.728
+          },
+          "fastSeconds": {
+            "min": 22.55,
+            "p10": 24.183,
+            "median": 26.875,
+            "p90": 28.733,
+            "max": 30.208,
+            "mean": 26.597
+          },
+          "gainSeconds": {
+            "min": 3.775,
+            "p10": 5.267,
+            "median": 6.142,
+            "p90": 7.383,
+            "max": 8.433,
+            "mean": 6.168
+          },
+          "meaningfulLifts": {
+            "min": 3,
+            "p10": 3,
+            "median": 4,
+            "p90": 5,
+            "max": 6,
+            "mean": 3.71
+          },
+          "elapsedMilliseconds": 61935
+        },
+        "meaningfulLiftHistogram": {
+          "3": 92,
+          "4": 78,
+          "5": 26,
+          "6": 4
+        }
+      }
+    },
+    "selection": {
+      "total": 22,
+      "generated": 20,
+      "references": 2,
+      "reserveCoverage": 1,
+      "label": "Selected diagnostic/extreme subset; reserve coverage is not a population fallback-rate estimate."
+    },
+    "records": [
+      {
+        "id": "gentle-reference",
+        "role": "gentle",
+        "trackHash": "4a17865c1bbb3e3ff830795dc2ba12d434ac98b1bedc9d731e777e5f268d9109",
+        "generatorVersion": "reference-oval-v1",
+        "qualityVersion": null,
+        "lengthMetres": 222.1072,
+        "selectionReasons": "Existing short standing-start control; deliberate-lift replay remains1590ticks. Not a validated human tutorial or daily-quality target.",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 1867,
+          "cautious": null,
+          "fast": null
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 1867,
+          "seconds": 15.558333333333334,
+          "elapsedTicks": 1867,
+          "offRoadTicks": 195,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 2022,
+          "seconds": 16.85,
+          "elapsedTicks": 2022,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 71,
+          "meaningfulLifts": 0
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 1625,
+          "seconds": 13.541666666666666,
+          "elapsedTicks": 1625,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 1,
+          "meaningfulLifts": 1
+        },
+        "gainTicks": 242,
+        "meaningfulIntervals": [
+          {
+            "startTick": 799,
+            "endTick": 882,
+            "seconds": 0.6916666666666667
+          }
+        ],
+        "work": {
+          "controllerRuns": 18,
+          "simulatedTicks": 31097,
+          "replayChecks": 5,
+          "replayTicks": 8971
+        }
+      },
+      {
+        "id": "handmade-reference",
+        "role": "handmade",
+        "trackHash": "90c4b77426a957e6f5c7ed9e296a125f177b3ab20d616e357ddb726eb7df2f4c",
+        "generatorVersion": "handmade-reference-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 459.7799,
+        "selectionReasons": "Independently authored Cartesian control loop with start straight, heavy braking, inward U, opposing turns, decreasing radius and recovery.",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3996,
+          "cautious": 4453,
+          "fast": 3326
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3996,
+          "seconds": 33.3,
+          "elapsedTicks": 3996,
+          "offRoadTicks": 527,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4453,
+          "seconds": 37.108333333333334,
+          "elapsedTicks": 4453,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 167,
+          "meaningfulLifts": 1
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3326,
+          "seconds": 27.716666666666665,
+          "elapsedTicks": 3326,
+          "offRoadTicks": 58,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 670,
+        "meaningfulIntervals": [
+          {
+            "startTick": 569,
+            "endTick": 621,
+            "seconds": 0.43333333333333335
+          },
+          {
+            "startTick": 1744,
+            "endTick": 1803,
+            "seconds": 0.49166666666666664
+          },
+          {
+            "startTick": 1886,
+            "endTick": 1927,
+            "seconds": 0.3416666666666667
+          },
+          {
+            "startTick": 2438,
+            "endTick": 2495,
+            "seconds": 0.475
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 233576,
+          "replayChecks": 6,
+          "replayTicks": 23550
+        }
+      },
+      {
+        "id": "regression-154",
+        "role": "generated",
+        "trackHash": "4eba6fa2c5c211eb2467f595e3ce6496780f3c0be0eab837000810ba9d1f20a1",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 478.6681,
+        "selectionReasons": "Quality rejection/retry observed in existing report",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4147,
+          "cautious": 4529,
+          "fast": 3389
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4147,
+          "seconds": 34.55833333333333,
+          "elapsedTicks": 4147,
+          "offRoadTicks": 771,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4529,
+          "seconds": 37.74166666666667,
+          "elapsedTicks": 4529,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 159,
+          "meaningfulLifts": 3
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3389,
+          "seconds": 28.241666666666667,
+          "elapsedTicks": 3389,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 758,
+        "meaningfulIntervals": [
+          {
+            "startTick": 761,
+            "endTick": 856,
+            "seconds": 0.7916666666666666
+          },
+          {
+            "startTick": 1097,
+            "endTick": 1181,
+            "seconds": 0.7
+          },
+          {
+            "startTick": 1722,
+            "endTick": 1820,
+            "seconds": 0.8166666666666667
+          },
+          {
+            "startTick": 3239,
+            "endTick": 3292,
+            "seconds": 0.44166666666666665
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 207183,
+          "replayChecks": 4,
+          "replayTicks": 15454
+        }
+      },
+      {
+        "id": "regression-24",
+        "role": "generated",
+        "trackHash": "d956fc9612a3bc90fe5bae3c08d592217d50787d496a1855148e80c6efaf8c56",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 392.0195,
+        "selectionReasons": "Representative reserve fallback (three requests share this course hash)",
+        "fallbackUsed": true,
+        "expectedFinishTicks": {
+          "hold": 3318,
+          "cautious": 4044,
+          "fast": 2848
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3318,
+          "seconds": 27.65,
+          "elapsedTicks": 3318,
+          "offRoadTicks": 422,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4044,
+          "seconds": 33.7,
+          "elapsedTicks": 4044,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 151,
+          "meaningfulLifts": 5
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 2848,
+          "seconds": 23.733333333333334,
+          "elapsedTicks": 2848,
+          "offRoadTicks": 52,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 470,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1440,
+            "endTick": 1536,
+            "seconds": 0.8
+          },
+          {
+            "startTick": 1797,
+            "endTick": 1874,
+            "seconds": 0.6416666666666667
+          },
+          {
+            "startTick": 2285,
+            "endTick": 2371,
+            "seconds": 0.7166666666666667
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 177770,
+          "replayChecks": 4,
+          "replayTicks": 13058
+        }
+      },
+      {
+        "id": "regression-68",
+        "role": "generated",
+        "trackHash": "35893fdd17b5de3120aea572418f1fa042083b3e0aa1f5c00222db5ab4f49190",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 350.0536,
+        "selectionReasons": "Minimum course length; Minimum bounded fast duration; Fast-duration quantile anchor q=0.000",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3377,
+          "cautious": 3878,
+          "fast": 2706
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3377,
+          "seconds": 28.141666666666666,
+          "elapsedTicks": 3377,
+          "offRoadTicks": 743,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 3878,
+          "seconds": 32.31666666666667,
+          "elapsedTicks": 3878,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 143,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 2706,
+          "seconds": 22.55,
+          "elapsedTicks": 2706,
+          "offRoadTicks": 47,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 671,
+        "meaningfulIntervals": [
+          {
+            "startTick": 748,
+            "endTick": 859,
+            "seconds": 0.925
+          },
+          {
+            "startTick": 1141,
+            "endTick": 1230,
+            "seconds": 0.7416666666666667
+          },
+          {
+            "startTick": 1569,
+            "endTick": 1634,
+            "seconds": 0.5416666666666666
+          },
+          {
+            "startTick": 1902,
+            "endTick": 1953,
+            "seconds": 0.425
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 191472,
+          "replayChecks": 4,
+          "replayTicks": 12667
+        }
+      },
+      {
+        "id": "regression-19",
+        "role": "generated",
+        "trackHash": "b11322e306ce989686c281015bb663cee977c540b6ab8c9a64bbf46165a2752e",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 499.4037,
+        "selectionReasons": "Maximum course length",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4242,
+          "cautious": 4690,
+          "fast": 3495
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4242,
+          "seconds": 35.35,
+          "elapsedTicks": 4242,
+          "offRoadTicks": 747,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4690,
+          "seconds": 39.083333333333336,
+          "elapsedTicks": 4690,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 153,
+          "meaningfulLifts": 2
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3495,
+          "seconds": 29.125,
+          "elapsedTicks": 3495,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 747,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1696,
+            "endTick": 1786,
+            "seconds": 0.75
+          },
+          {
+            "startTick": 2225,
+            "endTick": 2320,
+            "seconds": 0.7916666666666666
+          },
+          {
+            "startTick": 2672,
+            "endTick": 2758,
+            "seconds": 0.7166666666666667
+          },
+          {
+            "startTick": 3317,
+            "endTick": 3373,
+            "seconds": 0.4666666666666667
+          }
+        ],
+        "work": {
+          "controllerRuns": 50,
+          "simulatedTicks": 189314,
+          "replayChecks": 4,
+          "replayTicks": 15922
+        }
+      },
+      {
+        "id": "regression-97",
+        "role": "generated",
+        "trackHash": "80e10d43997ea4633c0f462dbca0267705aa3276449917c4e268033a864c4a91",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 496.6368,
+        "selectionReasons": "Maximum bounded fast duration",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4562,
+          "cautious": 4748,
+          "fast": 3625
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4562,
+          "seconds": 38.016666666666666,
+          "elapsedTicks": 4562,
+          "offRoadTicks": 884,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4748,
+          "seconds": 39.56666666666667,
+          "elapsedTicks": 4748,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 152,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3625,
+          "seconds": 30.208333333333332,
+          "elapsedTicks": 3625,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 5,
+          "meaningfulLifts": 5
+        },
+        "gainTicks": 937,
+        "meaningfulIntervals": [
+          {
+            "startTick": 467,
+            "endTick": 513,
+            "seconds": 0.38333333333333336
+          },
+          {
+            "startTick": 987,
+            "endTick": 1043,
+            "seconds": 0.4666666666666667
+          },
+          {
+            "startTick": 1845,
+            "endTick": 1960,
+            "seconds": 0.9583333333333334
+          },
+          {
+            "startTick": 2283,
+            "endTick": 2368,
+            "seconds": 0.7083333333333334
+          },
+          {
+            "startTick": 2887,
+            "endTick": 2986,
+            "seconds": 0.825
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 227611,
+          "replayChecks": 4,
+          "replayTicks": 16560
+        }
+      },
+      {
+        "id": "regression-87",
+        "role": "generated",
+        "trackHash": "91fc3cf971d3b087ecc2df3e41ada3d7f2f7dd10f7ae56beed650e2703b6a9a9",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 399.951,
+        "selectionReasons": "Minimum braking gain; 5 meaningful lifts: lowest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3397,
+          "cautious": 4089,
+          "fast": 2944
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3397,
+          "seconds": 28.308333333333334,
+          "elapsedTicks": 3397,
+          "offRoadTicks": 499,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4089,
+          "seconds": 34.075,
+          "elapsedTicks": 4089,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 151,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 2944,
+          "seconds": 24.533333333333335,
+          "elapsedTicks": 2944,
+          "offRoadTicks": 32,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 5,
+          "meaningfulLifts": 5
+        },
+        "gainTicks": 453,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1087,
+            "endTick": 1142,
+            "seconds": 0.4583333333333333
+          },
+          {
+            "startTick": 1571,
+            "endTick": 1627,
+            "seconds": 0.4666666666666667
+          },
+          {
+            "startTick": 1698,
+            "endTick": 1744,
+            "seconds": 0.38333333333333336
+          },
+          {
+            "startTick": 2097,
+            "endTick": 2188,
+            "seconds": 0.7583333333333333
+          },
+          {
+            "startTick": 2502,
+            "endTick": 2566,
+            "seconds": 0.5333333333333333
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 220806,
+          "replayChecks": 4,
+          "replayTicks": 13374
+        }
+      },
+      {
+        "id": "regression-131",
+        "role": "generated",
+        "trackHash": "3bd8c1e906121f38f7c166b0acf1829f58c44b9aa3032b34f58f8c1610a8f0b2",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 459.452,
+        "selectionReasons": "Maximum braking gain; 4 meaningful lifts: highest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4339,
+          "cautious": 4543,
+          "fast": 3327
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4339,
+          "seconds": 36.15833333333333,
+          "elapsedTicks": 4339,
+          "offRoadTicks": 971,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4543,
+          "seconds": 37.858333333333334,
+          "elapsedTicks": 4543,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 155,
+          "meaningfulLifts": 3
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3327,
+          "seconds": 27.725,
+          "elapsedTicks": 3327,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 1012,
+        "meaningfulIntervals": [
+          {
+            "startTick": 864,
+            "endTick": 919,
+            "seconds": 0.4583333333333333
+          },
+          {
+            "startTick": 2010,
+            "endTick": 2122,
+            "seconds": 0.9333333333333333
+          },
+          {
+            "startTick": 2474,
+            "endTick": 2568,
+            "seconds": 0.7833333333333333
+          },
+          {
+            "startTick": 3015,
+            "endTick": 3122,
+            "seconds": 0.8916666666666667
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 215187,
+          "replayChecks": 4,
+          "replayTicks": 15536
+        }
+      },
+      {
+        "id": "regression-159",
+        "role": "generated",
+        "trackHash": "6b75246b732246824ab66fda87e01f77cb2feb92337113029e6c12795a227213",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 482.3422,
+        "selectionReasons": "Maximum fast off-road fraction",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4331,
+          "cautious": 4611,
+          "fast": 3578
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4331,
+          "seconds": 36.09166666666667,
+          "elapsedTicks": 4331,
+          "offRoadTicks": 727,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4611,
+          "seconds": 38.425,
+          "elapsedTicks": 4611,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 152,
+          "meaningfulLifts": 6
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3578,
+          "seconds": 29.816666666666666,
+          "elapsedTicks": 3578,
+          "offRoadTicks": 154,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 753,
+        "meaningfulIntervals": [
+          {
+            "startTick": 870,
+            "endTick": 925,
+            "seconds": 0.4583333333333333
+          },
+          {
+            "startTick": 1279,
+            "endTick": 1378,
+            "seconds": 0.825
+          },
+          {
+            "startTick": 1750,
+            "endTick": 1808,
+            "seconds": 0.48333333333333334
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 220397,
+          "replayChecks": 4,
+          "replayTicks": 16098
+        }
+      },
+      {
+        "id": "regression-40",
+        "role": "generated",
+        "trackHash": "c202aadf974d25b044948f84b5956dc4d5709267b3893ad6b049dc5996a49aab",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 498.2475,
+        "selectionReasons": "Maximum signed direction changes",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4123,
+          "cautious": 4820,
+          "fast": 3401
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4123,
+          "seconds": 34.358333333333334,
+          "elapsedTicks": 4123,
+          "offRoadTicks": 584,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4820,
+          "seconds": 40.166666666666664,
+          "elapsedTicks": 4820,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 168,
+          "meaningfulLifts": 7
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3401,
+          "seconds": 28.341666666666665,
+          "elapsedTicks": 3401,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 722,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1041,
+            "endTick": 1137,
+            "seconds": 0.8
+          },
+          {
+            "startTick": 1399,
+            "endTick": 1484,
+            "seconds": 0.7083333333333334
+          },
+          {
+            "startTick": 2061,
+            "endTick": 2116,
+            "seconds": 0.4583333333333333
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 237040,
+          "replayChecks": 4,
+          "replayTicks": 15745
+        }
+      },
+      {
+        "id": "regression-133",
+        "role": "generated",
+        "trackHash": "2fffb8fa9e151418447db30222b8a132f50e7d10c6759e578d0f1142462f5f1e",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 478.2243,
+        "selectionReasons": "Maximum requested structural attempts without fallback",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4168,
+          "cautious": 4665,
+          "fast": 3401
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4168,
+          "seconds": 34.733333333333334,
+          "elapsedTicks": 4168,
+          "offRoadTicks": 758,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4665,
+          "seconds": 38.875,
+          "elapsedTicks": 4665,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 160,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3401,
+          "seconds": 28.341666666666665,
+          "elapsedTicks": 3401,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 767,
+        "meaningfulIntervals": [
+          {
+            "startTick": 978,
+            "endTick": 1083,
+            "seconds": 0.875
+          },
+          {
+            "startTick": 1478,
+            "endTick": 1580,
+            "seconds": 0.85
+          },
+          {
+            "startTick": 1950,
+            "endTick": 2050,
+            "seconds": 0.8333333333333334
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 212200,
+          "replayChecks": 4,
+          "replayTicks": 15635
+        }
+      },
+      {
+        "id": "regression-82",
+        "role": "generated",
+        "trackHash": "65299519b4d98e797998c554d7fe2c21aa1347d64a341490c4f062c2b083b18b",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 481.8237,
+        "selectionReasons": "3 meaningful lifts: lowest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3870,
+          "cautious": 4580,
+          "fast": 3403
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3870,
+          "seconds": 32.25,
+          "elapsedTicks": 3870,
+          "offRoadTicks": 439,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4580,
+          "seconds": 38.166666666666664,
+          "elapsedTicks": 4580,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 161,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3403,
+          "seconds": 28.358333333333334,
+          "elapsedTicks": 3403,
+          "offRoadTicks": 97,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 467,
+        "meaningfulIntervals": [
+          {
+            "startTick": 412,
+            "endTick": 453,
+            "seconds": 0.3416666666666667
+          },
+          {
+            "startTick": 1070,
+            "endTick": 1152,
+            "seconds": 0.6833333333333333
+          },
+          {
+            "startTick": 1353,
+            "endTick": 1413,
+            "seconds": 0.5
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 240065,
+          "replayChecks": 4,
+          "replayTicks": 15256
+        }
+      },
+      {
+        "id": "regression-116",
+        "role": "generated",
+        "trackHash": "e8e6ca75a89c423f79a6c1c5cd783fd7d06bfca821239594c1a6a31058365dab",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 461.4577,
+        "selectionReasons": "3 meaningful lifts: highest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4028,
+          "cautious": 4403,
+          "fast": 3205
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4028,
+          "seconds": 33.56666666666667,
+          "elapsedTicks": 4028,
+          "offRoadTicks": 707,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4403,
+          "seconds": 36.69166666666667,
+          "elapsedTicks": 4403,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 152,
+          "meaningfulLifts": 3
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3205,
+          "seconds": 26.708333333333332,
+          "elapsedTicks": 3205,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 823,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1177,
+            "endTick": 1268,
+            "seconds": 0.7583333333333333
+          },
+          {
+            "startTick": 1697,
+            "endTick": 1791,
+            "seconds": 0.7833333333333333
+          },
+          {
+            "startTick": 2169,
+            "endTick": 2230,
+            "seconds": 0.5083333333333333
+          }
+        ],
+        "work": {
+          "controllerRuns": 50,
+          "simulatedTicks": 176119,
+          "replayChecks": 4,
+          "replayTicks": 14841
+        }
+      },
+      {
+        "id": "regression-132",
+        "role": "generated",
+        "trackHash": "78808a20fa187590fc0e0681075dca48931c64469164aa182b94e5a30efc4fff",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 486.8617,
+        "selectionReasons": "4 meaningful lifts: lowest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3983,
+          "cautious": 4737,
+          "fast": 3509
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3983,
+          "seconds": 33.19166666666667,
+          "elapsedTicks": 3983,
+          "offRoadTicks": 567,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4737,
+          "seconds": 39.475,
+          "elapsedTicks": 4737,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 160,
+          "meaningfulLifts": 5
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3509,
+          "seconds": 29.241666666666667,
+          "elapsedTicks": 3509,
+          "offRoadTicks": 63,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 474,
+        "meaningfulIntervals": [
+          {
+            "startTick": 297,
+            "endTick": 348,
+            "seconds": 0.425
+          },
+          {
+            "startTick": 1165,
+            "endTick": 1231,
+            "seconds": 0.55
+          },
+          {
+            "startTick": 1394,
+            "endTick": 1449,
+            "seconds": 0.4583333333333333
+          },
+          {
+            "startTick": 3065,
+            "endTick": 3118,
+            "seconds": 0.44166666666666665
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 241879,
+          "replayChecks": 4,
+          "replayTicks": 15738
+        }
+      },
+      {
+        "id": "regression-197",
+        "role": "generated",
+        "trackHash": "b537684b705b79f4c178c224e78623f3ed72d0e4f1b3799b5b3a7757c760e6be",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 445.6042,
+        "selectionReasons": "5 meaningful lifts: highest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4240,
+          "cautious": 4479,
+          "fast": 3283
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4240,
+          "seconds": 35.333333333333336,
+          "elapsedTicks": 4240,
+          "offRoadTicks": 864,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4479,
+          "seconds": 37.325,
+          "elapsedTicks": 4479,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 162,
+          "meaningfulLifts": 5
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3283,
+          "seconds": 27.358333333333334,
+          "elapsedTicks": 3283,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 5,
+          "meaningfulLifts": 5
+        },
+        "gainTicks": 957,
+        "meaningfulIntervals": [
+          {
+            "startTick": 870,
+            "endTick": 964,
+            "seconds": 0.7833333333333333
+          },
+          {
+            "startTick": 1368,
+            "endTick": 1465,
+            "seconds": 0.8083333333333333
+          },
+          {
+            "startTick": 1804,
+            "endTick": 1867,
+            "seconds": 0.525
+          },
+          {
+            "startTick": 2263,
+            "endTick": 2322,
+            "seconds": 0.49166666666666664
+          },
+          {
+            "startTick": 2729,
+            "endTick": 2786,
+            "seconds": 0.475
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 205550,
+          "replayChecks": 4,
+          "replayTicks": 15285
+        }
+      },
+      {
+        "id": "regression-195",
+        "role": "generated",
+        "trackHash": "588feaa44c083db68f15fd4cca27aa5eb1e42af4daae660557b699ead8237f44",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 404.7957,
+        "selectionReasons": "6 meaningful lifts: lowest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3645,
+          "cautious": 4230,
+          "fast": 3054
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3645,
+          "seconds": 30.375,
+          "elapsedTicks": 3645,
+          "offRoadTicks": 698,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4230,
+          "seconds": 35.25,
+          "elapsedTicks": 4230,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 157,
+          "meaningfulLifts": 6
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3054,
+          "seconds": 25.45,
+          "elapsedTicks": 3054,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 6,
+          "meaningfulLifts": 6
+        },
+        "gainTicks": 591,
+        "meaningfulIntervals": [
+          {
+            "startTick": 865,
+            "endTick": 920,
+            "seconds": 0.4583333333333333
+          },
+          {
+            "startTick": 1403,
+            "endTick": 1459,
+            "seconds": 0.4666666666666667
+          },
+          {
+            "startTick": 1730,
+            "endTick": 1791,
+            "seconds": 0.5083333333333333
+          },
+          {
+            "startTick": 1892,
+            "endTick": 1939,
+            "seconds": 0.39166666666666666
+          },
+          {
+            "startTick": 2374,
+            "endTick": 2473,
+            "seconds": 0.825
+          },
+          {
+            "startTick": 2828,
+            "endTick": 2921,
+            "seconds": 0.775
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 218278,
+          "replayChecks": 4,
+          "replayTicks": 13983
+        }
+      },
+      {
+        "id": "regression-84",
+        "role": "generated",
+        "trackHash": "9c6f9470cca18e677f92a3177aeff456e79e6ee84cdb9eee1776201593a0117d",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 438.4028,
+        "selectionReasons": "6 meaningful lifts: highest braking gain",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3950,
+          "cautious": 4359,
+          "fast": 3228
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3950,
+          "seconds": 32.916666666666664,
+          "elapsedTicks": 3950,
+          "offRoadTicks": 765,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4359,
+          "seconds": 36.325,
+          "elapsedTicks": 4359,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 157,
+          "meaningfulLifts": 4
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3228,
+          "seconds": 26.9,
+          "elapsedTicks": 3228,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 6,
+          "meaningfulLifts": 6
+        },
+        "gainTicks": 722,
+        "meaningfulIntervals": [
+          {
+            "startTick": 642,
+            "endTick": 687,
+            "seconds": 0.375
+          },
+          {
+            "startTick": 875,
+            "endTick": 939,
+            "seconds": 0.5333333333333333
+          },
+          {
+            "startTick": 1153,
+            "endTick": 1237,
+            "seconds": 0.7
+          },
+          {
+            "startTick": 1693,
+            "endTick": 1751,
+            "seconds": 0.48333333333333334
+          },
+          {
+            "startTick": 2452,
+            "endTick": 2506,
+            "seconds": 0.45
+          },
+          {
+            "startTick": 2755,
+            "endTick": 2815,
+            "seconds": 0.5
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 226677,
+          "replayChecks": 4,
+          "replayTicks": 14765
+        }
+      },
+      {
+        "id": "regression-112",
+        "role": "generated",
+        "trackHash": "5ef7355b4a5755f35c93133b98df1a07f466341568a7393cd129a7b0d323bb72",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 471.7958,
+        "selectionReasons": "Representative 2 direction changes: median fast duration within that group",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4084,
+          "cautious": 4440,
+          "fast": 3286
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4084,
+          "seconds": 34.03333333333333,
+          "elapsedTicks": 4084,
+          "offRoadTicks": 712,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4440,
+          "seconds": 37,
+          "elapsedTicks": 4440,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 138,
+          "meaningfulLifts": 3
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3286,
+          "seconds": 27.383333333333333,
+          "elapsedTicks": 3286,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 798,
+        "meaningfulIntervals": [
+          {
+            "startTick": 755,
+            "endTick": 851,
+            "seconds": 0.8
+          },
+          {
+            "startTick": 1160,
+            "endTick": 1224,
+            "seconds": 0.5333333333333333
+          },
+          {
+            "startTick": 1537,
+            "endTick": 1573,
+            "seconds": 0.3
+          },
+          {
+            "startTick": 1742,
+            "endTick": 1807,
+            "seconds": 0.5416666666666666
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 203009,
+          "replayChecks": 4,
+          "replayTicks": 15096
+        }
+      },
+      {
+        "id": "regression-4",
+        "role": "generated",
+        "trackHash": "8d5e05bb403ca29f6d6302bf35af6eb81b0966c091a9e96e3bab90bcb1a9064b",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 488.6186,
+        "selectionReasons": "Representative 3 direction changes: median fast duration within that group",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 4174,
+          "cautious": 4567,
+          "fast": 3393
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 4174,
+          "seconds": 34.78333333333333,
+          "elapsedTicks": 4174,
+          "offRoadTicks": 705,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4567,
+          "seconds": 38.05833333333333,
+          "elapsedTicks": 4567,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 152,
+          "meaningfulLifts": 3
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 3393,
+          "seconds": 28.275,
+          "elapsedTicks": 3393,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 3,
+          "meaningfulLifts": 3
+        },
+        "gainTicks": 781,
+        "meaningfulIntervals": [
+          {
+            "startTick": 1527,
+            "endTick": 1638,
+            "seconds": 0.925
+          },
+          {
+            "startTick": 1996,
+            "endTick": 2059,
+            "seconds": 0.525
+          },
+          {
+            "startTick": 2572,
+            "endTick": 2668,
+            "seconds": 0.8
+          }
+        ],
+        "work": {
+          "controllerRuns": 58,
+          "simulatedTicks": 210668,
+          "replayChecks": 4,
+          "replayTicks": 15527
+        }
+      },
+      {
+        "id": "regression-127",
+        "role": "generated",
+        "trackHash": "53aa35dfcdc3a545da6cb07281934d42f1ceba344bcaa1bb73e66961fe635f5e",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 377.5546,
+        "selectionReasons": "Fast-duration quantile anchor q=0.053",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3498,
+          "cautious": 4152,
+          "fast": 2858
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3498,
+          "seconds": 29.15,
+          "elapsedTicks": 3498,
+          "offRoadTicks": 538,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4152,
+          "seconds": 34.6,
+          "elapsedTicks": 4152,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 157,
+          "meaningfulLifts": 7
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 2858,
+          "seconds": 23.816666666666666,
+          "elapsedTicks": 2858,
+          "offRoadTicks": 54,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 5,
+          "meaningfulLifts": 5
+        },
+        "gainTicks": 640,
+        "meaningfulIntervals": [
+          {
+            "startTick": 270,
+            "endTick": 301,
+            "seconds": 0.25833333333333336
+          },
+          {
+            "startTick": 969,
+            "endTick": 1066,
+            "seconds": 0.8083333333333333
+          },
+          {
+            "startTick": 1338,
+            "endTick": 1405,
+            "seconds": 0.5583333333333333
+          },
+          {
+            "startTick": 1750,
+            "endTick": 1810,
+            "seconds": 0.5
+          },
+          {
+            "startTick": 2089,
+            "endTick": 2151,
+            "seconds": 0.5166666666666667
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 204355,
+          "replayChecks": 4,
+          "replayTicks": 13366
+        }
+      },
+      {
+        "id": "regression-157",
+        "role": "generated",
+        "trackHash": "81c6801a2b92f2fa7539864e0d43eccc98c03a79011fa3059496ed557d67bc41",
+        "generatorVersion": "motif-loop-v1",
+        "qualityVersion": "quality-v1",
+        "lengthMetres": 392.9147,
+        "selectionReasons": "Fast-duration quantile anchor q=0.105",
+        "fallbackUsed": false,
+        "expectedFinishTicks": {
+          "hold": 3564,
+          "cautious": 4228,
+          "fast": 2927
+        },
+        "hold": {
+          "finished": true,
+          "finishTicks": 3564,
+          "seconds": 29.7,
+          "elapsedTicks": 3564,
+          "offRoadTicks": 640,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 0,
+          "meaningfulLifts": 0
+        },
+        "cautious": {
+          "finished": true,
+          "finishTicks": 4228,
+          "seconds": 35.233333333333334,
+          "elapsedTicks": 4228,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 157,
+          "meaningfulLifts": 8
+        },
+        "boundedFast": {
+          "finished": true,
+          "finishTicks": 2927,
+          "seconds": 24.391666666666666,
+          "elapsedTicks": 2927,
+          "offRoadTicks": 0,
+          "recoveryTicks": 0,
+          "recoveryCount": 0,
+          "lifts": 4,
+          "meaningfulLifts": 4
+        },
+        "gainTicks": 637,
+        "meaningfulIntervals": [
+          {
+            "startTick": 649,
+            "endTick": 749,
+            "seconds": 0.8333333333333334
+          },
+          {
+            "startTick": 1059,
+            "endTick": 1152,
+            "seconds": 0.775
+          },
+          {
+            "startTick": 1562,
+            "endTick": 1622,
+            "seconds": 0.5
+          },
+          {
+            "startTick": 1887,
+            "endTick": 1950,
+            "seconds": 0.525
+          }
+        ],
+        "work": {
+          "controllerRuns": 66,
+          "simulatedTicks": 204528,
+          "replayChecks": 4,
+          "replayTicks": 13646
+        }
+      }
+    ],
+    "failures": [],
+    "work": {
+      "controllerRuns": 1300,
+      "simulatedTicks": 4494781,
+      "replayChecks": 91,
+      "replayTicks": 330073
+    },
+    "workAccounting": "Completed controller work is measured; replay attempts charge their requested endpoint. A shared search that throws before returning is charged its full bounded budget.",
+    "limits": {
+      "controllerRuns": 1452,
+      "replayChecks": 91,
+      "totalTickBudget": 22219200
+    },
+    "comparison": {
+      "unchanged": true,
+      "deltas": [
+        {
+          "id": "gentle-reference",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "handmade-reference",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-154",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-24",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-68",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-19",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-97",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-87",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-131",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-159",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-40",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-133",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-82",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-116",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-132",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-197",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-195",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-84",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-112",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-4",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-127",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        },
+        {
+          "id": "regression-157",
+          "holdTicks": 0,
+          "cautiousTicks": 0,
+          "boundedFastTicks": 0,
+          "meaningfulLifts": 0,
+          "offRoadTicks": 0,
+          "recoveryCount": 0,
+          "controls": {
+            "hold": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "cautious": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            },
+            "boundedFast": {
+              "finishTicks": 0,
+              "seconds": 0,
+              "elapsedTicks": 0,
+              "offRoadTicks": 0,
+              "recoveryTicks": 0,
+              "recoveryCount": 0,
+              "lifts": 0,
+              "meaningfulLifts": 0
+            }
+          },
+          "gainTicks": 0,
+          "intervalsChanged": false
+        }
+      ]
+    }
+  }
+}

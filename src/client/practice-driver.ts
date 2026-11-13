@@ -1,7 +1,7 @@
+import { handlingForTrack } from '../shared/scored-runtime.ts';
 import { sampleTrack, type Track } from '../shared/track.ts';
 import {
   createSimulationState,
-  HANDLING,
   MAX_SIMULATION_TICKS,
   quantizeSimulation,
   SIMULATION_HZ,
@@ -41,7 +41,10 @@ export class PracticeDriver {
     this.race = prepareRace(track);
     // Every accepted game circuit is much longer than one tick's travel. Keep
     // seam work bounded to one crossing even for independently supplied tracks.
-    if (track.totalLength <= HANDLING.maximumSpeed / SIMULATION_HZ + 0.000002)
+    if (
+      track.totalLength <=
+      handlingForTrack(track).maximumSpeed / SIMULATION_HZ + 0.000002
+    )
       throw new Error('Practice circuit must exceed one fixed tick of travel');
     this.previous = this.race.simulation;
   }
@@ -95,7 +98,7 @@ export class PracticeDriver {
     if (!Number.isFinite(timestampMilliseconds))
       throw new Error('Invalid start time');
     this.race = startRace(prepareRace(this.track));
-    this.physics = createSimulationState();
+    this.physics = createSimulationState(this.track);
     this.previous = this.race.simulation;
     this.lastTimestamp = timestampMilliseconds;
     this.accumulatedMilliseconds = 0;

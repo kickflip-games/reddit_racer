@@ -7,6 +7,7 @@ export type RaceCameraPose = {
   lateralOffset: number;
   /** Visual car.rotation.y in radians: forward is (sin(heading), cos(heading)). */
   heading: number;
+  height?: number;
 };
 export type RaceCameraViewport = {
   /** Canvas CSS pixels, independent of the renderer's device pixel ratio. */
@@ -30,6 +31,7 @@ export type RaceCamera = {
 
 type RoadSection = {
   s: number;
+  y: number;
   leftX: number;
   leftZ: number;
   rightX: number;
@@ -66,14 +68,10 @@ const projectionFields: readonly (keyof CameraProjection)[] = [
   'far',
 ];
 
-const pitch = (15 * Math.PI) / 180;
-const cosine = Math.cos(pitch);
-const sine = Math.sin(pitch);
 const lookBehind = 5;
 const lookAhead = 35;
 const shoulder = 0.8;
 const roadHeight = 0.08;
-const maximumScale = 9;
 // Below a millionth of a CSS pixel there is no usable drawing area. This also
 // prevents subnormal viewport numbers from underflowing the projection scale.
 const minimumUsablePixels = 0.000001;
@@ -82,22 +80,6 @@ const settlingPixels = 0.05;
 
 function finite(value: number, label: string): void {
   if (!Number.isFinite(value)) throw new Error(`${label} must be finite`);
-}
-
-function addPoint(
-  bounds: ProjectedBounds,
-  x: number,
-  y: number,
-  z: number
-): void {
-  const v = -z * cosine + y * sine;
-  const depth = y * cosine + z * sine;
-  bounds.minU = Math.min(bounds.minU, x);
-  bounds.maxU = Math.max(bounds.maxU, x);
-  bounds.minV = Math.min(bounds.minV, v);
-  bounds.maxV = Math.max(bounds.maxV, v);
-  bounds.minDepth = Math.min(bounds.minDepth, depth);
-  bounds.maxDepth = Math.max(bounds.maxDepth, depth);
 }
 
 function emptyBounds(): ProjectedBounds {
@@ -111,17 +93,38 @@ function emptyBounds(): ProjectedBounds {
   };
 }
 
-function addSection(bounds: ProjectedBounds, section: RoadSection): void {
-  addPoint(bounds, section.leftX, roadHeight, section.leftZ);
-  addPoint(bounds, section.rightX, roadHeight, section.rightZ);
-}
-
 /** Essential framing only: no clock, input, preference or simulation ownership. */
 export function createRaceCamera(track: Track): RaceCamera {
   validateTrack(track);
+  const pitch = ((track.schemaVersion === 2 ? 40 : 15) * Math.PI) / 180;
+  const cosine = Math.cos(pitch),
+    sine = Math.sin(pitch);
+  const maximumScale = track.schemaVersion === 2 ? 12 : 9;
+  function addPoint(
+    bounds: ProjectedBounds,
+    x: number,
+    y: number,
+    z: number
+  ): void {
+    const v = -z * cosine + y * sine;
+    const depth = y * cosine + z * sine;
+    bounds.minU = Math.min(bounds.minU, x);
+    bounds.maxU = Math.max(bounds.maxU, x);
+    bounds.minV = Math.min(bounds.minV, v);
+    bounds.maxV = Math.max(bounds.maxV, v);
+    bounds.minDepth = Math.min(bounds.minDepth, depth);
+    bounds.maxDepth = Math.max(bounds.maxDepth, depth);
+  }
+
+  function addSection(bounds: ProjectedBounds, section: RoadSection): void {
+    addPoint(bounds, section.leftX, section.y, section.leftZ);
+    addPoint(bounds, section.rightX, section.y, section.rightZ);
+  }
+
   const camera = new OrthographicCamera(-1, 1, 1, -1, 0.1, 400);
   const sections: RoadSection[] = track.samples.map((sample) => ({
     s: sample.s,
+    y: (sample.y ?? 0) + roadHeight,
     leftX: sample.x + sample.tz * (sample.width / 2 + shoulder),
     leftZ: sample.z - sample.tx * (sample.width / 2 + shoulder),
     rightX: sample.x - sample.tz * (sample.width / 2 + shoulder),
@@ -182,13 +185,13 @@ export function createRaceCamera(track: Track): RaceCamera {
     addPoint(
       bounds,
       current.leftX + (next.leftX - current.leftX) * blend,
-      roadHeight,
+      current.y + (next.y - current.y) * blend,
       current.leftZ + (next.leftZ - current.leftZ) * blend
     );
     addPoint(
       bounds,
       current.rightX + (next.rightX - current.rightX) * blend,
-      roadHeight,
+      current.y + (next.y - current.y) * blend,
       current.rightZ + (next.rightZ - current.rightZ) * blend
     );
   }
@@ -225,7 +228,7 @@ export function createRaceCamera(track: Track): RaceCamera {
           addPoint(
             bounds,
             centerX + forwardX * fore - forwardZ * side,
-            height,
+            height + (pose.height ?? 0),
             centerZ + forwardZ * fore + forwardX * side
           );
         }
@@ -368,6 +371,7 @@ export function createRaceCamera(track: Track): RaceCamera {
       finite(next.distance, 'Camera distance');
       finite(next.lateralOffset, 'Camera lateral offset');
       finite(next.heading, 'Camera heading');
+      finite(next.height ?? 0, 'Camera height');
       finite(options.deltaSeconds, 'Camera elapsed time');
       if (options.deltaSeconds < 0)
         throw new Error('Camera elapsed time must be nonnegative');

@@ -1,11 +1,7 @@
+import { runtimeForTrack, scoredRuntime } from './scored-runtime.ts';
 import { hashTrack, parseTrack, serializeTrack } from './track.ts';
 import type { Track } from './track.ts';
 import type { ValidatedCircuit } from './circuit-quality.ts';
-import {
-  SIMULATION_VERSION,
-  HANDLING_VERSION,
-  SIMULATION_HZ,
-} from './simulation.ts';
 
 export type DailyChallengeErrorKind =
   'invalid' | 'integrity' | 'unsupported' | 'unavailable' | 'not-found';
@@ -232,27 +228,15 @@ export function assertSupportedScoredRuntime(
   handlingVersion: string,
   simulationHz: number
 ): void {
-  const retained: {
-    simulationVersion: string;
-    handlingVersion: string;
-    simulationHz: number;
-  } = {
-    simulationVersion: 'fixed-step-v2',
-    handlingVersion: 'arcade-v1',
-    simulationHz: 120,
-  };
-  if (
-    SIMULATION_VERSION !== retained.simulationVersion ||
-    HANDLING_VERSION !== retained.handlingVersion ||
-    SIMULATION_HZ !== retained.simulationHz ||
-    simulationVersion !== retained.simulationVersion ||
-    handlingVersion !== retained.handlingVersion ||
-    simulationHz !== retained.simulationHz
-  )
+  // Keep both complete implementations available; version strings alone never retune old days.
+  try {
+    scoredRuntime(simulationVersion, handlingVersion, simulationHz);
+  } catch {
     throw new DailyChallengeError(
       'unsupported',
       'Challenge simulation or handling version is unsupported'
     );
+  }
 }
 function numericMap(value: unknown, name: string): Record<string, number> {
   if (
@@ -408,7 +392,11 @@ async function parseChallengeFields(
       'unsupported',
       'Challenge tick frequency is unsupported'
     );
-  if (record(value.track) && value.track.schemaVersion !== 1)
+  if (
+    record(value.track) &&
+    value.track.schemaVersion !== 1 &&
+    value.track.schemaVersion !== 2
+  )
     throw new DailyChallengeError(
       'unsupported',
       'Track schema version is unsupported'
@@ -422,6 +410,15 @@ async function parseChallengeFields(
       'Stored canonical track is malformed'
     );
   }
+  const expectedRuntime = runtimeForTrack(track);
+  if (
+    simulationVersion !== expectedRuntime.simulationVersion ||
+    handlingVersion !== expectedRuntime.handlingVersion
+  )
+    throw new DailyChallengeError(
+      'integrity',
+      'Track and scored rules do not match'
+    );
   const trackHash = hashText(value.trackHash, 'trackHash');
   let actualTrackHash: string;
   try {
@@ -566,12 +563,15 @@ export async function createDailyChallengeRecord(
   }
   // Bind approval to this copied geometry, never to mutable/stale caller metadata.
   // Only record creation loads the solver; public parsing and stored reads do not.
-  const { assessTrackQuality, QUALITY_VERSION } =
+  const { assessTrackQuality, qualityVersionForTrack } =
     await import('./circuit-quality.ts');
   const { normalizeGeneratorConfig } = await import('./circuit-generator.ts');
-  const generatorConfig = normalizeGeneratorConfig(
-    generated.diagnostics.config
-  );
+  const normalize =
+    track.schemaVersion === 2
+      ? (await import('./elevated-generator.ts'))
+          .normalizeElevatedGeneratorConfig
+      : normalizeGeneratorConfig;
+  const generatorConfig = normalize(generated.diagnostics.config);
   if (
     JSON.stringify(numericMap(generatorConfig, 'generatorConfig')) !==
       JSON.stringify(
@@ -594,7 +594,7 @@ export async function createDailyChallengeRecord(
   const metrics = quality.metrics;
   if (
     !quality.valid ||
-    quality.version !== QUALITY_VERSION ||
+    quality.version !== qualityVersionForTrack(track) ||
     JSON.stringify(numericMap(quality.thresholds, 'qualityThresholds')) !==
       JSON.stringify(
         numericMap(generated.quality.thresholds, 'qualityThresholds')

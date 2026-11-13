@@ -1,8 +1,9 @@
 import {
-  HANDLING_VERSION,
-  MAX_SIMULATION_TICKS,
-  SIMULATION_VERSION,
-} from './simulation.ts';
+  runtimeForTrack,
+  scoredRuntime,
+  type ScoredRuntime,
+} from './scored-runtime.ts';
+import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
 import { createRacingState, stepRace } from './race-rules.ts';
 import type { Track } from './track.ts';
@@ -12,8 +13,8 @@ export const MAX_REPLAY_TRANSITIONS = 2400;
 export type ReplayTransition = { tick: number; held: boolean };
 export type Replay = {
   schemaVersion: 1;
-  simulationVersion: typeof SIMULATION_VERSION;
-  handlingVersion: typeof HANDLING_VERSION;
+  simulationVersion: ScoredRuntime['simulationVersion'];
+  handlingVersion: ScoredRuntime['handlingVersion'];
   transitions: ReplayTransition[];
   /** Exact number of updates recorded, never an authoritative submitted lap time. */
   endTick: number;
@@ -44,13 +45,8 @@ export function validateReplay(value: unknown): Replay {
   ) {
     throw new Error('Replay has missing or unknown fields');
   }
-  if (
-    value.schemaVersion !== 1 ||
-    value.simulationVersion !== SIMULATION_VERSION ||
-    value.handlingVersion !== HANDLING_VERSION
-  ) {
-    throw new Error('Replay version mismatch');
-  }
+  if (value.schemaVersion !== 1) throw new Error('Replay version mismatch');
+  const runtime = scoredRuntime(value.simulationVersion, value.handlingVersion);
   const endTick = value.endTick;
   if (
     typeof endTick !== 'number' ||
@@ -95,8 +91,8 @@ export function validateReplay(value: unknown): Replay {
   );
   return {
     schemaVersion: 1,
-    simulationVersion: SIMULATION_VERSION,
-    handlingVersion: HANDLING_VERSION,
+    simulationVersion: runtime.simulationVersion,
+    handlingVersion: runtime.handlingVersion,
     transitions,
     endTick,
   };
@@ -105,6 +101,12 @@ export function validateReplay(value: unknown): Replay {
 /** The shared simulator, never the client endTick, calculates the ranked result. */
 export function runReplay(track: Track, value: unknown): ReplayResult {
   const replay = validateReplay(value);
+  const expected = runtimeForTrack(track);
+  if (
+    replay.simulationVersion !== expected.simulationVersion ||
+    replay.handlingVersion !== expected.handlingVersion
+  )
+    throw new Error('Replay does not match the track runtime');
   let race = createRacingState(track);
   let held = false;
   let transitionIndex = 0;

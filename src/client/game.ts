@@ -95,7 +95,12 @@ async function loadCourse(): Promise<LoadedCourse> {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     const { generateValidatedCircuit } =
       await import('../shared/circuit-quality');
-    const result = generateValidatedCircuit(seed);
+    const result =
+      query?.get('elevated') === '1'
+        ? (
+            await import('../shared/elevated-generator')
+          ).generateElevatedCircuit(seed)
+        : generateValidatedCircuit(seed);
     if (!result.quality.valid)
       throw new Error(
         'This seed failed the driving checks. Select another seed in the circuit workshop.'

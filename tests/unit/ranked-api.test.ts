@@ -17,6 +17,8 @@ import {
   dailyChallengeView,
 } from '../../src/shared/daily-challenge.ts';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
+import type { DailyChallengeRecord } from '../../src/shared/daily-challenge.ts';
 import { FALLBACK_CIRCUIT_SEED } from '../../src/shared/circuit-generator.ts';
 import { MAX_REPLAY_TRANSITIONS } from '../../src/shared/replay.ts';
 import { MAX_SIMULATION_TICKS } from '../../src/shared/simulation.ts';
@@ -69,7 +71,7 @@ class AtomicRaceStore implements RankedStore, RaceBudgetStore {
   }
 }
 
-function setup() {
+function setup(selectedFixture: Promise<DailyChallengeRecord> = fixture) {
   let now = initialNow;
   let userId: string | undefined = 't2_racer';
   let sequence = 0;
@@ -88,9 +90,9 @@ function setup() {
       context: trusted,
       store,
       daily: {
-        getForPost: async () => dailyChallengeView(await fixture, now),
+        getForPost: async () => dailyChallengeView(await selectedFixture, now),
         read: async (input) => {
-          const record = await fixture;
+          const record = await selectedFixture;
           return input.day === record.day &&
             input.subredditId === record.subredditId
             ? record
@@ -126,7 +128,8 @@ function setup() {
       todayRacePost: async () => {
         throw new Error('Unexpected today post query');
       },
-      getDailyChallenge: async () => dailyChallengeView(await fixture, now),
+      getDailyChallenge: async () =>
+        dailyChallengeView(await selectedFixture, now),
       startRankedRace: () => service.start(),
       submitRun: (input) => service.submit(input),
       getLeaderboard: async () => {
@@ -326,4 +329,44 @@ void test('malformed JSON, forged start parameters, method changes and batching 
   );
   assert.equal(api.calls().startBudgetCalls, 0);
   assert.equal(api.calls().verifyBudgetCalls, 0);
+});
+
+void test('HTTP elevated sessions verify jumps with stored rules and reject a legacy replay without consuming the session', async () => {
+  const generated = generateElevatedCircuit('flow-probe-21');
+  const next = createDailyChallengeRecord({
+    subredditId: 't5_home',
+    day: '2026-11-12',
+    createdAtMs: initialNow,
+    requestedSeed: 'flow-probe-21',
+    generated,
+  });
+  const approved = generated.quality.fastReplay;
+  assert.ok(approved);
+  const api = setup(next);
+  const session = await api.client.startRankedRace.mutate();
+  assert.equal(session.simulationVersion, 'fixed-step-v3');
+  assert.equal(session.handlingVersion, 'arcade-v2');
+  await assert.rejects(
+    api.client.submitRun.mutate({
+      sessionId: session.sessionId,
+      replay: {
+        ...approved,
+        simulationVersion: 'fixed-step-v2',
+        handlingVersion: 'arcade-v1',
+      },
+    })
+  );
+  const verified = await api.client.submitRun.mutate({
+    sessionId: session.sessionId,
+    replay: approved,
+  });
+  assert.equal(verified.finishTicks, approved.endTick);
+  assert.deepEqual(
+    await api.client.submitRun.mutate({
+      sessionId: session.sessionId,
+      replay: approved,
+    }),
+    verified
+  );
+  assert.equal(verified.challengeHash, (await next).challengeHash);
 });

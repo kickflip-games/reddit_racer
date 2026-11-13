@@ -1,3 +1,5 @@
+import { LEGACY_HANDLING } from './scored-runtime.ts';
+import { stepElevatedSimulation } from './elevated-simulation.ts';
 import { sampleTrack } from './track.ts';
 import type { Track } from './track.ts';
 
@@ -7,18 +9,7 @@ export const HANDLING_VERSION = 'arcade-v1';
 export const MAX_SIMULATION_TICKS = SIMULATION_HZ * 120;
 
 /** Ranked handling is versioned, immutable and identical for every racer. */
-export const HANDLING = Object.freeze({
-  acceleration: 6.8,
-  braking: 9.5,
-  maximumSpeed: 22,
-  rollingDrag: 0.015,
-  lateralGrip: 7.8,
-  centering: 1,
-  lateralDamping: 2.5,
-  offRoadDrag: 3,
-  recoveryDistanceBeyondEdge: 8,
-  recoveryTicks: SIMULATION_HZ,
-});
+export const HANDLING = LEGACY_HANDLING;
 
 export type SimulationState = {
   /** Tick counts completed fixed updates. An input at tick 0 affects update 0→1. */
@@ -35,13 +26,27 @@ export type SimulationState = {
   recoveryCount: number;
   finishedTick: number | null;
   status: 'running' | 'finished';
+  /** Present only for the retained schema-2 runtime; flat goldens stay byte-identical. */
+  vertical?: {
+    height: number;
+    velocity: number;
+    airborne: boolean;
+    landings: number;
+    impact: number;
+  };
 };
 
 /** Round state to micrometre-scale units after every fixed update. */
 export const quantizeSimulation = (value: number): number =>
   Math.round(value * 1_000_000) / 1_000_000;
 
-export function createSimulationState(): SimulationState {
+export function createVerticalState(): NonNullable<
+  SimulationState['vertical']
+> {
+  return { height: 0, velocity: 0, airborne: false, landings: 0, impact: 0 };
+}
+
+export function createSimulationState(track?: Track): SimulationState {
   return {
     tick: 0,
     distance: 0,
@@ -55,6 +60,7 @@ export function createSimulationState(): SimulationState {
     recoveryCount: 0,
     finishedTick: null,
     status: 'running',
+    ...(track?.schemaVersion === 2 ? { vertical: createVerticalState() } : {}),
   };
 }
 
@@ -72,6 +78,8 @@ export function stepSimulation(
   if (state.status === 'finished') return state;
   if (state.tick >= MAX_SIMULATION_TICKS)
     throw new Error('Simulation duration limit exceeded');
+  if (track.schemaVersion === 2)
+    return stepElevatedSimulation(track, state, held);
   const tick = state.tick + 1;
   const frame = sampleTrack(track, state.distance);
   const halfWidth = quantizeSimulation(frame.halfWidth);

@@ -1,11 +1,7 @@
+import { scoredRuntime } from './scored-runtime.ts';
 import { validateReplay } from './replay.ts';
 import type { Replay } from './replay.ts';
-import {
-  HANDLING_VERSION,
-  MAX_SIMULATION_TICKS,
-  SIMULATION_HZ,
-  SIMULATION_VERSION,
-} from './simulation.ts';
+import { MAX_SIMULATION_TICKS, SIMULATION_HZ } from './simulation.ts';
 import {
   assertSupportedScoredRuntime,
   RANKED_SESSION_MAX_AGE,
@@ -104,19 +100,32 @@ export function parseRankedSubmission(value: unknown): RankedSubmission {
   fields(value, ['sessionId', 'replay'], 'invalid');
   if (!isRankedSessionId(value.sessionId))
     throw new RankedRaceError('invalid', 'Ranked session ID is invalid');
-  if (
-    record(value.replay) &&
-    ((typeof value.replay.simulationVersion === 'string' &&
-      value.replay.simulationVersion !== SIMULATION_VERSION) ||
-      (typeof value.replay.handlingVersion === 'string' &&
-        value.replay.handlingVersion !== HANDLING_VERSION) ||
+  if (record(value.replay)) {
+    const sim = value.replay.simulationVersion,
+      handling = value.replay.handlingVersion;
+    if (
+      (typeof sim === 'string' &&
+        !['fixed-step-v2', 'fixed-step-v3'].includes(sim)) ||
+      (typeof handling === 'string' &&
+        !['arcade-v1', 'arcade-v2'].includes(handling)) ||
       (typeof value.replay.schemaVersion === 'number' &&
-        value.replay.schemaVersion !== 1))
-  )
-    throw new RankedRaceError(
-      'unsupported',
-      'Run replay version is unsupported'
-    );
+        value.replay.schemaVersion !== 1)
+    )
+      throw new RankedRaceError(
+        'unsupported',
+        'Run replay version is unsupported'
+      );
+    if (typeof sim === 'string' && typeof handling === 'string') {
+      try {
+        scoredRuntime(sim, handling);
+      } catch {
+        throw new RankedRaceError(
+          'unsupported',
+          'Run replay version is unsupported'
+        );
+      }
+    }
+  }
   let replay: Replay;
   try {
     replay = validateReplay(value.replay);

@@ -269,6 +269,14 @@
 
 - Delivery for the completed #47 engineering split: [PR #48](https://github.com/kickflip-games/reddit_racer/pull/48). The parent #25 remains open for genuine first-time player/phone evidence and any later evidence-led tuning; the kit does not claim those outcomes.
 
+## 2026-11-13 — elevated circuits and faster pace (#49)
+
+- Branch `hacking/elevated-circuits` starts from merged main `7c5ea3b`. Preserve the minimal UI and existing SFX in response to direct feedback about flat maps and slow driving. Issue #49 covers this focused gameplay change.
+- Add `flow-loop-v2` hull/return/B-spline circuits, full canonical elevation, a four-metre jumping crest and a broader rolling hill. New practice and future daily creation use the elevated profile. Retain every old daily key, full geometry and `fixed-step-v2` / `arcade-v1` implementation; new courses bind `fixed-step-v3` / `arcade-v2`. No existing day is regenerated or retuned.
+- Faster acceleration and 30 m/s pace retain progressive releases, drift and recovery. Shared 120 Hz gravity/takeoff/landing drives car pitch, terrain-aware shadows and pooled landing dust. Existing Kenney art and audio graph remain; the elevated camera shows more depth without adding a driving HUD.
+- Local full check passes formatting/types/lint, 319 units, the 200 classic course cohort and production build. Node 22.23.5 also passes all 319 units. New elevated 200-course validation passes: 2 reserves, 199 distinct profiles, fast laps 22.8–29.7 seconds with 3–5 meaningful releases. The old 25 frozen replays remain exact; one new full-geometry fixture pins airborne and finish states. Initial focused browser checks pass 4 jump/workshop and 8 practice cases across desktop/mobile-sized Chromium. The first full browser run passed 133/134; its desktop practice case was reset by the final development-server reload at 11:09:36 UTC during the 11:09:27 test. This is not accepted as a pass. A fixed-source 134-case run and fresh CI are pending at this entry.
+- See [implementation and evidence](elevated-circuits.md). The complete feature still requires final browser/CI and private-install checks before merge/issue closure.
+
 ## Next
 
-The remaining app criteria need hosted negative/anonymous-access observations and real phone/first-time player sessions. Keep #20, #4, #22, #24 and #25 open for those exact conditions; the public demo part of #1 is deferred by the private-only authorization. Private version `0.0.13` remains installed; next unused version `0.0.14`. No further deployment is needed for offline tooling; keep the UI simple.
+Finish and privately install #49, check retained daily racing and the new continuous practice, then merge only after successful required CI. Keep #20, #4, #22, #24 and #25 open for their recorded hosted-negative/anonymous-access and physical-phone/first-time-player conditions. No public release or privacy/identity change is authorized. Private `0.0.13` remains installed until the next checked build (`0.0.14`).

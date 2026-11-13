@@ -25,6 +25,9 @@ import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { Track } from './track.ts';
 
 export const QUALITY_VERSION = 'quality-v1';
+export const ELEVATED_QUALITY_VERSION = 'quality-v2';
+export const qualityVersionForTrack = (track: Track): string =>
+  track.schemaVersion === 2 ? ELEVATED_QUALITY_VERSION : QUALITY_VERSION;
 export const MAX_QUALITY_ASSESSMENTS = 4;
 export const MAX_REPLAY_CHECKS = 3;
 export const MAX_QUALITY_TICKS =
@@ -198,7 +201,7 @@ export function assessTrackQuality(
   const result: QualityAssessment = {
     valid: false,
     codes,
-    version: QUALITY_VERSION,
+    version: qualityVersionForTrack(track),
     thresholds,
     structure,
     metrics: null,
@@ -239,6 +242,12 @@ export function assessTrackQuality(
     meaningfulLifts: fast.meaningfulLifts,
     ...smooth,
   };
+  if (track.schemaVersion === 2) {
+    if ((fast.airborneTicks ?? 0) < 12 || (fast.landings ?? 0) < 1)
+      codes.push('no-playable-jump');
+    if ((fast.airborneCornerTicks ?? 0) > 0 || (fast.maxAirHeight ?? 0) > 6)
+      codes.push('unsafe-jump-landing');
+  }
   if (!hold.finished) codes.push('hold-unfinished');
   if (!cautious.finished) codes.push('cautious-unfinished');
   if (!fast.finished || fast.seconds === null) codes.push('fast-unfinished');

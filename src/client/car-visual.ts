@@ -10,6 +10,9 @@ export type CarVisualFrame = {
   x: number;
   z: number;
   heading: number;
+  height?: number;
+  surfaceHeight?: number;
+  roadPitch?: number;
   distance: number;
   speed: number;
   acceleration: number;
@@ -215,6 +218,7 @@ export function createCarVisual(): CarVisual {
   object.add(rig.object);
   const spin = new THREE.Quaternion();
   const axle = new THREE.Vector3(1, 0, 0);
+  const roadRotation = new THREE.Matrix4();
   const clamp = THREE.MathUtils.clamp;
   function releaseFallback(): void {
     for (const geometry of fallbackGeometries) geometry.dispose();
@@ -256,16 +260,39 @@ export function createCarVisual(): CarVisual {
       if (disposed) return false;
       let changed = pendingChanged;
       pendingChanged = false;
+      const height = frame.height ?? 0;
+      const groundY = CAR_VISUAL_GROUND_Y + height;
       if (
         object.position.x !== frame.x ||
-        object.position.y !== CAR_VISUAL_GROUND_Y ||
+        object.position.y !== groundY ||
         object.position.z !== frame.z
       ) {
-        object.position.set(frame.x, CAR_VISUAL_GROUND_Y, frame.z);
+        object.position.set(frame.x, groundY, frame.z);
         changed = true;
       }
       if (object.rotation.y !== frame.heading) {
         object.rotation.y = frame.heading;
+        changed = true;
+      }
+      const roadPitch = -(frame.roadPitch ?? 0);
+      if (rig.object.rotation.x !== roadPitch) {
+        rig.object.rotation.x = roadPitch;
+        changed = true;
+      }
+      const shadowY = (frame.surfaceHeight ?? height) - height - 0.003;
+      const altitude = Math.max(0, height - (frame.surfaceHeight ?? height));
+      const opacity = 0.23 / (1 + altitude * 0.35);
+      const shadowScale = 1 + Math.min(altitude, 4) * 0.08;
+      if (
+        shadow.position.y !== shadowY ||
+        shadowMaterial.opacity !== opacity ||
+        shadow.scale.x !== shadowScale ||
+        shadow.rotation.x !== -Math.PI / 2 + roadPitch
+      ) {
+        shadow.position.y = shadowY;
+        shadowMaterial.opacity = opacity;
+        shadow.scale.setScalar(shadowScale);
+        shadow.rotation.x = -Math.PI / 2 + roadPitch;
         changed = true;
       }
       const active = frame.racing && !frame.reducedMotion;
@@ -318,8 +345,15 @@ export function createCarVisual(): CarVisual {
     reset,
     getRearContacts(leftOut, rightOut) {
       object.updateWorldMatrix(true, false);
-      leftOut.copy(rig.rearLeft).applyMatrix4(object.matrixWorld);
-      rightOut.copy(rig.rearRight).applyMatrix4(object.matrixWorld);
+      roadRotation.makeRotationX(rig.object.rotation.x);
+      leftOut
+        .copy(rig.rearLeft)
+        .applyMatrix4(roadRotation)
+        .applyMatrix4(object.matrixWorld);
+      rightOut
+        .copy(rig.rearRight)
+        .applyMatrix4(roadRotation)
+        .applyMatrix4(object.matrixWorld);
     },
     dispose() {
       if (disposed) return;

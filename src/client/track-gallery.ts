@@ -1,4 +1,9 @@
 import { generateCircuit } from '../shared/circuit-generator';
+import { generateElevatedCircuit } from '../shared/elevated-generator';
+const elevated =
+  new URLSearchParams(window.location.search).get('elevated') === '1';
+const previewCircuit = (seed: string) =>
+  elevated ? generateElevatedCircuit(seed) : generateCircuit(seed);
 import { SIMULATION_HZ } from '../shared/simulation';
 import {
   hashTrack,
@@ -416,7 +421,7 @@ async function inspectSeed(rawSeed: string): Promise<void> {
     const seed = rawSeed.trim();
     if (!seed || seed.length > 96)
       throw new Error('Enter a seed containing 1–96 characters.');
-    await renderSelection(seed, generateCircuit(seed), run);
+    await renderSelection(seed, previewCircuit(seed), run);
   } catch (error) {
     if (run === selectedRun) showError(error);
   }
@@ -468,7 +473,9 @@ async function checkSelectedQuality(): Promise<void> {
     const { generateValidatedCircuit } =
       await import('../shared/circuit-quality');
     if (run !== selectedRun) return;
-    const result = generateValidatedCircuit(seed);
+    const result = elevated
+      ? generateElevatedCircuit(seed)
+      : generateValidatedCircuit(seed);
     if (run !== selectedRun) return;
     renderQualityMetrics(result);
     if (!result.quality.valid) {
@@ -499,6 +506,7 @@ async function checkSelectedQuality(): Promise<void> {
     const link = element('drive-selected');
     const destination = new URL('/game.html', window.location.href);
     destination.searchParams.set('seed', seed);
+    if (elevated) destination.searchParams.set('elevated', '1');
     link.setAttribute('href', destination.pathname + destination.search);
     link.hidden = false;
   } catch (error) {
@@ -559,7 +567,7 @@ async function generateGallery(): Promise<void> {
     if (run !== batchRun) return;
     const seed = `${prefix}-${index}`;
     try {
-      const result = generateCircuit(seed);
+      const result = previewCircuit(seed);
       if (result.diagnostics.fallbackUsed) fallbacks++;
       grid.append(createCard(seed, result));
     } catch (error) {

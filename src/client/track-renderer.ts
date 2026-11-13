@@ -25,7 +25,7 @@ export function buildRoadStripVertices(
       const lateral = (sample.width / 2) * edge.side + edge.offset;
       positions.push(
         sample.x - sample.tz * lateral,
-        elevation,
+        (sample.y ?? 0) + elevation,
         sample.z + sample.tx * lateral
       );
     }
@@ -214,6 +214,108 @@ export function createTrackRenderer(track: Track): THREE.Group {
   );
   group.add(kerbStrip(track, -1), kerbStrip(track, 1));
   addStartLine(group, track);
+  if (track.schemaVersion === 2) group.add(createRoadStructure(track));
+  return group;
+}
+
+/** Raised road fascia and pooled piers make the elevation readable without shadow maps. */
+function createRoadStructure(track: Track): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'raised-road-structure';
+  const positions: number[] = [],
+    indices: number[] = [];
+  const footings: { x: number; y: number; z: number; heading: number }[] = [];
+  for (let i = 0; i < track.samples.length; i++) {
+    const a = track.samples[i],
+      b = track.samples[(i + 1) % track.samples.length];
+    if (!a || !b || Math.max(a.y ?? 0, b.y ?? 0) < 0.14) continue;
+    for (const side of [-1, 1]) {
+      const base = positions.length / 3;
+      for (const sample of [a, b]) {
+        const lateral = side * (sample.width / 2 + 0.8);
+        const y = sample.y ?? 0;
+        for (const bottom of [false, true])
+          positions.push(
+            sample.x - sample.tz * lateral,
+            Math.max(0, y - (bottom ? 0.55 : 0.02)),
+            sample.z + sample.tx * lateral
+          );
+      }
+      indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+    }
+    if (i % 9 === 0 && (a.y ?? 0) > 0.6)
+      footings.push(
+        {
+          x: a.x - a.tz * (a.width / 2 + 0.3),
+          y: a.y ?? 0,
+          z: a.z + a.tx * (a.width / 2 + 0.3),
+          heading: Math.atan2(a.tx, a.tz),
+        },
+        {
+          x: a.x + a.tz * (a.width / 2 + 0.3),
+          y: a.y ?? 0,
+          z: a.z - a.tx * (a.width / 2 + 0.3),
+          heading: Math.atan2(a.tx, a.tz),
+        }
+      );
+  }
+  const fascia = new THREE.BufferGeometry();
+  fascia.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(positions, 3)
+  );
+  fascia.setIndex(indices);
+  fascia.computeVertexNormals();
+  group.add(
+    new THREE.Mesh(
+      fascia,
+      new THREE.MeshLambertMaterial({
+        color: '#a9b5b1',
+        side: THREE.DoubleSide,
+      })
+    )
+  );
+  const piers = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1, 1, 1),
+    new THREE.MeshLambertMaterial({ color: '#9aa6a0' }),
+    footings.length
+  );
+  piers.name = 'bridge-piers';
+  const dummy = new THREE.Object3D();
+  footings.forEach((p, i) => {
+    dummy.position.set(p.x, p.y / 2, p.z);
+    dummy.rotation.y = p.heading;
+    dummy.scale.set(0.65, Math.max(0.1, p.y - 0.2), 0.85);
+    dummy.updateMatrix();
+    piers.setMatrixAt(i, dummy.matrix);
+  });
+  group.add(piers);
+  // Small ground strips under raised sections anchor them and leave the asphalt legible.
+  const shadow = buildRoadStripVertices(
+    track,
+    { side: -1, offset: -1.1 },
+    { side: 1, offset: 1.1 },
+    0.002
+  );
+  const shadowIndices = shadow.indices.filter((_, index) => {
+    const sample = track.samples[Math.floor(index / 6)];
+    return (sample?.y ?? 0) > 0.18;
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(
+      shadow.positions.map((v, i) => (i % 3 === 1 ? 0.002 : v)),
+      3
+    )
+  );
+  geometry.setIndex(shadowIndices);
+  const mesh = new THREE.Mesh(
+    geometry,
+    new THREE.MeshBasicMaterial({ color: '#496b42', side: THREE.DoubleSide })
+  );
+  mesh.name = 'road-ground-shadow';
+  group.add(mesh);
   return group;
 }
 
@@ -245,7 +347,14 @@ export function createTrackDebugOverlay(track: Track): THREE.Group {
     const sample = track.samples[index];
     const next = track.samples[(index + 1) % track.samples.length];
     if (!sample || !next) continue;
-    centerline.push(sample.x, 0.15, sample.z, next.x, 0.15, next.z);
+    centerline.push(
+      sample.x,
+      (sample.y ?? 0) + 0.15,
+      sample.z,
+      next.x,
+      (next.y ?? 0) + 0.15,
+      next.z
+    );
     const lateral = sample.width / 2;
     const left = {
       x: sample.x + sample.tz * lateral,
@@ -255,7 +364,14 @@ export function createTrackDebugOverlay(track: Track): THREE.Group {
       x: sample.x - sample.tz * lateral,
       z: sample.z + sample.tx * lateral,
     };
-    curvature.push(left.x, 0.16, left.z, right.x, 0.16, right.z);
+    curvature.push(
+      left.x,
+      (sample.y ?? 0) + 0.16,
+      left.z,
+      right.x,
+      (sample.y ?? 0) + 0.16,
+      right.z
+    );
     const color = new THREE.Color().setHSL(
       0.16 * (1 - Math.abs(sample.curvature) / maxCurvature),
       0.9,
@@ -263,13 +379,20 @@ export function createTrackDebugOverlay(track: Track): THREE.Group {
     );
     curvatureColors.push(color.r, color.g, color.b, color.r, color.g, color.b);
     if (index % 8 === 0) {
-      widths.push(left.x, 0.18, left.z, right.x, 0.18, right.z);
+      widths.push(
+        left.x,
+        (sample.y ?? 0) + 0.18,
+        left.z,
+        right.x,
+        (sample.y ?? 0) + 0.18,
+        right.z
+      );
       normals.push(
         sample.x,
-        0.2,
+        (sample.y ?? 0) + 0.2,
         sample.z,
         sample.x - sample.tz * (lateral + 2),
-        0.2,
+        (sample.y ?? 0) + 0.2,
         sample.z + sample.tx * (lateral + 2)
       );
     }

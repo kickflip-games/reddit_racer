@@ -8,6 +8,7 @@ import {
   generateValidatedCircuit,
   type QualityAssessment,
 } from '../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../src/shared/elevated-generator.ts';
 import { SIMULATION_HZ } from '../src/shared/simulation.ts';
 import { hashTrack, sampleTrack, type Track } from '../src/shared/track.ts';
 
@@ -16,6 +17,7 @@ type Options = {
   prefix: string;
   report?: string;
   structural: boolean;
+  elevated: boolean;
 };
 type ReportResult = {
   track: Track;
@@ -31,11 +33,16 @@ function parseOptions(args: string[]): Options {
     count: 200,
     prefix: 'regression',
     structural: false,
+    elevated: false,
   };
   if (process.env.RACER_TRACK_REPORT)
     options.report = resolve(process.env.RACER_TRACK_REPORT);
   for (let index = 0; index < args.length; index++) {
     const argument = args[index];
+    if (argument === '--elevated') {
+      options.elevated = true;
+      continue;
+    }
     if (argument === '--structural') {
       options.structural = true;
       continue;
@@ -62,7 +69,11 @@ function parseOptions(args: string[]): Options {
   return options;
 }
 
-function generateForReport(seed: string, structural: boolean): ReportResult {
+function generateForReport(
+  seed: string,
+  structural: boolean,
+  elevated: boolean
+): ReportResult {
   if (structural)
     return {
       ...generateCircuit(seed),
@@ -71,7 +82,9 @@ function generateForReport(seed: string, structural: boolean): ReportResult {
       totalQualityAssessments: 0,
       qualityRejections: [],
     };
-  const result = generateValidatedCircuit(seed);
+  const result = elevated
+    ? generateElevatedCircuit(seed)
+    : generateValidatedCircuit(seed);
   if (!result.quality.valid || !result.quality.metrics)
     throw new Error(`Unapproved circuit returned for ${seed}`);
   return {
@@ -107,7 +120,11 @@ async function main(): Promise<void> {
   for (let index = 0; index < options.count; index++) {
     const seed = `${options.prefix}-${index}`;
     try {
-      const generated = generateForReport(seed, options.structural);
+      const generated = generateForReport(
+        seed,
+        options.structural,
+        options.elevated
+      );
       const curvatureSignature = Array.from(
         { length: 64 },
         (_, bin) =>
@@ -159,10 +176,18 @@ async function main(): Promise<void> {
   );
   const seconds = (values: (number | null)[]) =>
     distribution(values.filter((value): value is number => value !== null));
+  const varietyPassed =
+    !options.elevated ||
+    options.count < 20 ||
+    (fallbackCount <= options.count * 0.05 &&
+      new Set(records.map((record) => record.curvatureSignature)).size >=
+        options.count * 0.95);
   const summary = {
+    varietyPassed,
     scope: options.structural
       ? 'Structural geometry only.'
       : 'Structural geometry and authoritative simulation quality.',
+    profile: options.elevated ? 'flow-loop-v2' : 'motif-loop-v1',
     prefix: options.prefix,
     count: options.count,
     acceptedCount: records.length,
@@ -206,7 +231,11 @@ async function main(): Promise<void> {
     );
     console.log(`Saved report: ${options.report}`);
   }
-  if (failures.length) process.exitCode = 1;
+  if (!varietyPassed)
+    console.error(
+      'Elevated cohort failed variety limits: at most 5% reserves and at least 95% distinct curvature profiles.'
+    );
+  if (failures.length || !varietyPassed) process.exitCode = 1;
 }
 
 await main();

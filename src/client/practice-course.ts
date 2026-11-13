@@ -71,15 +71,15 @@ export function createPracticeCourseGenerator(
         'Practice track seeds must contain 1–96 characters.'
       );
     // Heavy generator/controller search code is downloaded only when choosing practice.
-    const { generateValidatedCircuit } =
-      await import('../shared/circuit-quality');
+    const { generateElevatedCircuit } =
+      await import('../shared/elevated-generator');
     for (
       let attempt = 0;
       attempt < (explicit ? 1 : maximumAttempts);
       attempt++
     ) {
       const selectedSeed = seed ?? freshSeed();
-      const result = generateValidatedCircuit(selectedSeed);
+      const result = generateElevatedCircuit(selectedSeed);
       if (!result.quality.valid)
         throw new Error(
           'This practice course did not pass the driving checks.'

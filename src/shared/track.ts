@@ -8,12 +8,16 @@ export type TrackSample = {
   curvature: number;
   /** Full road width in metres at this cross-section. */
   width: number;
+  /** Schema 2: elevation and its authored derivatives along horizontal metres. */
+  y?: number;
+  grade?: number;
+  verticalCurvature?: number;
 };
 
 export type TrackCheckpoint = { id: string; s: number };
 
 export type Track = {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   generatorVersion: string;
   seed: string;
   totalLength: number;
@@ -56,7 +60,10 @@ function record(value: unknown): value is Record<string, unknown> {
 /** Parse untrusted JSON into fresh canonical data, then validate its geometry. */
 export function parseTrack(value: unknown): Track {
   if (!record(value)) throw new Error('Track must be an object');
-  if (value.schemaVersion !== 1 || value.startS !== 0) {
+  if (
+    (value.schemaVersion !== 1 && value.schemaVersion !== 2) ||
+    value.startS !== 0
+  ) {
     throw new Error('Unsupported track schema or start distance');
   }
   if (!Array.isArray(value.samples) || !Array.isArray(value.checkpoints)) {
@@ -75,6 +82,16 @@ export function parseTrack(value: unknown): Track {
       tz: finite(sample.tz, 'sample.tz'),
       curvature: finite(sample.curvature, 'sample.curvature'),
       width: finite(sample.width, 'sample.width'),
+      ...(value.schemaVersion === 2
+        ? {
+            y: finite(sample.y, 'sample.y'),
+            grade: finite(sample.grade, 'sample.grade'),
+            verticalCurvature: finite(
+              sample.verticalCurvature,
+              'sample.verticalCurvature'
+            ),
+          }
+        : {}),
     };
   });
   const checkpoints = value.checkpoints.map(
@@ -87,7 +104,7 @@ export function parseTrack(value: unknown): Track {
     }
   );
   const track: Track = {
-    schemaVersion: 1,
+    schemaVersion: value.schemaVersion,
     generatorVersion: text(value.generatorVersion, 'generatorVersion'),
     seed: text(value.seed, 'seed'),
     totalLength: finite(value.totalLength, 'totalLength'),
@@ -101,7 +118,10 @@ export function parseTrack(value: unknown): Track {
 
 /** Structural/metric guards. Global self-clearance and playability are #7 gates. */
 export function validateTrack(track: Track): void {
-  if (track.schemaVersion !== 1 || track.startS !== 0) {
+  if (
+    (track.schemaVersion !== 1 && track.schemaVersion !== 2) ||
+    track.startS !== 0
+  ) {
     throw new Error('Unsupported track schema or start distance');
   }
   text(track.generatorVersion, 'generatorVersion');
@@ -143,6 +163,18 @@ export function validateTrack(track: Track): void {
     }
     if (sample.width < 1 || sample.width > 100)
       throw new Error('Road width must be 1–100 metres');
+    if (track.schemaVersion === 2) {
+      const y = finite(sample.y, 'sample.y');
+      const grade = finite(sample.grade, 'sample.grade');
+      const bend = finite(sample.verticalCurvature, 'sample.verticalCurvature');
+      if (y < 0 || y > 8 || Math.abs(grade) > 0.5 || Math.abs(bend) > 0.09)
+        throw new Error('Road elevation exceeds safe bounds');
+      if (
+        (sample.s < 20 || sample.s > track.totalLength - 20) &&
+        (y !== 0 || grade !== 0 || bend !== 0)
+      )
+        throw new Error('Elevated courses require a flat standing start');
+    }
     if (
       sample.s < 0 ||
       sample.s >= track.totalLength ||
@@ -159,6 +191,15 @@ export function validateTrack(track: Track): void {
     const chord = Math.hypot(next.x - sample.x, next.z - sample.z);
     if (chord < 0.001)
       throw new Error('Duplicate or near-duplicate track point');
+    if (track.schemaVersion === 2) {
+      const slope =
+        (finite(next.y, 'next.y') - finite(sample.y, 'sample.y')) / chord;
+      if (
+        Math.abs(slope) > 0.5 ||
+        Math.abs(slope - ((sample.grade ?? 0) + (next.grade ?? 0)) / 2) > 0.004
+      )
+        throw new Error('Elevation derivatives disagree with road geometry');
+    }
     if (index < track.samples.length - 1 && next.s <= sample.s) {
       throw new Error('Sample distances must be strictly increasing');
     }
@@ -242,6 +283,16 @@ export function sampleTrack(track: Track, distance: number): TrackFrame {
     nx,
     nz,
     halfWidth,
+    ...(track.schemaVersion === 2
+      ? {
+          y: mix(current.y ?? 0, next.y ?? 0),
+          grade: mix(current.grade ?? 0, next.grade ?? 0),
+          verticalCurvature: mix(
+            current.verticalCurvature ?? 0,
+            next.verticalCurvature ?? 0
+          ),
+        }
+      : {}),
   };
 }
 
@@ -266,15 +317,18 @@ export function serializeTrack(track: Track): string {
     seed: track.seed,
     totalLength: track.totalLength,
     startS: track.startS,
-    samples: track.samples.map(({ x, z, s, tx, tz, curvature, width }) => ({
-      x,
-      z,
-      s,
-      tx,
-      tz,
-      curvature,
-      width,
-    })),
+    samples: track.samples.map(
+      ({ x, z, s, tx, tz, curvature, width, y, grade, verticalCurvature }) => ({
+        x,
+        z,
+        s,
+        tx,
+        tz,
+        curvature,
+        width,
+        ...(track.schemaVersion === 2 ? { y, grade, verticalCurvature } : {}),
+      })
+    ),
     checkpoints: track.checkpoints.map(({ id, s }) => ({ id, s })),
   });
 }

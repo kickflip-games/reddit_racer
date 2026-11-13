@@ -1,6 +1,8 @@
 import { context, reddit, redis, type Post } from '@devvit/web/server';
-import { FALLBACK_CIRCUIT_SEED } from '../shared/circuit-generator';
-import { generateValidatedCircuit } from '../shared/circuit-quality';
+import {
+  generateElevatedCircuit,
+  ELEVATED_RESERVE_SEED,
+} from '../shared/elevated-generator';
 import { createDailyChallengeService } from './core/daily-challenges';
 
 /** Capture trusted request context; never accept a post ID or date from the browser. */
@@ -19,11 +21,8 @@ export function createDevvitDailyService(createdPost?: Post) {
         createdAtMs: post.createdAt.getTime(),
       };
     },
-    generate: (seed) => generateValidatedCircuit(seed),
+    generate: (seed) => generateElevatedCircuit(seed),
     reserve: () =>
-      generateValidatedCircuit(FALLBACK_CIRCUIT_SEED, {
-        generator: { maxAttempts: 1 },
-        maxQualityAttempts: 1,
-      }),
+      generateElevatedCircuit(ELEVATED_RESERVE_SEED, { maxAttempts: 1 }),
   });
 }

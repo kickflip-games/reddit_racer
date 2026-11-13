@@ -9,6 +9,7 @@ import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
+import { createCircuitTerrain } from './circuit-terrain';
 import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
 import { createFeedbackPreferences } from './feedback-preferences';
@@ -131,6 +132,7 @@ export function initializeGame(
   scene.add(sun);
 
   scene.add(createTrackRenderer(track));
+  if (track.schemaVersion === 2) scene.add(createCircuitTerrain(track));
 
   if (
     import.meta.env.DEV &&
@@ -442,7 +444,30 @@ export function initializeGame(
       : 0;
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
+    const height = THREE.MathUtils.lerp(
+      previous.vertical?.height ?? 0,
+      current.vertical?.height ?? 0,
+      alpha
+    );
+    const verticalVelocity = THREE.MathUtils.lerp(
+      previous.vertical?.velocity ?? 0,
+      current.vertical?.velocity ?? 0,
+      alpha
+    );
+    const surfaceHeight =
+      Math.abs(lateral) <= frame.width / 2 ? (frame.y ?? 0) : 0;
+    const roadPitch = current.vertical?.airborne
+      ? Math.atan2(verticalVelocity, Math.max(speed, 1))
+      : Math.atan(current.offRoad ? 0 : (frame.grade ?? 0));
+    raceRoot.dataset.airborne = String(current.vertical?.airborne ?? false);
+    raceRoot.dataset.carHeight = String(current.vertical?.height ?? 0);
+    raceRoot.dataset.roadHeight = String(frame.y ?? 0);
+    raceRoot.dataset.landings = String(current.vertical?.landings ?? 0);
+    raceRoot.dataset.trackSchema = String(track.schemaVersion);
     const carChanged = carVisual.update({
+      height,
+      surfaceHeight,
+      roadPitch,
       x: frame.x + frame.nx * lateral,
       z: frame.z + frame.nz * lateral,
       heading,
@@ -461,7 +486,7 @@ export function initializeGame(
     });
     if (viewportDirty) refreshCameraViewport();
     const cameraChanged = raceCamera.update(
-      { distance, lateralOffset: lateral, heading },
+      { distance, lateralOffset: lateral, heading, height },
       {
         mode:
           phase === 'countdown' || phase === 'racing' || phase === 'finished'
@@ -909,6 +934,7 @@ export function initializeGame(
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
     sceneAssets.dispose();
     scene.traverse((node) => {
+      if (node instanceof THREE.InstancedMesh) node.dispose();
       if (node instanceof THREE.Mesh || node instanceof THREE.LineSegments) {
         node.geometry.dispose();
         for (const material of Array.isArray(node.material)

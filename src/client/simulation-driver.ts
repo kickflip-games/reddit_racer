@@ -1,9 +1,8 @@
+import { runtimeForTrack } from '../shared/scored-runtime.ts';
 import type { Track } from '../shared/track.ts';
 import {
-  HANDLING_VERSION,
   MAX_SIMULATION_TICKS,
   SIMULATION_HZ,
-  SIMULATION_VERSION,
   type SimulationState,
 } from '../shared/simulation.ts';
 import { MAX_REPLAY_TRANSITIONS, type Replay } from '../shared/replay.ts';
@@ -72,8 +71,8 @@ export class SimulationDriver {
   get replay(): Replay {
     return {
       schemaVersion: 1,
-      simulationVersion: SIMULATION_VERSION,
-      handlingVersion: HANDLING_VERSION,
+      simulationVersion: runtimeForTrack(this.track).simulationVersion,
+      handlingVersion: runtimeForTrack(this.track).handlingVersion,
       transitions: this.transitions
         .filter((transition) => transition.tick < this.state.tick)
         .map((transition) => ({ ...transition })),

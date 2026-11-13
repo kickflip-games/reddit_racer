@@ -98,6 +98,16 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     'data-practice-laps',
     '0'
   );
+  expect(
+    Number(
+      await page.locator('#minimap-progress').getAttribute('aria-valuenow')
+    )
+  ).toBeGreaterThanOrEqual(99);
+  expect(
+    Number(
+      await page.locator('#minimap-completed').getAttribute('stroke-dashoffset')
+    )
+  ).toBeLessThan(0.01);
   const approachingSpeed = Number(await page.locator('#speed').textContent());
   await elapsed(page, epoch, first.time + 32);
   await expect(page.locator('#race')).toHaveAttribute(
@@ -112,6 +122,20 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     `Last ${(first.lapTicks / 120).toFixed(3).padStart(6, '0')}`
   );
   expect(Number(await page.locator('#timer').textContent())).toBeLessThan(0.06);
+  await expect(page.locator('#circuit-minimap')).toBeVisible();
+  await expect(page.locator('#minimap-progress')).toHaveAttribute(
+    'aria-valuenow',
+    '0'
+  );
+  await expect(page.locator('#minimap-progress')).toHaveAttribute(
+    'aria-valuetext',
+    'Lap 2, 0% complete'
+  );
+  expect(
+    Number(
+      await page.locator('#minimap-completed').getAttribute('stroke-dashoffset')
+    )
+  ).toBeGreaterThan(0.99);
   expect(Number(await page.locator('#speed').textContent())).toBeGreaterThan(
     approachingSpeed * 0.8
   );

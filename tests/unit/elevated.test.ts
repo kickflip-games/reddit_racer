@@ -357,3 +357,75 @@ void test('a frozen elevated daily replays every recorded grounded, airborne and
   assert.ok(actual.some((state) => state.vertical?.airborne));
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), raw.states);
 });
+
+void test('level off-road ground has zero vertical velocity even beside an incline', () => {
+  const state: SimulationState = {
+    ...createSimulationState(track),
+    distance: 30,
+    lateralOffset: 5,
+    speed: 5,
+    vertical: {
+      height: 0,
+      velocity: 0,
+      airborne: false,
+      landings: 0,
+      impact: 0,
+    },
+  };
+  const next = stepSimulation(track, state, true);
+  assert.equal(next.recovering, false);
+  assert.equal(next.offRoad, true);
+  assert.equal(next.vertical?.height, 0);
+  assert.equal(next.vertical?.velocity, 0);
+});
+
+void test('rejoining from below a raised deck recovers gradually instead of snapping onto its surface', () => {
+  const state: SimulationState = {
+    ...createSimulationState(track),
+    distance: 46,
+    lateralOffset: 3.51,
+    lateralVelocity: -8,
+    speed: 5,
+    vertical: {
+      height: 0,
+      velocity: 0,
+      airborne: false,
+      landings: 0,
+      impact: 0,
+    },
+  };
+  const underneath = stepSimulation(
+    track,
+    {
+      ...state,
+      vertical: {
+        height: 1,
+        velocity: -3,
+        airborne: true,
+        landings: 4,
+        impact: 0,
+      },
+    },
+    true
+  );
+  assert.equal(underneath.recovering, true);
+  assert.equal(underneath.vertical?.height, 1);
+  assert.equal(underneath.vertical?.landings, 4);
+  const next = stepSimulation(track, state, true);
+  assert.equal(next.recovering, true);
+  assert.equal(next.distance, state.distance);
+  assert.equal(next.recoveryCount, 1);
+  assert.equal(next.vertical?.height, 0);
+  const recovery = stepSimulation(track, next, true);
+  assert.ok(
+    (recovery.vertical?.height ?? 0) > 0 &&
+      (recovery.vertical?.height ?? 0) < 0.1
+  );
+  let landed = recovery;
+  for (let i = 1; i < 119; i++) landed = stepSimulation(track, landed, true);
+  assert.equal(landed.recovering, false);
+  assert.ok(
+    Math.abs((landed.vertical?.height ?? 0) - (sampleTrack(track, 46).y ?? 0)) <
+      0.000001
+  );
+});

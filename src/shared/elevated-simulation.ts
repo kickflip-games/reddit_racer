@@ -80,6 +80,8 @@ export function stepElevatedSimulation(
   const next = sampleTrack(track, distance);
   const nextOffRoad = Math.abs(lateralOffset) > q(next.halfWidth);
   const surfaceY = nextOffRoad ? 0 : (next.y ?? 0);
+  const surfaceVelocity = q(nextOffRoad ? 0 : (next.grade ?? 0) * speed);
+  const belowDeck = offRoad && !nextOffRoad && vertical.height < surfaceY - 0.3;
   let height = vertical.height;
   let velocity = vertical.velocity;
   let airborne = vertical.airborne;
@@ -104,18 +106,19 @@ export function stepElevatedSimulation(
     velocity = q(velocity - FLIGHT_GRAVITY / hz);
     const relativeVelocity =
       velocity - (nextOffRoad ? 0 : (next.grade ?? 0) * speed);
-    if (height <= surfaceY && relativeVelocity <= 0) {
+    if (!belowDeck && height <= surfaceY && relativeVelocity <= 0) {
       height = q(surfaceY);
       airborne = false;
-      velocity = q((next.grade ?? 0) * speed);
+      velocity = surfaceVelocity;
       landings++;
       impact = q(Math.min(1, Math.max(0, -relativeVelocity / 12)));
     }
   } else {
     height = q(surfaceY);
-    velocity = q((next.grade ?? 0) * speed);
+    velocity = surfaceVelocity;
   }
   const recover =
+    belowDeck ||
     Math.abs(lateralOffset) > halfWidth + handling.recoveryDistanceBeyondEdge ||
     (nextOffRoad && (next.y ?? 0) - height > 2);
   if (recover)
@@ -130,7 +133,13 @@ export function stepElevatedSimulation(
       recovering: true,
       recoveryTicksRemaining: handling.recoveryTicks - 1,
       recoveryCount: state.recoveryCount + 1,
-      vertical: { height, velocity: 0, airborne: false, landings, impact: 0 },
+      vertical: {
+        height: belowDeck ? vertical.height : height,
+        velocity: 0,
+        airborne: false,
+        landings,
+        impact: 0,
+      },
     };
   const finished = distance >= track.totalLength;
   return {

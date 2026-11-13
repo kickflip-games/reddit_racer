@@ -21,6 +21,7 @@ npm run lint
 npm run test:unit
 npm run test:e2e     # browser regression checks (install browsers below)
 npm run tracks:check # 200 fixed-seed geometry + driving quality checks
+npm run balance:check # explicit frozen 22-course controller/replay evaluation
 npm run check        # formatting, types, lint, units, 200-track quality, build
 ```
 
@@ -93,7 +94,7 @@ npm run tracks:check -- --structural # faster geometry-only inspection
 npm run tracks:check -- --report /tmp/racer-tracks.json
 ```
 
-See [procedural generation](docs/procedural-generation.md) for motifs and [track quality](docs/track-quality.md) for bounded controller checks, thresholds and reports.
+See [procedural generation](docs/procedural-generation.md) for motifs and [track quality](docs/track-quality.md) for bounded controller checks, thresholds and reports. The separate [frozen evaluation kit](docs/driving-evaluation.md) compares 22 saved geometries without regeneration and includes an intentionally blank human-observation sheet; it does not change the production game.
 
 ## Architecture
 

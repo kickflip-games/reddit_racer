@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/browser',
-  timeout: 120_000,
+  // Functional tests advance every rendered frame of complete laps. Shared CI
+  // SwiftShader throughput varies substantially; frame-rate evidence is separate.
+  timeout: process.env.CI ? 240_000 : 120_000,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,

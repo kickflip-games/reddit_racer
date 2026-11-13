@@ -85,4 +85,6 @@ Remaining limits: no physical iPhone/Android performance or human comfort test, 
 
 The final application source was captured/profiled at `f6a795920fe5db87bf48d04333d118c1bf4a0612`. `npm run check` and the separate 200-course elevated check pass. [PR #60](https://github.com/kickflip-games/reddit_racer/pull/60) carries the final browser and CI results before merge.
 
+The two-lap slot-grip browser case has a 180-second wall-clock budget for up to 85 simulated seconds rendered frame by frame. The initial CI attempt passed 159/160 browser cases; this case reached lap 2 at 34.225 seconds (first lap 40.725 seconds) before its former 120-second budget expired. Its two-lap, grip, input and error assertions remain intact; no retries or rendering shortcuts were added.
+
 `src/shared` and `src/server` are unchanged. Existing procedural roads, one-button handling, scored replay authority, personal bests and leaderboard integration remain in place.

@@ -5,6 +5,7 @@ import {
   type PracticeDriver,
 } from '../../src/client/practice-driver.ts';
 import { createSimulationDriver } from '../../src/client/simulation-driver.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { sampleTrack, type Track } from '../../src/shared/track.ts';
 import {
@@ -29,6 +30,7 @@ function finishCountdown(driver: PracticeDriver, start = 0): number {
 
 function physicalFields(state: Readonly<SimulationState>) {
   return {
+    vertical: state.vertical,
     speed: state.speed,
     lateralOffset: state.lateralOffset,
     lateralVelocity: state.lateralVelocity,
@@ -333,4 +335,13 @@ void test('dynamic-grip practice preserves continuous laps and resets at 30/60/1
   }
   assert.deepEqual(outcomes[0], outcomes[1]);
   assert.deepEqual(outcomes[1], outcomes[2]);
+});
+
+void test('elevated practice preserves authoritative vertical physics through the first lap and seam', () => {
+  const track = generateElevatedCircuit('flow-probe-21').track;
+  driveFirstLap(track);
+  assert.throws(
+    () => createPracticeDriver(track, [], { dynamicGrip: true }),
+    /flat practice course/
+  );
 });

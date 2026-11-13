@@ -9,11 +9,11 @@ import {
   createFlight,
   stepStuntSimulation,
 } from '../shared/stunt-simulation.ts';
+import { handlingForTrack } from '../shared/scored-runtime.ts';
 import type { GapJump } from '../shared/stunt-course.ts';
 import { sampleTrack, type Track } from '../shared/track.ts';
 import {
   createSimulationState,
-  HANDLING,
   MAX_SIMULATION_TICKS,
   quantizeSimulation,
   SIMULATION_HZ,
@@ -61,6 +61,7 @@ export class PracticeDriver {
     ).bank;
   }
   get elevation(): number {
+    if (this.physics.vertical) return this.physics.vertical.height;
     return (
       this.flight.height -
       (this.flight.airborne
@@ -69,10 +70,10 @@ export class PracticeDriver {
     );
   }
   get verticalVelocity(): number {
-    return this.flight.velocity;
+    return this.physics.vertical?.velocity ?? this.flight.velocity;
   }
   get airborne(): boolean {
-    return this.flight.airborne;
+    return this.physics.vertical?.airborne ?? this.flight.airborne;
   }
   private previous: SimulationState;
   private lastTimestamp: number | undefined;
@@ -90,6 +91,10 @@ export class PracticeDriver {
       zones?: readonly GripZone[];
     } = {}
   ) {
+    if (track.schemaVersion === 2 && (handling.dynamicGrip || jumps.length))
+      throw new Error(
+        'Prototype grip and gap rules require a flat practice course'
+      );
     validateGripZones(track, handling.zones ?? []);
     this.stepGrounded = handling.dynamicGrip
       ? (track, state, held) =>
@@ -98,7 +103,10 @@ export class PracticeDriver {
     this.race = prepareRace(track);
     // Every accepted game circuit is much longer than one tick's travel. Keep
     // seam work bounded to one crossing even for independently supplied tracks.
-    if (track.totalLength <= HANDLING.maximumSpeed / SIMULATION_HZ + 0.000002)
+    if (
+      track.totalLength <=
+      handlingForTrack(track).maximumSpeed / SIMULATION_HZ + 0.000002
+    )
       throw new Error('Practice circuit must exceed one fixed tick of travel');
     this.previous = this.race.simulation;
   }
@@ -152,7 +160,7 @@ export class PracticeDriver {
     if (!Number.isFinite(timestampMilliseconds))
       throw new Error('Invalid start time');
     this.race = startRace(prepareRace(this.track));
-    this.physics = createSimulationState();
+    this.physics = createSimulationState(this.track);
     this.flight = createFlight();
     this.previous = this.race.simulation;
     this.lastTimestamp = timestampMilliseconds;

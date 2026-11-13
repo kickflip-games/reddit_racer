@@ -620,11 +620,38 @@ export function initializeGame(
       : 0;
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
+    const elevation = current.vertical
+      ? THREE.MathUtils.lerp(
+          previous.vertical?.height ?? 0,
+          current.vertical.height,
+          alpha
+        )
+      : (practiceDriver?.elevation ?? 0);
+    const verticalVelocity = current.vertical
+      ? THREE.MathUtils.lerp(
+          previous.vertical?.velocity ?? 0,
+          current.vertical.velocity,
+          alpha
+        )
+      : (practiceDriver?.verticalVelocity ?? 0);
+    const airborne =
+      current.vertical?.airborne ?? practiceDriver?.airborne ?? false;
+    const surfaceHeight =
+      Math.abs(lateral) <= frame.halfWidth ? (frame.y ?? 0) : 0;
+    raceRoot.dataset.airborne = String(airborne);
+    raceRoot.dataset.carHeight = String(current.vertical?.height ?? elevation);
+    raceRoot.dataset.roadHeight = String(frame.y ?? 0);
+    raceRoot.dataset.landings = String(current.vertical?.landings ?? 0);
+    raceRoot.dataset.trackSchema = String(track.schemaVersion);
     const carChanged = carVisual.update({
-      elevation: practiceDriver?.elevation ?? 0,
+      elevation,
+      surfaceHeight,
       bank: practiceDriver?.airborne ? 0 : (practiceDriver?.roadBank ?? 0),
-      jumpPitch:
-        !reducedMotion && options.jumps?.length
+      jumpPitch: current.vertical
+        ? -(airborne
+            ? Math.atan2(verticalVelocity, Math.max(speed, 1))
+            : Math.atan(current.offRoad ? 0 : (frame.grade ?? 0)))
+        : !reducedMotion && options.jumps?.length
           ? practiceDriver?.airborne
             ? -Math.atan2(practiceDriver.verticalVelocity, Math.max(1, speed))
             : -Math.atan(
@@ -655,7 +682,7 @@ export function initializeGame(
         lateralOffset: lateral,
         heading,
         speed,
-        elevation: practiceDriver?.elevation ?? 0,
+        elevation,
       },
       {
         mode:
@@ -670,10 +697,10 @@ export function initializeGame(
     needsCameraReset = false;
     carVisual.getRearContacts(rearLeft, rearRight);
     const verticalSpan = camera.top - camera.bottom;
-    if (practiceDriver?.airborne) drivingVfx.reset();
+    if (!current.vertical && practiceDriver?.airborne) drivingVfx.reset();
     const effectsChanged = drivingVfx.update({
       state: current,
-      phase: practiceDriver?.airborne ? 'ready' : phase,
+      phase: !current.vertical && practiceDriver?.airborne ? 'ready' : phase,
       held: throttle,
       acceleration,
       rearLeft,
@@ -686,7 +713,7 @@ export function initializeGame(
     sceneDirty = sceneDirty || carChanged || cameraChanged || effectsChanged;
     audio.update({
       attemptId,
-      phase: practiceDriver?.airborne ? 'ready' : phase,
+      phase: !current.vertical && practiceDriver?.airborne ? 'ready' : phase,
       state: current,
       held: throttle,
       acceleration,

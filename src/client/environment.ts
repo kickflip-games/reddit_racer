@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import type { Track } from '../shared/track';
+import { circuitTerrainHeight } from './circuit-terrain';
 import { getTrackBounds } from './track-renderer';
 import type { SceneryPlacement } from './scenery';
 
@@ -43,7 +44,13 @@ export function createEnvironment(
     const noise =
       Math.sin(x * 0.071 + z * 0.031) * Math.cos(z * 0.083 - x * 0.016);
     const rise = Math.min(1, Math.max(0, (clearance - 14) / 18));
-    position.setY(i, -0.12 + Math.max(0, noise) * rise * 3.6);
+    position.setY(
+      i,
+      -0.12 +
+        (track.schemaVersion === 2
+          ? circuitTerrainHeight(track, x, z)
+          : Math.max(0, noise) * rise * 3.6)
+    );
     const color =
       palette[
         Math.abs(Math.floor(x / 18) + Math.floor(z / 21)) % palette.length
@@ -81,7 +88,7 @@ export function createEnvironment(
     const tree = placement.kind === 'treeSmall';
     dummy.position.set(
       placement.x + (tree ? 1.2 : 0.3),
-      -0.06,
+      circuitTerrainHeight(track, placement.x, placement.z) - 0.06,
       placement.z + (tree ? 1.5 : 0.3)
     );
     dummy.rotation.set(-Math.PI / 2, 0, -0.4);

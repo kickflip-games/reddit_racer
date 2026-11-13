@@ -4,6 +4,7 @@ import {
   createPracticeBestStore,
   practiceBestKey,
 } from '../../src/client/practice-best.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 void test('practice bests survive reload, preserve faster times and distinguish ties', () => {
   let raw: string | null = null;
@@ -58,4 +59,14 @@ void test('storage failures keep session bests and unknown versions are not over
   assert.equal(failed.best('blocked-fixture'), 1200);
   assert.equal(failed.persistent, false);
   assert.equal(createPracticeBestStore().best('blocked-fixture'), 1200);
+});
+
+void test('elevated personal bests identify the authoritative runtime without changing retained flat keys', () => {
+  const elevated = generateElevatedCircuit('flow-probe-21').track;
+  const key = practiceBestKey(elevated, {});
+  assert.match(key, /fixed-step-v3/);
+  assert.match(key, /arcade-v2/);
+  const flat = practiceBestKey(createOvalTrack(), {});
+  assert.match(flat, /fixed-step-v2/);
+  assert.match(flat, /arcade-v1/);
 });

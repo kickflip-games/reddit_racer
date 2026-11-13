@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { serializeTrack } from '../../src/shared/track.ts';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import { runReplay } from '../../src/shared/replay.ts';
 import {
   HOLD_REPLAY,
@@ -17,7 +18,17 @@ const generated = generateValidatedCircuit('showcase-3');
 const generatedReplay = generated.quality.fastReplay;
 if (!generatedReplay) throw new Error('Expected an approved generated replay');
 
+const elevated = generateElevatedCircuit('flow-probe-21');
+const elevatedReplay = elevated.quality.fastReplay;
+if (!elevatedReplay) throw new Error('Missing elevated fixture');
+
 for (const fixture of [
+  {
+    name: 'elevated jump',
+    replay: elevatedReplay,
+    ticks: elevatedReplay.endTick,
+    track: elevated.track,
+  },
   {
     name: 'hold only',
     replay: HOLD_REPLAY,

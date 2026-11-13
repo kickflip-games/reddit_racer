@@ -231,7 +231,7 @@ void test('malformed geometry fails before reaching sampling or persistence', ()
   );
   assert.throws(() => parseTrack({ ...track, samples: [{ x: 0 }] }), /finite/);
   assert.throws(
-    () => parseTrack({ ...track, schemaVersion: 2 }),
+    () => parseTrack({ ...track, schemaVersion: 3 }),
     /Unsupported/
   );
   assert.throws(

@@ -1,5 +1,5 @@
 import type { Track } from '../shared/track';
-import { HANDLING_VERSION, SIMULATION_VERSION } from '../shared/simulation';
+import { runtimeForTrack } from '../shared/scored-runtime';
 import { SLOT_HANDLING_VERSION, type GripZone } from '../shared/slot-grip';
 import type { GapJump } from '../shared/stunt-course';
 import { practiceTrackFingerprint } from './practice-course';
@@ -29,8 +29,10 @@ export function practiceBestKey(
 ): string {
   return JSON.stringify([
     practiceTrackFingerprint(track),
-    SIMULATION_VERSION,
-    options.dynamicGrip ? SLOT_HANDLING_VERSION : HANDLING_VERSION,
+    runtimeForTrack(track).simulationVersion,
+    options.dynamicGrip
+      ? SLOT_HANDLING_VERSION
+      : runtimeForTrack(track).handlingVersion,
     !!options.continuousPractice,
     options.jumps ?? [],
     options.gripZones ?? [],

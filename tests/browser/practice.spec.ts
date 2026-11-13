@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { createPracticeDriver } from '../../src/client/practice-driver.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import {
   createDailyChallengeRecord,
   dailyChallengeView,
@@ -16,7 +16,7 @@ import {
 } from './scene-ready.ts';
 
 const seed = 'practice-1';
-const generated = generateValidatedCircuit(seed);
+const generated = generateElevatedCircuit(seed);
 const tickMs = 1000 / 120;
 const control = createPracticeDriver(generated.track);
 control.start(0);

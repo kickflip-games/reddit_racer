@@ -103,7 +103,7 @@ export function createRaceCamera(track: Track): RaceCamera {
         points.push({
           x: road.x + road.nx * (road.halfWidth + 0.8) * side,
           z: road.z + road.nz * (road.halfWidth + 0.8) * side,
-          y: 0,
+          y: road.y ?? 0,
         });
     }
     for (const x of [-2.6, 2.6])

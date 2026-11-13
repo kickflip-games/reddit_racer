@@ -1,11 +1,6 @@
+import { handlingForTrack, runtimeForTrack } from './scored-runtime.ts';
 import { abandonRace, createRacingState, stepRace } from './race-rules.ts';
-import {
-  HANDLING,
-  HANDLING_VERSION,
-  MAX_SIMULATION_TICKS,
-  SIMULATION_HZ,
-  SIMULATION_VERSION,
-} from './simulation.ts';
+import { MAX_SIMULATION_TICKS, SIMULATION_HZ } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
 import { MAX_REPLAY_TRANSITIONS } from './replay.ts';
 import type { Replay, ReplayTransition } from './replay.ts';
@@ -28,6 +23,10 @@ export type BotRunSummary = {
   recoveryCount: number;
   lifts: number;
   meaningfulLifts: number;
+  airborneTicks?: number;
+  landings?: number;
+  maxAirHeight?: number;
+  airborneCornerTicks?: number;
 };
 export type BotRun = { summary: BotRunSummary; replay: Replay };
 export type ControllerWork = { controllerRuns: number; simulatedTicks: number };
@@ -70,6 +69,9 @@ function drive(
   let held = false,
     offRoadTicks = 0,
     recoveryTicks = 0;
+  let airborneTicks = 0,
+    maxAirHeight = 0,
+    airborneCornerTicks = 0;
   const transitions: ReplayTransition[] = [];
   while (
     race.phase === 'racing' &&
@@ -86,6 +88,15 @@ function drive(
     }
     const previous = race.simulation;
     race = stepRace(track, race, held);
+    if (race.simulation.vertical?.airborne) {
+      airborneTicks++;
+      const frame = sampleTrack(track, race.simulation.distance);
+      maxAirHeight = Math.max(
+        maxAirHeight,
+        race.simulation.vertical.height - (frame.y ?? 0)
+      );
+      if (Math.abs(frame.curvature) > 0.015) airborneCornerTicks++;
+    }
     if (race.simulation.offRoad) offRoadTicks++;
     if (previous.recovering || race.simulation.recovering) recoveryTicks++;
   }
@@ -106,11 +117,19 @@ function drive(
       recoveryCount: race.simulation.recoveryCount,
       lifts,
       meaningfulLifts,
+      ...(track.schemaVersion === 2
+        ? {
+            airborneTicks,
+            landings: race.simulation.vertical?.landings ?? 0,
+            maxAirHeight: Math.round(maxAirHeight * 1000) / 1000,
+            airborneCornerTicks,
+          }
+        : {}),
     },
     replay: {
       schemaVersion: 1,
-      simulationVersion: SIMULATION_VERSION,
-      handlingVersion: HANDLING_VERSION,
+      simulationVersion: runtimeForTrack(track).simulationVersion,
+      handlingVersion: runtimeForTrack(track).handlingVersion,
       transitions,
       endTick: race.simulation.tick,
     },
@@ -133,7 +152,9 @@ export function cautiousBot(track: Track, minimumLiftTicks = 12): BotRun {
             sampleTrack(track, state.distance + lookAhead * fraction).curvature
           )
         );
-      const targetSpeed = Math.sqrt((HANDLING.lateralGrip * 0.75) / curvature);
+      const targetSpeed = Math.sqrt(
+        (handlingForTrack(track).lateralGrip * 0.75) / curvature
+      );
       return held
         ? state.speed < targetSpeed + 0.25
         : state.speed < targetSpeed - 0.25;
@@ -149,7 +170,9 @@ export function brakingPeaks(track: Track): BrakingPeak[] {
       curvature: Math.abs(sample.curvature),
       index,
     }))
-    .filter((point) => point.curvature > 0.03)
+    .filter(
+      (point) => point.curvature > (track.schemaVersion === 2 ? 0.018 : 0.03)
+    )
     .sort((a, b) => b.curvature - a.curvature || a.index - b.index);
   const peaks: BrakingPeak[] = [];
   for (const point of ranked) {
@@ -192,7 +215,9 @@ function windowBot(
           continue;
         if (
           state.speed <=
-          Math.sqrt((HANDLING.lateralGrip * 0.9) / peak.curvature)
+          Math.sqrt(
+            (handlingForTrack(track).lateralGrip * 0.9) / peak.curvature
+          )
         )
           completed.add(index);
         else held = false;
@@ -220,7 +245,9 @@ export function searchDrivingInputs(
   for (let pass = 0; pass < SEARCH_PASSES; pass++) {
     for (let index = 0; index < peaks.length; index++) {
       let selected = widths[index] ?? 0;
-      for (const width of RELEASE_WINDOW_WIDTHS) {
+      for (const width of track.schemaVersion === 2
+        ? [14, 22, 30, 38]
+        : RELEASE_WINDOW_WIDTHS) {
         const trialWidths = [...widths];
         trialWidths[index] = width;
         const trial = windowBot(track, peaks, trialWidths, minimumLiftTicks);

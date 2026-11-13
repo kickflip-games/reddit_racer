@@ -8,6 +8,7 @@ export const CAR_VISUAL_SETTLE_EPSILON = 0.00001;
 export const CAR_VISUAL_FOOTPRINT = 2.3;
 export type CarVisualFrame = {
   elevation?: number;
+  surfaceHeight?: number;
   bank?: number;
   jumpPitch?: number;
   x: number;
@@ -290,10 +291,13 @@ export function createCarVisual(): CarVisual {
         changed = true;
       }
       // The shadow stays on the ground as the car rises into the air.
-      const altitude = Math.max(0, frame.elevation ?? 0);
+      const altitude = Math.max(
+        0,
+        (frame.elevation ?? 0) - (frame.surfaceHeight ?? 0)
+      );
       groundPosition.set(
         frame.x + altitude * 0.25,
-        0.038,
+        (frame.surfaceHeight ?? 0) + 0.038,
         frame.z + altitude * 0.18
       );
       groundRotation.setFromEuler(

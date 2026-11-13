@@ -32,9 +32,15 @@ export function calculateDrivingAudioTargets(
   frame: Readonly<DrivingAudioFrame>,
   audible: boolean
 ): DrivingAudioTargets {
-  const speed = bounded(frame.state.speed, 0, 22);
+  const speed = bounded(
+    frame.state.speed * (frame.state.vertical ? 22 / 30 : 1),
+    0,
+    22
+  );
   const acceleration = bounded(frame.acceleration, -10, 7);
-  const slip = bounded(frame.state.slip, 0, 1);
+  const slip = frame.state.vertical?.airborne
+    ? 0
+    : bounded(frame.state.slip, 0, 1);
   const active =
     audible &&
     frame.phase === 'racing' &&
@@ -47,7 +53,10 @@ export function calculateDrivingAudioTargets(
     squealHz: 1400 + slip * 1300,
     squealGain: active && speed > 3 ? Math.max(0, slip - 0.08) * 0.07 : 0,
     offRoadGain:
-      active && frame.state.offRoad && speed > 2
+      active &&
+      !frame.state.vertical?.airborne &&
+      frame.state.offRoad &&
+      speed > 2
         ? Math.min(0.05, speed * 0.003)
         : 0,
   };

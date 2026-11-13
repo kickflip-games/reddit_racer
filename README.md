@@ -2,6 +2,8 @@
 
 A bite-sized daily arcade racer for Reddit, built from the official Devvit Web / Three.js starter. Hold to accelerate, release to slow, and learn the fastest line around a shared daily circuit. The registered Devvit app remains `full-throttle-dev`.
 
+Practice tracks now generate varied elevated circuits, including a speed-dependent jump and rolling hills, with faster arcade handling. Practice laps continue automatically. Existing daily courses keep their original rules and records; newly created UTC days use the new generator. See [elevated circuits](docs/elevated-circuits.md) for local previews, validation and compatibility details.
+
 ## Development
 
 Use Node **24.22.2** (`nvm use` with the committed `.nvmrc`) and npm. Devvit executes backend code in its managed Node 22 environment; local tooling uses the pinned Node version.

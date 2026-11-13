@@ -1,6 +1,7 @@
 import { slotBrakingMarkers } from '../shared/slot-grip';
 import * as THREE from 'three';
-import { HANDLING } from '../shared/simulation';
+import { handlingForTrack } from '../shared/scored-runtime';
+import { circuitTerrainHeight } from './circuit-terrain';
 import { sampleTrack, type Track } from '../shared/track';
 import { CAR_VISUAL_FOOTPRINT } from './car-visual';
 import type { SceneryAssets, SceneryKind } from './scene-assets';
@@ -62,7 +63,7 @@ export function hasSceneryClearance(
     const distance = Math.hypot(x - a.x - dx * t, z - a.z - dz * t);
     const required =
       Math.max(a.width, b.width) / 2 +
-      HANDLING.recoveryDistanceBeyondEdge +
+      handlingForTrack(track).recoveryDistanceBeyondEdge +
       CAR_VISUAL_FOOTPRINT +
       radius +
       clearancePadding;
@@ -92,7 +93,7 @@ export function buildSceneryPlacements(track: Track): SceneryPlacement[] {
     const lateral =
       side *
       (frame.halfWidth +
-        HANDLING.recoveryDistanceBeyondEdge +
+        handlingForTrack(track).recoveryDistanceBeyondEdge +
         CAR_VISUAL_FOOTPRINT +
         radius +
         1.5 +
@@ -310,7 +311,12 @@ export function createScenery(track: Track): SceneryVisual {
         instances.name = `scenery-${kind}`;
         instances.instanceMatrix.setUsage(THREE.StaticDrawUsage);
         relevant.forEach((placement, index) => {
-          position.set(placement.x, SCENERY_GROUND_Y, placement.z);
+          position.set(
+            placement.x,
+            SCENERY_GROUND_Y +
+              circuitTerrainHeight(track, placement.x, placement.z),
+            placement.z
+          );
           // Barriers are authored along +X; align their long axis with the road.
           quaternion.setFromAxisAngle(
             up,

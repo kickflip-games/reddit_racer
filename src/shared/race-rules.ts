@@ -1,6 +1,7 @@
+import { handlingForTrack } from './scored-runtime.ts';
 import {
   createSimulationState,
-  HANDLING,
+  createVerticalState,
   MAX_SIMULATION_TICKS,
   quantizeSimulation,
   SIMULATION_HZ,
@@ -52,7 +53,11 @@ export function prepareRace(
   if (state.phase !== 'loading')
     throw new Error('Only a loading race can become ready');
   validateTrack(track);
-  return { ...createRaceState(), phase: 'ready' };
+  return {
+    ...createRaceState(),
+    simulation: createSimulationState(track),
+    phase: 'ready',
+  };
 }
 
 export function startRace(state: RaceState): RaceState {
@@ -60,6 +65,10 @@ export function startRace(state: RaceState): RaceState {
   return {
     ...createRaceState(),
     phase: 'countdown',
+    simulation: {
+      ...createSimulationState(),
+      ...(state.simulation.vertical ? { vertical: createVerticalState() } : {}),
+    },
     countdownTicksRemaining: COUNTDOWN_TICKS,
   };
 }
@@ -77,7 +86,24 @@ export function abandonRace(
   return { ...state, phase: 'abandoned', abandonReason: reason };
 }
 
-function validateSimulationFields(state: SimulationState): void {
+function validateSimulationFields(track: Track, state: SimulationState): void {
+  const HANDLING = handlingForTrack(track);
+  if (track.schemaVersion === 2) {
+    const v = state.vertical;
+    if (
+      !v ||
+      ![v.height, v.velocity, v.landings, v.impact].every(Number.isFinite) ||
+      v.height < -5 ||
+      v.height > 30 ||
+      Math.abs(v.velocity) > 40 ||
+      typeof v.airborne !== 'boolean' ||
+      !Number.isInteger(v.landings) ||
+      v.landings < 0 ||
+      v.impact < 0 ||
+      v.impact > 1
+    )
+      throw new Error('Invalid vertical racing state');
+  }
   for (const value of [
     state.tick,
     state.distance,
@@ -126,8 +152,9 @@ export function advanceLapProgress(
   previous: SimulationState,
   next: SimulationState
 ): LapProgress {
-  validateSimulationFields(previous);
-  validateSimulationFields(next);
+  const HANDLING = handlingForTrack(track);
+  validateSimulationFields(track, previous);
+  validateSimulationFields(track, next);
   if (
     previous.status !== 'running' ||
     previous.finishedTick !== null ||

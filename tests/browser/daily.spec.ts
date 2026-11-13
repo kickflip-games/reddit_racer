@@ -217,7 +217,7 @@ test('daily service failure offers explicitly labelled unranked reference practi
     'data-mode',
     'reference-fallback'
   );
-  await expect(page.locator('#card-copy')).toContainText('reference course');
+  await expect(page.locator('#card-copy')).toHaveText('Practice is available.');
   await expect(page.locator('#daily-details')).toBeHidden();
   await expect(page.locator('#start-button')).toBeEnabled();
   expect(

@@ -222,7 +222,7 @@ void test('decorative terrain stays beneath banked stunt asphalt on both mirrore
       jumps: course.jumps,
       gripZones: course.gripZones,
     });
-    for (let s = 142; s <= 182; s += 2) {
+    for (let s = 1; s < course.track.totalLength; s += 2) {
       const frame = sampleTrack(course.track, s),
         bank = gripSurfaceAt(course.track, course.gripZones, s).bank;
       for (const lateral of [-frame.halfWidth, 0, frame.halfWidth]) {

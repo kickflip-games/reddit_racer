@@ -16,7 +16,7 @@ import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
-import { generateSceneryLayout } from './scenery-layout';
+import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
 import {
   readSceneryOptions,
@@ -660,7 +660,7 @@ export function initializeGame(
       : 0;
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
-    const elevation = current.vertical
+    let elevation = current.vertical
       ? THREE.MathUtils.lerp(
           previous.vertical?.height ?? 0,
           current.vertical.height,
@@ -676,8 +676,31 @@ export function initializeGame(
       : (practiceDriver?.verticalVelocity ?? 0);
     const airborne =
       current.vertical?.airborne ?? practiceDriver?.airborne ?? false;
-    const surfaceHeight =
-      Math.abs(lateral) <= frame.halfWidth ? (frame.y ?? 0) : 0;
+    const worldX = frame.x + frame.nx * lateral,
+      worldZ = frame.z + frame.nz * lateral;
+    const ground = groundHeightAt(countryside.surface, worldX, worldZ);
+    const gap =
+      options.jumps?.some((j) => frame.s > j.takeoff && frame.s < j.landing) ??
+      false;
+    const deckHeight =
+      (frame.y ?? 0) +
+      jumpRoadHeight(options.jumps ?? [], frame.s) -
+      lateral * Math.tan(practiceDriver?.roadBank ?? 0);
+    const onDeck =
+      Math.abs(lateral) <= frame.halfWidth + (current.vertical ? 0 : 0.8) &&
+      !gap &&
+      elevation >= deckHeight - 0.2;
+    const surfaceHeight = onDeck ? deckHeight : ground;
+    // The unranked banked prototype has a visual floor below its raised deck.
+    // Match that floor outside the shoulder without changing its simulation.
+    if (!current.vertical && practiceDriver && !airborne && !onDeck) {
+      const blend = THREE.MathUtils.clamp(
+        (Math.abs(lateral) - frame.halfWidth - 0.8) / 2,
+        0,
+        1
+      );
+      elevation = THREE.MathUtils.lerp(elevation, ground + 0.03, blend);
+    }
     raceRoot.dataset.airborne = String(airborne);
     raceRoot.dataset.carHeight = String(current.vertical?.height ?? elevation);
     raceRoot.dataset.roadHeight = String(frame.y ?? 0);
@@ -686,7 +709,10 @@ export function initializeGame(
     const carChanged = carVisual.update({
       elevation,
       surfaceHeight,
-      bank: practiceDriver?.airborne ? 0 : (practiceDriver?.roadBank ?? 0),
+      bank:
+        !onDeck || practiceDriver?.airborne
+          ? 0
+          : (practiceDriver?.roadBank ?? 0),
       jumpPitch: current.vertical
         ? -(airborne
             ? Math.atan2(verticalVelocity, Math.max(speed, 1))

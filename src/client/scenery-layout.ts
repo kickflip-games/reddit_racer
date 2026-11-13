@@ -204,6 +204,8 @@ export function createGroundSurface(
           lateral * Math.tan(bank) * clamp((25 - nearest.clearance) / 10, 0, 1);
         if (Math.abs(bank) > 0.001)
           y -= 0.25 * clamp((5 - nearest.clearance) / 5, 0, 1);
+        // Keep entire coarse triangles below the bank transitions and return road.
+        if (nearest.clearance < 12) y = Math.min(y, -0.65);
       }
       heights[iz * (nx + 1) + ix] = y;
     }
@@ -357,12 +359,20 @@ export function generateSceneryLayout(
     if (tall || kind === 'bush' || kind === 'rock' || kind === 'fence') {
       for (let ix = cellX - 1; ix <= cellX + 1; ix++)
         for (let iz = cellZ - 1; iz <= cellZ + 1; iz++)
-          for (const other of occupied.get(`${ix},${iz}`) ?? [])
-            if (
-              Math.hypot(x - other.x, z - other.z) <
-              radius + other.radius + 0.2
-            )
-              return;
+          for (const other of occupied.get(`${ix},${iz}`) ?? []) {
+            const otherTall = other.kind === 'tree' || other.kind === 'blossom';
+            // Full crowns reserve road clearance; within a grove their canopies
+            // may overlap while trunks and the understory retain room.
+            const spacing =
+              tall && otherTall
+                ? (radius + other.radius) * 0.65
+                : tall || otherTall
+                  ? (tall ? 0.35 * scale : radius) +
+                    (otherTall ? 0.35 * other.scale : other.radius) +
+                    0.3
+                  : radius + other.radius + 0.2;
+            if (Math.hypot(x - other.x, z - other.z) < spacing) return;
+          }
     }
     const color = pick(
       kind === 'blossom'
@@ -421,7 +431,7 @@ export function generateSceneryLayout(
     const s = track.totalLength * ((i + 0.15 + random() * 0.7) / count),
       frame = sampleTrack(track, s);
     const side = random() < 0.5 ? -1 : 1,
-      offset = frame.halfWidth + 17 + random() * 14;
+      offset = frame.halfWidth + 13 + random() * 6;
     let kind = pick(regionKinds, random);
     if (Math.abs(frame.curvature) > 0.05)
       kind = side === -Math.sign(frame.curvature) ? 'grove' : 'meadow';

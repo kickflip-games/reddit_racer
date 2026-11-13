@@ -1,9 +1,10 @@
-import { slotBrakingMarkers } from '../shared/slot-grip';
 import * as THREE from 'three';
-import { handlingForTrack } from '../shared/scored-runtime';
-import { circuitTerrainHeight } from './circuit-terrain';
-import { sampleTrack, type Track } from '../shared/track';
-import { CAR_VISUAL_FOOTPRINT } from './car-visual';
+import type { Track } from '../shared/track';
+import {
+  generateSceneryLayout,
+  groundHeightAt,
+  type SceneryLayout,
+} from './scenery-layout';
 import type { SceneryAssets, SceneryKind } from './scene-assets';
 
 export const MAX_SCENERY_INSTANCES = 64;
@@ -15,6 +16,7 @@ export type SceneryPlacement = {
   z: number;
   heading: number;
   radius: number;
+  scale?: number;
 };
 export type SceneryVisual = {
   object: THREE.Group;
@@ -35,137 +37,20 @@ const footprints: Record<SceneryKind, number> = {
   pylon: 0.6,
   flagCheckersSmall: 1.1,
 };
-const clearancePadding = 0.35;
 
-/** Includes the closing segment and varying road widths, not only nearby samples. */
-export function hasSceneryClearance(
-  track: Track,
-  x: number,
-  z: number,
-  radius: number
-): boolean {
-  if (!Number.isFinite(x + z + radius) || radius < 0) return false;
-  for (let index = 0; index < track.samples.length; index++) {
-    const a = track.samples[index];
-    const b = track.samples[(index + 1) % track.samples.length];
-    if (!a || !b) return false;
-    const dx = b.x - a.x;
-    const dz = b.z - a.z;
-    const lengthSquared = dx * dx + dz * dz;
-    const t =
-      lengthSquared > 0
-        ? THREE.MathUtils.clamp(
-            ((x - a.x) * dx + (z - a.z) * dz) / lengthSquared,
-            0,
-            1
-          )
-        : 0;
-    const distance = Math.hypot(x - a.x - dx * t, z - a.z - dz * t);
-    const required =
-      Math.max(a.width, b.width) / 2 +
-      handlingForTrack(track).recoveryDistanceBeyondEdge +
-      CAR_VISUAL_FOOTPRINT +
-      radius +
-      clearancePadding;
-    if (distance < required) return false;
-  }
-  return track.samples.length > 0;
-}
-
-/** Purposeful tree groves and short fence runs; rejected positions stay empty. */
+/** Shared closed-road clearance remains the conservative rule for solid scenery. */
+export { sceneryClearance as hasSceneryClearance } from './scenery-layout';
 export function buildSceneryPlacements(track: Track): SceneryPlacement[] {
-  const placements: SceneryPlacement[] = [];
-  let candidates = 0;
-  function place(
-    kind: SceneryKind,
-    distance: number,
-    side: number,
-    along = 0,
-    extra = 0
-  ): void {
-    if (
-      ++candidates > MAX_SCENERY_CANDIDATES ||
-      placements.length >= MAX_SCENERY_INSTANCES
-    )
-      return;
-    const frame = sampleTrack(track, distance);
-    const radius = footprints[kind];
-    const lateral =
-      side *
-      (frame.halfWidth +
-        handlingForTrack(track).recoveryDistanceBeyondEdge +
-        CAR_VISUAL_FOOTPRINT +
-        radius +
-        1.5 +
-        extra);
-    const x = frame.x + frame.nx * lateral + frame.tx * along;
-    const z = frame.z + frame.nz * lateral + frame.tz * along;
-    if (!hasSceneryClearance(track, x, z, radius)) return;
-    if (
-      placements.some(
-        (other) =>
-          Math.hypot(x - other.x, z - other.z) < radius + other.radius + 0.45
-      )
-    )
-      return;
-    placements.push({
-      kind,
-      x,
-      z,
-      heading: Math.atan2(frame.tx, frame.tz),
-      radius,
-    });
-  }
-  let seedHash = 2166136261;
-  for (const character of track.seed)
-    seedHash = Math.imul(seedHash ^ character.charCodeAt(0), 16777619);
-  const shift = ((seedHash >>> 0) % 23) / 230;
-  const corners = slotBrakingMarkers(track).map((marker) => marker.cornerS);
-  const groveDistances = [
-    track.totalLength * 0.04,
-    ...corners,
-    ...Array.from(
-      { length: 8 },
-      (_, index) => track.totalLength * ((index / 8 + shift) % 1)
-    ),
-  ].slice(0, 12);
-  for (const [cluster, distance] of groveDistances.entries()) {
-    const bend = sampleTrack(track, distance).curvature;
-    const side =
-      Math.abs(bend) > 0.015 ? -Math.sign(bend) : cluster % 2 === 0 ? 1 : -1;
-    for (const [along, extra] of [
-      [-3, 0],
-      [0, 3.5],
-      [3, 0],
-    ]) {
-      if (along !== undefined && extra !== undefined)
-        place('treeSmall', distance, side, along, extra);
-    }
-  }
-  for (let section = 0; section < 3; section++) {
-    const distance =
-      corners[section] ?? track.totalLength * (0.16 + section * 0.29);
-    const side = section % 2 === 0 ? -1 : 1;
-    for (let fence = 0; fence < 4; fence++)
-      place(
-        fence % 2 === 0 ? 'barrierRed' : 'barrierWhite',
-        distance,
-        side,
-        fence * 1.65 - 2.475
-      );
-  }
-  for (const side of [-1, 1]) {
-    place('flagCheckersSmall', 0, side);
-    place('pylon', 5, side, 0, 1);
-    place('pylon', 9, side, 0, 1);
-  }
-  return placements;
+  return generateSceneryLayout(track).props;
 }
 
-export function createScenery(track: Track): SceneryVisual {
+export function createScenery(
+  track: Track,
+  layout: SceneryLayout = generateSceneryLayout(track)
+): SceneryVisual {
   const object = new THREE.Group();
   object.name = 'track-scenery';
-  const placements = buildSceneryPlacements(track);
+  const placements = layout.props;
   const ownedGeometries = new Set<THREE.BufferGeometry>();
   const ownedMaterials = new Set<THREE.Material>();
   const themedMaterials = new Map<THREE.Material, THREE.Material>();
@@ -313,8 +198,7 @@ export function createScenery(track: Track): SceneryVisual {
         relevant.forEach((placement, index) => {
           position.set(
             placement.x,
-            SCENERY_GROUND_Y +
-              circuitTerrainHeight(track, placement.x, placement.z),
+            groundHeightAt(layout.surface, placement.x, placement.z) + 0.01,
             placement.z
           );
           // Barriers are authored along +X; align their long axis with the road.
@@ -325,6 +209,7 @@ export function createScenery(track: Track): SceneryVisual {
                 ? Math.PI / 2
                 : 0)
           );
+          uniformScale.setScalar(scale * (placement.scale ?? 1));
           placementMatrix.compose(position, quaternion, uniformScale);
           matrix
             .copy(placementMatrix)

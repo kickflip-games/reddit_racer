@@ -15,7 +15,10 @@ import { createPracticeDriver } from './practice-driver';
 import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
-import { createScenery, buildSceneryPlacements } from './scenery';
+import { createScenery } from './scenery';
+import { generateSceneryLayout } from './scenery-layout';
+import { createVegetation } from './vegetation';
+import { readSceneryOptions } from './scenery-options';
 import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
@@ -235,7 +238,13 @@ export function initializeGame(
   // The uniformly lit field receives no shadows; match it with the clear color
   // to avoid a redundant full-screen ground draw on every racing frame.
   scene.background = new THREE.Color('#a5b18d');
-  scene.add(createEnvironment(track, buildSceneryPlacements(track)));
+  const countryside = generateSceneryLayout(track, {
+    ...readSceneryOptions(),
+    jumps: options.jumps ?? [],
+  });
+  scene.add(createEnvironment(track, countryside.props, countryside));
+  const vegetation = createVegetation(countryside);
+  scene.add(vegetation.object);
   const raceCamera = createRaceCamera(track);
   const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
@@ -287,7 +296,7 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
-  const scenery = createScenery(track);
+  const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: options.dynamicGrip ?? false,
   });
@@ -297,6 +306,9 @@ export function initializeGame(
   raceRoot.dataset.carArt = 'fallback';
   raceRoot.dataset.carLoad = 'loading';
   raceRoot.dataset.sceneryArt = 'fallback';
+  raceRoot.dataset.sceneryVersion = countryside.version;
+  raceRoot.dataset.vegetationCount = String(countryside.plants.length);
+  raceRoot.dataset.sceneryCandidates = String(countryside.work.candidates);
 
   let racing = false;
   let preparing = false;
@@ -1135,6 +1147,13 @@ export function initializeGame(
     sceneDirty = applyPendingAssets() || sceneDirty;
     feedback();
     positionCar(deltaSeconds);
+    sceneDirty =
+      vegetation.update(
+        time / 1000,
+        carVisual.object.position,
+        preferences.snapshot.reducedMotion,
+        driver.active
+      ) || sceneDirty;
     // Preserve every scored/countdown frame; only settled inactive draws stop.
     renderScene(driver.active);
     frameHandle = requestAnimationFrame(animate);
@@ -1158,6 +1177,7 @@ export function initializeGame(
     drivingVfx.dispose();
     carVisual.dispose();
     scenery.dispose();
+    vegetation.dispose();
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
     sceneAssets.dispose();
     scene.traverse((node) => {

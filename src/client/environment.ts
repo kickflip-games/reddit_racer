@@ -1,61 +1,63 @@
 import * as THREE from 'three';
 import type { Track } from '../shared/track';
-import { circuitTerrainHeight } from './circuit-terrain';
-import { getTrackBounds } from './track-renderer';
 import type { SceneryPlacement } from './scenery';
+import {
+  generateSceneryLayout,
+  groundHeightAt,
+  regionTint,
+  createRoadField,
+  sceneryHash,
+  type SceneryLayout,
+} from './scenery-layout';
 
 /** Bounded diorama terrain: road/runoff remains flat; only distant ground rises. */
 export function createEnvironment(
   track: Track,
-  placements: readonly SceneryPlacement[]
+  placements: readonly SceneryPlacement[],
+  layout: SceneryLayout = generateSceneryLayout(track)
 ): THREE.Group {
   const group = new THREE.Group();
   group.name = 'race-environment';
-  const bounds = getTrackBounds(track, 65);
-  const width = bounds.maxX - bounds.minX,
-    depth = bounds.maxZ - bounds.minZ;
+  const surface = layout.surface;
   const geometry = new THREE.PlaneGeometry(
-    width,
-    depth,
-    Math.min(64, Math.ceil(width / 5)),
-    Math.min(64, Math.ceil(depth / 5))
+    surface.width,
+    surface.depth,
+    surface.nx,
+    surface.nz
   );
   geometry.rotateX(-Math.PI / 2);
   geometry.translate(
-    (bounds.minX + bounds.maxX) / 2,
+    surface.minX + surface.width / 2,
     0,
-    (bounds.minZ + bounds.maxZ) / 2
+    surface.minZ + surface.depth / 2
   );
   const position = geometry.getAttribute('position'),
     colors: number[] = [];
-  const palette = ['#94a17b', '#9ca982', '#8b9b75', '#a4af89'].map(
-    (c) => new THREE.Color(c)
-  );
-  const roads = track.samples.filter((_, i) => i % 6 === 0);
+  const field = createRoadField(track),
+    phase = (sceneryHash(layout.seed) / 4294967296) * Math.PI * 2;
+  const base = new THREE.Color('#829e68'),
+    light = new THREE.Color('#a6b87f'),
+    dark = new THREE.Color('#65885d'),
+    soil = new THREE.Color('#b6a27b');
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i),
       z = position.getZ(i);
-    let clearance = Infinity;
-    for (const road of roads)
-      clearance = Math.min(
-        clearance,
-        Math.hypot(x - road.x, z - road.z) - road.width / 2
-      );
+    position.setY(i, surface.heights[i] ?? -0.12);
     const noise =
-      Math.sin(x * 0.071 + z * 0.031) * Math.cos(z * 0.083 - x * 0.016);
-    const rise = Math.min(1, Math.max(0, (clearance - 14) / 18));
-    position.setY(
-      i,
-      -0.12 +
-        (track.schemaVersion === 2
-          ? circuitTerrainHeight(track, x, z)
-          : Math.max(0, noise) * rise * 3.6)
-    );
-    const color =
-      palette[
-        Math.abs(Math.floor(x / 18) + Math.floor(z / 21)) % palette.length
-      ] ?? palette[0];
-    if (color) colors.push(color.r, color.g, color.b);
+      Math.sin(x * 0.031 + phase) * Math.cos(z * 0.037 - phase) * 0.5 + 0.5;
+    const patch = regionTint(layout, x, z),
+      road = field.sample(x, z);
+    const color = base.clone().lerp(light, noise * 0.35);
+    if (
+      patch.kind === 'grove' ||
+      patch.kind === 'woodland' ||
+      patch.kind === 'hedge'
+    )
+      color.lerp(dark, patch.weight * 0.65);
+    else color.lerp(light, patch.weight * 0.4);
+    if (road.clearance > 0.8 && road.clearance < 3.5)
+      color.lerp(soil, Math.max(0, Math.sin(road.s * 0.09 + phase)) * 0.5);
+    colors.push(color.r, color.g, color.b);
   }
   geometry.computeVertexNormals();
   // The sun and hemisphere are static. Bake their diffuse light into the ground
@@ -110,7 +112,7 @@ export function createEnvironment(
     const tree = placement.kind === 'treeSmall';
     dummy.position.set(
       placement.x + (tree ? 1.2 : 0.3),
-      circuitTerrainHeight(track, placement.x, placement.z) - 0.06,
+      groundHeightAt(surface, placement.x, placement.z) + 0.035,
       placement.z + (tree ? 1.5 : 0.3)
     );
     dummy.rotation.set(-Math.PI / 2, 0, -0.4);

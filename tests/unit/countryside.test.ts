@@ -12,8 +12,13 @@ import { createEnvironment } from '../../src/client/environment.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { generateCircuit } from '../../src/shared/circuit-generator.ts';
 import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
+import { gripSurfaceAt } from '../../src/shared/slot-grip.ts';
 import { createStuntCourse } from '../../src/shared/stunt-course.ts';
-import { serializeTrack, type Track } from '../../src/shared/track.ts';
+import {
+  serializeTrack,
+  sampleTrack,
+  type Track,
+} from '../../src/shared/track.ts';
 import {
   createSimulationState,
   stepSimulation,
@@ -185,6 +190,16 @@ void test('wind shares uniforms without changing instance transforms, stops for 
     assert.equal(material.uniforms.uMotion?.value, 1);
     assert.equal(material.uniforms.uTime?.value, 1);
     assert.deepEqual(first.instanceMatrix.array, matrix);
+    const fullCounts = batches.map((b) => b.count);
+    const visible = vegetation.setDetail('light', false);
+    assert.ok(visible < layout.plants.length);
+    assert.ok(batches.some((b, i) => b.count < (fullCounts[i] ?? 0)));
+    assert.deepEqual(first.instanceMatrix.array, matrix);
+    vegetation.setDetail('standard', true);
+    assert.deepEqual(
+      batches.map((b) => b.count),
+      fullCounts
+    );
     vegetation.update(2, new THREE.Vector3(), true, true);
     assert.equal(material.uniforms.uMotion?.value, 0);
     assert.equal(vegetation.update(3, new THREE.Vector3(), true, false), false);
@@ -197,5 +212,28 @@ void test('wind shares uniforms without changing instance transforms, stops for 
     vegetation.dispose();
     for (const r of resources) assert.equal(disposed.get(r), 1);
     assert.equal(vegetation.object.children.length, 0);
+  }
+});
+
+void test('decorative terrain stays beneath banked stunt asphalt on both mirrored layouts', () => {
+  for (const mirrored of [false, true]) {
+    const course = createStuntCourse(mirrored);
+    const layout = generateSceneryLayout(course.track, {
+      jumps: course.jumps,
+      gripZones: course.gripZones,
+    });
+    for (let s = 142; s <= 182; s += 2) {
+      const frame = sampleTrack(course.track, s),
+        bank = gripSurfaceAt(course.track, course.gripZones, s).bank;
+      for (const lateral of [-frame.halfWidth, 0, frame.halfWidth]) {
+        const x = frame.x + frame.nx * lateral,
+          z = frame.z + frame.nz * lateral;
+        assert.ok(
+          groundHeightAt(layout.surface, x, z) <
+            -lateral * Math.tan(bank) + 0.025,
+          `${s} / ${lateral}`
+        );
+      }
+    }
   }
 });

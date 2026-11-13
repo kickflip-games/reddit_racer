@@ -2,13 +2,14 @@ import * as THREE from 'three';
 import type { Track } from '../shared/track';
 import {
   generateSceneryLayout,
+  SCENERY_LIMITS,
   groundHeightAt,
   type SceneryLayout,
 } from './scenery-layout';
 import type { SceneryAssets, SceneryKind } from './scene-assets';
 
 export const MAX_SCENERY_INSTANCES = 64;
-export const MAX_SCENERY_CANDIDATES = 300;
+export const MAX_SCENERY_CANDIDATES = SCENERY_LIMITS.candidates;
 export const SCENERY_GROUND_Y = -0.045;
 export type SceneryPlacement = {
   kind: SceneryKind;

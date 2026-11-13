@@ -18,7 +18,12 @@ import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
 import { generateSceneryLayout } from './scenery-layout';
 import { createVegetation } from './vegetation';
-import { readSceneryOptions } from './scenery-options';
+import {
+  readSceneryOptions,
+  readSceneryPreference,
+  saveSceneryPreference,
+} from './scenery-options';
+import { getGameRenderer, releaseGameScene } from './game-renderer';
 import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
@@ -241,6 +246,7 @@ export function initializeGame(
   const countryside = generateSceneryLayout(track, {
     ...readSceneryOptions(),
     jumps: options.jumps ?? [],
+    gripZones: options.gripZones ?? [],
   });
   scene.add(createEnvironment(track, countryside.props, countryside));
   const vegetation = createVegetation(countryside);
@@ -249,11 +255,7 @@ export function initializeGame(
   const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
   try {
-    renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: false,
-    });
+    renderer = getGameRenderer(canvas);
   } catch (error) {
     throw new Error(
       'Your browser could not start the 3D race. Please try a browser with WebGL enabled.',
@@ -338,6 +340,32 @@ export function initializeGame(
   let previousFrameTime: number | undefined;
   let sceneReady = false;
   let sceneDirty = true;
+  const sceneryDetail = element('scenery-detail');
+  if (!(sceneryDetail instanceof HTMLSelectElement))
+    throw new Error('Missing scenery detail');
+  sceneryDetail.value = readSceneryPreference();
+  sceneryDetail.addEventListener(
+    'change',
+    () => {
+      const preference =
+        sceneryDetail.value === 'light'
+          ? 'light'
+          : sceneryDetail.value === 'standard'
+            ? 'standard'
+            : 'auto';
+      saveSceneryPreference(preference);
+      const settings = readSceneryOptions(preference, true);
+      raceRoot.dataset.vegetationCount = String(
+        vegetation.setDetail(
+          settings.quality ?? 'standard',
+          settings.wind ?? true
+        )
+      );
+      sceneDirty = true;
+    },
+    { signal: lifetime.signal }
+  );
+
   let renderViewport: RenderViewport | undefined;
   let viewportUsable = true;
   const preferences = createFeedbackPreferences();
@@ -1190,7 +1218,7 @@ export function initializeGame(
           material.dispose();
       }
     });
-    renderer.dispose();
+    releaseGameScene(renderer);
     document.getElementById('track-debug')?.remove();
   }
   window.addEventListener(

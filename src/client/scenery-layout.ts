@@ -5,6 +5,7 @@ import { circuitTerrainHeight } from './circuit-terrain';
 import { getTrackBounds } from './track-renderer';
 import type { SceneryKind } from './scene-assets';
 import type { GapJump } from '../shared/stunt-course';
+import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
 
 export const SCENERY_VERSION = 'spring-countryside-v1';
 export const SCENERY_LIMITS = Object.freeze({
@@ -17,7 +18,7 @@ export const SCENERY_LIMITS = Object.freeze({
 export type RegionKind =
   'grove' | 'meadow' | 'woodland' | 'grassland' | 'hedge' | 'clearing';
 export type PlantKind =
-  'blossom' | 'tree' | 'bush' | 'grass' | 'flower' | 'rock';
+  'blossom' | 'tree' | 'bush' | 'grass' | 'flower' | 'rock' | 'fence';
 export type SceneryOptions = {
   seed?: string;
   regions?: number;
@@ -27,6 +28,7 @@ export type SceneryOptions = {
   wind?: boolean;
   lighting?: 'soft' | 'toon';
   jumps?: readonly GapJump[];
+  gripZones?: readonly GripZone[];
 };
 export type Region = {
   id: number;
@@ -67,6 +69,7 @@ export type SceneryLayout = {
   seed: string;
   regions: Region[];
   plants: Plant[];
+  allPlants: Plant[];
   props: SceneryProp[];
   surface: GroundSurface;
   work: { candidates: number; accepted: number; segmentChecks: number };
@@ -176,21 +179,34 @@ export function sceneryClearance(
 }
 
 /** The exact same triangle interpolation grounds vegetation and the rendered mesh. */
-export function createGroundSurface(track: Track): GroundSurface {
+export function createGroundSurface(
+  track: Track,
+  zones: readonly GripZone[] = []
+): GroundSurface {
   const bounds = getTrackBounds(track, 65),
     width = bounds.maxX - bounds.minX,
     depth = bounds.maxZ - bounds.minZ;
   const nx = Math.min(64, Math.ceil(width / 4)),
     nz = Math.min(64, Math.ceil(depth / 4));
   const heights = new Float32Array((nx + 1) * (nz + 1));
+  const field = zones.length ? createRoadField(track) : null;
   for (let iz = 0; iz <= nz; iz++)
-    for (let ix = 0; ix <= nx; ix++)
-      heights[iz * (nx + 1) + ix] =
-        circuitTerrainHeight(
-          track,
-          bounds.minX + (ix * width) / nx,
-          bounds.minZ + (iz * depth) / nz
-        ) - 0.12;
+    for (let ix = 0; ix <= nx; ix++) {
+      const x = bounds.minX + (ix * width) / nx,
+        z = bounds.minZ + (iz * depth) / nz;
+      let y = circuitTerrainHeight(track, x, z) - 0.12;
+      if (field) {
+        const nearest = field.sample(x, z),
+          frame = sampleTrack(track, nearest.s);
+        const bank = gripSurfaceAt(track, zones, nearest.s).bank;
+        const lateral = (x - frame.x) * frame.nx + (z - frame.z) * frame.nz;
+        y -=
+          lateral * Math.tan(bank) * clamp((25 - nearest.clearance) / 10, 0, 1);
+        if (Math.abs(bank) > 0.001)
+          y -= 0.25 * clamp((5 - nearest.clearance) / 5, 0, 1);
+      }
+      heights[iz * (nx + 1) + ix] = y;
+    }
   return {
     minX: bounds.minX,
     minZ: bounds.minZ,
@@ -267,7 +283,7 @@ export function generateSceneryLayout(
   const seed = `${track.seed}|${SCENERY_VERSION}|${options.seed ?? 'default'}`;
   const random = randomSource(seed),
     field = createRoadField(track),
-    surface = createGroundSurface(track);
+    surface = createGroundSurface(track, options.gripZones);
   const regions: Region[] = [],
     plants: Plant[] = [],
     props: SceneryProp[] = [];
@@ -283,7 +299,8 @@ export function generateSceneryLayout(
     x: number,
     z: number,
     region: number,
-    probability = 1
+    probability = 1,
+    heading?: number
   ): void {
     if (
       candidates >= SCENERY_LIMITS.candidates ||
@@ -301,8 +318,15 @@ export function generateSceneryLayout(
         ? 0.65 + random() * 0.65
         : 0.7 + random() * 0.7;
     const radius =
-      (tall ? 2.7 : kind === 'bush' ? 1.2 : kind === 'rock' ? 0.9 : 0.38) *
-      scale;
+      (tall
+        ? 2.7
+        : kind === 'bush'
+          ? 1.35
+          : kind === 'rock'
+            ? 0.9
+            : kind === 'fence'
+              ? 2
+              : 0.5) * scale;
     if (
       x - radius < surface.minX ||
       x + radius > surface.minX + surface.width ||
@@ -312,7 +336,7 @@ export function generateSceneryLayout(
       return;
     const road = field.sample(x, z);
     const required =
-      tall || kind === 'bush' || kind === 'rock'
+      tall || kind === 'bush' || kind === 'rock' || kind === 'fence'
         ? handlingForTrack(track).recoveryDistanceBeyondEdge +
           2.3 +
           radius +
@@ -330,7 +354,7 @@ export function generateSceneryLayout(
       return;
     const cellX = Math.floor(x / 8),
       cellZ = Math.floor(z / 8);
-    if (tall || kind === 'bush' || kind === 'rock') {
+    if (tall || kind === 'bush' || kind === 'rock' || kind === 'fence') {
       for (let ix = cellX - 1; ix <= cellX + 1; ix++)
         for (let iz = cellZ - 1; iz <= cellZ + 1; iz++)
           for (const other of occupied.get(`${ix},${iz}`) ?? [])
@@ -351,7 +375,9 @@ export function generateSceneryLayout(
               ? SPRING_PALETTE.bushes
               : kind === 'rock'
                 ? ['#a29d88', '#b7b09c']
-                : SPRING_PALETTE.grass,
+                : kind === 'fence'
+                  ? ['#af956d', '#bea47e']
+                  : SPRING_PALETTE.grass,
       random
     );
     const detail = random();
@@ -360,7 +386,7 @@ export function generateSceneryLayout(
       x,
       y: groundHeightAt(surface, x, z),
       z,
-      heading: random() * Math.PI * 2,
+      heading: heading ?? random() * Math.PI * 2,
       radius,
       scale,
       color,
@@ -370,7 +396,7 @@ export function generateSceneryLayout(
     };
     plants.push(item);
     if (tall) trees++;
-    if (tall || kind === 'bush' || kind === 'rock') {
+    if (tall || kind === 'bush' || kind === 'rock' || kind === 'fence') {
       const key = `${cellX},${cellZ}`;
       const bucket = occupied.get(key) ?? [];
       bucket.push(item);
@@ -522,20 +548,25 @@ export function generateSceneryLayout(
     prop('flagCheckersSmall', 0, side);
     prop('pylon', 5, side);
   }
-  for (const region of regions.filter((r) => r.kind === 'hedge').slice(0, 4)) {
-    const nearest = field.sample(region.x, region.z);
-    for (let j = 0; j < 4; j++)
-      prop(
-        j % 2 ? 'barrierWhite' : 'barrierRed',
-        nearest.s,
-        random() < 0.5 ? -1 : 1,
-        j * 1.9
+  for (const region of regions.filter((r) => r.kind === 'hedge').slice(0, 5)) {
+    for (let j = 0; j < 4; j++) {
+      const offset = (j - 1.5) * 4;
+      plant(
+        'fence',
+        region.x + Math.cos(region.heading) * offset,
+        region.z + Math.sin(region.heading) * offset,
+        region.id,
+        1,
+        -region.heading
       );
+    }
   }
+
   return {
     version: SCENERY_VERSION,
     seed,
     regions,
+    allPlants: plants,
     plants: light
       ? plants.filter(
           (p) => p.kind === 'tree' || p.kind === 'blossom' || p.detail < 0.35

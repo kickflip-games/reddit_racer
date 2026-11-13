@@ -9,6 +9,7 @@ import {
 
 export type VegetationVisual = {
   object: THREE.Group;
+  setDetail(quality: 'light' | 'standard', wind: boolean): number;
   update(
     time: number,
     focus: THREE.Vector3,
@@ -138,6 +139,21 @@ function makePlantGeometry(kind: PlantKind): THREE.BufferGeometry {
         (h) => h * 0.3
       );
     }
+  } else if (kind === 'fence') {
+    for (const x of [-1.25, 1.25])
+      add(
+        new THREE.BoxGeometry(0.15, 1.15, 0.15).translate(x, 0.575, 0),
+        '#ffffff',
+        1,
+        () => 0
+      );
+    for (const y of [0.4, 0.85])
+      add(
+        new THREE.BoxGeometry(2.8, 0.12, 0.12).translate(0, y, 0),
+        '#ffffff',
+        1,
+        () => 0
+      );
   } else if (kind === 'rock')
     add(
       new THREE.IcosahedronGeometry(0.8, 0)
@@ -199,7 +215,7 @@ function makePlantGeometry(kind: PlantKind): THREE.BufferGeometry {
   return merged;
 }
 
-/** Six reusable geometries, one material, static instance buffers and bounded spatial chunks. */
+/** Shared geometry/materials, static instance buffers and bounded spatial chunks. */
 export function createVegetation(layout: SceneryLayout): VegetationVisual {
   const object = new THREE.Group();
   object.name = 'spring-vegetation';
@@ -225,16 +241,19 @@ export function createVegetation(layout: SceneryLayout): VegetationVisual {
       .filter((p) => p.kind === 'treeSmall')
       .map((p) => `${p.x},${p.z}`)
   );
-  for (const plant of layout.plants) {
+  for (const plant of layout.allPlants) {
     if (borrowedTrees.has(`${plant.x},${plant.z}`)) continue;
     const key = `${Math.floor(plant.x / VEGETATION_CHUNK_SIZE)},${Math.floor(plant.z / VEGETATION_CHUNK_SIZE)},${plant.kind}`;
     const bucket = chunks.get(key) ?? [];
     bucket.push(plant);
     chunks.set(key, bucket);
   }
+  const details: { mesh: THREE.InstancedMesh; full: number; light: number }[] =
+    [];
   const dummy = new THREE.Object3D(),
     color = new THREE.Color();
   for (const [key, plants] of chunks) {
+    plants.sort((a, b) => a.detail - b.detail);
     const first = plants[0];
     if (!first) continue;
     let geometry = geometries.get(first.kind);
@@ -273,6 +292,13 @@ export function createVegetation(layout: SceneryLayout): VegetationVisual {
     });
     instances.computeBoundingSphere();
     if (instances.boundingSphere) instances.boundingSphere.radius += 0.5;
+    details.push({
+      mesh: instances,
+      full: plants.length,
+      light: plants.filter(
+        (p) => p.kind === 'tree' || p.kind === 'blossom' || p.detail < 0.35
+      ).length,
+    });
     object.add(instances);
   }
   const shadowGeometry = new THREE.CircleGeometry(1, 12).rotateX(-Math.PI / 2);
@@ -292,14 +318,22 @@ export function createVegetation(layout: SceneryLayout): VegetationVisual {
 }`,
   });
   const shadowChunks = new Map<string, Plant[]>();
-  for (const p of layout.plants)
-    if (p.kind === 'tree' || p.kind === 'blossom' || p.kind === 'bush') {
+  for (const p of layout.allPlants)
+    if (
+      !borrowedTrees.has(`${p.x},${p.z}`) &&
+      (p.kind === 'tree' || p.kind === 'blossom' || p.kind === 'bush')
+    ) {
       const key = `${Math.floor(p.x / VEGETATION_CHUNK_SIZE)},${Math.floor(p.z / VEGETATION_CHUNK_SIZE)}`;
       const bucket = shadowChunks.get(key) ?? [];
       bucket.push(p);
       shadowChunks.set(key, bucket);
     }
   for (const [key, plants] of shadowChunks) {
+    plants.sort(
+      (a, b) =>
+        (a.kind === 'bush' ? a.detail : -1) -
+        (b.kind === 'bush' ? b.detail : -1)
+    );
     const shadows = new THREE.InstancedMesh(
       shadowGeometry,
       shadowMaterial,
@@ -319,15 +353,34 @@ export function createVegetation(layout: SceneryLayout): VegetationVisual {
       shadows.setMatrixAt(i, dummy.matrix);
     });
     shadows.computeBoundingSphere();
+    details.push({
+      mesh: shadows,
+      full: plants.length,
+      light: plants.filter((p) => p.kind !== 'bush' || p.detail < 0.35).length,
+    });
     object.add(shadows);
   }
   let disposed = false,
     wasMoving = false;
+  let enabledWind = layout.options.wind;
+  function setDetail(quality: 'light' | 'standard', wind: boolean): number {
+    if (disposed) return 0;
+    for (const detail of details)
+      detail.mesh.count = quality === 'light' ? detail.light : detail.full;
+    enabledWind = wind;
+    return quality === 'light'
+      ? layout.allPlants.filter(
+          (p) => p.kind === 'tree' || p.kind === 'blossom' || p.detail < 0.35
+        ).length
+      : layout.allPlants.length;
+  }
+  setDetail(layout.options.quality, enabledWind);
   return {
     object,
+    setDetail,
     update(seconds, nextFocus, reduced, active) {
       if (disposed) return false;
-      const moving = active && !reduced && layout.options.wind;
+      const moving = active && !reduced && enabledWind;
       const changed = moving || moving !== wasMoving;
       motion.value = moving ? 1 : 0;
       if (moving) time.value = seconds % (Math.PI * 1000);

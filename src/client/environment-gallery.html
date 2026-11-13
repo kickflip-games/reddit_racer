@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Spring countryside workshop</title>
+    <link rel="stylesheet" href="environment-gallery.css" />
+  </head>
+  <body>
+    <header>
+      <p>REDDIT RACER · DEVELOPMENT</p>
+      <h1>Spring countryside</h1>
+      <a href="game.html">Game ↗</a>
+    </header>
+    <form id="environment-controls">
+      <label
+        >Track seed<input
+          id="seed"
+          value="flow-probe-21"
+          maxlength="96"
+          required
+      /></label>
+      <label
+        >Course<select id="course">
+          <option value="elevated">Elevated</option>
+          <option value="classic">Classic</option>
+          <option value="stunt">Gap / hairpin / sweeper</option>
+        </select></label
+      >
+      <label
+        >Scenery seed<input id="scenery-seed" value="default" maxlength="96"
+      /></label>
+      <label>Version<input id="scenery-version" readonly /></label>
+      <label
+        >Regions<input
+          id="regions"
+          type="range"
+          min="0"
+          max="1.8"
+          step="0.1"
+          value="1"
+      /></label>
+      <label
+        >Trees<input
+          id="trees"
+          type="range"
+          min="0"
+          max="1.8"
+          step="0.1"
+          value="1"
+      /></label>
+      <label
+        >Grass / flowers<input
+          id="cover"
+          type="range"
+          min="0"
+          max="1.8"
+          step="0.1"
+          value="1"
+      /></label>
+      <label
+        >Detail<select id="quality">
+          <option value="standard">Standard</option>
+          <option value="light">Light</option>
+        </select></label
+      >
+      <label
+        >Foliage light<select id="lighting">
+          <option value="soft">Soft diffuse</option>
+          <option value="toon">Two-band toon</option>
+        </select></label
+      >
+      <label
+        >Overlay<select id="overlay">
+          <option value="none">None</option>
+          <option value="regions">Regions</option>
+          <option value="clearance">Solid scenery clearance</option>
+        </select></label
+      >
+      <label class="check"
+        ><input id="wind" type="checkbox" checked />Wind</label
+      >
+      <button type="submit">Regenerate</button>
+    </form>
+    <main>
+      <section class="preview">
+        <canvas
+          id="environment-canvas"
+          aria-label="Actual Three.js countryside preview"
+        ></canvas
+        ><label class="progress"
+          >Road progress<input
+            id="progress"
+            type="range"
+            min="0"
+            max="99"
+            value="6"
+            step="1"
+        /></label>
+        <div class="preview-bottom">
+          <a id="drive" href="game.html">Drive this seed ↗</a
+          ><button id="gallery-button" type="button">Generate 12 seeds</button>
+        </div>
+      </section>
+      <p id="environment-status" role="status" data-state="loading">
+        Loading existing Kenney assets…
+      </p>
+      <output id="environment-stats"></output>
+      <p class="note">
+        Actual rendered previews. Decorative seeds never change the canonical
+        road or scoring. Red lines mark solid-scenery setback, not a new
+        collider. Wind pauses outside driving in the production game; this
+        workshop animates the preview. Phone performance requires real hardware.
+      </p>
+      <section
+        id="environment-gallery"
+        aria-label="Twelve seeded countryside compositions"
+      ></section>
+    </main>
+    <script type="module" src="environment-gallery.ts"></script>
+  </body>
+</html>

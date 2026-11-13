@@ -8,6 +8,9 @@ import {
 test('slot-car practice warns before runoff and lifting restores grip, then continues laps', async ({
   page,
 }, testInfo) => {
+  // Up to 85 simulated seconds, rendering every frame, needs a separate CI
+  // software-GPU budget. Keep the two-lap/input assertions intact.
+  test.setTimeout(process.env.CI ? 300_000 : 180_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });

@@ -15,7 +15,15 @@ import { createPracticeDriver } from './practice-driver';
 import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
-import { createScenery, buildSceneryPlacements } from './scenery';
+import { createScenery } from './scenery';
+import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
+import { createVegetation } from './vegetation';
+import {
+  readSceneryOptions,
+  readSceneryPreference,
+  saveSceneryPreference,
+} from './scenery-options';
+import { getGameRenderer, releaseGameScene } from './game-renderer';
 import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
 import { createDrivingAudio, type DrivingAudioStatus } from './driving-audio';
@@ -235,16 +243,19 @@ export function initializeGame(
   // The uniformly lit field receives no shadows; match it with the clear color
   // to avoid a redundant full-screen ground draw on every racing frame.
   scene.background = new THREE.Color('#a5b18d');
-  scene.add(createEnvironment(track, buildSceneryPlacements(track)));
+  const countryside = generateSceneryLayout(track, {
+    ...readSceneryOptions(),
+    jumps: options.jumps ?? [],
+    gripZones: options.gripZones ?? [],
+  });
+  scene.add(createEnvironment(track, countryside.props, countryside));
+  const vegetation = createVegetation(countryside);
+  scene.add(vegetation.object);
   const raceCamera = createRaceCamera(track);
   const camera = raceCamera.camera;
   let renderer: THREE.WebGLRenderer;
   try {
-    renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: false,
-    });
+    renderer = getGameRenderer(canvas);
   } catch (error) {
     throw new Error(
       'Your browser could not start the 3D race. Please try a browser with WebGL enabled.',
@@ -287,7 +298,7 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
-  const scenery = createScenery(track);
+  const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: options.dynamicGrip ?? false,
   });
@@ -297,6 +308,9 @@ export function initializeGame(
   raceRoot.dataset.carArt = 'fallback';
   raceRoot.dataset.carLoad = 'loading';
   raceRoot.dataset.sceneryArt = 'fallback';
+  raceRoot.dataset.sceneryVersion = countryside.version;
+  raceRoot.dataset.vegetationCount = String(countryside.plants.length);
+  raceRoot.dataset.sceneryCandidates = String(countryside.work.candidates);
 
   let racing = false;
   let preparing = false;
@@ -326,6 +340,32 @@ export function initializeGame(
   let previousFrameTime: number | undefined;
   let sceneReady = false;
   let sceneDirty = true;
+  const sceneryDetail = element('scenery-detail');
+  if (!(sceneryDetail instanceof HTMLSelectElement))
+    throw new Error('Missing scenery detail');
+  sceneryDetail.value = readSceneryPreference();
+  sceneryDetail.addEventListener(
+    'change',
+    () => {
+      const preference =
+        sceneryDetail.value === 'light'
+          ? 'light'
+          : sceneryDetail.value === 'standard'
+            ? 'standard'
+            : 'auto';
+      saveSceneryPreference(preference);
+      const settings = readSceneryOptions(preference, true);
+      raceRoot.dataset.vegetationCount = String(
+        vegetation.setDetail(
+          settings.quality ?? 'standard',
+          settings.wind ?? true
+        )
+      );
+      sceneDirty = true;
+    },
+    { signal: lifetime.signal }
+  );
+
   let renderViewport: RenderViewport | undefined;
   let viewportUsable = true;
   const preferences = createFeedbackPreferences();
@@ -620,7 +660,7 @@ export function initializeGame(
       : 0;
     const throttle = held();
     const reducedMotion = preferences.snapshot.reducedMotion;
-    const elevation = current.vertical
+    let elevation = current.vertical
       ? THREE.MathUtils.lerp(
           previous.vertical?.height ?? 0,
           current.vertical.height,
@@ -636,8 +676,31 @@ export function initializeGame(
       : (practiceDriver?.verticalVelocity ?? 0);
     const airborne =
       current.vertical?.airborne ?? practiceDriver?.airborne ?? false;
-    const surfaceHeight =
-      Math.abs(lateral) <= frame.halfWidth ? (frame.y ?? 0) : 0;
+    const worldX = frame.x + frame.nx * lateral,
+      worldZ = frame.z + frame.nz * lateral;
+    const ground = groundHeightAt(countryside.surface, worldX, worldZ);
+    const gap =
+      options.jumps?.some((j) => frame.s > j.takeoff && frame.s < j.landing) ??
+      false;
+    const deckHeight =
+      (frame.y ?? 0) +
+      jumpRoadHeight(options.jumps ?? [], frame.s) -
+      lateral * Math.tan(practiceDriver?.roadBank ?? 0);
+    const onDeck =
+      Math.abs(lateral) <= frame.halfWidth + (current.vertical ? 0 : 0.8) &&
+      !gap &&
+      elevation >= deckHeight - 0.2;
+    const surfaceHeight = onDeck ? deckHeight : ground;
+    // The unranked banked prototype has a visual floor below its raised deck.
+    // Match that floor outside the shoulder without changing its simulation.
+    if (!current.vertical && practiceDriver && !airborne && !onDeck) {
+      const blend = THREE.MathUtils.clamp(
+        (Math.abs(lateral) - frame.halfWidth - 0.8) / 2,
+        0,
+        1
+      );
+      elevation = THREE.MathUtils.lerp(elevation, ground + 0.03, blend);
+    }
     raceRoot.dataset.airborne = String(airborne);
     raceRoot.dataset.carHeight = String(current.vertical?.height ?? elevation);
     raceRoot.dataset.roadHeight = String(frame.y ?? 0);
@@ -646,7 +709,10 @@ export function initializeGame(
     const carChanged = carVisual.update({
       elevation,
       surfaceHeight,
-      bank: practiceDriver?.airborne ? 0 : (practiceDriver?.roadBank ?? 0),
+      bank:
+        !onDeck || practiceDriver?.airborne
+          ? 0
+          : (practiceDriver?.roadBank ?? 0),
       jumpPitch: current.vertical
         ? -(airborne
             ? Math.atan2(verticalVelocity, Math.max(speed, 1))
@@ -1135,6 +1201,13 @@ export function initializeGame(
     sceneDirty = applyPendingAssets() || sceneDirty;
     feedback();
     positionCar(deltaSeconds);
+    sceneDirty =
+      vegetation.update(
+        time / 1000,
+        carVisual.object.position,
+        preferences.snapshot.reducedMotion,
+        driver.active
+      ) || sceneDirty;
     // Preserve every scored/countdown frame; only settled inactive draws stop.
     renderScene(driver.active);
     frameHandle = requestAnimationFrame(animate);
@@ -1158,6 +1231,7 @@ export function initializeGame(
     drivingVfx.dispose();
     carVisual.dispose();
     scenery.dispose();
+    vegetation.dispose();
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
     sceneAssets.dispose();
     scene.traverse((node) => {
@@ -1170,7 +1244,7 @@ export function initializeGame(
           material.dispose();
       }
     });
-    renderer.dispose();
+    releaseGameScene(renderer);
     document.getElementById('track-debug')?.remove();
   }
   window.addEventListener(

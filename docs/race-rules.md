@@ -52,6 +52,10 @@ Pure replay cannot prove whether a modified client ignored a focus event or used
 
 The simulation compatibility version is now `fixed-step-v2`; handling remains `arcade-v1`. Existing fixed-step-v1 tapes are rejected by the current verifier. A future persisted challenge must retain its compatible versioned verifier or explicitly reject incompatible sessions; deploying new code must not silently reinterpret an old ranked challenge.
 
+## Continuous unranked practice
+
+The dedicated **Practice tracks** mode uses a separate client-only driver around the same movement step. It continues kinematics and held input across the line, resets only lap timing/checkpoints, and exposes monotonic presentation snapshots. It creates no replay or ranked session. The one-lap lifecycle and initial-condition guards above remain the ranked authority; [practice](practice.md) records the separate clock and seam policy.
+
 ## Verification
 
 Shared tests exercise loading/ready/countdown timing, unchanged golden finishes, ordered gates including runoff, jumps, reverse progress, skipped/fabricated checkpoint claims, partial finishes, recovery, interruption and clean retry. Driver tests compare render schedules and confirm that countdown input changes enter a replay only when sampled by scored ticks. Browser checks cover visible countdown/progress, complete lap, touch/keyboard input and retry; hosted Reddit and physical-phone observations remain separate evidence.

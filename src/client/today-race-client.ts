@@ -9,9 +9,12 @@ function element(id: string): HTMLElement {
   return found;
 }
 
+const panelOwners = new WeakMap<HTMLElement, symbol>();
+
 /** An archived scene keeps its course; opening another Reddit post is an explicit action. */
 export function createTodayRaceController(day: string): {
   updateArchived: (archived: boolean) => void;
+  dispose: () => void;
 } {
   const panel = element('today-race');
   const status = element('today-race-status');
@@ -24,11 +27,22 @@ export function createTodayRaceController(day: string): {
     throw new Error('Missing daily navigation actions');
   const open = openElement;
   const refresh = refreshElement;
+  const owner = Symbol('today-race-controller');
+  panelOwners.set(panel, owner);
+  const listeners = new AbortController();
+  let disposed = false;
   let archived = false;
   let target: string | undefined;
   let generation = 0;
   let request: AbortController | undefined;
   let readyExpiresAt: number | undefined;
+
+  function ownsPanel(): boolean {
+    return panelOwners.get(panel) === owner;
+  }
+  function active(): boolean {
+    return !disposed && ownsPanel();
+  }
 
   function expireReady(): boolean {
     if (readyExpiresAt === undefined || performance.now() < readyExpiresAt)
@@ -44,7 +58,7 @@ export function createTodayRaceController(day: string): {
   }
 
   async function load(): Promise<void> {
-    if (!archived) return;
+    if (!active() || !archived) return;
     request?.abort();
     request = new AbortController();
     const controller = request;
@@ -61,7 +75,8 @@ export function createTodayRaceController(day: string): {
         (signal) => api.todayRacePost.query(undefined, { signal }),
         { signal: controller.signal }
       );
-      if (version !== generation || controller.signal.aborted) return;
+      if (!active() || version !== generation || controller.signal.aborted)
+        return;
       const view = parseTodayRacePostView(value);
       const remainingMs =
         view.nextResetAtMs -
@@ -89,7 +104,8 @@ export function createTodayRaceController(day: string): {
         refresh.hidden = false;
       }
     } catch {
-      if (version !== generation || controller.signal.aborted) return;
+      if (!active() || version !== generation || controller.signal.aborted)
+        return;
       panel.dataset.state = 'error';
       status.textContent =
         'Today’s race could not be checked. You can keep practising here.';
@@ -97,13 +113,39 @@ export function createTodayRaceController(day: string): {
     }
   }
 
-  refresh.addEventListener('click', () => void load());
-  open.addEventListener('click', () => {
-    if (expireReady()) return;
-    if (target) navigateTo(target);
+  refresh.addEventListener('click', () => void load(), {
+    signal: listeners.signal,
   });
+  open.addEventListener(
+    'click',
+    () => {
+      if (!active()) return;
+      if (expireReady()) return;
+      if (target) navigateTo(target);
+    },
+    { signal: listeners.signal }
+  );
   return {
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      generation++;
+      request?.abort();
+      request = undefined;
+      listeners.abort();
+      archived = false;
+      target = undefined;
+      readyExpiresAt = undefined;
+      if (!ownsPanel()) return;
+      panelOwners.delete(panel);
+      panel.hidden = true;
+      panel.dataset.state = 'idle';
+      open.hidden = true;
+      refresh.hidden = true;
+      status.textContent = '';
+    },
     updateArchived(value) {
+      if (!active()) return;
       if (value === archived) {
         if (archived) expireReady();
         return;

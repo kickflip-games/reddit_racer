@@ -9,6 +9,7 @@ import type { VerifiedRunResponse } from '../shared/ranked-race';
 import { withRequestDeadline } from './request-deadline';
 
 export type LeaderboardController = {
+  dispose: () => void;
   onAttemptStart: (attempt: { attemptId: number }) => void;
   onResults: (attempt: {
     attemptId: number;
@@ -16,6 +17,8 @@ export type LeaderboardController = {
   }) => void;
   recordVerified: (attemptId: number, receipt: VerifiedRunResponse) => void;
 };
+
+const panelOwners = new WeakMap<HTMLElement, symbol>();
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -84,6 +87,10 @@ export function createLeaderboardController(
   if (!(refreshElement instanceof HTMLButtonElement))
     throw new Error('Missing leaderboard refresh button');
   const refresh = refreshElement;
+  const owner = Symbol('leaderboard-controller');
+  panelOwners.set(panel, owner);
+  const listeners = new AbortController();
+  let disposed = false;
   element('leaderboard-day').textContent = `${challenge.day} · UTC`;
   let currentAttempt = 0;
   let showingResults = false;
@@ -91,6 +98,13 @@ export function createLeaderboardController(
   let request: AbortController | undefined;
   let requestVersion = 0;
   let resultMode: 'practice' | 'ranked' = 'practice';
+
+  function ownsPanel(): boolean {
+    return panelOwners.get(panel) === owner;
+  }
+  function active(): boolean {
+    return !disposed && ownsPanel();
+  }
 
   function clearRows(): void {
     fillRows(top, []);
@@ -156,7 +170,7 @@ export function createLeaderboardController(
   }
 
   async function load(): Promise<void> {
-    if (!showingResults) return;
+    if (!active() || !showingResults) return;
     request?.abort();
     const controller = new AbortController();
     request = controller;
@@ -177,6 +191,7 @@ export function createLeaderboardController(
         { signal: controller.signal }
       );
       if (
+        !active() ||
         controller.signal.aborted ||
         version !== requestVersion ||
         attemptId !== currentAttempt ||
@@ -200,6 +215,7 @@ export function createLeaderboardController(
       render(view);
     } catch {
       if (
+        !active() ||
         controller.signal.aborted ||
         version !== requestVersion ||
         attemptId !== currentAttempt ||
@@ -211,13 +227,37 @@ export function createLeaderboardController(
       clearRows();
       me.textContent = unrankedExplanation();
     } finally {
-      if (version === requestVersion) refresh.disabled = false;
+      if (active() && version === requestVersion) refresh.disabled = false;
     }
   }
 
-  refresh.addEventListener('click', () => void load());
+  refresh.addEventListener('click', () => void load(), {
+    signal: listeners.signal,
+  });
   return {
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      requestVersion++;
+      request?.abort();
+      request = undefined;
+      listeners.abort();
+      currentAttempt = 0;
+      showingResults = false;
+      receipt = undefined;
+      if (!ownsPanel()) return;
+      panelOwners.delete(panel);
+      panel.hidden = true;
+      summary.hidden = true;
+      details.open = false;
+      panel.dataset.state = 'idle';
+      card.dataset.leaderboard = 'false';
+      refresh.disabled = false;
+      status.textContent = '';
+      clearRows();
+    },
     onAttemptStart({ attemptId }) {
+      if (!active()) return;
       request?.abort();
       requestVersion++;
       currentAttempt = attemptId;
@@ -232,9 +272,11 @@ export function createLeaderboardController(
       clearRows();
     },
     recordVerified(attemptId, verified) {
+      if (!active()) return;
       if (attemptId === currentAttempt) receipt = verified;
     },
     onResults({ attemptId, mode }) {
+      if (!active()) return;
       if (attemptId !== currentAttempt) return;
       showingResults = true;
       resultMode = mode;

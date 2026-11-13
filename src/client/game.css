@@ -147,6 +147,18 @@ button {
   font-variant-numeric: tabular-nums;
   letter-spacing: -1px;
 }
+#practice-last-lap {
+  display: block;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #153e36f2;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+#practice-last-lap[hidden] {
+  display: none;
+}
 .verification-status,
 .visually-hidden {
   position: absolute;
@@ -249,6 +261,18 @@ button:disabled {
 button:focus-visible {
   outline: 3px solid white;
   outline-offset: 4px;
+}
+.secondary-button {
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  color: #d3e3cb;
+  border: 1px solid #b3d3b63d;
+}
+.secondary-button:hover {
+  background: #204c40;
 }
 .card-note {
   display: none;
@@ -501,6 +525,22 @@ button:focus-visible {
 .course-info p {
   margin: 0;
   overflow-wrap: anywhere;
+}
+#practice-settings[hidden] {
+  display: none;
+}
+#practice-settings button {
+  min-height: 44px;
+  margin-top: 8px;
+  justify-content: center;
+  color: #fff9e8;
+  background: #204c40;
+  border: 1px solid #c5dbc570;
+  font-size: 14px;
+}
+#practice-seed {
+  user-select: text;
+  -webkit-user-select: text;
 }
 .daily-details[hidden],
 #track-source[hidden] {

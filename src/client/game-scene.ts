@@ -4,6 +4,7 @@ import {
   createSimulationDriver,
   type InterruptionReason,
 } from './simulation-driver';
+import { createPracticeDriver } from './practice-driver';
 import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCarVisual } from './car-visual';
@@ -17,12 +18,7 @@ import {
   resolveRenderViewport,
   type RenderViewport,
 } from './render-viewport';
-import {
-  loadCarAsset,
-  loadSceneryAssets,
-  disposeSceneAssets,
-  type SceneryAssets,
-} from './scene-assets';
+import { createSceneAssetCache, type SceneryAssets } from './scene-assets';
 import { sampleTrack, type Track } from '../shared/track';
 import { createTrackDebugOverlay, createTrackRenderer } from './track-renderer';
 
@@ -55,9 +51,19 @@ export type GameSceneHooks = {
     reason: InterruptionReason;
   }) => void;
 };
-export type GameSceneOptions = GameSceneHooks & { generated: boolean };
+export type GameSceneOptions = GameSceneHooks & {
+  generated: boolean;
+  continuousPractice?: boolean;
+};
+export type GameSceneController = { dispose(): void };
 
-export function initializeGame(track: Track, options: GameSceneOptions): void {
+export function initializeGame(
+  track: Track,
+  options: GameSceneOptions
+): GameSceneController {
+  const lifetime = new AbortController();
+  const eventOptions = { signal: lifetime.signal };
+  const sceneAssets = createSceneAssetCache();
   function element(id: string): HTMLElement {
     const found = document.getElementById(id);
     if (!found) throw new Error(`Missing game element: ${id}`);
@@ -167,7 +173,11 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   let pointerHeld = false;
   let keyHeld = false;
   let activePointer: number | undefined;
-  const driver = createSimulationDriver(track);
+  const rankedDriver = createSimulationDriver(track);
+  const practiceDriver = options.continuousPractice
+    ? createPracticeDriver(track)
+    : null;
+  const driver = practiceDriver ?? rankedDriver;
   const hud = element('race-hud');
   const footer = document.querySelector('.race-footer');
   let viewportDirty = true;
@@ -220,18 +230,26 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   });
   soundToggle.disabled = false;
   motionSelect.disabled = false;
-  soundToggle.addEventListener('click', () => {
-    preferences.setMuted(!preferences.snapshot.muted);
-    if (!preferences.snapshot.muted) {
-      audio.setForeground(!document.hidden);
-      audio.unlockFromGesture();
-    }
-  });
-  motionSelect.addEventListener('change', () => {
-    const value = motionSelect.value;
-    if (value === 'system' || value === 'reduced' || value === 'full')
-      preferences.setMotion(value);
-  });
+  soundToggle.addEventListener(
+    'click',
+    () => {
+      preferences.setMuted(!preferences.snapshot.muted);
+      if (!preferences.snapshot.muted) {
+        audio.setForeground(!document.hidden);
+        audio.unlockFromGesture();
+      }
+    },
+    eventOptions
+  );
+  motionSelect.addEventListener(
+    'change',
+    () => {
+      const value = motionSelect.value;
+      if (value === 'system' || value === 'reduced' || value === 'full')
+        preferences.setMotion(value);
+    },
+    eventOptions
+  );
 
   function applyPendingAssets(): boolean {
     // Read the actual driver now: a Start click can precede the next render.
@@ -300,8 +318,22 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     const state = driver.state;
     const race = driver.raceState;
     timer.textContent = formatTime(
-      (state.finishedTick ?? state.tick) / SIMULATION_HZ
+      (practiceDriver
+        ? practiceDriver.lapTicks
+        : (state.finishedTick ?? state.tick)) / SIMULATION_HZ
     );
+    if (practiceDriver) {
+      const completed = practiceDriver.completedLaps;
+      raceRoot.dataset.practiceLaps = String(completed);
+      element('mode-label').textContent = `PRACTICE · LAP ${completed + 1}`;
+      const last = element('practice-last-lap');
+      last.hidden = practiceDriver.lastLapTicks === null;
+      const message =
+        practiceDriver.lastLapTicks === null
+          ? ''
+          : `Last ${formatTime(practiceDriver.lastLapTicks / SIMULATION_HZ)}`;
+      if (last.textContent !== message) last.textContent = message;
+    }
     speedLabel.textContent = String(Math.round(state.speed * 3.6));
     if (raceRoot.dataset.phase !== race.phase) {
       viewportDirty = true;
@@ -316,12 +348,18 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       );
       if (countdown.textContent !== value) countdown.textContent = value;
     }
+    const lapDistance = practiceDriver
+      ? Math.max(
+          0,
+          state.distance - practiceDriver.completedLaps * track.totalLength
+        )
+      : state.distance;
     const percentage = Math.min(
       100,
-      Math.floor((state.distance / track.totalLength) * 100)
+      Math.floor((lapDistance / track.totalLength) * 100)
     );
     lapProgress.max = track.totalLength;
-    lapProgress.value = state.distance;
+    lapProgress.value = lapDistance;
     lapProgress.textContent = `${percentage}%`;
     lapProgressLabel.textContent = `Gates ${race.nextCheckpointIndex}/${track.checkpoints.length} · ${percentage}%`;
     inputLabel.dataset.held = String(held());
@@ -518,7 +556,11 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
         verificationStatus('pending', 'Checking your time…');
         cardCopy.textContent = 'Checking your time…';
         element('card-kicker').textContent = 'CHECKING TIME';
-        const result = { attemptId: id, replay: driver.replay, finishTicks };
+        const result = {
+          attemptId: id,
+          replay: rankedDriver.replay,
+          finishTicks,
+        };
         void options
           .onFinish(result)
           .then((outcome) => applyVerification(id, outcome))
@@ -631,50 +673,66 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     showOutcome();
     feedback();
   }
-  start.addEventListener('click', beginRace);
-  retry.addEventListener('click', beginRace);
-  canvas.addEventListener('pointerdown', (event) => {
-    if (
-      (!racing && !preparing) ||
-      activePointer !== undefined ||
-      event.button !== 0
-    )
-      return;
-    event.preventDefault();
-    activePointer = event.pointerId;
-    pointerHeld = true;
-    canvas.setPointerCapture(event.pointerId);
-    updateInput(performance.now());
-  });
-  canvas.addEventListener('contextmenu', (event) => {
-    if (preparing || (racing && driver.active)) event.preventDefault();
-  });
+  start.addEventListener('click', beginRace, eventOptions);
+  retry.addEventListener('click', beginRace, eventOptions);
+  canvas.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (
+        (!racing && !preparing) ||
+        activePointer !== undefined ||
+        event.button !== 0
+      )
+        return;
+      event.preventDefault();
+      activePointer = event.pointerId;
+      pointerHeld = true;
+      canvas.setPointerCapture(event.pointerId);
+      updateInput(performance.now());
+    },
+    eventOptions
+  );
+  canvas.addEventListener(
+    'contextmenu',
+    (event) => {
+      if (preparing || (racing && driver.active)) event.preventDefault();
+    },
+    eventOptions
+  );
   function releasePointer(event: PointerEvent): void {
     if (event.pointerId !== activePointer) return;
     clearPointer();
     updateInput(performance.now());
   }
-  canvas.addEventListener('pointerup', releasePointer);
-  canvas.addEventListener('pointercancel', releasePointer);
-  canvas.addEventListener('lostpointercapture', releasePointer);
-  window.addEventListener('keydown', (event) => {
-    if (event.code !== 'Space' || (!racing && !preparing)) return;
-    const target = event.target;
-    if (
-      target instanceof Element &&
-      (target.closest('button, input, select, textarea, a, summary') ||
-        (target instanceof HTMLElement && target.isContentEditable))
-    )
-      return;
-    event.preventDefault();
-    keyHeld = true;
-    updateInput(performance.now());
-  });
-  window.addEventListener('keyup', (event) => {
-    if (event.code !== 'Space') return;
-    keyHeld = false;
-    updateInput(performance.now());
-  });
+  canvas.addEventListener('pointerup', releasePointer, eventOptions);
+  canvas.addEventListener('pointercancel', releasePointer, eventOptions);
+  canvas.addEventListener('lostpointercapture', releasePointer, eventOptions);
+  window.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.code !== 'Space' || (!racing && !preparing)) return;
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        (target.closest('button, input, select, textarea, a, summary') ||
+          (target instanceof HTMLElement && target.isContentEditable))
+      )
+        return;
+      event.preventDefault();
+      keyHeld = true;
+      updateInput(performance.now());
+    },
+    eventOptions
+  );
+  window.addEventListener(
+    'keyup',
+    (event) => {
+      if (event.code !== 'Space') return;
+      keyHeld = false;
+      updateInput(performance.now());
+    },
+    eventOptions
+  );
   function interruptRace(): void {
     audio.silence('background');
     drivingVfx.reset();
@@ -694,20 +752,28 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     showOutcome();
     release();
   }
-  window.addEventListener('blur', interruptRace);
-  window.addEventListener('focus', () => {
-    audio.setForeground(!document.hidden);
-    sceneDirty = true;
-    resize();
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) interruptRace();
-    else {
-      audio.setForeground(true);
+  window.addEventListener('blur', interruptRace, eventOptions);
+  window.addEventListener(
+    'focus',
+    () => {
+      audio.setForeground(!document.hidden);
       sceneDirty = true;
       resize();
-    }
-  });
+    },
+    eventOptions
+  );
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.hidden) interruptRace();
+      else {
+        audio.setForeground(true);
+        sceneDirty = true;
+        resize();
+      }
+    },
+    eventOptions
+  );
 
   function resize(): void {
     if (destroyed) return;
@@ -756,7 +822,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     renderScene();
   }
   const resolutionObserver = createResolutionObserver(resize);
-  window.addEventListener('resize', resize);
+  window.addEventListener('resize', resize, eventOptions);
   feedback();
   resize();
   sceneReady = true;
@@ -777,7 +843,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   hudObserver.observe(canvas);
   if (footer) hudObserver.observe(footer);
 
-  void loadCarAsset()
+  void sceneAssets
+    .loadCarAsset()
     .then((template) => {
       if (destroyed) return;
       if (!template) {
@@ -790,7 +857,8 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     .catch(() => {
       if (!destroyed) raceRoot.dataset.carLoad = 'unavailable';
     });
-  void loadSceneryAssets()
+  void sceneAssets
+    .loadSceneryAssets()
     .then((assets) => {
       if (destroyed) return;
       pendingScenery = assets;
@@ -822,11 +890,11 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
   }
   frameHandle = requestAnimationFrame(animate);
 
-  window.addEventListener('pagehide', (event) => {
+  function dispose(): void {
     if (destroyed) return;
     interruptRace();
-    if (event.persisted) return;
     destroyed = true;
+    lifetime.abort();
     cancelAnimationFrame(frameHandle);
     preparation?.abort();
     hudObserver.disconnect();
@@ -839,7 +907,7 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
     carVisual.dispose();
     scenery.dispose();
     scene.remove(carVisual.object, scenery.object, drivingVfx.object);
-    disposeSceneAssets();
+    sceneAssets.dispose();
     scene.traverse((node) => {
       if (node instanceof THREE.Mesh || node instanceof THREE.LineSegments) {
         node.geometry.dispose();
@@ -850,5 +918,15 @@ export function initializeGame(track: Track, options: GameSceneOptions): void {
       }
     });
     renderer.dispose();
-  });
+    document.getElementById('track-debug')?.remove();
+  }
+  window.addEventListener(
+    'pagehide',
+    (event) => {
+      if (event.persisted) interruptRace();
+      else dispose();
+    },
+    eventOptions
+  );
+  return { dispose };
 }

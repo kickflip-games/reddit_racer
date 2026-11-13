@@ -30,6 +30,7 @@
           <output id="timer" aria-label="Lap time in seconds" aria-live="off"
             >00.000</output
           >
+          <output id="practice-last-lap" aria-live="polite" hidden></output>
         </div>
         <p
           id="verification-status"
@@ -133,6 +134,9 @@
             </div>
           </details>
         </section>
+        <button id="practice-button" class="secondary-button" type="button">
+          Practice tracks
+        </button>
       </div>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
@@ -165,6 +169,13 @@
               Sound starts when you race.
             </p>
             <div class="course-info">
+              <div id="practice-settings" hidden>
+                <p id="practice-seed"></p>
+                <button id="next-practice-button" type="button">
+                  New track
+                </button>
+                <button id="daily-mode-button" type="button">Daily race</button>
+              </div>
               <p id="track-source" data-state="loading" hidden></p>
               <div id="daily-details" class="daily-details" hidden>
                 <p id="daily-date"></p>

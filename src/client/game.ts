@@ -1,6 +1,7 @@
 import { createOvalTrack } from '../shared/track-authoring';
 import type { Track } from '../shared/track';
-import { initializeGame } from './game-scene';
+import { initializeGame, type GameSceneController } from './game-scene';
+import { generatePracticeCourse } from './practice-course';
 import {
   DailyCourseIntegrityError,
   fetchDailyChallenge,
@@ -156,7 +157,7 @@ function renderDailyMode(): void {
           ? `Shared ${dailyDay} UTC circuit. This attempt is unranked practice.`
           : `Shared ${dailyDay} UTC circuit. Your time is checked after finishing.`;
 }
-function showDailyCourse(view: DailyChallengeView): void {
+function showDailyCourse(view: DailyChallengeView): () => void {
   const challenge = view.challenge;
   race.dataset.challengeId = challenge.id;
   race.dataset.challengeHash = challenge.challengeHash;
@@ -165,7 +166,7 @@ function showDailyCourse(view: DailyChallengeView): void {
   element('daily-details').hidden = false;
   element('daily-date').textContent = `${challenge.day} · UTC`;
   const todayRace = createTodayRaceController(challenge.day);
-  startDailyClock(view, (clock) => {
+  const stopClock = startDailyClock(view, (clock) => {
     dailyArchived = clock.archived;
     dailyDay = challenge.day;
     renderDailyMode();
@@ -176,83 +177,233 @@ function showDailyCourse(view: DailyChallengeView): void {
         : 'Archived course · practice'
       : `UTC reset in ${resetLabel(clock.resetSeconds)}`;
   });
+  return () => {
+    stopClock();
+    todayRace.dispose();
+  };
 }
 
-async function boot(): Promise<void> {
-  const course = await loadCourse();
-  const leaderboard = course.daily
-    ? createLeaderboardController(course.daily.challenge)
-    : null;
-  const hooks = course.daily
-    ? createRankedRaceHooks(
-        course.daily.challenge,
-        (mode) => {
-          attemptPresentation = mode;
-          renderDailyMode();
-        },
-        leaderboard?.recordVerified,
-        () => dailyArchived
-      )
-    : {};
-  initializeGame(course.track, {
-    generated: course.generated,
-    ...hooks,
-    ...(leaderboard
-      ? {
-          onAttemptStart: leaderboard.onAttemptStart,
-          onResults: leaderboard.onResults,
-        }
-      : {}),
-  });
-  source.dataset.state = 'ready';
-  source.dataset.fallback = String(course.fallbackUsed);
-  if (course.daily) {
-    showDailyCourse(course.daily);
-  } else if (course.dailyUnavailable) {
-    element('mode-label').textContent = 'REFERENCE · UNRANKED';
-    source.hidden = false;
-    source.textContent = 'DAILY SERVICE UNAVAILABLE';
-    source.dataset.mode = 'reference-fallback';
-    source.title =
-      'The daily course could not be loaded. This is a separate, unranked reference course.';
-    element('track-note').textContent =
-      'Unranked reference practice. Reload to try loading this post’s daily circuit.';
-  } else if (course.generated) {
-    source.hidden = false;
-    source.dataset.seed = course.seed;
-    source.textContent = course.fallbackUsed
-      ? `RESERVE · ${course.seed}`
-      : `SEED · ${course.seed}`;
-    source.title = course.fallbackUsed
-      ? `A prevalidated reserve course is loaded for requested seed ${course.seed}. Local and unranked.`
-      : `Automated driving checks passed for seed ${course.seed}. Local and unranked.`;
-    element('track-note').textContent = course.fallbackUsed
-      ? `Prevalidated reserve used for ${course.seed}. Retries keep this course.`
-      : `Local procedural seed ${course.seed}. Retries keep this course.`;
-  }
-  if (!course.generated && !course.dailyUnavailable)
-    element('track-note').textContent =
-      'Local reference practice. Procedural seeds are available in the circuit workshop.';
-  title.textContent = course.dailyUnavailable
-    ? 'Daily course unavailable.'
-    : 'Find your rhythm.';
-  copy.textContent = course.dailyUnavailable
-    ? 'Try the reference course in unranked practice.'
-    : 'Hold to go. Release to slow.';
-  start.disabled = false;
-}
+type PlayMode = 'daily' | 'practice';
+let scene: GameSceneController | undefined;
+let cleanupDaily: (() => void) | undefined;
+let cleanupLeaderboard: (() => void) | undefined;
+let courseGeneration = 0;
+let playMode: PlayMode = 'daily';
+let lastPracticeTrackHash: string | undefined;
 
-void boot().catch((error: unknown) => {
-  race.dataset.phase = 'abandoned';
-  source.dataset.state = 'rejected';
-  source.hidden = false;
-  source.textContent = 'CIRCUIT UNAVAILABLE';
-  title.textContent = 'Circuit unavailable.';
-  copy.textContent = 'The race could not start. Please reload and try again.';
-  element('status').textContent = 'CIRCUIT UNAVAILABLE';
-  const notice = element('error');
-  notice.textContent =
-    error instanceof Error ? error.message : 'The circuit could not be loaded.';
-  notice.hidden = false;
+function prepareCourse(mode: PlayMode): void {
+  scene?.dispose();
+  scene = undefined;
+  cleanupDaily?.();
+  cleanupDaily = undefined;
+  cleanupLeaderboard?.();
+  cleanupLeaderboard = undefined;
+  dailyArchived = false;
+  dailyDay = '';
+  attemptPresentation = 'ready';
+  playMode = mode;
+  race.dataset.playMode = mode;
+  race.dataset.phase = 'loading';
+  race.dataset.preparing = 'false';
+  delete race.dataset.challengeId;
+  delete race.dataset.challengeHash;
+  delete race.dataset.trackHash;
+  delete race.dataset.practiceLaps;
+  delete race.dataset.attemptMode;
+  for (const id of [
+    'error',
+    'retry-button',
+    'practice-last-lap',
+    'daily-details',
+    'leaderboard',
+    'result-summary',
+    'today-race',
+    'race-countdown',
+  ])
+    element(id).hidden = true;
+  const settings = element('race-settings');
+  if (settings instanceof HTMLDetailsElement) settings.open = false;
+  element('card').hidden = false;
+  element('card').scrollTop = 0;
+  element('practice-button').hidden = mode === 'practice';
+  element('practice-settings').hidden = mode !== 'practice';
+  element('verification-status').hidden = true;
+  element('verification-status').textContent = '';
+  source.hidden = true;
+  source.dataset.state = 'loading';
+  delete source.dataset.seed;
+  delete source.dataset.mode;
+  source.removeAttribute('title');
+  source.textContent = '';
+  start.hidden = false;
   start.disabled = true;
+  element('sound-toggle').toggleAttribute('disabled', true);
+  element('motion-select').toggleAttribute('disabled', true);
+  element('next-practice-button').toggleAttribute('disabled', true);
+  element('mode-label').textContent =
+    mode === 'practice'
+      ? 'PRACTICE · UNRANKED'
+      : import.meta.env.DEV
+        ? 'LOCAL · UNRANKED'
+        : 'DAILY RACE';
+  element('start-label').textContent = 'Start practice';
+  element('retry-label').textContent =
+    mode === 'practice' ? 'Resume practice' : 'Try again';
+  title.textContent =
+    mode === 'practice' ? 'Preparing practice…' : 'Preparing circuit…';
+  copy.textContent = 'Hold to go. Release to slow.';
+}
+
+async function boot(mode: PlayMode, seed?: string): Promise<void> {
+  const focusWhenReady = courseGeneration > 0;
+  const version = ++courseGeneration;
+  prepareCourse(mode);
+  try {
+    if (mode === 'practice') {
+      const course = await generatePracticeCourse(seed, lastPracticeTrackHash);
+      if (version !== courseGeneration) return;
+      lastPracticeTrackHash = course.trackHash;
+      scene = initializeGame(course.track, {
+        generated: true,
+        continuousPractice: true,
+      });
+      race.dataset.trackHash = course.trackHash;
+      race.dataset.practiceLaps = '0';
+      element('mode-label').textContent = 'PRACTICE · LAP 1';
+      element('start-label').textContent = 'Start practice';
+      element('retry-label').textContent = 'Resume practice';
+      const practiceSeed = element('practice-seed');
+      practiceSeed.dataset.seed = course.seed;
+      practiceSeed.textContent = `Unranked · ${course.seed}`;
+      source.dataset.state = 'ready';
+      source.dataset.fallback = String(course.fallbackUsed);
+      source.dataset.seed = course.seed;
+      source.textContent = course.fallbackUsed
+        ? 'Validated reserve circuit'
+        : '';
+      source.hidden = !course.fallbackUsed;
+      element('track-note').textContent = 'Unlimited laps. No leaderboard.';
+      title.textContent = 'Practice.';
+      copy.textContent =
+        'Hold to go. Release to slow. Keep driving for another lap.';
+      start.disabled = false;
+      if (focusWhenReady) title.focus({ preventScroll: true });
+      return;
+    }
+    const course = await loadCourse();
+    if (version !== courseGeneration) return;
+    const leaderboard = course.daily
+      ? createLeaderboardController(course.daily.challenge)
+      : null;
+    cleanupLeaderboard = leaderboard?.dispose;
+    const hooks = course.daily
+      ? createRankedRaceHooks(
+          course.daily.challenge,
+          (mode) => {
+            if (version !== courseGeneration || playMode !== 'daily') return;
+            attemptPresentation = mode;
+            renderDailyMode();
+          },
+          leaderboard?.recordVerified,
+          () => dailyArchived
+        )
+      : {};
+    scene = initializeGame(course.track, {
+      generated: course.generated,
+      ...hooks,
+      ...(leaderboard
+        ? {
+            onAttemptStart: leaderboard.onAttemptStart,
+            onResults: leaderboard.onResults,
+          }
+        : {}),
+    });
+    source.dataset.state = 'ready';
+    source.dataset.fallback = String(course.fallbackUsed);
+    if (course.daily) {
+      cleanupDaily = showDailyCourse(course.daily);
+    } else if (course.dailyUnavailable) {
+      element('mode-label').textContent = 'REFERENCE · UNRANKED';
+      source.hidden = false;
+      source.textContent = 'DAILY SERVICE UNAVAILABLE';
+      source.dataset.mode = 'reference-fallback';
+      source.title =
+        'The daily course could not be loaded. This is a separate, unranked reference course.';
+      element('track-note').textContent =
+        'Unranked reference practice. Reload to try loading this post’s daily circuit.';
+    } else if (course.generated) {
+      source.hidden = false;
+      source.dataset.seed = course.seed;
+      source.textContent = course.fallbackUsed
+        ? `RESERVE · ${course.seed}`
+        : `SEED · ${course.seed}`;
+      source.title = course.fallbackUsed
+        ? `A prevalidated reserve course is loaded for requested seed ${course.seed}. Local and unranked.`
+        : `Automated driving checks passed for seed ${course.seed}. Local and unranked.`;
+      element('track-note').textContent = course.fallbackUsed
+        ? `Prevalidated reserve used for ${course.seed}. Retries keep this course.`
+        : `Local procedural seed ${course.seed}. Retries keep this course.`;
+    }
+    if (!course.generated && !course.dailyUnavailable)
+      element('track-note').textContent =
+        'Local reference practice. Procedural seeds are available in the circuit workshop.';
+    title.textContent = course.dailyUnavailable
+      ? 'Daily course unavailable.'
+      : 'Find your rhythm.';
+    copy.textContent = course.dailyUnavailable
+      ? 'Try the reference course in unranked practice.'
+      : 'Hold to go. Release to slow.';
+    start.disabled = false;
+    if (focusWhenReady) title.focus({ preventScroll: true });
+  } catch (error: unknown) {
+    if (version !== courseGeneration) return;
+    race.dataset.phase = 'abandoned';
+    source.dataset.state = 'rejected';
+    source.hidden = false;
+    source.textContent = 'CIRCUIT UNAVAILABLE';
+    title.textContent = 'Circuit unavailable.';
+    copy.textContent =
+      mode === 'practice'
+        ? 'Try New track in Settings, or return to the daily race.'
+        : 'The race could not start. Please reload and try again.';
+    element('status').textContent = 'CIRCUIT UNAVAILABLE';
+    const notice = element('error');
+    notice.textContent =
+      error instanceof Error
+        ? error.message
+        : 'The circuit could not be loaded.';
+    notice.hidden = false;
+    start.disabled = true;
+    if (focusWhenReady) title.focus({ preventScroll: true });
+  } finally {
+    if (version === courseGeneration)
+      element('next-practice-button').toggleAttribute('disabled', false);
+  }
+}
+
+element('practice-button').addEventListener(
+  'click',
+  () => void boot('practice')
+);
+element('next-practice-button').addEventListener(
+  'click',
+  () => void boot('practice')
+);
+element('daily-mode-button').addEventListener(
+  'click',
+  () => void boot('daily')
+);
+window.addEventListener('pagehide', (event) => {
+  if (event.persisted) return;
+  courseGeneration++;
+  scene?.dispose();
+  cleanupDaily?.();
+  cleanupLeaderboard?.();
 });
+const query = import.meta.env.DEV
+  ? new URLSearchParams(window.location.search)
+  : null;
+void boot(
+  query?.get('practice') === '1' ? 'practice' : 'daily',
+  query?.get('practice') === '1' ? (query.get('seed') ?? undefined) : undefined
+);

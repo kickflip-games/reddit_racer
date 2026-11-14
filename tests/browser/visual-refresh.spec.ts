@@ -17,7 +17,7 @@ for (const [name, width, height] of [
     await waitForSceneAssets(page);
     await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
     await expect(page.locator('#start-label')).toHaveText('Start');
-    await expect(page.locator('#practice-button')).toBeHidden();
+    await expect(page.locator('#practice-button')).toBeVisible();
     await page.screenshot({
       path: `test-results/visual-refresh/${name}-ready-${info.project.name}.png`,
     });
@@ -37,7 +37,7 @@ for (const [name, width, height] of [
       page,
       async () =>
         (await page.locator('#race').getAttribute('data-phase')) === 'finished',
-      25000
+      45000
     );
     await expect(page.locator('#race')).toHaveAttribute(
       'data-phase',

@@ -173,18 +173,43 @@ export function advanceLapProgress(
     throw new Error('Race distance is outside the complete circuit');
   }
   const delta = next.distance - previous.distance;
+  // A missed canonical gap has one legitimate forward rescue. Recompute the
+  // entire authoritative snapshot, so declaring a recovery cannot admit a
+  // forged teleport, skipped penalty, fabricated height or momentum change.
+  const gapRecovery =
+    track.schemaVersion === 2 &&
+    !previous.recovering &&
+    previous.vertical?.airborne === true &&
+    next.recovering &&
+    next.recoveryCount === previous.recoveryCount + 1 &&
+    track.jumps?.some(
+      (jump) =>
+        previous.distance >= jump.takeoff &&
+        previous.distance < jump.landing &&
+        next.distance === jump.landing
+    ) === true &&
+    [false, true].some(
+      (held) =>
+        JSON.stringify(stepSimulation(track, previous, held)) ===
+        JSON.stringify(next)
+    );
   if (delta < -progressTolerance)
     throw new Error('Reverse race progress is invalid');
-  if (delta > HANDLING.maximumSpeed / SIMULATION_HZ + 0.000002) {
+  if (
+    !gapRecovery &&
+    delta > HANDLING.maximumSpeed / SIMULATION_HZ + 0.000002
+  ) {
     throw new Error('Race progress jump exceeds one legal tick');
   }
   const stationaryRecovery = previous.recovering || next.recovering;
-  const expectedDistance = stationaryRecovery
-    ? previous.distance
-    : Math.min(
-        track.totalLength,
-        quantizeSimulation(previous.distance + next.speed / SIMULATION_HZ)
-      );
+  const expectedDistance = gapRecovery
+    ? next.distance
+    : stationaryRecovery
+      ? previous.distance
+      : Math.min(
+          track.totalLength,
+          quantizeSimulation(previous.distance + next.speed / SIMULATION_HZ)
+        );
   if (Math.abs(next.distance - expectedDistance) > progressTolerance) {
     throw new Error(
       'Race progress does not match authoritative forward movement'

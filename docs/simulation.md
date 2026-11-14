@@ -1,6 +1,8 @@
 # Fixed-step racing and replays
 
-`src/shared/simulation.ts` is the authoritative two-dimensional arcade model. It imports only the canonical track sampler. It has no Three.js, DOM, Devvit, network, randomness or wall-clock dependency. It is shared by browser driving and Node replay execution.
+The current main game uses `fixed-step-v4` / `centreline-v1`: [centreline cornering, canonical gaps and overpasses](predictable-routes.md). The `arcade-v1` details below document the flat reference fixtures, which remain useful numerical controls.
+
+`src/shared/simulation.ts` dispatches the authoritative fixed-step model. It imports only the canonical track sampler. It has no Three.js, DOM, Devvit, network, randomness or wall-clock dependency. It is shared by browser driving and Node replay execution.
 
 ## Tick and state contract
 

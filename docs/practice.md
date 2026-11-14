@@ -1,6 +1,6 @@
 # Continuous practice
 
-Choose **Practice tracks** on the ready/results card. **Start practice** begins one countdown; crossing the line keeps driving on the same generated circuit. The clock resets for the next lap and a quiet Last time appears. Holding, speed, slide, recovery, wheel motion and effects continue across the line. Practice has no leaderboard or saved score.
+Choose **Practice** on the ready/results card. **Start** begins one countdown; crossing the line keeps driving on the same generated circuit. The clock resets for the next lap and a quiet Last time appears. Holding, speed, corner momentum, jump flight, wheel motion and effects continue across the line. Practice has no leaderboard; local last/best lap times persist per course and handling version.
 
 Open **Settings** for **New track**, **Daily race**, Sound, Motion and the requested seed. A new track stops the old session and waits for another explicit start. Returning to Daily reloads that post's saved course. Focus loss, a long frame gap or an unusable viewport interrupts practice and releases input; returning alone never resumes it.
 
@@ -16,7 +16,7 @@ This selector is available only in development. Production practice is entered t
 
 Practice lazily imports the existing bounded quality generator when selecting a course. It keeps its structural clearance, driveability, braking-pattern and replay checks, with the documented validated reserve if normal attempts fail. New track tries at most three requested seeds to avoid the previous accepted track hash. Explicit local seeds can reproduce the same course. No handmade track catalogue replaces generation.
 
-This intentionally adds the quality/controller search code to a separate production practice chunk. Its locally computed test trajectories are discarded; the game retains only the accepted track, requested seed, reserve flag and identity. No stored daily audit or precomputed daily input tape is fetched. The ranked verifier and immutable daily record format are unchanged. Generation happens while the old scene is stopped, never per frame or accelerator press; physical-phone generation latency remains unmeasured.
+This intentionally adds the quality/controller search code to a separate production practice chunk. Its locally computed test trajectories are discarded; the game retains only the accepted track, requested seed, reserve flag and identity. No stored daily audit or precomputed daily input tape is fetched. Practice and ranked use the same canonical gaps/overpasses and centreline runtime. Generation happens while the old scene is stopped, never per frame or accelerator press; physical-phone generation latency remains unmeasured.
 
 Secure contexts use the normal canonical SHA-256 track hash. A phone opening the local server over ordinary LAN HTTP can lack Web Crypto hashing; practice then uses a deterministic `practice-` fingerprint for local course identity and duplicate avoidance. That fingerprint has no ranked authority. Missing random capabilities also have a local seed fallback.
 
@@ -28,7 +28,7 @@ Each mounted scene owns its asset cache, audio, renderer, effects, observers, fr
 
 Unit tests cover shared first-lap physics, 30/60/120 Hz schedules, retained seam motion/input/recovery, release, checkpoint bookkeeping, interruption/retry and practice beyond the ranked duration limit. Course tests cover deterministic approved seeds, bounded avoidance, result-field exclusion and HTTP/capability fallbacks. Browser tests use actual controls and rendered laps; local and hosted observations remain distinct from physical-phone performance or human enjoyment.
 
-## Local visual observation
+## Historical local visual observation
 
 Native Chrome controls at 393×852 drove `practice-1` across the line into lap two, with the same mounted scene and no result prompt. Last showed 46.100 seconds; UI automation pauses are included, so this is a functional observation rather than a balance/optimal-time result. New track selected a different accepted hash, reset the display to lap one/ready, and focused its title. Settings, Sound/Motion and both track actions were visible. No browser errors were captured. The temporary viewport was restored afterwards.
 

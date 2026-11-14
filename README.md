@@ -34,21 +34,21 @@ The private test subreddit is `r/full_throttle_dev_dev`; a developer account nee
 For a reproducible private build, choose a new unused version and upload/install that exact version after checks pass. The value below is an example for the next upload, not a claim that it has been tested:
 
 ```sh
-RACER_TEST_VERSION=0.0.18
+RACER_TEST_VERSION=0.0.19
 npm run check
 npx devvit upload --version "$RACER_TEST_VERSION"
 npx devvit install full_throttle_dev_dev "full-throttle-dev@$RACER_TEST_VERSION"
 ```
 
-An explicit install does not run the development watcher. To reinstall the observed scenery/minimap build `0.0.17` instead:
+An explicit install does not run the development watcher. To reinstall the current fixed-camera countryside build `0.0.18` instead:
 
 ```sh
-npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.17
+npx devvit install full_throttle_dev_dev full-throttle-dev@0.0.18
 ```
 
 These commands upload an owner-visible build and install it only in the existing private test community. They do not publish the app or change community privacy. Keep the app identifier `full-throttle-dev` unchanged.
 
-The [November 14 phone-test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xvnujw/reddit_racer_daily_time_attack/) loads `0.0.17`, including spring countryside and the circuit minimap. Open it on your phone while signed in with access to the test community. [Hosted observations](docs/hosted-playtest.md#2026-11-14-spring-countryside-and-circuit-minimap) record the source version and verified lap.
+The [November 14 phone-test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xvnujw/reddit_racer_daily_time_attack/) loads the installed test build, including the fixed camera, countryside, minimap and integrated course features. Open it on your phone while signed in with access to the test community. [Hosted observations](docs/hosted-playtest.md#2026-11-14-spring-countryside-and-circuit-minimap) record the source version and verified lap.
 
 On 2026-11-12, private build `0.0.6` completed actual authenticated races, preserved a personal best across a full post reload and kept it after a slower retry. Build `0.0.7` checked the updated results UI and moderator post creation/navigation; `0.0.8` verified a full run with the Kenney car and chase camera, `0.0.9` rechecked the subsequent drawing-cost fix, `0.0.10` checked sound/motion activation, authenticated finish, Retry and focus cleanup; and `0.0.11` verified the simpler clock-only driving UI, collapsed Settings and a fresh ranked finish/retry. Build `0.0.12` checked continuous generated practice, New track and restoration of the original archived daily course; `0.0.13` observed automatic upgrade creation, two genuine scheduled checks reusing that post, archive-to-today navigation and a new verified November 13 standing. [Hosted playtest evidence](docs/hosted-playtest.md) records the exact sources, account, results, screenshots and remaining acceptance matrix. These observations include Reddit's mobile preview; they do not establish physical-phone performance. Logged-out in-game play is not proved by a private community's access gate, and hosted network-error/replay-rejection/archive checks remain open under #20. Current results and remaining work are in [the progress log](docs/implementation-progress.md).
 
@@ -70,9 +70,11 @@ npm run test -- src/shared/simulation.test.ts  # one isolated test file
 
 Linux CI uses `npx playwright install --with-deps chromium webkit`. Rendered gameplay checks cover desktop and mobile-sized Chromium; pure authoritative replay fixtures additionally run in WebKit. These checks do not substitute for a physical phone or hosted Reddit test.
 
-CI has two jobs on pushes and pull requests: `check` runs every unit test on Node 22.23.5, then the pinned Node 24 format/type/lint/unit/build checks and 200 classic plus 200 elevated circuit validations; `browser` runs 25 tagged smoke cases covering desktop/mobile driving, touch, interruption, scenery, minimap, ranked submission and cross-browser replay agreement. Both jobs must pass when reviewing a change. Browser tests use one worker and no retries, with the existing CI time budgets.
+CI has two jobs on pushes and pull requests: `check` runs every unit test on Node 22.23.5, then the pinned Node 24 format/type/lint/unit/build checks and 200 classic plus 200 elevated circuit validations; `browser` runs 29 tagged smoke cases covering desktop/mobile driving, touch, interruption, scenery, minimap, ranked submission and cross-browser replay agreement. Both jobs must pass when reviewing a change. Browser tests use one worker and no retries, with the existing CI time budgets.
 
 The complete browser suite runs weekly on Sunday at 16:00 UTC and through **Actions → CI → Run workflow → Run the complete browser suite**. Run the smoke selection locally with `npm run test:e2e -- --grep @smoke --workers=1`, or use `npm run test:e2e` for all cases. Failure screenshots, captured gameplay stills, per-test JSON results and circuit reports are retained for seven days. [Validation coverage and evidence boundaries](docs/validation.md) maps the checks to their source files and explains the clock controls.
+
+The main game uses a fixed oblique follow camera, uniform asphalt/grip and predictable centreline routing. Jumps and overpasses are integrated into ordinary daily/practice generation; there are no separate stunt or slot modes. [Current routes and driving rules](docs/predictable-routes.md) explain the intentional pre-release competition reset and show actual renders.
 
 The shared simulation runs at 120 Hz with versioned input replays; see [simulation rules](docs/simulation.md) and [canonical geometry](docs/track-geometry.md), and [lap lifecycle/checkpoints](docs/race-rules.md).
 

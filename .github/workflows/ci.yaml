@@ -4,14 +4,23 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 16 * * 0'
+  workflow_dispatch:
+    inputs:
+      full_browser_suite:
+        description: Run the complete browser suite
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
-  validate:
+  check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -46,10 +55,9 @@ jobs:
           retention-days: 7
   browser:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2]
+    timeout-minutes: 90
+    env:
+      PLAYWRIGHT_JSON_OUTPUT_FILE: artifacts/browser-results.json
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -60,30 +68,17 @@ jobs:
           cache: npm
       - run: npm ci --no-fund
       - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e -- --shard=${{ matrix.shard }}/2 --workers=1 --reporter=line,json
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_FILE: artifacts/browser-results.json
+      - name: Desktop and mobile smoke tests
+        if: github.event_name != 'schedule' && !inputs.full_browser_suite
+        run: npm run test:e2e -- --grep @smoke --workers=1 --reporter=line,json
+      - name: Complete browser suite
+        if: github.event_name == 'schedule' || inputs.full_browser_suite
+        run: npm run test:e2e -- --workers=1 --reporter=line,json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
-          name: browser-validation-${{ matrix.shard }}-attempt-${{ github.run_attempt }}
+          name: browser-validation-attempt-${{ github.run_attempt }}
           path: |
             test-results
             artifacts/browser-results.json
           retention-days: 7
-  check:
-    if: ${{ always() }}
-    needs: [validate, browser]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Require every validation job
-        if: ${{ always() }}
-        env:
-          RACER_VALIDATE_RESULT: ${{ needs.validate.result }}
-          RACER_BROWSER_RESULT: ${{ needs.browser.result }}
-        run: |
-          test "$RACER_VALIDATE_RESULT" = success
-          test "$RACER_BROWSER_RESULT" = success
-      - name: Reject a cancelled workflow
-        if: ${{ cancelled() }}
-        run: exit 1

@@ -265,85 +265,87 @@ test('session hash mismatch blocks countdown instead of silently verifying anoth
   await expect(page.locator('#retry-button')).toBeEnabled();
 });
 
-test('real renderer inputs submit only the replay and session, verify once, and preserve a midnight session', async ({
-  page,
-}) => {
-  const record = await openDaily(page, true);
-  let starts = 0;
-  const submissions: RankedSubmission[] = [];
-  let release = (): void => {};
-  const gate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-  await page.route('**/api/trpc/startRankedRace*', async (route) => {
-    starts++;
-    if (starts > 1) {
-      await reject(route, 'PRECONDITION_FAILED');
-      return;
-    }
-    await route.fulfill({
-      json: { result: { data: session(record, 1, true) } },
+test(
+  'real renderer inputs submit only the replay and session, verify once, and preserve a midnight session',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    const record = await openDaily(page, true);
+    let starts = 0;
+    const submissions: RankedSubmission[] = [];
+    let release = (): void => {};
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
     });
-  });
-  await page.route('**/api/trpc/submitRun*', async (route) => {
-    const raw: unknown = route.request().postDataJSON();
-    if (typeof raw !== 'object' || raw === null)
-      throw new Error('Submission is not an object');
-    expect(Object.keys(raw).sort()).toEqual(['replay', 'sessionId']);
-    const submission = parseRankedSubmission(raw);
-    submissions.push(submission);
-    await gate;
-    await route.fulfill({
-      json: {
-        result: {
-          data: verifiedResult(record, submission, record.endsAtMs + 30_000),
+    await page.route('**/api/trpc/startRankedRace*', async (route) => {
+      starts++;
+      if (starts > 1) {
+        await reject(route, 'PRECONDITION_FAILED');
+        return;
+      }
+      await route.fulfill({
+        json: { result: { data: session(record, 1, true) } },
+      });
+    });
+    await page.route('**/api/trpc/submitRun*', async (route) => {
+      const raw: unknown = route.request().postDataJSON();
+      if (typeof raw !== 'object' || raw === null)
+        throw new Error('Submission is not an object');
+      expect(Object.keys(raw).sort()).toEqual(['replay', 'sessionId']);
+      const submission = parseRankedSubmission(raw);
+      submissions.push(submission);
+      await gate;
+      await route.fulfill({
+        json: {
+          result: {
+            data: verifiedResult(record, submission, record.endsAtMs + 30_000),
+          },
         },
-      },
+      });
     });
-  });
-  await page.locator('#start-button').click();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-phase',
-    'countdown'
-  );
-  await driveFast(page);
-  await expect(page.locator('#verification-status')).toHaveAttribute(
-    'data-state',
-    'pending'
-  );
-  await expect(page.locator('#mode-label')).toHaveText('Daily');
-  await expect(page.locator('#daily-reset')).toContainText(
-    'Current race keeps'
-  );
-  await expect.poll(() => submissions.length).toBe(1);
-  expect(submissions[0]?.replay).toEqual(replay);
-  expect(await page.locator('html').innerHTML()).not.toContain(
-    session(record).sessionId
-  );
-  release();
-  await expect(page.locator('#verification-status')).toHaveAttribute(
-    'data-state',
-    'verified'
-  );
-  await expect(page.locator('#card-title')).toHaveText(
-    `${(replay.endTick / 120).toFixed(3)} seconds`
-  );
-  await page.screenshot({
-    path: `test-results/ranked-verified-mock-${test.info().project.name}.png`,
-  });
-  await page.locator('#retry-button').click();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-phase',
-    'countdown'
-  );
-  await expect(page.locator('#verification-status')).toHaveAttribute(
-    'data-state',
-    'practice'
-  );
-  await expect(page.locator('#mode-label')).toHaveText('Archive');
-  expect(starts).toBe(1);
-  expect(submissions.length).toBe(1);
-});
+    await page.locator('#start-button').click();
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-phase',
+      'countdown'
+    );
+    await driveFast(page);
+    await expect(page.locator('#verification-status')).toHaveAttribute(
+      'data-state',
+      'pending'
+    );
+    await expect(page.locator('#mode-label')).toHaveText('Daily');
+    await expect(page.locator('#daily-reset')).toContainText(
+      'Current race keeps'
+    );
+    await expect.poll(() => submissions.length).toBe(1);
+    expect(submissions[0]?.replay).toEqual(replay);
+    expect(await page.locator('html').innerHTML()).not.toContain(
+      session(record).sessionId
+    );
+    release();
+    await expect(page.locator('#verification-status')).toHaveAttribute(
+      'data-state',
+      'verified'
+    );
+    await expect(page.locator('#card-title')).toHaveText(
+      `${(replay.endTick / 120).toFixed(3)} seconds`
+    );
+    await page.screenshot({
+      path: `test-results/ranked-verified-mock-${test.info().project.name}.png`,
+    });
+    await page.locator('#retry-button').click();
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-phase',
+      'countdown'
+    );
+    await expect(page.locator('#verification-status')).toHaveAttribute(
+      'data-state',
+      'practice'
+    );
+    await expect(page.locator('#mode-label')).toHaveText('Archive');
+    expect(starts).toBe(1);
+    expect(submissions.length).toBe(1);
+  }
+);
 
 test('an older pending receipt cannot replace a newer authenticated retry', async ({
   page,

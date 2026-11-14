@@ -61,60 +61,64 @@ test('ordinary game track remounts reuse their GL state without accumulating fal
   });
 });
 
-test('spring scenery renders on native elevated driving and reduced motion preserves a quiet ready scene', async ({
-  page,
-}) => {
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (e) => {
-    if (e.type() === 'error') errors.push(e.text());
-  });
-  await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });
-  await page.goto(
-    '/game.html?elevated=1&seed=flow-probe-21&sceneryQuality=standard'
-  );
-  await waitForSceneAssets(page);
-  const race = page.locator('#race');
-  await expect(race).toHaveAttribute('data-phase', 'ready');
-  await expect(race).toHaveAttribute(
-    'data-scenery-version',
-    'spring-countryside-v1'
-  );
-  expect(
-    Number(await race.getAttribute('data-vegetation-count'))
-  ).toBeGreaterThan(500);
-  await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
-  await page.locator('#race-settings > summary').click();
-  await page.locator('#motion-select').selectOption('reduced');
-  await page.locator('#settings-close').click();
-  await expect(race).toHaveAttribute('data-reduced-motion', 'true');
-  await page.locator('#start-button').click();
-  await page.keyboard.down('Space');
-  await page.clock.runFor(7000);
-  await expect(race).toHaveAttribute('data-phase', 'racing');
-  expect(Number(await page.locator('#speed').textContent())).toBeGreaterThan(0);
-  const fullCount = Number(await race.getAttribute('data-vegetation-count'));
-  const distanceBefore = await page
-    .locator('#lap-progress')
-    .evaluate((p) => (p instanceof HTMLProgressElement ? p.value : -1));
-  await page.locator('#race-settings > summary').click();
-  await page.locator('#scenery-detail').selectOption('light');
-  await page.locator('#settings-close').click();
-  await expect(race).toHaveAttribute('data-phase', 'racing');
-  expect(Number(await race.getAttribute('data-vegetation-count'))).toBeLessThan(
-    fullCount
-  );
-  expect(
-    await page
+test(
+  'spring scenery renders on native elevated driving and reduced motion preserves a quiet ready scene',
+  { tag: '@smoke' },
+  async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (e) => {
+      if (e.type() === 'error') errors.push(e.text());
+    });
+    await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });
+    await page.goto(
+      '/game.html?elevated=1&seed=flow-probe-21&sceneryQuality=standard'
+    );
+    await waitForSceneAssets(page);
+    const race = page.locator('#race');
+    await expect(race).toHaveAttribute('data-phase', 'ready');
+    await expect(race).toHaveAttribute(
+      'data-scenery-version',
+      'spring-countryside-v1'
+    );
+    expect(
+      Number(await race.getAttribute('data-vegetation-count'))
+    ).toBeGreaterThan(500);
+    await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
+    await page.locator('#race-settings > summary').click();
+    await page.locator('#motion-select').selectOption('reduced');
+    await page.locator('#settings-close').click();
+    await expect(race).toHaveAttribute('data-reduced-motion', 'true');
+    await page.locator('#start-button').click();
+    await page.keyboard.down('Space');
+    await page.clock.runFor(7000);
+    await expect(race).toHaveAttribute('data-phase', 'racing');
+    expect(Number(await page.locator('#speed').textContent())).toBeGreaterThan(
+      0
+    );
+    const fullCount = Number(await race.getAttribute('data-vegetation-count'));
+    const distanceBefore = await page
       .locator('#lap-progress')
-      .evaluate((p) => (p instanceof HTMLProgressElement ? p.value : -1))
-  ).toBeGreaterThanOrEqual(distanceBefore);
-  await page.keyboard.up('Space');
-  await page.screenshot({
-    path: `test-results/countryside-native-${test.info().project.name}.png`,
-  });
-  expect(errors).toEqual([]);
-});
+      .evaluate((p) => (p instanceof HTMLProgressElement ? p.value : -1));
+    await page.locator('#race-settings > summary').click();
+    await page.locator('#scenery-detail').selectOption('light');
+    await page.locator('#settings-close').click();
+    await expect(race).toHaveAttribute('data-phase', 'racing');
+    expect(
+      Number(await race.getAttribute('data-vegetation-count'))
+    ).toBeLessThan(fullCount);
+    expect(
+      await page
+        .locator('#lap-progress')
+        .evaluate((p) => (p instanceof HTMLProgressElement ? p.value : -1))
+    ).toBeGreaterThanOrEqual(distanceBefore);
+    await page.keyboard.up('Space');
+    await page.screenshot({
+      path: `test-results/countryside-native-${test.info().project.name}.png`,
+    });
+    expect(errors).toEqual([]);
+  }
+);
 
 test('development workshop renders twelve distinct seed compositions with working region and clearance controls', async ({
   page,

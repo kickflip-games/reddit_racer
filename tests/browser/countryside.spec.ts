@@ -79,7 +79,7 @@ test(
     await expect(race).toHaveAttribute('data-phase', 'ready');
     await expect(race).toHaveAttribute(
       'data-scenery-version',
-      'spring-countryside-v1'
+      'green-composition-v2'
     );
     expect(
       Number(await race.getAttribute('data-vegetation-count'))

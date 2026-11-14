@@ -1,3 +1,4 @@
+import { courseComposition, sceneryHash } from './scenery-profile';
 import * as THREE from 'three';
 import type { Track } from '../shared/track';
 import { getTrackBounds } from './track-renderer';
@@ -28,7 +29,12 @@ export function circuitTerrainHeight(
   }
   if (clearance <= 21) return 0;
   const envelope = Math.min(1, (clearance - 21) / 16);
-  const waves = 1.8 + Math.sin(x * 0.043) * 1.1 + Math.cos(z * 0.051) * 0.9;
+  const phase = (sceneryHash(track.seed) / 0xffffffff) * Math.PI * 2;
+  const waves =
+    courseComposition(track.seed).hillScale *
+    (1.8 +
+      Math.sin(x * 0.043 + phase) * 1.1 +
+      Math.cos(z * 0.051 - phase) * 0.9);
   const bounds = getTrackBounds(track, 30);
   const edge = Math.max(
     0,

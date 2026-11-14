@@ -25,7 +25,8 @@ export type RaceCamera = {
   resize(viewport: RaceCameraViewport): boolean;
   update(pose: RaceCameraPose, options: RaceCameraUpdate): boolean;
 };
-const pitch = (32 * Math.PI) / 180;
+// Fixed diorama angle: the world never turns with the car.
+const pitch = (50 * Math.PI) / 180;
 const cosine = Math.cos(pitch),
   sine = Math.sin(pitch);
 const finite = (n: number): void => {
@@ -48,11 +49,10 @@ export function createRaceCamera(track: Track): RaceCamera {
     insets: { top: 0, left: 0, right: 0, bottom: 0 },
   };
   let mode: RaceCameraUpdate['mode'] = 'overview';
-  let reducedMotion = false;
   let initialized = false;
   let renderable = false;
-  let forwardX = start.tx,
-    forwardZ = start.tz;
+  const forwardX = 0.6,
+    forwardZ = 0.8;
   let anchorX = 0,
     anchorZ = 0,
     scale = 14;
@@ -67,30 +67,8 @@ export function createRaceCamera(track: Track): RaceCamera {
       mode === 'overview'
         ? 21
         : Math.min(36, Math.max(25, (pose.speed ?? 18) * 1.7));
-    const aim = sampleTrack(
-      track,
-      pose.distance + (mode === 'overview' ? 8 : 6)
-    );
-    const targetX = mode === 'overview' ? frame.tx : aim.tx;
-    const targetZ = mode === 'overview' ? frame.tz : aim.tz;
     const elapsed = Math.min(0.1, dt);
     const snap = reset || !initialized;
-    // Keep world orientation in Reduced mode; normal mode turns gently with the course.
-    if (snap) {
-      forwardX = targetX;
-      forwardZ = targetZ;
-    } else if (elapsed > 0 && !reducedMotion) {
-      const angle =
-        Math.atan2(targetX, targetZ) - Math.atan2(forwardX, forwardZ);
-      const wrapped = Math.atan2(Math.sin(angle), Math.cos(angle));
-      const step = Math.max(
-        -elapsed * 1.8,
-        Math.min(elapsed * 1.8, wrapped * (1 - Math.exp(-elapsed / 0.24)))
-      );
-      const heading = Math.atan2(forwardX, forwardZ) + step;
-      forwardX = Math.sin(heading);
-      forwardZ = Math.cos(heading);
-    }
     const rightX = forwardZ,
       rightZ = -forwardX;
     const points: { x: number; z: number; y: number }[] = [];
@@ -243,7 +221,6 @@ export function createRaceCamera(track: Track): RaceCamera {
       const changedMode = mode !== options.mode;
       pose = { ...next };
       mode = options.mode;
-      reducedMotion = options.reducedMotion ?? false;
       return fit(options.deltaSeconds, options.reset === true || changedMode);
     },
   };

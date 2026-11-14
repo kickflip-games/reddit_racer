@@ -821,3 +821,60 @@ select:focus-visible {
     background: linear-gradient(90deg, #fff7e8ba, #fff7e800 43%);
   }
 }
+
+/* A quiet world-up course outline; the driving canvas owns every pointer. */
+.circuit-minimap {
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  width: clamp(100px, 29vw, 120px);
+  pointer-events: none;
+}
+.circuit-minimap * {
+  pointer-events: none;
+}
+.circuit-minimap svg {
+  display: block;
+  width: 100%;
+}
+.circuit-minimap path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.minimap-halo {
+  stroke: #292d325c;
+  stroke-width: 5.5px;
+}
+.minimap-course {
+  stroke: #eee4cfc9;
+  stroke-width: 2.5px;
+}
+.minimap-completed {
+  stroke: var(--accent);
+  stroke-width: 2.5px;
+}
+.minimap-start {
+  stroke: var(--paper);
+  stroke-width: 2px;
+}
+.minimap-player {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+#race[data-settings-open='true'] .circuit-minimap {
+  visibility: hidden;
+}
+@media (min-width: 701px) {
+  .circuit-minimap {
+    width: 140px;
+  }
+}
+@media (max-height: 480px) {
+  .circuit-minimap {
+    width: 88px;
+  }
+}

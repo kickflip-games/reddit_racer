@@ -15,6 +15,7 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await expect(page.locator('#mode-label')).toContainText('Practice');
   await expect(page.locator('#race-canvas')).toBeVisible();
+  await expect(page.locator('#circuit-minimap')).toBeHidden();
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-phase',
@@ -31,6 +32,7 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   await page.clock.runFor(3100);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'true');
+  await expect(page.locator('#circuit-minimap')).toBeVisible();
   const acceleratingSpeed = Number(await page.locator('#speed').textContent());
   expect(acceleratingSpeed).toBeGreaterThan(0);
   await page.keyboard.up('Space');
@@ -47,6 +49,11 @@ test('local racer renders, accelerates, brakes, completes and retries', async ({
   await expect(page.locator('#retry-button')).toBeVisible();
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'finished');
   await expect(page.locator('#lap-progress-label')).toContainText('100%');
+  await expect(page.locator('#circuit-minimap')).toBeHidden();
+  await expect(page.locator('#minimap-progress')).toHaveAttribute(
+    'aria-valuenow',
+    '0'
+  );
   expect(
     await page
       .locator('#lap-progress')

@@ -1,0 +1,275 @@
+{
+  "scope": "Same input/virtual clock/viewports; unmodified game captures. Pixel comparison excludes only the minimap rectangle plus a 1px border; no image is edited.",
+  "comparisons": [
+    {
+      "name": "minimap-0-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2558
+      }
+    },
+    {
+      "name": "minimap-0-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2188
+      }
+    },
+    {
+      "name": "minimap-1-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2585
+      }
+    },
+    {
+      "name": "minimap-1-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2193
+      }
+    },
+    {
+      "name": "minimap-2-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2603
+      }
+    },
+    {
+      "name": "minimap-2-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2226
+      }
+    },
+    {
+      "name": "minimap-3-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2486
+      }
+    },
+    {
+      "name": "minimap-3-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2107
+      }
+    },
+    {
+      "name": "minimap-4-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2413
+      }
+    },
+    {
+      "name": "minimap-4-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2054
+      }
+    },
+    {
+      "name": "minimap-5-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2221
+      }
+    },
+    {
+      "name": "minimap-5-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 1878
+      }
+    },
+    {
+      "name": "hairpin-desktop",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 671036,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 2249
+      }
+    },
+    {
+      "name": "hairpin-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 330784,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 1818
+      }
+    },
+    {
+      "name": "small-portrait",
+      "progressEqual": true,
+      "drawCallsEqual": true,
+      "trianglesEqual": true,
+      "canvasesBefore": 1,
+      "canvasesAfter": 1,
+      "backendRequestsBefore": [],
+      "backendRequestsAfter": [],
+      "browserErrors": [],
+      "pixels": {
+        "outsidePixels": 171356,
+        "outsideChanged": 0,
+        "outsideChangedOver8": 0,
+        "outsideMaximum": 0,
+        "insideChanged": 1831
+      }
+    }
+  ]
+}

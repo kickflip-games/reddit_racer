@@ -129,6 +129,7 @@ async function driveFast(page: Page): Promise<void> {
   await page.clock.runFor(3000);
   await page.keyboard.down('Space');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
+  await expect(page.locator('#circuit-minimap')).toBeVisible();
   const epoch = await page.evaluate(() => performance.now());
   for (const transition of replay.transitions.slice(1)) {
     const now = await page.evaluate(() => performance.now());
@@ -145,6 +146,7 @@ async function driveFast(page: Page): Promise<void> {
   await page.keyboard.up('Space');
   await page.clock.runFor(32);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'finished');
+  await expect(page.locator('#circuit-minimap')).toBeHidden();
 }
 function verifiedResult(
   record: DailyChallengeRecord,

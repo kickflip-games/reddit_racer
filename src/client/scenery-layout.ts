@@ -87,11 +87,11 @@ export type SceneryProp = {
   scale?: number;
 };
 export const SPRING_PALETTE = Object.freeze({
-  grass: ['#98ae73', '#a8b980', '#879e65', '#b3bd83'],
+  grass: ['#74bd65', '#a0cf75', '#4e9b68', '#bcda83'],
   flowers: ['#f0d3a0', '#e9b8bb', '#d9c5df', '#f5e9c7'],
   crowns: ['#dca3ad', '#edc0c0', '#ead9b1', '#f1e1bd'],
-  greens: ['#547555', '#66835b', '#789268'],
-  bushes: ['#778d59', '#8d9e65', '#5f7e56'],
+  greens: ['#237d67', '#3b9b70', '#65ad70'],
+  bushes: ['#4b9b66', '#79b969', '#337f65'],
 });
 
 function randomSource(seed: string) {
@@ -633,7 +633,7 @@ export function generateSceneryLayout(
     options: {
       quality: light ? 'light' : 'standard',
       wind: options.wind ?? true,
-      lighting: options.lighting ?? 'soft',
+      lighting: options.lighting ?? 'toon',
     },
   };
 }

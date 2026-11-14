@@ -35,10 +35,10 @@ export function createEnvironment(
     colors: number[] = [];
   const field = createRoadField(track),
     phase = (sceneryHash(layout.seed) / 4294967296) * Math.PI * 2;
-  const base = new THREE.Color('#829e68'),
-    light = new THREE.Color('#a6b87f'),
-    dark = new THREE.Color('#65885d'),
-    soil = new THREE.Color('#b6a27b');
+  const base = new THREE.Color('#4eaa65'),
+    light = new THREE.Color('#91c976'),
+    dark = new THREE.Color('#2d7863'),
+    soil = new THREE.Color('#c7ae79');
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i),
       z = position.getZ(i);
@@ -60,32 +60,30 @@ export function createEnvironment(
     colors.push(color.r, color.g, color.b);
   }
   geometry.computeVertexNormals();
-  // The sun and hemisphere are static. Bake their diffuse light into the ground
-  // once, avoiding derivative normals and lighting across the whole screen each frame.
-  const normals = geometry.getAttribute('normal');
-  const skyLight = new THREE.Color('#fff1d3').multiplyScalar(2.1);
-  const groundLight = new THREE.Color('#71806a').multiplyScalar(2.1);
-  const sunLight = new THREE.Color('#fff0d6').multiplyScalar(2.4);
-  const sunDirection = new THREE.Vector3(-30, 80, 30).normalize();
-  const normal = new THREE.Vector3(),
-    lighting = new THREE.Color(),
-    direct = new THREE.Color();
-  for (let i = 0; i < position.count; i++) {
-    normal.fromBufferAttribute(normals, i);
-    direct.copy(sunLight).multiplyScalar(Math.max(0, normal.dot(sunDirection)));
-    lighting
-      .copy(groundLight)
-      .lerp(skyLight, (normal.y + 1) / 2)
-      .add(direct)
-      .multiplyScalar(1 / Math.PI);
-    colors[i * 3] = (colors[i * 3] ?? 0) * lighting.r;
-    colors[i * 3 + 1] = (colors[i * 3 + 1] ?? 0) * lighting.g;
-    colors[i * 3 + 2] = (colors[i * 3 + 2] ?? 0) * lighting.b;
-  }
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  // A single opaque pass: broad world-space colour patches plus three diffuse
+  // bands. No screen-space outlines, textures, postprocessing or extra geometry.
   const ground = new THREE.Mesh(
     geometry,
-    new THREE.MeshBasicMaterial({ vertexColors: true })
+    new THREE.ShaderMaterial({
+      vertexColors: true,
+      vertexShader: `varying vec3 vTint; varying vec3 vNormal; varying vec2 vWorld;
+      void main() {
+        vTint = color; vNormal = normal; vWorld = position.xz;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }`,
+      fragmentShader: `varying vec3 vTint; varying vec3 vNormal; varying vec2 vWorld;
+      void main() {
+        float light = dot(normalize(vNormal), normalize(vec3(-30.0,80.0,30.0)));
+        float band = light < 0.45 ? 0.66 : (light < 0.8 ? 0.84 : 1.0);
+        float field = sin(vWorld.x * 0.028 + sin(vWorld.y * 0.019)) * cos(vWorld.y * 0.031);
+        float patchMask = smoothstep(-0.1, 0.04, field);
+        vec3 tint = mix(vTint * vec3(0.83,0.94,1.02), vTint * vec3(1.04,1.04,0.91), patchMask);
+        gl_FragColor = vec4(tint * band, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`,
+    })
   );
   ground.name = 'diorama-terrain';
   group.add(ground);

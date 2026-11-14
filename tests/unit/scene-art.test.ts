@@ -535,7 +535,7 @@ void test('scenery toon themes preserve source maps and dispose only owned mater
     assert.notEqual(material, foliage);
     assert.notEqual(material, bark);
     if (material.name === 'grass') {
-      assert.equal(material.color.getHexString(), '647c55');
+      assert.equal(material.color.getHexString(), '3e956a');
       assert.equal(material.map, texture);
     } else {
       assert.equal(material.color.getHexString(), '8a6746');

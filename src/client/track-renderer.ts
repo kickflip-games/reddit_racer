@@ -95,7 +95,7 @@ function roadStrip(
   geometry.computeVertexNormals();
   return new THREE.Mesh(
     geometry,
-    new THREE.MeshLambertMaterial({
+    new THREE.MeshToonMaterial({
       color,
       side: THREE.DoubleSide,
     })
@@ -172,7 +172,7 @@ function kerbStrip(
     0.035,
     jumps
   );
-  const red = new THREE.Color('#cf634d');
+  const red = new THREE.Color('#e87358');
   const cream = new THREE.Color('#fff2d7');
   const positions: number[] = [],
     colors: number[] = [],
@@ -243,7 +243,7 @@ export function createTrackRenderer(
       track,
       { side: -1, offset: -0.8 },
       { side: 1, offset: 0.8 },
-      '#c4b18a',
+      '#b49b79',
       0,
       jumps
     ),
@@ -251,7 +251,7 @@ export function createTrackRenderer(
       track,
       { side: -1, offset: 0 },
       { side: 1, offset: 0 },
-      '#363b40',
+      '#293c50',
       0.03,
       jumps
     ),
@@ -323,7 +323,7 @@ export function createTrackRenderer(
     group.add(
       new THREE.Mesh(
         wallGeometry,
-        new THREE.MeshLambertMaterial({
+        new THREE.MeshToonMaterial({
           color: '#a78456',
           side: THREE.DoubleSide,
         })
@@ -375,7 +375,7 @@ export function createTrackRenderer(
       const frame = sampleTrack(track, s);
       const lip = new THREE.Mesh(
         new THREE.BoxGeometry(frame.width + 1.6, 0.35, 0.32),
-        new THREE.MeshLambertMaterial({ color: '#d9c8a6' })
+        new THREE.MeshToonMaterial({ color: '#d9c8a6' })
       );
       lip.position.set(frame.x, (frame.y ?? jump.height) - 0.18, frame.z);
       lip.rotation.y = Math.atan2(frame.tx, frame.tz);
@@ -483,7 +483,7 @@ function createRoadStructure(track: Track): THREE.Group {
   group.add(
     new THREE.Mesh(
       fascia,
-      new THREE.MeshLambertMaterial({
+      new THREE.MeshToonMaterial({
         color: '#a9b5b1',
         side: THREE.DoubleSide,
       })
@@ -499,7 +499,7 @@ function createRoadStructure(track: Track): THREE.Group {
   );
   const piers = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshLambertMaterial({ color: '#9aa6a0' }),
+    new THREE.MeshToonMaterial({ color: '#9aa6a0' }),
     safeFootings.length
   );
   piers.name = 'bridge-piers';

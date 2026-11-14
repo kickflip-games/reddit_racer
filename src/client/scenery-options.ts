@@ -11,7 +11,8 @@ export function readSceneryOptions(
       ? 'light'
       : 'standard';
   const quality = preference === 'auto' ? automatic : preference;
-  if (!import.meta.env.DEV) return { quality, wind: quality !== 'light' };
+  if (!import.meta.env.DEV)
+    return { quality, wind: quality !== 'light', lighting: 'toon' };
   const query = new URLSearchParams(window.location.search);
   const number = (name: string): number =>
     query.has(name) ? Number(query.get(name)) : 1;
@@ -31,6 +32,6 @@ export function readSceneryOptions(
     wind: query.has('wind')
       ? query.get('wind') !== '0'
       : selectedQuality !== 'light',
-    lighting: query.get('lighting') === 'toon' ? 'toon' : 'soft',
+    lighting: query.get('lighting') === 'soft' ? 'soft' : 'toon',
   };
 }

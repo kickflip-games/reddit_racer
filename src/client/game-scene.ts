@@ -234,7 +234,7 @@ export function initializeGame(
   const scene = new THREE.Scene();
   // The uniformly lit field receives no shadows; match it with the clear color
   // to avoid a redundant full-screen ground draw on every racing frame.
-  scene.background = new THREE.Color('#a5b18d');
+  scene.background = new THREE.Color('#62ab73');
   const jumps = track.jumps ?? [];
   const countryside = generateSceneryLayout(track, {
     ...readSceneryOptions(),

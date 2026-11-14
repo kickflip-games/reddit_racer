@@ -130,9 +130,9 @@ void test('failed controls clean only their five temporary keys and retain a bou
     !h.calls.some((call) =>
       call.keys.some(
         (key) =>
-          key.startsWith('racer:centreline-v1:leaderboard:') ||
-          key.startsWith('racer:centreline-v1:pb:') ||
-          key.startsWith('racer:centreline-v1:session:')
+          key.startsWith('racer:progressive-slip-v1:leaderboard:') ||
+          key.startsWith('racer:progressive-slip-v1:pb:') ||
+          key.startsWith('racer:progressive-slip-v1:session:')
       )
     )
   );

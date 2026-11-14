@@ -16,7 +16,7 @@ import type {
 } from './circuit-generator.ts';
 import { sampleTrack, validateTrack, type Track } from './track.ts';
 
-export const ELEVATED_GENERATOR_VERSION = 'countryside-circuits-v1';
+export const ELEVATED_GENERATOR_VERSION = 'countryside-circuits-v2';
 export const ELEVATED_GENERATOR_CONFIG: Readonly<GeneratorConfig> =
   Object.freeze({
     width: 7,
@@ -229,7 +229,7 @@ export function generateElevatedCandidate(
   codes: string[];
 } {
   const random = randomFor(
-    `${ELEVATED_GENERATOR_VERSION}|${seed}|${attempt}|${JSON.stringify({ ...config, maxAttempts: 12 })}`
+    `countryside-circuits-v1|${seed}|${attempt}|${JSON.stringify({ ...config, maxAttempts: 12 })}`
   );
   const crossing = random() < 0.4;
   let controls: Point[];

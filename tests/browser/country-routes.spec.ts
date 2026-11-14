@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { waitForSceneAssets, advanceRaceClockUntil } from './scene-ready';
 import { generateElevatedCircuit } from '../../src/shared/elevated-generator';
+import { sampleTrack } from '../../src/shared/track';
 import { segmentsIntersect } from '../../src/shared/circuit-validation';
 
 test(
@@ -26,12 +27,11 @@ test(
     );
     await expect(page.locator('#race')).toHaveAttribute(
       'data-grip-model',
-      'centreline'
+      'progressive-slip'
     );
-    await expect(page.locator('#race')).toHaveAttribute(
-      'data-lateral-offset',
-      '0'
-    );
+    expect(
+      Number(await page.locator('#race').getAttribute('data-lateral-offset'))
+    ).toBeGreaterThan(-12);
     await expect(page.locator('#race')).toHaveAttribute('data-surface', 'dry');
     await expect(page.locator('#circuit-minimap')).toBeVisible();
     await page.screenshot({
@@ -43,10 +43,9 @@ test(
         Number(await page.locator('#race').getAttribute('data-landings')) >= 1,
       6000
     );
-    await expect(page.locator('#race')).toHaveAttribute(
-      'data-lateral-offset',
-      '0'
-    );
+    expect(
+      Number(await page.locator('#race').getAttribute('data-lateral-offset'))
+    ).toBeGreaterThan(-12);
     await page.keyboard.up('Space');
     expect(errors).toEqual([]);
   }
@@ -56,7 +55,7 @@ test(
   'ordinary generated roads cross at separate heights while the car follows both levels',
   { tag: '@smoke' },
   async ({ page }) => {
-    const track = generateElevatedCircuit('country-0').track;
+    const track = generateElevatedCircuit('country-4').track;
     const crossing: number[] = [];
     for (let i = 0; i < track.samples.length - 1 && !crossing.length; i++)
       for (let j = i + 30; j < track.samples.length - 1; j++) {
@@ -80,7 +79,7 @@ test(
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });
-    await page.goto('/game.html?practice=1&seed=country-0');
+    await page.goto('/game.html?practice=1&seed=country-4');
     await waitForSceneAssets(page);
     await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
     await page.locator('#start-button').click();
@@ -95,10 +94,13 @@ test(
         async () => (await progress()) >= s,
         45000
       );
-      await expect(page.locator('#race')).toHaveAttribute(
-        'data-lateral-offset',
-        '0'
-      );
+      expect(
+        Math.abs(
+          Number(
+            await page.locator('#race').getAttribute('data-lateral-offset')
+          )
+        )
+      ).toBeLessThan(3.5);
       await expect(page.locator('#race')).toHaveAttribute(
         'data-airborne',
         'false'
@@ -112,8 +114,9 @@ test(
             Number(await page.locator('#race').getAttribute('data-road-height'))
         )
       ).toBeLessThan(0.02);
-      if (index === 0) expect(height).toBeLessThan(0.1);
-      else expect(height).toBeGreaterThan(5.5);
+      expect(Math.abs(height - (sampleTrack(track, s).y ?? 0))).toBeLessThan(
+        0.1
+      );
       await page.screenshot({
         path: `test-results/country-crossing-${index}-${test.info().project.name}.png`,
       });

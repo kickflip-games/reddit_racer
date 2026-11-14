@@ -109,6 +109,9 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     )
   ).toBeLessThan(0.01);
   const approachingSpeed = Number(await page.locator('#speed').textContent());
+  const cameraTop = await page
+    .locator('#race')
+    .evaluate((e) => e.style.getPropertyValue('--hud-bottom'));
   await elapsed(page, epoch, first.time + 32);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-practice-laps',
@@ -139,6 +142,11 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   expect(Number(await page.locator('#speed').textContent())).toBeGreaterThan(
     approachingSpeed * 0.8
   );
+  expect(
+    await page
+      .locator('#race')
+      .evaluate((e) => e.style.getPropertyValue('--hud-bottom'))
+  ).toBe(cameraTop);
   await elapsed(page, epoch, second.time + 32);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-practice-laps',

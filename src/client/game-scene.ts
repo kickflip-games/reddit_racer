@@ -284,6 +284,12 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
+  // Do not flash the placeholder before the real car arrives. Starting early
+  // deliberately selects the fallback for this scene, including every retry.
+  carVisual.object.visible = false;
+  let carIdentityLocked = false;
+  let racingViewport:
+    { width: number; height: number; top: number } | undefined;
   const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: true,
@@ -377,12 +383,13 @@ export function initializeGame(
     // Read the actual driver now: a Start click can precede the next render.
     if (destroyed || preparing || driver.active) return false;
     let changed = false;
-    if (pendingCar) {
+    if (pendingCar && !carIdentityLocked) {
       const installed = carVisual.installModel(pendingCar);
       pendingCar = undefined;
+      carVisual.object.visible = true;
       raceRoot.dataset.carArt = carVisual.kind;
       raceRoot.dataset.carLoad = installed ? 'ready' : 'unavailable';
-      changed = installed;
+      changed = true;
     }
     if (pendingScenery) {
       const available = Object.keys(pendingScenery).length;
@@ -404,7 +411,14 @@ export function initializeGame(
     const canvasBounds = canvas.getBoundingClientRect();
     const hudBounds = hud.getBoundingClientRect();
     const cardBounds = card.hidden ? null : card.getBoundingClientRect();
-    const top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
+    let top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
+    if (driver.active) {
+      // Lap/best labels resize the HUD at the finish line. They must not move
+      // the world underneath the car. Only a real viewport resize refits it.
+      if (racingViewport?.width === width && racingViewport.height === height)
+        top = racingViewport.top;
+      else racingViewport = { width, height, top };
+    } else racingViewport = undefined;
     const portrait = width <= 700 && height > 480;
     const bottom =
       portrait && cardBounds
@@ -809,6 +823,10 @@ export function initializeGame(
     preparation = undefined;
     enableAttemptButtons(true);
     const timestamp = performance.now();
+    renderReadyArt();
+    carIdentityLocked = true;
+    carVisual.object.visible = true;
+    racingViewport = undefined;
     driver.start(timestamp);
     seenPracticeLaps = 0;
     card.dataset.result = 'false';
@@ -1096,13 +1114,23 @@ export function initializeGame(
       if (destroyed) return;
       if (!template) {
         raceRoot.dataset.carLoad = 'unavailable';
+        carVisual.object.visible = true;
+        sceneDirty = true;
+        return;
+      }
+      if (carIdentityLocked) {
+        raceRoot.dataset.carLoad = 'deferred';
         return;
       }
       pendingCar = template;
       renderReadyArt();
     })
     .catch(() => {
-      if (!destroyed) raceRoot.dataset.carLoad = 'unavailable';
+      if (!destroyed) {
+        raceRoot.dataset.carLoad = 'unavailable';
+        carVisual.object.visible = true;
+        sceneDirty = true;
+      }
     });
   void sceneAssets
     .loadSceneryAssets()

@@ -105,6 +105,7 @@ export function initializeGame(
   const inputLabel = element('status');
   const start = element('start-button');
   const retry = element('retry-button');
+  const restart = element('restart-button');
   const soundToggle = element('sound-toggle');
   const motionSelect = element('motion-select');
   const soundFeedback = element('sound-feedback');
@@ -759,6 +760,7 @@ export function initializeGame(
   function enableAttemptButtons(enabled: boolean): void {
     start.toggleAttribute('disabled', !enabled);
     retry.toggleAttribute('disabled', !enabled);
+    restart.toggleAttribute('disabled', !enabled);
   }
   function applyVerification(id: number, result: VerificationOutcome): void {
     if (destroyed || id !== attemptId) return;
@@ -946,6 +948,19 @@ export function initializeGame(
   }
   start.addEventListener('click', beginRace, eventOptions);
   retry.addEventListener('click', beginRace, eventOptions);
+  restart.addEventListener(
+    'click',
+    () => {
+      if (destroyed || preparing || !viewportUsable) return;
+      if (racing) {
+        driver.abandon('focus');
+        showOutcome();
+      }
+      release();
+      beginRace();
+    },
+    eventOptions
+  );
   canvas.addEventListener(
     'pointerdown',
     (event) => {

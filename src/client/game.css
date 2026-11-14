@@ -855,3 +855,23 @@ select:focus-visible {
     width: 88px;
   }
 }
+
+/* A small visual control with a generous touch target, not a mode badge. */
+#mode-label {
+  display: none;
+}
+#restart-button {
+  display: grid;
+  place-items: center;
+  justify-content: center;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#race[data-phase='loading'] #restart-button {
+  visibility: hidden;
+}

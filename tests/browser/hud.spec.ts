@@ -3,7 +3,7 @@ import {
   createDailyChallengeRecord,
   dailyChallengeView,
 } from '../../src/shared/daily-challenge.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import { setRaceSettingsOpen, waitForSceneAssets } from './scene-ready.ts';
 
 async function layout(page: Page) {
@@ -104,7 +104,7 @@ test('mocked daily details and later wrapping refit HUD, card and camera inset w
     day: '2026-11-12',
     createdAtMs: Date.parse('2026-11-12T12:00:00Z'),
     requestedSeed: 'showcase-3',
-    generated: generateValidatedCircuit('showcase-3'),
+    generated: generateElevatedCircuit('showcase-3'),
   });
   let release = () => {};
   const gate = new Promise<void>((resolve) => {

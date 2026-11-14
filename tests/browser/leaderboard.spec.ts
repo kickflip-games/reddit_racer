@@ -6,7 +6,7 @@ import {
   toPublicDailyChallenge,
   type DailyChallengeRecord,
 } from '../../src/shared/daily-challenge.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import type { LeaderboardView } from '../../src/shared/leaderboard.ts';
 import {
   parseRankedSubmission,
@@ -16,7 +16,7 @@ import {
 import { runReplay } from '../../src/shared/replay.ts';
 import { SIMULATION_HZ } from '../../src/shared/simulation.ts';
 
-const generated = generateValidatedCircuit('showcase-3');
+const generated = generateElevatedCircuit('showcase-3');
 const controlReplay = generated.quality.fastReplay;
 if (!controlReplay)
   throw new Error('Expected a checked development input tape');

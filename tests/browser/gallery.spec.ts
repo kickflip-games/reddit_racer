@@ -55,9 +55,9 @@ test('selected seed quality updates the accepted diagram and enables local drivi
     'data-state',
     'passed'
   );
-  const { generateValidatedCircuit } =
-    await import('../../src/shared/circuit-quality.ts');
-  const approved = generateValidatedCircuit(seed);
+  const { generateElevatedCircuit } =
+    await import('../../src/shared/elevated-generator.ts');
+  const approved = generateElevatedCircuit(seed);
   await expect(page.locator('#selected-hash')).toHaveText(
     await hashTrack(approved.track)
   );

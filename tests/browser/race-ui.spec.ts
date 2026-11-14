@@ -4,9 +4,9 @@ import {
   dailyChallengeView,
   toPublicDailyChallenge,
 } from '../../src/shared/daily-challenge.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 
-const generated = generateValidatedCircuit('showcase-3');
+const generated = generateElevatedCircuit('showcase-3');
 let fixture: ReturnType<typeof createDailyChallengeRecord> | undefined;
 function recordFixture() {
   fixture ??= createDailyChallengeRecord({

@@ -66,7 +66,7 @@ export async function readSceneGraphics(page: Page) {
 
 export async function openPracticeModes(page: Page): Promise<void> {
   const modes = page.locator('#practice-modes');
-  if (!(await modes.getAttribute('open'))) {
+  if ((await modes.count()) && !(await modes.getAttribute('open'))) {
     const open = await modes.evaluate(
       (e) => e instanceof HTMLDetailsElement && e.open
     );

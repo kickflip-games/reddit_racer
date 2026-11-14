@@ -812,7 +812,9 @@ select:focus-visible {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  /* Keep dashes in the SVG coordinate system. Non-scaling-stroke scales the
+     normalized dash length differently from the route at responsive sizes,
+     making the completed highlight run ahead of the player marker. */
 }
 .minimap-halo {
   stroke: #292d325c;

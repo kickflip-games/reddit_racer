@@ -232,3 +232,71 @@ test(
     expect(errors).toEqual([]);
   }
 );
+
+test('painted progress ends at the player at every responsive minimap size', async ({
+  page,
+}) => {
+  await page.goto('/game.html?practice=1&seed=practice-1');
+  await waitForSceneAssets(page);
+  const map = page.locator('#circuit-minimap');
+  // Known geometry tests actual paint independently of the sampling function.
+  await map.evaluate((root) => {
+    root.removeAttribute('hidden');
+    for (const id of ['minimap-halo', 'minimap-course', 'minimap-completed']) {
+      root
+        .querySelector(`#${id}`)
+        ?.setAttribute('d', 'M20 20L140 20L140 140L20 140Z');
+    }
+    root.querySelector('#minimap-start')?.setAttribute('d', '');
+    root.querySelector('#minimap-player')?.setAttribute('r', '0');
+  });
+  await page.addStyleTag({
+    content:
+      '#circuit-minimap {display:block !important} #minimap-halo, #minimap-course {stroke:#888888} #minimap-completed {stroke:#ff0000}',
+  });
+  for (const width of [88, 100, 120, 140, 160]) {
+    await map.evaluate((root, width) => {
+      root.style.width = `${width}px`;
+    }, width);
+    for (const fraction of [0, 0.25, 0.5, 0.75, 1]) {
+      await page
+        .locator('#minimap-completed')
+        .evaluate(
+          (node, fraction) =>
+            node.setAttribute('stroke-dashoffset', String(1 - fraction)),
+          fraction
+        );
+      // Screenshot the real SVG; serializing it into an SVG image uses a
+      // different rendering path and does not reproduce the dash-scale bug.
+      const png = (await map.screenshot()).toString('base64');
+      const painted = await page.evaluate(async (png) => {
+        const image = new Image();
+        image.src = `data:image/png;base64,${png}`;
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('Missing raster context');
+        ctx.drawImage(image, 0, 0);
+        return [
+          [80, 20],
+          [140, 80],
+          [80, 140],
+          [20, 80],
+        ].map(([x, y]) => {
+          const [r, g] = ctx.getImageData(
+            Math.floor((x! * image.width) / 160),
+            Math.floor((y! * image.height) / 160),
+            1,
+            1
+          ).data;
+          return (r ?? 0) > (g ?? 0) + 80;
+        });
+      }, png);
+      expect(painted, `width=${width}, completion=${fraction}`).toEqual(
+        [0.125, 0.375, 0.625, 0.875].map((p) => p < fraction)
+      );
+    }
+  }
+});

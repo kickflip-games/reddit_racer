@@ -44,3 +44,5 @@ This is an intentional pre-release rules reset. The `racer:centreline-v1` storag
 The [200-course report](evidence/predictable-routes/quality.json) records actual acceptance, distinct hashes/profiles, fallback rate, family counts, release opportunities and hold/cautious/heuristic-fast results. These are deterministic controller checks, not optimal times, physical-phone performance or human enjoyment measurements. Physical-device comfort remains a playtest task.
 
 Validation covers 356 unit tests, 200 classic plus 200 main courses, and 160 desktop/mobile/WebKit browser identities. Final complete-run and hosted-CI results are recorded in [PR #63](https://github.com/kickflip-games/reddit_racer/pull/63).
+
+Test build **0.0.18** is installed on [the Reddit test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xvqtc2/reddit_racer_daily_time_attack/). [Hosted observations](hosted-playtest.md#2026-11-14-predictable-routes-and-fixed-camera) record the actual origin, clean source and authenticated 52.633-second verified lap.

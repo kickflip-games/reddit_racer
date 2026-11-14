@@ -99,24 +99,42 @@ export function createEnvironment(
         ' #ifdef',
         '\n#ifdef'
       ),
-    fragmentShader: `varying vec2 vUv; void main() { float r = length(vUv * 2.0 - 1.0); float a = (1.0 - smoothstep(0.25, 1.0, r)) * 0.19; gl_FragColor = vec4(0.16, 0.19, 0.14, a); }`,
+    fragmentShader: `varying vec2 vUv; void main() { float r = length(vUv * 2.0 - 1.0); float a = (1.0 - smoothstep(0.25, 1.0, r)) * 0.27; gl_FragColor = vec4(0.16, 0.19, 0.14, a); }`,
   });
+  // Trees from the newer vegetation batches also need grounding. Cap coverage
+  // deterministically, and keep all projections in this one static draw call.
+  const shadowPlacements = [
+    ...placements.map((p) => ({
+      x: p.x,
+      z: p.z,
+      tree: p.kind === 'treeSmall',
+      scale: p.scale ?? 1,
+    })),
+    ...layout.plants
+      .filter((p) => p.kind === 'tree' || p.kind === 'blossom')
+      .slice(0, 256)
+      .map((p) => ({ x: p.x, z: p.z, tree: true, scale: p.scale * 0.75 })),
+  ];
   const shadows = new THREE.InstancedMesh(
     new THREE.PlaneGeometry(1, 1),
     material,
-    placements.length
+    shadowPlacements.length
   );
   shadows.name = 'scenery-contact-shadows';
   const dummy = new THREE.Object3D();
-  placements.forEach((placement, i) => {
-    const tree = placement.kind === 'treeSmall';
+  shadowPlacements.forEach((placement, i) => {
+    const tree = placement.tree;
     dummy.position.set(
       placement.x + (tree ? 1.2 : 0.3),
       groundHeightAt(surface, placement.x, placement.z) + 0.035,
-      placement.z + (tree ? 1.5 : 0.3)
+      placement.z - (tree ? 1.2 : 0.3)
     );
-    dummy.rotation.set(-Math.PI / 2, 0, -0.4);
-    dummy.scale.set(tree ? 5.4 : 2.8, tree ? 7.2 : 2, 1);
+    dummy.rotation.set(-Math.PI / 2, 0, -Math.PI / 4);
+    dummy.scale.set(
+      (tree ? 5.4 : 2.8) * placement.scale,
+      (tree ? 7.2 : 2) * placement.scale,
+      1
+    );
     dummy.updateMatrix();
     shadows.setMatrixAt(i, dummy.matrix);
   });

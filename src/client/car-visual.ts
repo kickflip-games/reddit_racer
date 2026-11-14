@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { softCarShadow, toonMaterial } from './toon-material';
 
 export const CAR_VISUAL_LENGTH = 3.8;
 export const CAR_VISUAL_GROUND_Y = 0.045;
@@ -70,13 +71,9 @@ export function createCarVisual(): CarVisual {
   const fallbackMaterials = new Set<THREE.Material>();
   const lampGeometry = new THREE.BoxGeometry(0.35, 0.14, 0.16);
   const lampMaterial = new THREE.MeshBasicMaterial({ color: '#6f231c' });
-  const shadowGeometry = new THREE.CircleGeometry(1, 24);
-  const shadowMaterial = new THREE.MeshBasicMaterial({
-    color: '#292d32',
-    transparent: true,
-    opacity: 0.23,
-    depthWrite: false,
-  });
+  const shadowGeometry = new THREE.PlaneGeometry(2, 2);
+  const shadowMaterial = softCarShadow();
+  const importedMaterials = new Map<THREE.Material, THREE.Material>();
   const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
   shadow.name = 'car-contact-shadow';
   shadow.rotation.x = -Math.PI / 2;
@@ -100,9 +97,8 @@ export function createCarVisual(): CarVisual {
     const model = new THREE.Group();
     const body = new THREE.Group();
     body.name = 'body';
-    const paint = new THREE.MeshStandardMaterial({
+    const paint = new THREE.MeshToonMaterial({
       color: '#f57b24',
-      roughness: 0.8,
     });
     const main = ownedMesh(
       new THREE.BoxGeometry(1.85, 0.56, CAR_VISUAL_LENGTH),
@@ -111,16 +107,15 @@ export function createCarVisual(): CarVisual {
     main.position.y = 0.75;
     const cabin = ownedMesh(
       new THREE.BoxGeometry(1.4, 0.5, 1.55),
-      new THREE.MeshStandardMaterial({ color: '#263f43', roughness: 0.55 })
+      new THREE.MeshToonMaterial({ color: '#263f43' })
     );
     cabin.position.set(0, 1.23, -0.13);
     body.add(main, cabin);
     model.add(body);
     const tyreGeometry = new THREE.CylinderGeometry(0.43, 0.43, 0.3, 10);
     tyreGeometry.rotateZ(Math.PI / 2);
-    const tyreMaterial = new THREE.MeshStandardMaterial({
+    const tyreMaterial = new THREE.MeshToonMaterial({
       color: '#24312f',
-      roughness: 1,
     });
     wheelNames.forEach((name, index) => {
       const wheel = ownedMesh(tyreGeometry, tyreMaterial);
@@ -251,7 +246,23 @@ export function createCarVisual(): CarVisual {
     installModel(template) {
       if (disposed) return false;
       if (source === template) return true;
-      const next = buildRig(template.clone(true));
+      const model = template.clone(true);
+      model.traverse((node) => {
+        if (!(node instanceof THREE.Mesh)) return;
+        const convert = (source: THREE.Material): THREE.Material => {
+          if (!(source instanceof THREE.MeshStandardMaterial)) return source;
+          let material = importedMaterials.get(source);
+          if (!material) {
+            material = toonMaterial(source);
+            importedMaterials.set(source, material);
+          }
+          return material;
+        };
+        node.material = Array.isArray(node.material)
+          ? node.material.map(convert)
+          : convert(node.material);
+      });
+      const next = buildRig(model);
       if (!next) return false;
       object.remove(rig.object);
       rig = next;
@@ -296,9 +307,9 @@ export function createCarVisual(): CarVisual {
         (frame.elevation ?? 0) - (frame.surfaceHeight ?? 0)
       );
       groundPosition.set(
-        frame.x + altitude * 0.25,
+        frame.x + altitude * 0.375,
         (frame.surfaceHeight ?? 0) + 0.038,
-        frame.z + altitude * 0.18
+        frame.z - altitude * 0.375
       );
       groundRotation.setFromEuler(
         groundEuler.set(-Math.PI / 2, 0, -frame.heading)
@@ -307,7 +318,7 @@ export function createCarVisual(): CarVisual {
       object.updateMatrix();
       groundMatrix.compose(groundPosition, groundRotation, groundScale);
       shadow.matrix.copy(object.matrix).invert().multiply(groundMatrix);
-      shadowMaterial.opacity = 0.29 / (1 + altitude * 0.12);
+      shadowMaterial.uniforms.opacity!.value = 0.36 / (1 + altitude * 0.18);
       const active = frame.racing && !frame.reducedMotion;
       let targetPitch = active
         ? clamp(-frame.acceleration * 0.003, -0.055, 0.055)
@@ -371,6 +382,8 @@ export function createCarVisual(): CarVisual {
       lampMaterial.dispose();
       shadowGeometry.dispose();
       shadowMaterial.dispose();
+      for (const material of importedMaterials.values()) material.dispose();
+      importedMaterials.clear();
     },
   };
 }

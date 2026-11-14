@@ -15,6 +15,7 @@ import type { Replay } from '../shared/replay';
 import { createRaceCamera } from './race-camera';
 import { createCircuitMinimap } from './circuit-minimap';
 import { createCarVisual } from './car-visual';
+import { createLandingFeedback } from './landing-feedback';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
@@ -282,6 +283,7 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
+  const landingFeedback = createLandingFeedback();
   // The intended Kenney model is required. Never race with placeholder art.
   carVisual.object.visible = false;
   let carLoadState: 'loading' | 'ready' | 'unavailable' = 'loading';
@@ -671,7 +673,24 @@ export function initializeGame(
     raceRoot.dataset.roadHeight = String(frame.y ?? 0);
     raceRoot.dataset.landings = String(current.vertical?.landings ?? 0);
     raceRoot.dataset.trackSchema = String(track.schemaVersion);
+    const landing = landingFeedback.update({
+      attemptId,
+      landings: current.vertical?.landings ?? 0,
+      impact: current.vertical?.impact ?? 0,
+      active: scored && !current.recovering && !airborne,
+      reducedMotion,
+      deltaSeconds,
+    });
+    raceRoot.style.setProperty(
+      '--speed-cue',
+      String(
+        !reducedMotion && scored
+          ? Math.min(0.18, Math.max(0, (speed - 24) / 120))
+          : 0
+      )
+    );
     const carChanged = carVisual.update({
+      suspensionCompression: landing.compression,
       elevation,
       surfaceHeight,
       bank: 0,
@@ -712,6 +731,7 @@ export function initializeGame(
             : 'overview',
         deltaSeconds,
         reset: needsCameraReset,
+        impulsePixels: landing.cameraPixels,
         reducedMotion,
       }
     );

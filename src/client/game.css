@@ -881,3 +881,26 @@ select:focus-visible {
 #race[data-phase='loading'] #restart-button {
   visibility: hidden;
 }
+
+/* Static peripheral streaks fade with speed: no extra draw calls or animation loop. */
+#race::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--speed-cue, 0);
+  background:
+    linear-gradient(12deg, transparent 49%, #fff 50%, transparent 51%) left
+      20% / 10% 18% no-repeat,
+    linear-gradient(-12deg, transparent 49%, #fff 50%, transparent 51%) right
+      20% / 10% 18% no-repeat,
+    linear-gradient(-18deg, transparent 49%, #fff 50%, transparent 51%) left
+      70% / 8% 20% no-repeat,
+    linear-gradient(18deg, transparent 49%, #fff 50%, transparent 51%) right
+      70% / 8% 20% no-repeat;
+}
+@media (prefers-reduced-motion: reduce) {
+  #race::after {
+    display: none;
+  }
+}

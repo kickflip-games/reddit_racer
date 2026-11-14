@@ -15,6 +15,7 @@ export type RaceCameraViewport = {
 };
 export type RaceCameraUpdate = {
   mode: 'overview' | 'chase';
+  impulsePixels?: number;
   deltaSeconds: number;
   reset?: boolean;
   reducedMotion?: boolean;
@@ -49,6 +50,7 @@ export function createRaceCamera(track: Track): RaceCamera {
     insets: { top: 0, left: 0, right: 0, bottom: 0 },
   };
   let mode: RaceCameraUpdate['mode'] = 'overview';
+  let impulsePixels = 0;
   let initialized = false;
   let renderable = false;
   const forwardX = 0.6,
@@ -163,13 +165,14 @@ export function createRaceCamera(track: Track): RaceCamera {
       scale,
       viewport,
       pose.elevation ?? 0,
+      impulsePixels,
     ]);
     if (signature === previous) return false;
     previous = signature;
     camera.left = -centerX / scale;
     camera.right = (viewport.width - centerX) / scale;
-    camera.top = centerY / scale;
-    camera.bottom = -(viewport.height - centerY) / scale;
+    camera.top = (centerY + impulsePixels) / scale;
+    camera.bottom = -(viewport.height - centerY - impulsePixels) / scale;
     camera.position.set(
       anchorX - forwardX * 100 * sine,
       100 * cosine,
@@ -217,6 +220,18 @@ export function createRaceCamera(track: Track): RaceCamera {
         (options.mode !== 'overview' && options.mode !== 'chase')
       )
         throw new Error('Invalid camera update');
+      impulsePixels =
+        options.reducedMotion || options.reset || options.mode !== 'chase'
+          ? 0
+          : Math.max(
+              -1.5,
+              Math.min(
+                1.5,
+                Number.isFinite(options.impulsePixels)
+                  ? (options.impulsePixels ?? 0)
+                  : 0
+              )
+            );
       const changedMode = mode !== options.mode;
       pose = { ...next };
       mode = options.mode;

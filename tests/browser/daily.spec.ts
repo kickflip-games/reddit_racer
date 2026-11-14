@@ -5,7 +5,7 @@ import {
   dailyChallengeView,
   type DailyChallengeRecord,
 } from '../../src/shared/daily-challenge.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 
 let storedFixture: Promise<DailyChallengeRecord> | undefined;
 function recordFixture(): Promise<DailyChallengeRecord> {
@@ -14,7 +14,7 @@ function recordFixture(): Promise<DailyChallengeRecord> {
     day: '2026-11-12',
     createdAtMs: Date.parse('2026-11-12T12:00:00Z'),
     requestedSeed: 'showcase-3',
-    generated: generateValidatedCircuit('showcase-3'),
+    generated: generateElevatedCircuit('showcase-3'),
   });
   return storedFixture;
 }

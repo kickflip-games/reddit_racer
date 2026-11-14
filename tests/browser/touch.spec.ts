@@ -1,5 +1,5 @@
 import { test, expect, type Page, type CDPSession } from '@playwright/test';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { waitForSceneAssets, advanceRaceClockUntil } from './scene-ready.ts';
 
 type TouchPoint = { x: number; y: number; id: number };
 
@@ -96,7 +96,12 @@ test(
     await touch(session, 'touchStart', [{ ...point, id: 2 }]);
     await page.clock.runFor(9000);
     await page.screenshot({ path: 'test-results/touch-driving-mobile.png' });
-    await page.clock.runFor(11000);
+    await advanceRaceClockUntil(
+      page,
+      async () =>
+        (await page.locator('#race').getAttribute('data-phase')) === 'finished',
+      45000
+    );
     await expect(page.locator('#card-kicker')).toHaveText('');
     await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
     const lastPointer = Number(await canvas.getAttribute('data-test-primary'));

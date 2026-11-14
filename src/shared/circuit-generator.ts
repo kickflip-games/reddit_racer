@@ -14,7 +14,9 @@ export type MotifKind =
   | 'decreasing-radius'
   | 'sweeper'
   | 'straight'
-  | 'recovery';
+  | 'recovery'
+  | 'overpass'
+  | 'gap-jump';
 export const MOTIF_KINDS: readonly MotifKind[] = [
   'hairpin',
   's-bend',

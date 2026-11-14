@@ -72,14 +72,11 @@ function options(): SceneryOptions {
 function course(seed: string) {
   const mode = select('course');
   if (mode === 'stunt') return createStuntCourse(seed.endsWith('1'));
-  return {
-    track:
-      mode === 'classic'
-        ? generateValidatedCircuit(seed).track
-        : generateElevatedCircuit(seed).track,
-    jumps: [],
-    gripZones: [],
-  };
+  const track =
+    mode === 'classic'
+      ? generateValidatedCircuit(seed).track
+      : generateElevatedCircuit(seed).track;
+  return { track, jumps: track.jumps ?? [], gripZones: [] };
 }
 function preview(seed: string) {
   const data = course(seed),
@@ -97,7 +94,7 @@ function preview(seed: string) {
   scene.add(sun);
   scene.add(
     createEnvironment(track, layout.props, layout),
-    createTrackRenderer(track, data.jumps, { zones: data.gripZones })
+    createTrackRenderer(track, data.jumps)
   );
   const scenery = createScenery(track, layout);
   scenery.installAssets(models);

@@ -344,8 +344,8 @@ void test('HTTP elevated sessions verify jumps with stored rules and reject a le
   assert.ok(approved);
   const api = setup(next);
   const session = await api.client.startRankedRace.mutate();
-  assert.equal(session.simulationVersion, 'fixed-step-v3');
-  assert.equal(session.handlingVersion, 'arcade-v2');
+  assert.equal(session.simulationVersion, 'fixed-step-v4');
+  assert.equal(session.handlingVersion, 'centreline-v1');
   await assert.rejects(
     api.client.submitRun.mutate({
       sessionId: session.sessionId,

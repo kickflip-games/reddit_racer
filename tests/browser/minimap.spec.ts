@@ -1,5 +1,4 @@
 import { test, expect, devices } from '@playwright/test';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
 import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import {
   createMinimapGeometry,
@@ -30,14 +29,11 @@ test('six canonical seed outlines render at desktop and portrait sizes and follo
       mobile ? { width: 412, height: 839 } : { width: 960, height: 720 }
     );
 
-    const elevated = i >= 4,
-      seed = `minimap-${i}`;
-    const track = (
-      elevated ? generateElevatedCircuit(seed) : generateValidatedCircuit(seed)
-    ).track;
+    const seed = `minimap-${i}`;
+    const track = generateElevatedCircuit(seed).track;
     const geometry = createMinimapGeometry(track);
     await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });
-    await page.goto(`/game.html?${elevated ? 'elevated=1&' : ''}seed=${seed}`);
+    await page.goto(`/game.html?seed=${seed}`);
     await waitForSceneAssets(page);
     await expect(page.locator('#track-source')).toHaveAttribute(
       'data-seed',

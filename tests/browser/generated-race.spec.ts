@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { readSceneGraphics, waitForSceneAssets } from './scene-ready.ts';
-import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import { COUNTDOWN_TICKS } from '../../src/shared/race-rules.ts';
 import { SIMULATION_HZ } from '../../src/shared/simulation.ts';
 
 const seed = 'showcase-3';
-const accepted = generateValidatedCircuit(seed);
+const accepted = generateElevatedCircuit(seed);
 const replay = accepted.quality.fastReplay;
 if (!replay) throw new Error('Expected an approved generated input tape');
 

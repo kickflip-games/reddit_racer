@@ -218,6 +218,13 @@ export function assessTrackStructure(
         s = track.samples[(b + 1) % track.samples.length];
       if (!r || !s) continue;
       const boxSquared = boxDistanceSquared(p, q, r, s);
+      // Whole cross-sections are level: conservative endpoint intervals protect
+      // car headroom throughout a crossing, not just at its centreline point.
+      const verticalClearance = Math.max(
+        Math.min(p.y ?? 0, q.y ?? 0) - Math.max(r.y ?? 0, s.y ?? 0),
+        Math.min(r.y ?? 0, s.y ?? 0) - Math.max(p.y ?? 0, q.y ?? 0)
+      );
+      if (verticalClearance >= 3.5) continue;
       if (boxSquared <= 1e-12 && segmentsIntersect(p, q, r, s))
         codes.add('centerline-intersection');
       const arc = Math.min(r.s - p.s, track.totalLength - (r.s - p.s));

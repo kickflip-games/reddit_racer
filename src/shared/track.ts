@@ -15,6 +15,14 @@ export type TrackSample = {
 };
 
 export type TrackCheckpoint = { id: string; s: number };
+/** Stored launch/landing sections, shared by simulation, rendering and replay verification. */
+export type TrackJump = {
+  rampStart: number;
+  takeoff: number;
+  landing: number;
+  rampEnd: number;
+  height: number;
+};
 
 export type Track = {
   schemaVersion: 1 | 2;
@@ -26,6 +34,7 @@ export type Track = {
   samples: TrackSample[];
   /** Intermediate checkpoints only; the start/finish is at startS. */
   checkpoints: TrackCheckpoint[];
+  jumps?: TrackJump[];
 };
 
 export type TrackFrame = TrackSample & {
@@ -111,9 +120,25 @@ export function parseTrack(value: unknown): Track {
     startS: 0,
     samples,
     checkpoints,
+    ...(value.jumps === undefined ? {} : { jumps: parseJumps(value.jumps) }),
   };
   validateTrack(track);
   return track;
+}
+
+function parseJumps(value: unknown): TrackJump[] {
+  if (!Array.isArray(value) || value.length > 4)
+    throw new Error('Invalid jump sections');
+  return value.map((jump: unknown) => {
+    if (!record(jump)) throw new Error('Invalid jump section');
+    return {
+      rampStart: finite(jump.rampStart, 'jump.rampStart'),
+      takeoff: finite(jump.takeoff, 'jump.takeoff'),
+      landing: finite(jump.landing, 'jump.landing'),
+      rampEnd: finite(jump.rampEnd, 'jump.rampEnd'),
+      height: finite(jump.height, 'jump.height'),
+    };
+  });
 }
 
 /** Structural/metric guards. Global self-clearance and playability are #7 gates. */
@@ -234,6 +259,23 @@ export function validateTrack(track: Track): void {
     checkpointIds.add(checkpoint.id);
     lastCheckpoint = checkpoint.s;
   }
+  let previousEnd = 20;
+  for (const jump of parseJumps(track.jumps ?? [])) {
+    if (
+      track.schemaVersion !== 2 ||
+      jump.rampStart < previousEnd ||
+      jump.takeoff <= jump.rampStart ||
+      jump.landing <= jump.takeoff ||
+      jump.landing - jump.takeoff > 16 ||
+      jump.rampEnd <= jump.landing ||
+      jump.rampEnd > track.totalLength - 20 ||
+      jump.height < 0.5 ||
+      jump.height > 6 ||
+      Math.abs((sampleTrack(track, jump.takeoff).y ?? 0) - jump.height) > 0.001
+    )
+      throw new Error('Unsafe jump section');
+    previousEnd = jump.rampEnd;
+  }
 }
 
 /** O(log n) sampling of already-validated data. Negative distances wrap too. */
@@ -330,6 +372,19 @@ export function serializeTrack(track: Track): string {
       })
     ),
     checkpoints: track.checkpoints.map(({ id, s }) => ({ id, s })),
+    ...(track.jumps
+      ? {
+          jumps: track.jumps.map(
+            ({ rampStart, takeoff, landing, rampEnd, height }) => ({
+              rampStart,
+              takeoff,
+              landing,
+              rampEnd,
+              height,
+            })
+          ),
+        }
+      : {}),
   });
 }
 

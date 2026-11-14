@@ -1,3 +1,4 @@
+import { RACE_STORAGE_PREFIX } from '../shared/race-storage';
 import { redis } from '@devvit/web/server';
 import { validateSubredditId } from '../shared/daily-challenge';
 import type { DailyPublicationStore } from './core/daily-publication';
@@ -31,10 +32,10 @@ function invalid(): PublicationStorageError {
   );
 }
 
-/** One permanent journal per community; deployments and UTC days cannot fork it. */
+/** One permanent journal per community and handling revision; UTC days share it. */
 export function dailyPublicationKey(subredditId: string): string {
   validateSubredditId(subredditId);
-  return `racer:daily-publication:${subredditId}`;
+  return `${RACE_STORAGE_PREFIX}:daily-publication:${subredditId}`;
 }
 
 export function createRedisDailyPublicationStore(

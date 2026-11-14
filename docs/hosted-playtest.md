@@ -162,3 +162,11 @@ Private **`0.0.17`** was uploaded from clean main **`a52a5f08143cb0e1bdf9bce20fb
 Reddit's owner Mobile preview visibly rendered the new grass/flower patches and flowering trees, with a fixed circuit outline, completed accent and player dot at the bottom-right. Normal native Space holds/releases advanced the actual ranked daily simulation; accessible progress reported lap 1 at 32%, then the finish showed **Time verified**, **60.433 seconds**, and **Best 60.433s · #1**. The minimap hid on the result screen. Automation pauses are included in that time.
 
 This is an installed hosted build with genuine authenticated score verification, observed in desktop Chrome's Reddit Mobile preview. Physical-phone frame rate, touch comfort and audible output remain for device testing. GitHub repository visibility is separate from the existing private Reddit test community; this upload did not publish the app for general installation.
+
+## 2026-11-14: predictable routes and fixed camera
+
+Private **`0.0.18`** was uploaded from clean commit **`c0e31c61765614b2edeb3f4f77b7d649ee3798ed`** and explicitly installed in `r/full_throttle_dev_dev`. The upgrade bootstrap reported ready for the new [November 14 test post](https://www.reddit.com/r/full_throttle_dev_dev/comments/1xvqtc2/reddit_racer_daily_time_attack/). The CLI readback confirmed `full-throttle-dev (v0.0.18)`, and Reddit served both the inline and expanded game from the actual `0-0-18` origin.
+
+Reddit's owner Mobile preview showed the fixed oblique camera, spring scenery, consistent asphalt, centred car and live minimap on the new crossing circuit. Native Space holds/releases advanced the genuine daily run; it finished with **Time verified**, **52.633 seconds**, **Best 52.633s · #1**. The result had the direct Practice action, and the racing minimap hid at the finish. The new centreline competition namespace kept this result separate from the previous handling's standings.
+
+These are normal authenticated controls in desktop Chrome's Reddit Mobile preview, with operator idle included in the lap time. No identity, driver state, clock, replay or score was injected. This is functional hosted verification; physical-phone comfort/performance and human balance remain for device playtesting. The build is installed only in the existing private test community.

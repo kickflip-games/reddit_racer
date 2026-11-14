@@ -105,9 +105,9 @@ export function parseRankedSubmission(value: unknown): RankedSubmission {
       handling = value.replay.handlingVersion;
     if (
       (typeof sim === 'string' &&
-        !['fixed-step-v2', 'fixed-step-v3'].includes(sim)) ||
+        !['fixed-step-v2', 'fixed-step-v4'].includes(sim)) ||
       (typeof handling === 'string' &&
-        !['arcade-v1', 'arcade-v2'].includes(handling)) ||
+        !['arcade-v1', 'centreline-v1'].includes(handling)) ||
       (typeof value.replay.schemaVersion === 'number' &&
         value.replay.schemaVersion !== 1)
     )

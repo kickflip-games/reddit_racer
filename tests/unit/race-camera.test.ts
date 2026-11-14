@@ -179,6 +179,35 @@ void test('reduced motion retains orientation and steady poses settle exactly', 
     false
   );
 });
+void test('the camera follows every bend and jump without rotating in either motion mode', () => {
+  const track = createStuntCourse().track;
+  for (const reducedMotion of [false, true]) {
+    const c = createRaceCamera(track);
+    const view = views[1];
+    assert.ok(view);
+    c.resize(view);
+    const direction = c.camera.getWorldDirection(new Vector3());
+    const startPosition = c.camera.position.clone();
+    for (let i = 0; i < 200; i++) {
+      const distance = (i / 200) * track.totalLength;
+      c.update(
+        { ...pose(track, distance), elevation: i % 6 },
+        {
+          mode: i < 10 ? 'overview' : 'chase',
+          deltaSeconds: 1 / 60,
+          reset: i % 30 === 0,
+          reducedMotion,
+        }
+      );
+      assert.ok(
+        c.camera.getWorldDirection(new Vector3()).distanceTo(direction) < 1e-12
+      );
+    }
+    assert.ok(c.camera.position.distanceTo(startPosition) > 10);
+    // An oblique view exposes ramp/deck height rather than looking straight down.
+    assert.ok(Math.abs(direction.y) < 0.7);
+  }
+});
 void test('invalid camera updates do not mutate matrices or canonical geometry', () => {
   const track = createOvalTrack(),
     before = JSON.stringify(track),

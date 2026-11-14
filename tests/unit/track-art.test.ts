@@ -130,46 +130,28 @@ void test('stunt road has elevated ramps and no triangles spanning the gap', asy
   }
 });
 
-void test('dynamic-grip camber, wet asphalt and braking markers agree with the profile', async () => {
-  const { createStuntCourse } =
-    await import('../../src/shared/stunt-course.ts');
-  const { gripSurfaceAt } = await import('../../src/shared/slot-grip.ts');
+void test('ordinary jump roads use one asphalt material, level cross-sections and no grip markers', async () => {
+  const { generateElevatedCircuit } =
+    await import('../../src/shared/elevated-generator.ts');
   const { buildRoadStripVertices } =
     await import('../../src/client/track-renderer.ts');
-  const { track, jumps, gripZones } = createStuntCourse();
+  const track = generateElevatedCircuit('country-1').track;
   const strip = buildRoadStripVertices(
     track,
     { side: -1, offset: 0 },
     { side: 1, offset: 0 },
-    0.03,
-    jumps,
-    gripZones
+    0.03
   );
-  const index = track.samples.findIndex((sample) => sample.s > 162);
-  const sample = track.samples[index];
-  assert.ok(sample);
-  const bank = gripSurfaceAt(track, gripZones, sample.s).bank;
-  assert.ok(bank < 0);
-  assert.ok(
-    Math.abs(
-      (strip.positions[index * 6 + 4] ?? 0) -
-        (strip.positions[index * 6 + 1] ?? 0) +
-        sample.width * Math.tan(bank)
-    ) < 1e-8
-  );
-  const group = createTrackRenderer(track, jumps, {
-    dynamicGrip: true,
-    zones: gripZones,
-  });
-  assert.ok(group.getObjectByName('grip-braking-markers'));
+  for (let i = 0; i < strip.positions.length; i += 6)
+    assert.equal(strip.positions[i + 1], strip.positions[i + 4]);
+  const group = createTrackRenderer(track);
+  assert.equal(group.getObjectByName('grip-braking-markers'), undefined);
   const road = group.children[1];
-  assert.ok(road instanceof THREE.Mesh);
-  const colors = road.geometry.getAttribute('color');
-  assert.ok(colors);
-  const wetIndex = track.samples.findIndex((sample) => sample.s > 460);
-  // Renderer inserts four jump boundaries before this point.
-  let blue = 0;
-  for (let i = wetIndex * 2; i < wetIndex * 2 + 20; i++)
-    if (colors.getZ(i) > colors.getX(i)) blue++;
-  assert.ok(blue > 10);
+  assert.ok(
+    road instanceof THREE.Mesh &&
+      road.material instanceof THREE.MeshLambertMaterial
+  );
+  assert.equal(road.material.color.getHexString(), '363b40');
+  assert.equal(road.geometry.getAttribute('color'), undefined);
+  assert.equal(road.material.vertexColors, false);
 });

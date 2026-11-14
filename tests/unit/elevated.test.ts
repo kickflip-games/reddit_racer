@@ -35,19 +35,19 @@ import { createRaceCamera } from '../../src/client/race-camera.ts';
 import { Vector3 } from 'three';
 import { circuitTerrainHeight } from '../../src/client/circuit-terrain.ts';
 
-const generated = generateElevatedCircuit('flow-probe-21');
+const generated = generateElevatedCircuit('country-1');
 const track = generated.track;
 
 void test('complete runtime pairs are retained, cross-pairs and unknown frequencies reject', () => {
   assert.equal(runtimeForTrack(createOvalTrack()).handling.maximumSpeed, 22);
   assert.equal(runtimeForTrack(track).handling.maximumSpeed, 30);
-  assert.throws(() => scoredRuntime('fixed-step-v3', 'arcade-v1'));
-  assert.throws(() => scoredRuntime('fixed-step-v2', 'arcade-v2'));
-  assert.throws(() => scoredRuntime('fixed-step-v3', 'arcade-v2', 60));
+  assert.throws(() => scoredRuntime('fixed-step-v4', 'arcade-v1'));
+  assert.throws(() => scoredRuntime('fixed-step-v2', 'centreline-v1'));
+  assert.throws(() => scoredRuntime('fixed-step-v4', 'centreline-v1', 60));
 });
 
 void test('elevated seeds reconstruct full canonical height profiles with finite closed seams', async () => {
-  assert.deepEqual(generateElevatedCircuit('flow-probe-21'), generated);
+  assert.deepEqual(generateElevatedCircuit('country-1'), generated);
   assert.deepEqual(parseTrack(JSON.parse(serializeTrack(track))), track);
   assert.equal(
     await hashTrack(parseTrack(JSON.parse(serializeTrack(track)))),
@@ -99,7 +99,7 @@ void test('faster acceleration and progressive release use fresh vertical initia
   });
 });
 
-void test('fast crest launches while a slow car stays on the road; flight follows gravity without tyre braking', () => {
+void test('gap launch and flight follow gravity without mid-air tyre braking', () => {
   const frame = sampleTrack(track, 46);
   const initial = {
     ...createSimulationState(track),
@@ -114,7 +114,19 @@ void test('fast crest launches while a slow car stays on the road; flight follow
     },
   };
   const fast = stepSimulation(track, initial, true),
-    slow = stepSimulation(track, { ...initial, speed: 7 }, true);
+    slow = stepSimulation(
+      track,
+      {
+        ...initial,
+        distance: 30,
+        speed: 7,
+        vertical: {
+          ...initial.vertical,
+          height: sampleTrack(track, 30).y ?? 0,
+        },
+      },
+      true
+    );
   assert.equal(fast.vertical?.airborne, true);
   assert.equal(slow.vertical?.airborne, false);
   assert.ok(
@@ -183,14 +195,15 @@ void test('a complete elevated lap lands, validates all checkpoints and replays 
   );
 });
 
-void test('falling off a raised road costs stationary recovery ticks and returns to its height', () => {
+void test('a slow missed gap rescues to the landing with an exact stationary penalty', () => {
+  const jump = track.jumps?.[0];
+  assert.ok(jump);
   let state: SimulationState = {
     ...createSimulationState(track),
-    distance: 46,
-    lateralOffset: 12,
-    speed: 20,
+    distance: jump.takeoff + 1,
+    speed: 2,
     vertical: {
-      height: 0,
+      height: 0.01,
       velocity: -4,
       airborne: true,
       landings: 0,
@@ -199,20 +212,15 @@ void test('falling off a raised road costs stationary recovery ticks and returns
   };
   state = stepSimulation(track, state, true);
   assert.equal(state.recovering, true);
+  assert.equal(state.distance, jump.landing);
   assert.equal(state.recoveryCount, 1);
-  const distance = state.distance;
-  for (let i = 0; i < 119; i++) {
+  for (let i = 0; i < 89; i++) {
     state = stepSimulation(track, state, true);
-    assert.equal(state.distance, distance);
+    assert.equal(state.distance, jump.landing);
+    assert.equal(state.lateralOffset, 0);
   }
   assert.equal(state.recovering, false);
-  assert.equal(state.lateralOffset, 0);
-  assert.ok(
-    Math.abs(
-      (state.vertical?.height ?? 0) - (sampleTrack(track, distance).y ?? 0)
-    ) < 0.000001
-  );
-  assert.ok(stepSimulation(track, state, true).distance > distance);
+  assert.ok(stepSimulation(track, state, true).distance > jump.landing);
 });
 
 void test('canonical elevated mesh and camera include road height and airborne car across phone viewports', () => {
@@ -277,11 +285,11 @@ void test('immutable daily storage binds the complete elevated course and new ha
     subredditId: 't5_hills',
     day: '2026-11-13',
     createdAtMs: Date.parse('2026-11-13T12:00:00Z'),
-    requestedSeed: 'flow-probe-21',
+    requestedSeed: 'country-1',
     generated,
   });
-  assert.equal(stored.simulationVersion, 'fixed-step-v3');
-  assert.equal(stored.handlingVersion, 'arcade-v2');
+  assert.equal(stored.simulationVersion, 'fixed-step-v4');
+  assert.equal(stored.handlingVersion, 'centreline-v1');
   assert.deepEqual(
     await parseDailyChallengeRecord(
       JSON.parse(serializeDailyChallengeRecord(stored))
@@ -324,7 +332,7 @@ void test('a frozen elevated daily replays every recorded grounded, airborne and
     tape = validateReplay(raw.replay);
   assert.equal(
     await hashTrack(frozen),
-    '03c20189c4bd1a7ea5d4ccc53397b7a57ec518fe7c2624f9f1ebc865667dfe4b'
+    '2bed0025e4cfed6d3dbfc5fce293adbae886123c49c4148387c60fcb96083b43'
   );
   assert.equal(await hashTrack(frozen), raw.trackHash);
   assert.ok(Array.isArray(raw.states));
@@ -353,79 +361,34 @@ void test('a frozen elevated daily replays every recorded grounded, airborne and
     if (wanted.has(race.simulation.tick)) actual.push(race.simulation);
   }
   assert.equal(race.phase, 'finished');
-  assert.equal(race.simulation.finishedTick, 3006);
+  assert.equal(race.simulation.finishedTick, 3451);
   assert.ok(actual.some((state) => state.vertical?.airborne));
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), raw.states);
 });
 
-void test('level off-road ground has zero vertical velocity even beside an incline', () => {
-  const state: SimulationState = {
+void test('centreline handling corrects lateral state without wandering or changing the road surface', () => {
+  const initial: SimulationState = {
     ...createSimulationState(track),
     distance: 30,
+    speed: 5,
     lateralOffset: 5,
-    speed: 5,
-    vertical: {
-      height: 0,
-      velocity: 0,
-      airborne: false,
-      landings: 0,
-      impact: 0,
-    },
-  };
-  const next = stepSimulation(track, state, true);
-  assert.equal(next.recovering, false);
-  assert.equal(next.offRoad, true);
-  assert.equal(next.vertical?.height, 0);
-  assert.equal(next.vertical?.velocity, 0);
-});
-
-void test('rejoining from below a raised deck recovers gradually instead of snapping onto its surface', () => {
-  const state: SimulationState = {
-    ...createSimulationState(track),
-    distance: 46,
-    lateralOffset: 3.51,
     lateralVelocity: -8,
-    speed: 5,
     vertical: {
-      height: 0,
+      height: sampleTrack(track, 30).y ?? 0,
       velocity: 0,
       airborne: false,
       landings: 0,
       impact: 0,
     },
   };
-  const underneath = stepSimulation(
-    track,
-    {
-      ...state,
-      vertical: {
-        height: 1,
-        velocity: -3,
-        airborne: true,
-        landings: 4,
-        impact: 0,
-      },
-    },
-    true
-  );
-  assert.equal(underneath.recovering, true);
-  assert.equal(underneath.vertical?.height, 1);
-  assert.equal(underneath.vertical?.landings, 4);
-  const next = stepSimulation(track, state, true);
-  assert.equal(next.recovering, true);
-  assert.equal(next.distance, state.distance);
-  assert.equal(next.recoveryCount, 1);
-  assert.equal(next.vertical?.height, 0);
-  const recovery = stepSimulation(track, next, true);
+  const next = stepSimulation(track, initial, true);
+  assert.equal(next.offRoad, false);
+  assert.equal(next.recovering, false);
+  assert.equal(next.lateralOffset, 0);
+  assert.equal(next.lateralVelocity, 0);
   assert.ok(
-    (recovery.vertical?.height ?? 0) > 0 &&
-      (recovery.vertical?.height ?? 0) < 0.1
-  );
-  let landed = recovery;
-  for (let i = 1; i < 119; i++) landed = stepSimulation(track, landed, true);
-  assert.equal(landed.recovering, false);
-  assert.ok(
-    Math.abs((landed.vertical?.height ?? 0) - (sampleTrack(track, 46).y ?? 0)) <
-      0.000001
+    Math.abs(
+      (next.vertical?.height ?? 0) - (sampleTrack(track, next.distance).y ?? 0)
+    ) < 1e-6
   );
 });

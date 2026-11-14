@@ -25,7 +25,7 @@ import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { Track } from './track.ts';
 
 export const QUALITY_VERSION = 'quality-v1';
-export const ELEVATED_QUALITY_VERSION = 'quality-v2';
+export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
   track.schemaVersion === 2 ? ELEVATED_QUALITY_VERSION : QUALITY_VERSION;
 export const MAX_QUALITY_ASSESSMENTS = 4;
@@ -195,7 +195,10 @@ export function assessTrackQuality(
     )
   )
     throw new Error('Unknown track quality option');
-  const thresholds = thresholdsFor(options.thresholds);
+  const thresholds = thresholdsFor({
+    ...(track.schemaVersion === 2 ? { minMeaningfulLifts: 2 } : {}),
+    ...options.thresholds,
+  });
   const structure = assessTrackStructure(track, options.structure);
   const codes = [...structure.codes];
   const result: QualityAssessment = {
@@ -243,7 +246,10 @@ export function assessTrackQuality(
     ...smooth,
   };
   if (track.schemaVersion === 2) {
-    if ((fast.airborneTicks ?? 0) < 12 || (fast.landings ?? 0) < 1)
+    if (
+      track.jumps?.length &&
+      ((fast.airborneTicks ?? 0) < 12 || (fast.landings ?? 0) < 1)
+    )
       codes.push('no-playable-jump');
     if ((fast.airborneCornerTicks ?? 0) > 0 || (fast.maxAirHeight ?? 0) > 6)
       codes.push('unsafe-jump-landing');

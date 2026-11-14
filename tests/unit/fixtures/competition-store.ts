@@ -131,7 +131,10 @@ export class CompetitionTestStore implements CompetitionStore, RankedStore {
   private apply(mutation: CompetitionMutation, part?: PartialMutation): void {
     for (const set of mutation.sets) {
       if (part === 'score-only') continue;
-      if (part === 'receipt-only' && !set.key.startsWith('racer:receipt:'))
+      if (
+        part === 'receipt-only' &&
+        !set.key.startsWith('racer:centreline-v1:receipt:')
+      )
         continue;
       this.rawSet(set.key, set.value, set.expiresAtMs);
     }

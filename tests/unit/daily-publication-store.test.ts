@@ -10,7 +10,7 @@ import type {
 } from '../../src/server/daily-publication-store.ts';
 
 const scope = 't5_racing';
-const key = 'racer:daily-publication:t5_racing';
+const key = 'racer:centreline-v1:daily-publication:t5_racing';
 const privateError = 'private Redis host and request metadata';
 
 /** Ordinary reads plus independent, versioned WATCH transactions, as in the SDK. */

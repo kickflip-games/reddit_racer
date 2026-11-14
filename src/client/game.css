@@ -576,22 +576,6 @@ select:focus-visible {
 .track-debug small {
   width: 100%;
 }
-.grip-warning {
-  position: absolute;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  max-width: calc(100% - 28px);
-  border-radius: 10px;
-  background: var(--paper);
-  color: var(--accent);
-  font-size: 11px;
-  font-weight: 900;
-  text-align: center;
-  pointer-events: none;
-  border-left: 4px solid var(--accent);
-}
 @media (max-width: 700px) {
   .race-card {
     left: 14px;
@@ -806,13 +790,6 @@ select:focus-visible {
 .finish-time {
   margin-bottom: 12px;
 }
-.grip-warning {
-  background: none;
-  border: 0;
-  box-shadow: none;
-  text-shadow: 0 1px 5px var(--paper);
-}
-
 #race:has(.race-card:not([hidden]))::after {
   background: linear-gradient(0deg, #fff7e8ef, #fff7e800 36%);
 }

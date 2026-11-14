@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { waitForSceneAssets, advanceRaceClockUntil } from './scene-ready.ts';
 
 test(
   'local racer renders, accelerates, brakes, completes and retries',
@@ -48,7 +48,12 @@ test(
     await page.screenshot({
       path: `test-results/fixed-step-${test.info().project.name}.png`,
     });
-    await page.clock.runFor(11000);
+    await advanceRaceClockUntil(
+      page,
+      async () =>
+        (await page.locator('#race').getAttribute('data-phase')) === 'finished',
+      45000
+    );
     await expect(page.locator('#retry-button')).toBeVisible();
     await expect(page.locator('#race')).toHaveAttribute(
       'data-phase',

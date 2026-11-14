@@ -1,14 +1,8 @@
 import type { GripZone } from './slot-grip.ts';
 import { createTrackFromPoints, type TrackPoint } from './track-authoring.ts';
-import { type Track } from './track.ts';
+import { type Track, type TrackJump } from './track.ts';
 
-export type GapJump = {
-  rampStart: number;
-  takeoff: number;
-  landing: number;
-  rampEnd: number;
-  height: number;
-};
+export type GapJump = TrackJump;
 export type StuntCourse = {
   track: Track;
   jumps: GapJump[];

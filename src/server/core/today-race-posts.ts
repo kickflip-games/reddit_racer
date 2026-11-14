@@ -1,3 +1,4 @@
+import { RACE_STORAGE_PREFIX } from '../../shared/race-storage';
 import {
   dailyChallengeId,
   DailyChallengeError,
@@ -55,7 +56,7 @@ export type TodayRacePostsService = {
 /** Separate navigation metadata never changes a permanent post/day binding. */
 export function dailyRacePostsKey(subredditId: string): string {
   validateSubredditId(subredditId);
-  return `racer:daily-posts:${subredditId}`;
+  return `${RACE_STORAGE_PREFIX}:daily-posts:${subredditId}`;
 }
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

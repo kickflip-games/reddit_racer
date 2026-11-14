@@ -410,9 +410,13 @@ export function initializeGame(
     const height = canvas.clientHeight;
     const canvasBounds = canvas.getBoundingClientRect();
     const hudBounds = hud.getBoundingClientRect();
-    const cardBounds = card.hidden ? null : card.getBoundingClientRect();
+    // Results are an overlay, not a request to move the track out of the way.
+    // The default one-lap race is no longer active when its results appear.
+    const chaseLayout = driver.active || driver.raceState.phase === 'finished';
+    const cardBounds =
+      card.hidden || chaseLayout ? null : card.getBoundingClientRect();
     let top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
-    if (driver.active) {
+    if (chaseLayout) {
       // Lap/best labels resize the HUD at the finish line. They must not move
       // the world underneath the car. Only a real viewport resize refits it.
       if (racingViewport?.width === width && racingViewport.height === height)

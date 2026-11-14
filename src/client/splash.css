@@ -97,27 +97,6 @@ button:focus-visible {
   border: 1px dashed #a7b5a3;
   border-radius: 85px;
 }
-.car-art {
-  position: absolute;
-  width: 23px;
-  height: 40px;
-  top: 80px;
-  left: -23px;
-  border-radius: 5px;
-  background: #ff784e;
-  box-shadow: -3px 5px 0 #0b231d44;
-  transform: rotate(180deg);
-}
-.car-art:before {
-  content: '';
-  position: absolute;
-  top: 10px;
-  left: 4px;
-  right: 4px;
-  height: 17px;
-  border-top: 5px solid #254647;
-  background: #ffe6ad;
-}
 #splash-status {
   position: absolute;
   bottom: 8px;
@@ -148,4 +127,90 @@ button:focus-visible {
 .track-art {
   border-color: var(--asphalt);
   outline-color: #d2bd94;
+}
+
+/* Lightweight feed poster: CSS circuit art, no substitute vehicle or WebGL. */
+.splash {
+  background: #e9edcf;
+  gap: 60px;
+}
+.splash::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0 65%,
+    #8cbd793d 65% 78%,
+    transparent 78%
+  );
+  pointer-events: none;
+}
+.content {
+  max-width: 330px;
+}
+.eyebrow {
+  color: #22604c;
+  letter-spacing: 1.7px;
+}
+h1 {
+  color: #174d3f;
+  font-size: clamp(42px, 8vw, 66px);
+  font-style: italic;
+  font-weight: 950;
+  line-height: 0.88;
+  letter-spacing: -3px;
+}
+h1 .title-line {
+  display: block;
+  color: #174d3f;
+  padding-left: 30px;
+}
+h1 i {
+  color: #c8492d;
+}
+.description {
+  margin-top: 24px;
+  color: #39594a;
+}
+button {
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #853522;
+}
+.track-art {
+  width: 165px;
+  height: 250px;
+  background: #8bba73;
+  border-color: #40534d;
+  outline: 5px solid #fff7e8;
+  box-shadow: 0 14px 0 #28583c2e;
+}
+.finish-line {
+  position: absolute;
+  left: -24px;
+  top: 110px;
+  width: 24px;
+  height: 12px;
+  background: repeating-conic-gradient(#fff7e8 0% 25%, #253b34 0% 50%) 0 / 12px
+    12px;
+}
+@media (max-width: 480px) {
+  .track-art {
+    right: -70px;
+    opacity: 0.3;
+  }
+  .content {
+    max-width: 280px;
+  }
+}
+@media (max-height: 280px) {
+  .splash {
+    padding: 16px;
+  }
+  h1 {
+    font-size: 38px;
+  }
+  .description {
+    margin: 12px 0;
+  }
 }

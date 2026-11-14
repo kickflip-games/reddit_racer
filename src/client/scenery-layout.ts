@@ -9,7 +9,7 @@ import type { SceneryKind } from './scene-assets';
 import type { GapJump } from '../shared/stunt-course';
 import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
 
-export const SCENERY_VERSION = 'green-composition-v2';
+export const SCENERY_VERSION = 'green-composition-v3';
 export const SCENERY_LIMITS = Object.freeze({
   regions: 40,
   candidates: 18000,
@@ -300,7 +300,8 @@ export function generateSceneryLayout(
     z: number,
     region: number,
     probability = 1,
-    heading?: number
+    heading?: number,
+    rockScale?: number
   ): void {
     if (
       candidates >= SCENERY_LIMITS.candidates ||
@@ -312,13 +313,16 @@ export function generateSceneryLayout(
     if (r > probability) return;
     const tall = kind === 'tree' || kind === 'blossom';
     if (tall && trees >= SCENERY_LIMITS.trees) return;
-    const scale = tall
-      ? 0.72 + random() * 0.65
-      : kind === 'rock' && region === -2
-        ? 1.25 + random() * 0.65
-        : kind === 'bush'
-          ? 0.65 + random() * 0.65
-          : 0.7 + random() * 0.7;
+    const scale =
+      kind === 'rock' && rockScale !== undefined
+        ? clamp(rockScale, 0.7, 4.2)
+        : tall
+          ? 0.72 + random() * 0.65
+          : kind === 'rock' && region === -2
+            ? 1.25 + random() * 0.65
+            : kind === 'bush'
+              ? 0.65 + random() * 0.65
+              : 0.7 + random() * 0.7;
     const radius =
       (tall
         ? 2.7
@@ -513,7 +517,7 @@ export function generateSceneryLayout(
       );
     }
   }
-  // Coherent, low outcrops act as landmarks, rather than isolated random rocks.
+  // Low boulder ridges with smaller skirts read as rocky terrain, not loose dots.
   // Reuse the existing instanced rock geometry and conservative solid clearance.
   for (
     let group = 0;
@@ -526,21 +530,41 @@ export function generateSceneryLayout(
         ((group + 0.35 + random() * 0.3) / composition.outcrops)
     );
     const side = random() < 0.5 ? -1 : 1;
-    const offset = frame.halfWidth + 24 + random() * 10;
+    const offset = frame.halfWidth + 29 + random() * 8;
     const x = frame.x + frame.nx * side * offset;
     const z = frame.z + frame.nz * side * offset;
-    for (let j = 0; j < 15; j++) {
-      const angle = random() * Math.PI * 2;
-      const radius = Math.sqrt(random()) * 7;
+    const heading = Math.atan2(frame.tz, frame.tx) + (random() - 0.5) * 0.7;
+    const ridgePoint = (along: number, across: number) => ({
+      x: x + Math.cos(heading) * along - Math.sin(heading) * across,
+      z: z + Math.sin(heading) * along + Math.cos(heading) * across,
+    });
+    // Large anchors first, then smaller stones and vegetation around their feet.
+    // Scale is part of the clearance footprint, not just the render transform.
+    for (const along of [-7, 0, 7]) {
+      const point = ridgePoint(along, (random() - 0.5) * 2);
       plant(
-        j < 10 ? 'rock' : 'bush',
-        x + Math.cos(angle) * radius,
-        z + Math.sin(angle) * radius,
+        'rock',
+        point.x,
+        point.z,
         -2,
-        coverDensity
+        coverDensity,
+        heading,
+        3.2 + random()
+      );
+    }
+    for (let j = 0; j < 18; j++) {
+      const point = ridgePoint((random() - 0.5) * 24, (random() - 0.5) * 12);
+      plant(
+        j < 12 ? 'rock' : 'bush',
+        point.x,
+        point.z,
+        -2,
+        coverDensity,
+        heading + random() * 0.8
       );
     }
   }
+
   // Unequal short strips leave deliberate gaps instead of lining the entire circuit.
   for (let strip = 0; strip < 24; strip++) {
     const start = random() * track.totalLength,

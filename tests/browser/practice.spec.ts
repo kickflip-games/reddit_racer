@@ -216,7 +216,7 @@ test('New track changes unranked geometry and returning Daily restores the immut
     .getAttribute('data-seed');
   expect(practiceHash).toBeTruthy();
   await setRaceSettingsOpen(page, true);
-  await page.locator('#motion-select').selectOption('reduced');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.locator('#sound-toggle').click();
   await expect(page.locator('#sound-toggle')).toHaveAttribute(
     'aria-pressed',
@@ -236,7 +236,10 @@ test('New track changes unranked geometry and returning Daily restores the immut
   );
   await expect(page.locator('#timer')).toHaveText('00.000');
   await setRaceSettingsOpen(page, true);
-  await expect(page.locator('#motion-select')).toHaveValue('reduced');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-reduced-motion',
+    'true'
+  );
   await expect(page.locator('#sound-toggle')).toHaveAttribute(
     'aria-pressed',
     'false'
@@ -289,7 +292,7 @@ test('practice interruption releases the hold and requires an explicit resume wh
   await ready(page);
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await setRaceSettingsOpen(page, true);
-  await page.locator('#motion-select').selectOption('reduced');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.locator('#sound-toggle').click();
   await setRaceSettingsOpen(page, false);
   await page.locator('#start-button').click();
@@ -326,7 +329,10 @@ test('practice interruption releases the hold and requires an explicit resume wh
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await setRaceSettingsOpen(page, true);
-  await expect(page.locator('#motion-select')).toHaveValue('reduced');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-reduced-motion',
+    'true'
+  );
   await expect(page.locator('#sound-toggle')).toHaveAttribute(
     'aria-pressed',
     'false'

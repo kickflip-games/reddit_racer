@@ -17,11 +17,7 @@ import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
-import {
-  readSceneryOptions,
-  readSceneryPreference,
-  saveSceneryPreference,
-} from './scenery-options';
+import { readSceneryOptions } from './scenery-options';
 import { getGameRenderer, releaseGameScene } from './game-renderer';
 import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
@@ -107,7 +103,6 @@ export function initializeGame(
   const retry = element('retry-button');
   const restart = element('restart-button');
   const soundToggle = element('sound-toggle');
-  const motionSelect = element('motion-select');
   const soundFeedback = element('sound-feedback');
   const settingsElement = element('race-settings');
   if (!(settingsElement instanceof HTMLDetailsElement))
@@ -230,8 +225,6 @@ export function initializeGame(
   showLocalBest();
   if (!(soundToggle instanceof HTMLButtonElement))
     throw new Error('Missing sound control');
-  if (!(motionSelect instanceof HTMLSelectElement))
-    throw new Error('Missing motion control');
   element('mode-label').textContent = import.meta.env.DEV
     ? 'Practice'
     : 'Practice';
@@ -330,32 +323,6 @@ export function initializeGame(
   let previousFrameTime: number | undefined;
   let sceneReady = false;
   let sceneDirty = true;
-  const sceneryDetail = element('scenery-detail');
-  if (!(sceneryDetail instanceof HTMLSelectElement))
-    throw new Error('Missing scenery detail');
-  sceneryDetail.value = readSceneryPreference();
-  sceneryDetail.addEventListener(
-    'change',
-    () => {
-      const preference =
-        sceneryDetail.value === 'light'
-          ? 'light'
-          : sceneryDetail.value === 'standard'
-            ? 'standard'
-            : 'auto';
-      saveSceneryPreference(preference);
-      const settings = readSceneryOptions(preference, true);
-      raceRoot.dataset.vegetationCount = String(
-        vegetation.setDetail(
-          settings.quality ?? 'standard',
-          settings.wind ?? true
-        )
-      );
-      sceneDirty = true;
-    },
-    { signal: lifetime.signal }
-  );
-
   let renderViewport: RenderViewport | undefined;
   let viewportUsable = true;
   const preferences = createFeedbackPreferences();
@@ -384,7 +351,6 @@ export function initializeGame(
     audio.setMuted(snapshot.muted);
     soundToggle.setAttribute('aria-pressed', String(!snapshot.muted));
     soundToggle.textContent = snapshot.muted ? 'Sound off' : 'Sound on';
-    motionSelect.value = snapshot.motion;
     raceRoot.dataset.reducedMotion = String(snapshot.reducedMotion);
     raceRoot.dataset.motionPreference = snapshot.motion;
     if (snapshot.reducedMotion) drivingVfx.reset();
@@ -396,7 +362,6 @@ export function initializeGame(
     }
   });
   soundToggle.disabled = false;
-  motionSelect.disabled = false;
   soundToggle.addEventListener(
     'click',
     () => {
@@ -408,16 +373,6 @@ export function initializeGame(
     },
     eventOptions
   );
-  motionSelect.addEventListener(
-    'change',
-    () => {
-      const value = motionSelect.value;
-      if (value === 'system' || value === 'reduced' || value === 'full')
-        preferences.setMotion(value);
-    },
-    eventOptions
-  );
-
   function applyPendingAssets(): boolean {
     // Read the actual driver now: a Start click can precede the next render.
     if (destroyed || preparing || driver.active) return false;

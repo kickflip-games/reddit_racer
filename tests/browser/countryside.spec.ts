@@ -86,7 +86,7 @@ test(
     ).toBeGreaterThan(500);
     await page.clock.pauseAt(new Date('2026-11-14T00:01:00Z'));
     await page.locator('#race-settings > summary').click();
-    await page.locator('#motion-select').selectOption('reduced');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.locator('#settings-close').click();
     await expect(race).toHaveAttribute('data-reduced-motion', 'true');
     await page.locator('#start-button').click();
@@ -101,12 +101,12 @@ test(
       .locator('#lap-progress')
       .evaluate((p) => (p instanceof HTMLProgressElement ? p.value : -1));
     await page.locator('#race-settings > summary').click();
-    await page.locator('#scenery-detail').selectOption('light');
+    await expect(page.locator('#scenery-detail')).toHaveCount(0);
     await page.locator('#settings-close').click();
     await expect(race).toHaveAttribute('data-phase', 'racing');
-    expect(
-      Number(await race.getAttribute('data-vegetation-count'))
-    ).toBeLessThan(fullCount);
+    expect(Number(await race.getAttribute('data-vegetation-count'))).toBe(
+      fullCount
+    );
     expect(
       await page
         .locator('#lap-progress')

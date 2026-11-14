@@ -1,6 +1,6 @@
-# Sound and motion settings
+# Sound settings and device motion
 
-The expanded scene owns one `createFeedbackPreferences()` and one lazy `createDrivingAudio(...)`. The feed teaser imports neither. Sound and Motion live in a native, initially collapsed Settings disclosure; starting or retrying closes it. They are utility settings; holding the canvas or Space remains the only driving input. Space on a focused setting keeps its native action and never holds the accelerator. Safe key release still clears driving input.
+The expanded scene owns one `createFeedbackPreferences()` and one lazy `createDrivingAudio(...)`. The feed teaser imports neither. Sound lives in a native, initially collapsed Settings disclosure; starting or retrying closes it. It is a utility setting; holding the canvas or Space remains the only driving input. Space on a focused setting keeps its native action and never holds the accelerator. Safe key release still clears driving input.
 
 ## Activation and lifecycle
 
@@ -14,7 +14,7 @@ Continuous parameter writes are coalesced to at most 30 Hz of the audio clock. M
 
 ## Motion and storage
 
-Motion defaults to the device's reduced-motion setting. Explicit Reduced and Full overrides remain independent of Sound. Reduced motion immediately clears/suppresses smoke, dust and skid marks and neutralizes body pitch/roll, while preserving essential fixed-north camera fitting, car movement, wheel direction and brake lamps. See [pooled effects](driving-effects.md) for fixed limits and continuity gates.
+Motion always follows the device's reduced-motion setting, including live changes. There is no in-game motion selector; old saved Reduced/Full overrides are ignored while saved Sound remains intact. Reduced motion immediately clears/suppresses smoke, dust and skid marks and neutralizes body pitch/roll, while preserving essential fixed-north camera fitting, car movement, wheel direction and brake lamps. See [pooled effects](driving-effects.md) for fixed limits and continuity gates.
 
 Preferences use a small validated, versioned local value. Malformed, unavailable or blocked storage falls back in memory without preventing play. Only actual preference changes are written. One media-query listener and one scene subscription are reused through retries and removed on teardown. Settings never mutate a simulation state, replay, immutable challenge or score.
 

@@ -234,7 +234,6 @@ function prepareCourse(mode: PlayMode): void {
   start.hidden = false;
   start.disabled = true;
   element('sound-toggle').toggleAttribute('disabled', true);
-  element('motion-select').toggleAttribute('disabled', true);
   element('next-practice-button').toggleAttribute('disabled', true);
   element('mode-label').textContent =
     mode !== 'daily' ? 'Practice' : import.meta.env.DEV ? 'Practice' : 'Daily';

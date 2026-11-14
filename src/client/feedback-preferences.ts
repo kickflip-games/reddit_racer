@@ -1,4 +1,4 @@
-export type MotionPreference = 'system' | 'reduced' | 'full';
+export type MotionPreference = 'system';
 export type FeedbackPreferencesSnapshot = {
   muted: boolean;
   motion: MotionPreference;
@@ -19,7 +19,6 @@ export type FeedbackPreferencesOptions = {
 export type FeedbackPreferences = {
   readonly snapshot: Readonly<FeedbackPreferencesSnapshot>;
   setMuted(value: boolean): void;
-  setMotion(value: MotionPreference): void;
   /** Receives the current snapshot immediately, then only actual changes. */
   subscribe(
     listener: (snapshot: Readonly<FeedbackPreferencesSnapshot>) => void
@@ -29,7 +28,7 @@ export type FeedbackPreferences = {
 
 export const FEEDBACK_PREFERENCES_KEY = 'reddit-racer:feedback-preferences:v1';
 
-function motion(value: unknown): value is MotionPreference {
+function legacyMotion(value: unknown): boolean {
   return value === 'system' || value === 'reduced' || value === 'full';
 }
 function browserStorage(): PreferenceStorage | null {
@@ -65,7 +64,7 @@ export function createFeedbackPreferences(
   const system = options.systemMotion ?? browserMotion();
   let systemReduced = system.reducedMotion;
   let muted = false;
-  let preference: MotionPreference = 'system';
+  const preference: MotionPreference = 'system';
   try {
     const saved = storage?.getItem(FEEDBACK_PREFERENCES_KEY);
     const value: unknown = saved ? JSON.parse(saved) : null;
@@ -78,11 +77,11 @@ export function createFeedbackPreferences(
       'muted' in value &&
       typeof value.muted === 'boolean' &&
       'motion' in value &&
-      motion(value.motion) &&
+      legacyMotion(value.motion) &&
       Object.keys(value).length === 3
     ) {
       muted = value.muted;
-      preference = value.motion;
+      // Ignore legacy motion overrides: accessibility follows the device.
     }
   } catch {
     /* Unavailable or malformed storage must not prevent play. */
@@ -91,8 +90,7 @@ export function createFeedbackPreferences(
     Object.freeze({
       muted,
       motion: preference,
-      reducedMotion:
-        preference === 'reduced' || (preference === 'system' && systemReduced),
+      reducedMotion: systemReduced,
     });
   let snapshot = makeSnapshot();
   let disposed = false;
@@ -143,12 +141,6 @@ export function createFeedbackPreferences(
       if (typeof value !== 'boolean')
         throw new Error('Mute preference must be Boolean');
       muted = value;
-      changed(true);
-    },
-    setMotion(value) {
-      if (disposed) return;
-      if (!motion(value)) throw new Error('Unsupported motion preference');
-      preference = value;
       changed(true);
     },
     subscribe(listener) {

@@ -18,7 +18,7 @@ async function openPausedGame(page: Page): Promise<void> {
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
 }
 
-test('sound and motion controls retain native activation without holding the accelerator', async ({
+test('sound controls retain native activation without holding the accelerator', async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -30,7 +30,7 @@ test('sound and motion controls retain native activation without holding the acc
   await openPausedGame(page);
   const race = page.locator('#race');
   const sound = page.locator('#sound-toggle');
-  const motion = page.locator('#motion-select');
+  await expect(page.locator('#motion-select, #scenery-detail')).toHaveCount(0);
   await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
   await setRaceSettingsOpen(page, true);
   await expect(sound).toHaveAttribute('aria-pressed', 'true');
@@ -50,7 +50,6 @@ test('sound and motion controls retain native activation without holding the acc
   await expect(race).toHaveAttribute('data-phase', 'racing');
   await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
   await expect(sound).toBeHidden();
-  await expect(motion).toBeHidden();
   await expect(page.locator('#timer')).toBeVisible();
   await expect(page.locator('.race-brand')).toBeHidden();
   await expect(page.locator('#daily-details')).toBeHidden();
@@ -71,15 +70,7 @@ test('sound and motion controls retain native activation without holding the acc
   await page.keyboard.press('Space');
   await expect(sound).toHaveAttribute('aria-pressed', 'false');
 
-  await motion.focus();
-  await page.keyboard.press('Space');
-  await page.keyboard.press('Escape');
-  await page.clock.runFor(120);
-  await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
-  await expect(page.locator('#speed')).toHaveText('0');
-  // Escape may dismiss the options sheet as well as the native select popup.
-  await setRaceSettingsOpen(page, true);
-  await motion.selectOption('reduced');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await sound.click();
   await expect(sound).toHaveAttribute('aria-pressed', 'true');
@@ -107,29 +98,31 @@ test('sound and motion controls retain native activation without holding the acc
   expect(errors).toEqual([]);
 });
 
-test('system motion changes, explicit overrides and sound preferences stay independent and persist', async ({
+test('device motion and saved sound stay independent without visual settings', async ({
   page,
 }) => {
   const errors = collectErrors(page);
+  await page.addInitScript(() => {
+    if (localStorage.getItem('settings-migration-tested')) return;
+    localStorage.setItem('settings-migration-tested', 'true');
+    localStorage.setItem(
+      'reddit-racer:feedback-preferences:v1',
+      JSON.stringify({ schemaVersion: 1, muted: false, motion: 'full' })
+    );
+    localStorage.setItem('reddit-racer.scenery-detail.v1', 'light');
+  });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/game.html');
   const race = page.locator('#race');
-  const motion = page.locator('#motion-select');
+  await expect(page.locator('#motion-select, #scenery-detail')).toHaveCount(0);
   const sound = page.locator('#sound-toggle');
   await expect(race).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
   await setRaceSettingsOpen(page, true);
-  await expect(motion).toHaveValue('system');
-  await expect(race).toHaveAttribute('data-reduced-motion', 'true');
-  await motion.selectOption('full');
-  await expect(race).toHaveAttribute('data-motion-preference', 'full');
-  await expect(race).toHaveAttribute('data-reduced-motion', 'false');
-  await motion.selectOption('system');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await expect(race).toHaveAttribute('data-reduced-motion', 'false');
-  await motion.selectOption('reduced');
-  await expect(race).toHaveAttribute('data-reduced-motion', 'true');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await sound.click();
   await expect(sound).toHaveAttribute('aria-pressed', 'false');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
@@ -138,7 +131,6 @@ test('system motion changes, explicit overrides and sound preferences stay indep
   await expect(race).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#race-settings')).not.toHaveAttribute('open');
   await setRaceSettingsOpen(page, true);
-  await expect(motion).toHaveValue('reduced');
   await expect(race).toHaveAttribute('data-reduced-motion', 'true');
   await expect(sound).toHaveAttribute('aria-pressed', 'false');
   await expect(race).toHaveAttribute('data-audio-state', 'muted');
@@ -184,7 +176,7 @@ test('feedback controls remain reachable at 320 pixels and in compact landscape'
   ]) {
     await page.setViewportSize(viewport);
     await setRaceSettingsOpen(page, true);
-    for (const id of ['sound-toggle', 'motion-select']) {
+    for (const id of ['sound-toggle']) {
       const control = page.locator(`#${id}`);
       await expect(control).toBeVisible();
       await expect(control).toBeEnabled();

@@ -26,7 +26,7 @@ Failure screenshots, test JSON and circuit reports are uploaded for seven days, 
 
 The current gameplay tests additionally cover fixed camera orientation through turns/resets, gap bounds in canonical hashes and transport, grade-separated crossings with full headroom, correct deck following, constant centreline position, braking benefit, deterministic flight/missed-gap rescue, actual native-input jump/bridge renders and the deliberate competition namespace reset. See [current route evidence](predictable-routes.md).
 
-The miniature scene adds numerical camera coverage over shoulder vertices, hairpins, car bounds, damping, zero/tiny viewports and resize; car/prop tests cover grounding, wheel direction, lean direction, placement clearance and owned resource disposal. Browser art cases exercise real local model/palette payloads, repeated starts and missing/hung asset fallbacks. Labelled static asset/presentation fixtures do not establish a completed race.
+The miniature scene adds numerical camera coverage over shoulder vertices, hairpins, car bounds, damping, zero/tiny viewports and resize; car/prop tests cover grounding, wheel direction, lean direction, placement clearance and owned resource disposal. Browser art cases exercise real local model/palette payloads, repeated starts and required-car loading gates with retry after missing/hung assets. Labelled static asset/presentation fixtures do not establish a completed race.
 
 ## Clock and fixture boundaries
 

@@ -338,12 +338,11 @@ test('twenty real start/abandon cycles retain loaded car and scenery without rep
 });
 
 for (const failure of ['network', 'palette', 'deadline']) {
-  test(`a ${failure} car load keeps a usable fallback and accepts real input`, async ({
+  test(`a ${failure} car failure blocks racing and can retry the intended model`, async ({
     page,
   }) => {
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    let requested = 0;
+    let fail = true;
+    let requests = 0;
     await page.route(
       (url) =>
         failure === 'palette'
@@ -352,28 +351,42 @@ for (const failure of ['network', 'palette', 'deadline']) {
             !url.searchParams.has('url')
           : binaryCar(url),
       async (route) => {
-        requested++;
-        if (failure !== 'deadline') await route.abort();
-        // A deliberately unanswered binary request exercises the real deadline.
+        requests++;
+        if (!fail) await route.continue();
+        else if (failure !== 'deadline') await route.abort();
       }
     );
-    await pausedGame(page);
+    await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-11-12T00:00:01Z'));
+    await page.goto('/game.html');
     if (failure === 'deadline') {
-      await expect(page.locator('#race')).toHaveAttribute(
-        'data-car-load',
-        'loading'
-      );
-      await expect.poll(() => requested).toBe(1);
-      await page.clock.fastForward(DEFAULT_REQUEST_TIMEOUT_MS + 10);
+      await expect.poll(() => requests).toBeGreaterThan(0);
+      await page.clock.runFor(DEFAULT_REQUEST_TIMEOUT_MS + 50);
     }
     await expect(page.locator('#race')).toHaveAttribute(
       'data-car-load',
       'unavailable'
     );
+    await expect(page.locator('#start-button')).toBeDisabled();
+    await expect(page.locator('#car-load-status')).toContainText(
+      'could not load'
+    );
+    await expect(page.locator('#car-load-retry')).toBeVisible();
+    await page.locator('#start-button').dispatchEvent('click');
+    await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+    await expect(page.locator('#speed')).toHaveText('0');
+    fail = false;
+    await page.locator('#car-load-retry').click();
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-car-load',
+      'ready'
+    );
     await expect(page.locator('#race')).toHaveAttribute(
       'data-car-art',
-      'fallback'
+      'kenney'
     );
+    await expect(page.locator('#car-load-status')).toBeHidden();
+    await expect(page.locator('#start-button')).toBeEnabled();
     await page.locator('#start-button').click();
     await page.keyboard.down('Space');
     await page.clock.runFor(3200);
@@ -381,18 +394,10 @@ for (const failure of ['network', 'palette', 'deadline']) {
     expect(Number(await page.locator('#speed').textContent())).toBeGreaterThan(
       0
     );
-    await page.screenshot({
-      path: `test-results/asset-fallback-${failure}-${test.info().project.name}.png`,
-    });
-    await page.keyboard.up('Space');
-    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
-    await expect(page.locator('#retry-button')).toBeVisible();
-    expect(requested).toBe(1);
-    expect(errors).toEqual([]);
   });
 }
 
-test('a late car download cannot swap the car during a lap or after interruption and retry', async ({
+test('delayed car blocks early input until the intended model is ready', async ({
   page,
 }) => {
   let releaseAsset: () => void = () => {};
@@ -404,26 +409,27 @@ test('a late car download cannot swap the car during a lap or after interruption
     await route.continue();
   });
   await page.goto('/game.html?practice=1&seed=practice-1');
+  await expect(page.locator('#car-load-status')).toHaveText(
+    'Loading your car…'
+  );
+  await expect(page.locator('#start-button')).toBeDisabled();
+  await page.locator('#start-button').dispatchEvent('click');
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-car-art',
+    'loading'
+  );
+  releaseAsset();
+  await expect(page.locator('#race')).toHaveAttribute('data-car-load', 'ready');
+  await expect(page.locator('#race')).toHaveAttribute('data-car-art', 'kenney');
   await expect(page.locator('#start-button')).toBeEnabled();
   await page.locator('#start-button').click();
   await expect(page.locator('#race')).toHaveAttribute(
-    'data-car-art',
-    'fallback'
-  );
-  releaseAsset();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-car-load',
-    'deferred'
-  );
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-car-art',
-    'fallback'
+    'data-phase',
+    'countdown'
   );
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await expect(page.locator('#retry-button')).toBeVisible();
   await page.locator('#retry-button').click();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-car-art',
-    'fallback'
-  );
+  await expect(page.locator('#race')).toHaveAttribute('data-car-art', 'kenney');
 });

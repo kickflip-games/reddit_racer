@@ -10,7 +10,7 @@ export type AssetModelLoader = (
   manager: THREE.LoadingManager
 ) => Promise<THREE.Group>;
 export type SceneAssetCache = {
-  loadCarAsset(): Promise<THREE.Group | undefined>;
+  loadCarAsset(retry?: boolean): Promise<THREE.Group | undefined>;
   loadSceneryAssets(): Promise<SceneryAssets>;
   dispose(): void;
 };
@@ -166,7 +166,8 @@ export function createSceneAssetCache(
     }
   }
   return {
-    loadCarAsset() {
+    loadCarAsset(retry = false) {
+      if (retry) car = undefined;
       if (disposed) return Promise.resolve(undefined);
       car ??= selected(carUrl, paletteUrl);
       return car;

@@ -282,10 +282,18 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
-  // Do not flash the placeholder before the real car arrives. Starting early
-  // deliberately selects the fallback for this scene, including every retry.
+  // The intended Kenney model is required. Never race with placeholder art.
   carVisual.object.visible = false;
-  let carIdentityLocked = false;
+  let carLoadState: 'loading' | 'ready' | 'unavailable' = 'loading';
+  const carLoadStatus = document.createElement('p');
+  carLoadStatus.id = 'car-load-status';
+  carLoadStatus.setAttribute('role', 'status');
+  const carLoadRetry = document.createElement('button');
+  carLoadRetry.id = 'car-load-retry';
+  carLoadRetry.type = 'button';
+  carLoadRetry.textContent = 'Retry car load';
+  carLoadRetry.hidden = true;
+  start.before(carLoadStatus, carLoadRetry);
   let racingViewport:
     { width: number; height: number; top: number } | undefined;
   const scenery = createScenery(track, countryside);
@@ -295,7 +303,7 @@ export function initializeGame(
   const rearLeft = new THREE.Vector3();
   const rearRight = new THREE.Vector3();
   scene.add(carVisual.object, scenery.object, drivingVfx.object);
-  raceRoot.dataset.carArt = 'fallback';
+  raceRoot.dataset.carArt = 'loading';
   raceRoot.dataset.carLoad = 'loading';
   raceRoot.dataset.sceneryArt = 'fallback';
   raceRoot.dataset.sceneryVersion = countryside.version;
@@ -381,12 +389,12 @@ export function initializeGame(
     // Read the actual driver now: a Start click can precede the next render.
     if (destroyed || preparing || driver.active) return false;
     let changed = false;
-    if (pendingCar && !carIdentityLocked) {
+    if (pendingCar && carLoadState !== 'ready') {
       const installed = carVisual.installModel(pendingCar);
       pendingCar = undefined;
-      carVisual.object.visible = true;
-      raceRoot.dataset.carArt = carVisual.kind;
-      raceRoot.dataset.carLoad = installed ? 'ready' : 'unavailable';
+      carVisual.object.visible = installed;
+      raceRoot.dataset.carArt = installed ? carVisual.kind : 'unavailable';
+      setCarLoadState(installed ? 'ready' : 'unavailable');
       changed = true;
     }
     if (pendingScenery) {
@@ -458,6 +466,9 @@ export function initializeGame(
     return (racing || preparing) && (pointerHeld || keyHeld);
   }
   function feedback(): void {
+    // boot() may finish its course setup after initializeGame; the asset gate
+    // remains authoritative even if that code enables the Start button.
+    if (carLoadState !== 'ready') enableAttemptButtons(false);
     const state = driver.state;
     element('practice-best-lap').hidden =
       attemptMode === 'ranked' ||
@@ -739,6 +750,7 @@ export function initializeGame(
     verification.hidden = !message;
   }
   function enableAttemptButtons(enabled: boolean): void {
+    enabled = enabled && carLoadState === 'ready';
     start.toggleAttribute('disabled', !enabled);
     retry.toggleAttribute('disabled', !enabled);
     restart.toggleAttribute('disabled', !enabled);
@@ -836,8 +848,7 @@ export function initializeGame(
     enableAttemptButtons(true);
     const timestamp = performance.now();
     renderReadyArt();
-    carIdentityLocked = true;
-    carVisual.object.visible = true;
+    if (carLoadState !== 'ready') return;
     racingViewport = undefined;
     driver.start(timestamp);
     seenPracticeLaps = 0;
@@ -873,7 +884,14 @@ export function initializeGame(
     cardTitle.focus({ preventScroll: true });
   }
   function beginRace(): void {
-    if (destroyed || preparing || racing || !viewportUsable) return;
+    if (
+      destroyed ||
+      preparing ||
+      racing ||
+      !viewportUsable ||
+      carLoadState !== 'ready'
+    )
+      return;
     closeSettings();
     attemptId++;
     audio.setForeground(!document.hidden);
@@ -1120,30 +1138,44 @@ export function initializeGame(
   if (footer) hudObserver.observe(footer);
   hudObserver.observe(card);
 
-  void sceneAssets
-    .loadCarAsset()
-    .then((template) => {
+  function setCarLoadState(state: typeof carLoadState): void {
+    carLoadState = state;
+    raceRoot.dataset.carLoad = state;
+    carLoadStatus.hidden = state === 'ready';
+    carLoadStatus.textContent =
+      state === 'loading'
+        ? 'Loading your car…'
+        : state === 'unavailable'
+          ? 'The car could not load. Check your connection and retry.'
+          : '';
+    carLoadRetry.hidden = state !== 'unavailable';
+    enableAttemptButtons(state === 'ready');
+    sceneDirty = true;
+  }
+  async function loadRequiredCar(retry = false): Promise<void> {
+    setCarLoadState('loading');
+    try {
+      const template = await sceneAssets.loadCarAsset(retry);
       if (destroyed) return;
       if (!template) {
-        raceRoot.dataset.carLoad = 'unavailable';
-        carVisual.object.visible = true;
-        sceneDirty = true;
-        return;
-      }
-      if (carIdentityLocked) {
-        raceRoot.dataset.carLoad = 'deferred';
+        setCarLoadState('unavailable');
         return;
       }
       pendingCar = template;
       renderReadyArt();
-    })
-    .catch(() => {
-      if (!destroyed) {
-        raceRoot.dataset.carLoad = 'unavailable';
-        carVisual.object.visible = true;
-        sceneDirty = true;
-      }
-    });
+    } catch {
+      if (!destroyed) setCarLoadState('unavailable');
+    }
+  }
+  carLoadRetry.addEventListener(
+    'click',
+    () => {
+      if (!destroyed && carLoadState === 'unavailable')
+        void loadRequiredCar(true);
+    },
+    eventOptions
+  );
+  void loadRequiredCar();
   void sceneAssets
     .loadSceneryAssets()
     .then((assets) => {
@@ -1189,6 +1221,8 @@ export function initializeGame(
     closeSettings();
     interruptRace();
     destroyed = true;
+    carLoadStatus.remove();
+    carLoadRetry.remove();
     lifetime.abort();
     cancelAnimationFrame(frameHandle);
     preparation?.abort();

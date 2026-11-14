@@ -696,3 +696,20 @@ void test('fallback and authored car change flags settle while pose, wheels, lam
   }
   disposeAssetTemplate(imported);
 });
+
+void test('explicit car retry replaces a failed request and retains the successful model', async () => {
+  let calls = 0;
+  const model = template();
+  const cache = createSceneAssetCache(async () => {
+    calls++;
+    if (calls === 1) throw new Error('offline');
+    return model;
+  });
+  assert.equal(await cache.loadCarAsset(), undefined);
+  assert.equal(await cache.loadCarAsset(), undefined);
+  assert.equal(calls, 1);
+  assert.equal(await cache.loadCarAsset(true), model);
+  assert.equal(await cache.loadCarAsset(), model);
+  assert.equal(calls, 2);
+  cache.dispose();
+});

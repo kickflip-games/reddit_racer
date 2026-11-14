@@ -38,8 +38,8 @@ export const ELEVATED_HANDLING: Handling = Object.freeze({
   recoveryDistanceBeyondEdge: 8,
   recoveryTicks: 120,
 });
-export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v3';
-export const ELEVATED_HANDLING_VERSION = 'arcade-v2';
+export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v4';
+export const ELEVATED_HANDLING_VERSION = 'centreline-v1';
 export const FLIGHT_GRAVITY = 11.5;
 
 const flatRuntime = Object.freeze({

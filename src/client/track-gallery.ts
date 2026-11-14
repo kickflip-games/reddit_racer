@@ -470,12 +470,8 @@ async function checkSelectedQuality(): Promise<void> {
   element('quality-table').hidden = true;
   try {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    const { generateValidatedCircuit } =
-      await import('../shared/circuit-quality');
     if (run !== selectedRun) return;
-    const result = elevated
-      ? generateElevatedCircuit(seed)
-      : generateValidatedCircuit(seed);
+    const result = generateElevatedCircuit(seed);
     if (run !== selectedRun) return;
     renderQualityMetrics(result);
     if (!result.quality.valid) {

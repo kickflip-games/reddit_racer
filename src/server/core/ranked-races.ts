@@ -1,3 +1,4 @@
+import { RACE_STORAGE_PREFIX } from '../../shared/race-storage';
 import {
   dailyChallengeId,
   DailyChallengeError,
@@ -148,13 +149,13 @@ export function sessionKey(subredditId: string, sessionId: string): string {
   validateScope(subredditId);
   if (!isRankedSessionId(sessionId))
     throw new RankedRaceError('integrity', 'Session key ID is invalid');
-  return `racer:session:${subredditId}:${sessionId}`;
+  return `${RACE_STORAGE_PREFIX}:session:${subredditId}:${sessionId}`;
 }
 export function receiptKey(subredditId: string, sessionId: string): string {
   validateScope(subredditId);
   if (!isRankedSessionId(sessionId))
     throw new RankedRaceError('integrity', 'Receipt key ID is invalid');
-  return `racer:receipt:${subredditId}:${sessionId}`;
+  return `${RACE_STORAGE_PREFIX}:receipt:${subredditId}:${sessionId}`;
 }
 
 /** Parsing a historical receipt does not execute or reinterpret its race physics. */

@@ -1,3 +1,4 @@
+import { RACE_STORAGE_PREFIX } from '../../shared/race-storage';
 import {
   createDailyChallengeRecord,
   dailyChallengeView,
@@ -47,15 +48,15 @@ export type DailyChallengeService = {
   read: (input: DailyRecordInput) => Promise<DailyChallengeRecord | null>;
 };
 
-/** Logical keys deliberately exclude code/schema versions: deployments cannot fork a day. */
+/** Daily identity stays fixed within this handling revision; incompatible pre-release scores use a fresh namespace. */
 export function dailyChallengeKey(subredditId: string, day: string): string {
   validateSubredditId(subredditId);
   utcDayWindow(day);
-  return `racer:daily:${subredditId}:${day}`;
+  return `${RACE_STORAGE_PREFIX}:daily:${subredditId}:${day}`;
 }
 export function postBindingsKey(subredditId: string): string {
   validateSubredditId(subredditId);
-  return `racer:posts:${subredditId}`;
+  return `${RACE_STORAGE_PREFIX}:posts:${subredditId}`;
 }
 function validatePostId(postId: string): void {
   if (

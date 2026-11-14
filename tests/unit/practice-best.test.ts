@@ -64,8 +64,8 @@ void test('storage failures keep session bests and unknown versions are not over
 void test('elevated personal bests identify the authoritative runtime without changing retained flat keys', () => {
   const elevated = generateElevatedCircuit('flow-probe-21').track;
   const key = practiceBestKey(elevated, {});
-  assert.match(key, /fixed-step-v3/);
-  assert.match(key, /arcade-v2/);
+  assert.match(key, /fixed-step-v4/);
+  assert.match(key, /centreline-v1/);
   const flat = practiceBestKey(createOvalTrack(), {});
   assert.match(flat, /fixed-step-v2/);
   assert.match(flat, /arcade-v1/);

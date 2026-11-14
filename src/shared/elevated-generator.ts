@@ -2,6 +2,7 @@ import { createTrackFromPoints } from './track-authoring.ts';
 import {
   assessTrackStructure,
   findLongestStraight,
+  segmentsIntersect,
 } from './circuit-validation.ts';
 import {
   assessTrackQuality,
@@ -13,9 +14,9 @@ import type {
   GeneratorConfig,
   AcceptedCircuitDiagnostics,
 } from './circuit-generator.ts';
-import { validateTrack, type Track } from './track.ts';
+import { sampleTrack, validateTrack, type Track } from './track.ts';
 
-export const ELEVATED_GENERATOR_VERSION = 'flow-loop-v2';
+export const ELEVATED_GENERATOR_VERSION = 'countryside-circuits-v1';
 export const ELEVATED_GENERATOR_CONFIG: Readonly<GeneratorConfig> =
   Object.freeze({
     width: 7,
@@ -151,6 +152,70 @@ export function addCircuitElevation(flat: Track): Track {
       };
     }),
   };
+  track.jumps = [
+    {
+      rampStart: 22,
+      takeoff: 42,
+      landing: 52,
+      rampEnd: 70,
+      height: sampleTrack(track, 42).y ?? 0,
+    },
+  ];
+  validateTrack(track);
+  return track;
+}
+
+/** One road crosses itself twice in progress; only the later pass is raised. */
+export function addOverpassElevation(flat: Track): Track {
+  let crossingS = -1;
+  for (let i = 0; i < flat.samples.length && crossingS < 0; i++) {
+    const a = flat.samples[i],
+      b = flat.samples[i + 1];
+    if (!a || !b) continue;
+    for (let j = i + 20; j < flat.samples.length - 1; j++) {
+      const c = flat.samples[j],
+        d = flat.samples[j + 1];
+      if (
+        !c ||
+        !d ||
+        flat.totalLength - (c.s - a.s) < 20 ||
+        !segmentsIntersect(a, b, c, d)
+      )
+        continue;
+      const dx = b.x - a.x,
+        dz = b.z - a.z,
+        ex = d.x - c.x,
+        ez = d.z - c.z;
+      const determinant = dx * ez - dz * ex;
+      if (Math.abs(determinant) < 1e-9) continue;
+      const u = ((c.x - a.x) * dz - (c.z - a.z) * dx) / determinant;
+      crossingS = c.s + Math.hypot(ex, ez) * u;
+      break;
+    }
+  }
+  if (crossingS < 120 || crossingS > flat.totalLength - 120)
+    throw new Error('Crossing has no bridge runway');
+  const smooth = (t: number) => t * t * t * (10 + t * (-15 + 6 * t));
+  const profile = (s: number) => {
+    const distance = Math.abs(s - crossingS),
+      t = (94 - distance) / 70;
+    if (t <= 0) return { y: 0, grade: 0, verticalCurvature: 0 };
+    if (t >= 1) return { y: 6, grade: 0, verticalCurvature: 0 };
+    return {
+      y: q(6 * smooth(t)),
+      grade: q(
+        (-Math.sign(s - crossingS) * 6 * 30 * t * t * (1 - t) * (1 - t)) / 70
+      ),
+      verticalCurvature: q(
+        (6 * (60 * t - 180 * t * t + 120 * t * t * t)) / (70 * 70)
+      ),
+    };
+  };
+  const track: Track = {
+    ...flat,
+    schemaVersion: 2,
+    samples: flat.samples.map((p) => ({ ...p, ...profile(p.s) })),
+  };
   validateTrack(track);
   return track;
 }
@@ -166,83 +231,118 @@ export function generateElevatedCandidate(
   const random = randomFor(
     `${ELEVATED_GENERATOR_VERSION}|${seed}|${attempt}|${JSON.stringify({ ...config, maxAttempts: 12 })}`
   );
-  const points = Array.from({ length: 9 + Math.floor(random() * 7) }, () => ({
-    x: (random() - 0.5) * 180,
-    z: (random() - 0.5) * 180,
-  }));
-  const ring = hull(points);
-  while (ring.length > 4) {
-    let shortest = 25,
-      remove = -1;
-    for (let i = 0; i < ring.length; i++) {
-      const a = ring[i],
-        b = ring[(i + 1) % ring.length];
-      if (a && b) {
-        const d = Math.hypot(a.x - b.x, a.z - b.z);
-        if (d < shortest) {
-          shortest = d;
-          remove = (i + 1) % ring.length;
+  const crossing = random() < 0.4;
+  let controls: Point[];
+  if (crossing) {
+    const stretch = 0.9 + random() * 0.2;
+    const bulge = 0.85 + random() * 0.3;
+    controls = [
+      [-90, -70],
+      [-55, -43],
+      [-20, -16],
+      [20, 16],
+      [55, 43],
+      [90, 70],
+      [150, 65],
+      [190, 35],
+      [145, 0],
+      [190, -35],
+      [150, -65],
+      [90, -70],
+      [55, -43],
+      [20, -16],
+      [-20, 16],
+      [-55, 43],
+      [-90, 70],
+      [-135, 65],
+      [-160, 30],
+      [-160, -30],
+      [-135, -65],
+    ].map(([x, z]) => {
+      if (x === undefined || z === undefined)
+        throw new Error('Missing crossing control');
+      return { x: x * stretch, z: z * bulge };
+    });
+  } else {
+    const points = Array.from({ length: 9 + Math.floor(random() * 7) }, () => ({
+      x: (random() - 0.5) * 180,
+      z: (random() - 0.5) * 180,
+    }));
+    const ring = hull(points);
+    while (ring.length > 4) {
+      let shortest = 25,
+        remove = -1;
+      for (let i = 0; i < ring.length; i++) {
+        const a = ring[i],
+          b = ring[(i + 1) % ring.length];
+        if (a && b) {
+          const d = Math.hypot(a.x - b.x, a.z - b.z);
+          if (d < shortest) {
+            shortest = d;
+            remove = (i + 1) % ring.length;
+          }
         }
       }
+      if (remove < 0) break;
+      ring.splice(remove, 1);
     }
-    if (remove < 0) break;
-    ring.splice(remove, 1);
-  }
-  if (ring.length < 3) throw new Error('Degenerate hull');
-  let longest = 0;
-  for (let i = 1; i < ring.length; i++) {
-    const a = ring[i],
-      b = ring[(i + 1) % ring.length],
-      c = ring[longest],
-      d = ring[(longest + 1) % ring.length];
-    if (
-      a &&
-      b &&
-      c &&
-      d &&
-      Math.hypot(b.x - a.x, b.z - a.z) > Math.hypot(d.x - c.x, d.z - c.z)
-    )
-      longest = i;
-  }
-  let controls: Point[] = [];
-  const notches = 1 + Math.floor(random() * 3);
-  for (let i = 0; i < ring.length; i++) {
-    const a = ring[(longest + i) % ring.length],
-      b = ring[(longest + i + 1) % ring.length];
-    if (!a || !b) throw new Error('Incomplete hull');
-    const dx = b.x - a.x,
-      dz = b.z - a.z,
-      edge = Math.hypot(dx, dz),
-      nx = -dz / edge,
-      nz = dx / edge;
-    controls.push(a);
-    if (i === 0) {
-      for (let j = 1; j < 10; j++)
-        controls.push({ x: a.x + (dx * j) / 10, z: a.z + (dz * j) / 10 });
-    } else {
-      const depth = edge * (0.14 + random() * 0.3) * (i <= notches ? 1 : -0.35);
-      if (i <= notches && edge > 40) {
-        for (const [t, inset] of [
-          [0.23, 0],
-          [0.36, depth],
-          [0.64, depth],
-          [0.77, 0],
-        ]) {
-          if (t === undefined || inset === undefined)
-            throw new Error('Incomplete notch');
+    if (ring.length < 3) throw new Error('Degenerate hull');
+    let longest = 0;
+    for (let i = 1; i < ring.length; i++) {
+      const a = ring[i],
+        b = ring[(i + 1) % ring.length],
+        c = ring[longest],
+        d = ring[(longest + 1) % ring.length];
+      if (
+        a &&
+        b &&
+        c &&
+        d &&
+        Math.hypot(b.x - a.x, b.z - a.z) > Math.hypot(d.x - c.x, d.z - c.z)
+      )
+        longest = i;
+    }
+    controls = [];
+    const notches = 1 + Math.floor(random() * 3);
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[(longest + i) % ring.length],
+        b = ring[(longest + i + 1) % ring.length];
+      if (!a || !b) throw new Error('Incomplete hull');
+      const dx = b.x - a.x,
+        dz = b.z - a.z,
+        edge = Math.hypot(dx, dz),
+        nx = -dz / edge,
+        nz = dx / edge;
+      controls.push(a);
+      if (i === 0) {
+        for (let j = 1; j < 10; j++)
+          controls.push({ x: a.x + (dx * j) / 10, z: a.z + (dz * j) / 10 });
+      } else {
+        const depth =
+          edge * (0.14 + random() * 0.3) * (i <= notches ? 1 : -0.35);
+        if (i <= notches && edge > 40) {
+          for (const [t, inset] of [
+            [0.23, 0],
+            [0.36, depth],
+            [0.64, depth],
+            [0.77, 0],
+          ]) {
+            if (t === undefined || inset === undefined)
+              throw new Error('Incomplete notch');
+            controls.push({
+              x: a.x + dx * t + nx * inset,
+              z: a.z + dz * t + nz * inset,
+            });
+          }
+        } else
           controls.push({
-            x: a.x + dx * t + nx * inset,
-            z: a.z + dz * t + nz * inset,
+            x: (a.x + b.x) / 2 + nx * depth,
+            z: (a.z + b.z) / 2 + nz * depth,
           });
-        }
-      } else
-        controls.push({
-          x: (a.x + b.x) / 2 + nx * depth,
-          z: (a.z + b.z) / 2 + nz * depth,
-        });
+      }
     }
   }
-  for (let pass = 0; pass < 3; pass++) {
+  for (let pass = 0; pass < (crossing ? 0 : 3); pass++) {
     const before = controls;
     controls = before.map((p, i) => {
       if (i >= 1 && i <= 8) return p;
@@ -266,7 +366,13 @@ export function generateElevatedCandidate(
   dense = dense.map(transform);
   const empty: AcceptedCircuitDiagnostics = {
     candidateSeed: `${seed}:attempt:${attempt}`,
-    motifs: ['straight', 'hairpin', 's-bend', 'sweeper', 'recovery'],
+    motifs: [
+      'straight',
+      'hairpin',
+      's-bend',
+      'sweeper',
+      crossing ? 'overpass' : 'gap-jump',
+    ],
     controlPoints: controls.map(transform),
     length: 0,
     minRadius: 0,
@@ -303,28 +409,31 @@ export function generateElevatedCandidate(
       [...dense.slice(index), ...dense.slice(0, index)],
       options
     );
-    const structure = assessTrackStructure(flat, {
+    const track = crossing
+      ? addOverpassElevation(flat)
+      : addCircuitElevation(flat);
+    const structure = assessTrackStructure(track, {
       minRadius: config.minRadius,
       clearance: config.clearance,
       shoulder: config.shoulder,
     });
     const codes = [...structure.codes];
-    if (structure.metrics.startStraight < 95) codes.push('jump-runway');
+    if (structure.metrics.startStraight < (crossing ? 75 : 95))
+      codes.push('jump-runway');
     if (codes.length)
       return {
         track: null,
         accepted: { ...empty, ...structure.metrics },
         codes,
       };
-    const track = addCircuitElevation(flat);
     return { track, accepted: { ...empty, ...structure.metrics }, codes: [] };
   } catch {
     return { track: null, accepted: empty, codes: ['malformed'] };
   }
 }
 
-export const ELEVATED_RESERVE_SEED = 'flow-reserve-5';
-export const ELEVATED_RESERVE_ATTEMPT = 2;
+export const ELEVATED_RESERVE_SEED = 'country-reserve-0';
+export const ELEVATED_RESERVE_ATTEMPT = 1;
 export function generateElevatedCircuit(
   seed: string,
   overrides: Partial<GeneratorConfig> = {}

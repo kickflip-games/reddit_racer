@@ -1,3 +1,4 @@
+import { RACE_STORAGE_PREFIX } from '../../shared/race-storage';
 import {
   DailyChallengeError,
   utcDayWindow,
@@ -106,7 +107,7 @@ function userId(value: unknown): value is string {
 export function leaderboardKey(subredditId: string, day: string): string {
   scope(subredditId);
   utcDayWindow(day);
-  return `racer:leaderboard:${subredditId}:${day}`;
+  return `${RACE_STORAGE_PREFIX}:leaderboard:${subredditId}:${day}`;
 }
 export function personalBestKey(
   subredditId: string,
@@ -117,19 +118,19 @@ export function personalBestKey(
   utcDayWindow(day);
   if (!userId(user))
     throw new RankedRaceError('integrity', 'Personal-best owner is invalid');
-  return `racer:pb:${subredditId}:${day}:${user}`;
+  return `${RACE_STORAGE_PREFIX}:pb:${subredditId}:${day}:${user}`;
 }
 export function competitionOutcomeKey(
   subredditId: string,
   sessionId: string
 ): string {
   receiptKey(subredditId, sessionId);
-  return `racer:outcome:${subredditId}:${sessionId}`;
+  return `${RACE_STORAGE_PREFIX}:outcome:${subredditId}:${sessionId}`;
 }
 export function boardRevisionKey(subredditId: string, day: string): string {
   scope(subredditId);
   utcDayWindow(day);
-  return `racer:board-revision:${subredditId}:${day}`;
+  return `${RACE_STORAGE_PREFIX}:board-revision:${subredditId}:${day}`;
 }
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

@@ -1,11 +1,6 @@
-import { createStuntCourse } from '../shared/stunt-course';
-import { createOvalTrack } from '../shared/track-authoring';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
-import {
-  generatePracticeCourse,
-  generateFlatPracticeCourse,
-} from './practice-course';
+import { generatePracticeCourse } from './practice-course';
 import {
   DailyCourseIntegrityError,
   fetchDailyChallenge,
@@ -47,12 +42,15 @@ type LoadedCourse = {
   dailyUnavailable: boolean;
 };
 
-function referenceCourse(dailyUnavailable = false): LoadedCourse {
+async function referenceCourse(
+  dailyUnavailable = false
+): Promise<LoadedCourse> {
+  const course = await generatePracticeCourse('country-1');
   return {
-    track: createOvalTrack(),
-    generated: false,
-    seed: '',
-    fallbackUsed: false,
+    track: course.track,
+    generated: true,
+    seed: course.seed,
+    fallbackUsed: course.fallbackUsed,
     daily: null,
     dailyUnavailable,
   };
@@ -97,14 +95,9 @@ async function loadCourse(): Promise<LoadedCourse> {
     if (!seed.length || seed.length > 96)
       throw new Error('Local circuit seeds must contain 1–96 characters.');
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
-    const { generateValidatedCircuit } =
-      await import('../shared/circuit-quality');
-    const result =
-      query?.get('elevated') === '1'
-        ? (
-            await import('../shared/elevated-generator')
-          ).generateElevatedCircuit(seed)
-        : generateValidatedCircuit(seed);
+    const { generateElevatedCircuit } =
+      await import('../shared/elevated-generator');
+    const result = generateElevatedCircuit(seed);
     if (!result.quality.valid)
       throw new Error(
         'This seed failed the driving checks. Select another seed in the circuit workshop.'
@@ -183,13 +176,11 @@ function showDailyCourse(view: DailyChallengeView): () => void {
   };
 }
 
-type PlayMode = 'daily' | 'practice' | 'stunt' | 'slot';
-let mirroredStunts = false;
+type PlayMode = 'daily' | 'practice';
 let scene: GameSceneController | undefined;
 let cleanupDaily: (() => void) | undefined;
 let cleanupLeaderboard: (() => void) | undefined;
 let courseGeneration = 0;
-let playMode: PlayMode = 'daily';
 let lastPracticeTrackHash: string | undefined;
 
 function prepareCourse(mode: PlayMode): void {
@@ -201,7 +192,6 @@ function prepareCourse(mode: PlayMode): void {
   cleanupLeaderboard = undefined;
   dailyArchived = false;
   attemptPresentation = 'ready';
-  playMode = mode;
   race.dataset.playMode = mode;
   race.dataset.phase = 'loading';
   race.dataset.preparing = 'false';
@@ -229,13 +219,9 @@ function prepareCourse(mode: PlayMode): void {
   element('card').dataset.result = 'false';
   element('finish-time').hidden = true;
   element('practice-result').hidden = true;
-  const modes = element('practice-modes');
-  if (modes instanceof HTMLDetailsElement) modes.open = false;
   element('card').hidden = false;
   element('card').scrollTop = 0;
   element('practice-button').hidden = mode === 'practice';
-  element('stunt-button').hidden = mode === 'stunt';
-  element('slot-button').hidden = mode === 'slot';
   element('practice-settings').hidden = mode === 'daily';
   element('verification-status').hidden = true;
   element('verification-status').textContent = '';
@@ -265,30 +251,12 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
   prepareCourse(mode);
   try {
     if (mode !== 'daily') {
-      const stunt =
-        mode === 'stunt'
-          ? createStuntCourse((mirroredStunts = !mirroredStunts))
-          : null;
-      const course = stunt
-        ? {
-            track: stunt.track,
-            seed: stunt.track.seed,
-            fallbackUsed: false,
-            trackHash: stunt.track.seed,
-          }
-        : await (
-            mode === 'slot'
-              ? generateFlatPracticeCourse
-              : generatePracticeCourse
-          )(seed, lastPracticeTrackHash);
+      const course = await generatePracticeCourse(seed, lastPracticeTrackHash);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
         generated: true,
         continuousPractice: true,
-        dynamicGrip: mode === 'slot' || mode === 'stunt',
-        gripZones: stunt?.gripZones ?? [],
-        ...(stunt ? { jumps: stunt.jumps } : {}),
       });
       race.dataset.trackHash = course.trackHash;
       race.dataset.practiceLaps = '0';
@@ -323,7 +291,11 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
       ? createRankedRaceHooks(
           course.daily.challenge,
           (mode) => {
-            if (version !== courseGeneration || playMode !== 'daily') return;
+            if (
+              version !== courseGeneration ||
+              race.dataset.playMode !== 'daily'
+            )
+              return;
             attemptPresentation = mode;
             renderDailyMode();
           },
@@ -402,18 +374,13 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
   }
 }
 
-element('slot-button').addEventListener('click', () => void boot('slot'));
-element('stunt-button').addEventListener('click', () => void boot('stunt'));
 element('practice-button').addEventListener(
   'click',
   () => void boot('practice')
 );
 element('next-practice-button').addEventListener(
   'click',
-  () =>
-    void boot(
-      playMode === 'stunt' ? 'stunt' : playMode === 'slot' ? 'slot' : 'practice'
-    )
+  () => void boot('practice')
 );
 element('daily-mode-button').addEventListener(
   'click',
@@ -430,14 +397,6 @@ const query = import.meta.env.DEV
   ? new URLSearchParams(window.location.search)
   : null;
 void boot(
-  query?.get('grip') === '1'
-    ? 'slot'
-    : query?.get('stunt') === '1'
-      ? 'stunt'
-      : query?.get('practice') === '1'
-        ? 'practice'
-        : 'daily',
-  query?.get('practice') === '1' || query?.get('grip') === '1'
-    ? (query.get('seed') ?? undefined)
-    : undefined
+  query?.get('practice') === '1' ? 'practice' : 'daily',
+  query?.get('practice') === '1' ? (query.get('seed') ?? undefined) : undefined
 );

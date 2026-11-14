@@ -128,7 +128,7 @@ export function createRaceCamera(track: Track): RaceCamera {
       width / (2 * radiusU * 1.08),
       height / (2 * radiusV * 1.08),
       viewport.height > viewport.width && viewport.width < 700
-        ? 10
+        ? 12
         : mode === 'overview'
           ? 22
           : 19
@@ -142,8 +142,7 @@ export function createRaceCamera(track: Track): RaceCamera {
       width / (2 * (Math.abs(carU - u) + 3.4)),
       height / (2 * (Math.abs(carV - v) + 3.4))
     );
-    const minimumScale =
-      viewport.width < 380 ? 9.5 : viewport.width < 700 ? 9.5 : 15;
+    const minimumScale = viewport.width < 700 ? 11.5 : 15;
     const desiredScale = Math.min(
       carScale,
       Math.max(Math.min(minimumScale, height / 26), fitScale)

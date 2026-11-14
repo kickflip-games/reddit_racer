@@ -8,7 +8,7 @@ import type { SimulationState } from './simulation.ts';
 const hz = 120;
 const q = (value: number): number => Math.round(value * 1_000_000) / 1_000_000;
 
-/** Authoritative ballistic flight on a stored height profile, using only fixed ticks. */
+/** One predictable route. Speed control, corner momentum and real ballistic gaps provide the skill. */
 export function stepElevatedSimulation(
   track: Track,
   state: SimulationState,
@@ -19,140 +19,154 @@ export function stepElevatedSimulation(
     throw new Error('An elevated race requires vertical initial conditions');
   const tick = state.tick + 1;
   const frame = sampleTrack(track, state.distance);
-  const roadY = frame.y ?? 0;
-  const halfWidth = q(frame.halfWidth);
   if (state.recoveryTicksRemaining > 0) {
     const remaining = state.recoveryTicksRemaining - 1;
-    const proportion = remaining / state.recoveryTicksRemaining;
-    const lateralOffset = q(state.lateralOffset * proportion);
     return {
       ...state,
       tick,
-      speed: q(state.speed * proportion),
-      lateralOffset,
+      speed: 0,
+      lateralOffset: 0,
       lateralVelocity: 0,
-      slip: 0,
-      offRoad: Math.abs(lateralOffset) > halfWidth,
+      offRoad: false,
       recovering: remaining > 0,
       recoveryTicksRemaining: remaining,
+      cornerStress: 0,
+      cornerPenaltyTicks: 0,
+      slip: 0,
       vertical: {
         ...vertical,
-        height: q(roadY + (vertical.height - roadY) * proportion),
+        height: q(frame.y ?? 0),
         velocity: 0,
         airborne: false,
         impact: 0,
       },
     };
   }
-  const offRoad = Math.abs(state.lateralOffset) > halfWidth;
   const grounded = !vertical.airborne;
+  let penalty = Math.max(0, (state.cornerPenaltyTicks ?? 0) - 1);
   const drive = grounded
     ? held
-      ? handling.acceleration
+      ? penalty > 0
+        ? 0
+        : handling.acceleration
       : -handling.braking
     : 0;
-  const slopeGravity =
-    grounded && !offRoad ? -FLIGHT_GRAVITY * (frame.grade ?? 0) : 0;
   const drag = grounded
-    ? handling.rollingDrag * state.speed * state.speed +
-      (offRoad ? handling.offRoadDrag * state.speed : 0)
+    ? handling.rollingDrag * state.speed * state.speed
     : state.speed * 0.035;
-  const speed = q(
+  let speed = q(
     Math.max(
       0,
       Math.min(
         handling.maximumSpeed,
-        state.speed + (drive + slopeGravity - drag) / hz
+        state.speed +
+          (drive -
+            drag -
+            (grounded ? FLIGHT_GRAVITY * (frame.grade ?? 0) : 0)) /
+            hz
       )
     )
   );
-  const excessDemand = Math.max(
-    0,
-    Math.abs(q(frame.curvature)) * speed * speed - handling.lateralGrip
-  );
-  const sideways =
-    (grounded ? -Math.sign(frame.curvature) * excessDemand : 0) -
-    handling.centering * state.lateralOffset -
-    handling.lateralDamping * state.lateralVelocity;
-  const lateralVelocity = q(state.lateralVelocity + sideways / hz);
-  const lateralOffset = q(state.lateralOffset + lateralVelocity / hz);
-  const distance = Math.min(track.totalLength, q(state.distance + speed / hz));
-  const next = sampleTrack(track, distance);
-  const nextOffRoad = Math.abs(lateralOffset) > q(next.halfWidth);
-  const surfaceY = nextOffRoad ? 0 : (next.y ?? 0);
-  const surfaceVelocity = q(nextOffRoad ? 0 : (next.grade ?? 0) * speed);
-  const belowDeck = offRoad && !nextOffRoad && vertical.height < surfaceY - 0.3;
-  let height = vertical.height;
-  let velocity = vertical.velocity;
-  let airborne = vertical.airborne;
+  const demand =
+    (Math.abs(frame.curvature) * speed * speed) / handling.lateralGrip;
+  let stress =
+    grounded && demand > 1.08 && penalty === 0
+      ? (state.cornerStress ?? 0) + 1
+      : 0;
+  // A short grace window lets a timely release save the turn. Repeatedly holding
+  // through a corner loses speed; early braking carries smooth momentum through it.
+  if (stress >= 12) {
+    speed = q(speed * 0.6);
+    stress = 0;
+    penalty = 72;
+  }
+  let distance = Math.min(track.totalLength, q(state.distance + speed / hz));
+  let next = sampleTrack(track, distance);
+  let height = vertical.height,
+    velocity = vertical.velocity,
+    airborne = vertical.airborne;
   let landings = vertical.landings;
   let impact = q(vertical.impact * 0.92);
-  // A fast convex crest loses contact naturally; a slow car follows the same ramp.
+  const jump = track.jumps?.find(
+    (j) => state.distance < j.landing && distance >= j.takeoff
+  );
   const launch =
     grounded &&
-    !offRoad &&
-    (frame.verticalCurvature ?? 0) * speed * speed < -FLIGHT_GRAVITY &&
-    height +
-      ((frame.grade ?? 0) * speed) / hz -
-      FLIGHT_GRAVITY / (2 * hz * hz) >
-      surfaceY + 0.00001;
-  const leaveEdge = grounded && nextOffRoad && height > surfaceY + 0.08;
-  if (launch || leaveEdge) {
+    (jump !== undefined ||
+      ((frame.verticalCurvature ?? 0) * speed * speed < -FLIGHT_GRAVITY &&
+        height +
+          ((frame.grade ?? 0) * speed) / hz -
+          FLIGHT_GRAVITY / (2 * hz * hz) >
+          (next.y ?? 0) + 0.00001));
+  if (launch) {
     airborne = true;
     velocity = q((frame.grade ?? 0) * speed);
   }
   if (airborne) {
     height = q(height + velocity / hz - FLIGHT_GRAVITY / (2 * hz * hz));
     velocity = q(velocity - FLIGHT_GRAVITY / hz);
-    const relativeVelocity =
-      velocity - (nextOffRoad ? 0 : (next.grade ?? 0) * speed);
-    if (!belowDeck && height <= surfaceY && relativeVelocity <= 0) {
-      height = q(surfaceY);
+    const inGap = track.jumps?.find(
+      (j) => distance >= j.takeoff && distance < j.landing
+    );
+    if (inGap && height <= 0.05) {
+      distance = inGap.landing;
+      next = sampleTrack(track, distance);
+      return {
+        ...state,
+        tick,
+        distance,
+        speed: 0,
+        lateralOffset: 0,
+        lateralVelocity: 0,
+        slip: 0,
+        offRoad: false,
+        recovering: true,
+        recoveryTicksRemaining: 89,
+        recoveryCount: state.recoveryCount + 1,
+        cornerStress: 0,
+        cornerPenaltyTicks: 0,
+        vertical: {
+          height: q(next.y ?? 0),
+          velocity: 0,
+          airborne: false,
+          landings,
+          impact: 0,
+        },
+      };
+    }
+    const relativeVelocity = velocity - (next.grade ?? 0) * speed;
+    if (!inGap && height <= (next.y ?? 0) && relativeVelocity <= 0) {
+      height = q(next.y ?? 0);
       airborne = false;
-      velocity = surfaceVelocity;
+      velocity = q((next.grade ?? 0) * speed);
       landings++;
       impact = q(Math.min(1, Math.max(0, -relativeVelocity / 12)));
     }
   } else {
-    height = q(surfaceY);
-    velocity = surfaceVelocity;
+    height = q(next.y ?? 0);
+    velocity = q((next.grade ?? 0) * speed);
   }
-  const recover =
-    belowDeck ||
-    Math.abs(lateralOffset) > halfWidth + handling.recoveryDistanceBeyondEdge ||
-    (nextOffRoad && (next.y ?? 0) - height > 2);
-  if (recover)
-    return {
-      ...state,
-      tick,
-      speed,
-      lateralOffset,
-      lateralVelocity: 0,
-      slip: 0,
-      offRoad: true,
-      recovering: true,
-      recoveryTicksRemaining: handling.recoveryTicks - 1,
-      recoveryCount: state.recoveryCount + 1,
-      vertical: {
-        height: belowDeck ? vertical.height : height,
-        velocity: 0,
-        airborne: false,
-        landings,
-        impact: 0,
-      },
-    };
   const finished = distance >= track.totalLength;
   return {
     tick,
     distance,
     speed,
-    lateralOffset,
-    lateralVelocity,
-    slip: grounded ? q(Math.min(1, excessDemand / handling.lateralGrip)) : 0,
-    offRoad: nextOffRoad,
+    lateralOffset: 0,
+    lateralVelocity: 0,
+    slip: grounded
+      ? q(
+          Math.max(
+            (state.slip ?? 0) * 0.96,
+            Math.min(1, Math.max(0, demand - 0.8))
+          )
+        )
+      : 0,
+    offRoad: false,
     recovering: false,
     recoveryTicksRemaining: 0,
     recoveryCount: state.recoveryCount,
+    cornerStress: stress,
+    cornerPenaltyTicks: penalty,
     finishedTick: finished ? tick : null,
     status: finished ? 'finished' : 'running',
     vertical: { height, velocity, airborne, landings, impact },

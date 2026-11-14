@@ -85,7 +85,8 @@ class AtomicExpiringStore implements RankedStore {
     if (existing && existing.expiresAtMs <= this.clock())
       this.entries.delete(key);
     if (this.entries.has(key)) return false;
-    if (this.dropReceipts && key.startsWith('racer:receipt:')) return true;
+    if (this.dropReceipts && key.startsWith('racer:centreline-v1:receipt:'))
+      return true;
     this.entries.set(key, { value, expiresAtMs });
     this.writeWins++;
     return true;

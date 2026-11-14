@@ -8,7 +8,10 @@ import {
   generateValidatedCircuit,
   type QualityAssessment,
 } from '../src/shared/circuit-quality.ts';
-import { generateElevatedCircuit } from '../src/shared/elevated-generator.ts';
+import {
+  generateElevatedCircuit,
+  ELEVATED_GENERATOR_VERSION,
+} from '../src/shared/elevated-generator.ts';
 import { SIMULATION_HZ } from '../src/shared/simulation.ts';
 import { hashTrack, sampleTrack, type Track } from '../src/shared/track.ts';
 
@@ -187,12 +190,18 @@ async function main(): Promise<void> {
     scope: options.structural
       ? 'Structural geometry only.'
       : 'Structural geometry and authoritative simulation quality.',
-    profile: options.elevated ? 'flow-loop-v2' : 'motif-loop-v1',
+    profile: options.elevated ? ELEVATED_GENERATOR_VERSION : 'motif-loop-v1',
     prefix: options.prefix,
     count: options.count,
     acceptedCount: records.length,
     failedCount: failures.length,
     failedSeedPreview: failures.slice(0, 10),
+    overpassCount: records.filter((r) =>
+      r.diagnostics.accepted.motifs.includes('overpass')
+    ).length,
+    gapJumpCount: records.filter((r) =>
+      r.diagnostics.accepted.motifs.includes('gap-jump')
+    ).length,
     fallbackCount,
     fallbackRate: records.length ? fallbackCount / records.length : 0,
     meanAttempts:

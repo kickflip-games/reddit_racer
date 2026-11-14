@@ -1,5 +1,3 @@
-import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
-import { createGripMarkers } from './grip-markers';
 import { jumpRoadHeight, type GapJump } from '../shared/stunt-course';
 import * as THREE from 'three';
 import { roadPointAt, sampleTrack, type Track } from '../shared/track';
@@ -18,8 +16,7 @@ export function buildRoadStripVertices(
   inner: StripEdge,
   outer: StripEdge,
   elevation: number,
-  jumps: readonly GapJump[] = [],
-  zones: readonly GripZone[] = []
+  jumps: readonly GapJump[] = track.jumps ?? []
 ): { positions: number[]; indices: number[] } {
   const positions: number[] = [];
   const indices: number[] = [];
@@ -32,8 +29,7 @@ export function buildRoadStripVertices(
         sample.x - sample.tz * lateral,
         (sample.y ?? 0) +
           elevation +
-          jumpRoadHeight(jumps, sample.s) -
-          lateral * Math.tan(gripSurfaceAt(track, zones, sample.s).bank),
+          (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, sample.s)),
         sample.z + sample.tx * lateral
       );
     }
@@ -81,16 +77,14 @@ function roadStrip(
   outer: StripEdge,
   color: string,
   elevation: number,
-  jumps: readonly GapJump[] = [],
-  zones: readonly GripZone[] = []
+  jumps: readonly GapJump[] = track.jumps ?? []
 ): THREE.Mesh {
   const { positions, indices } = buildRoadStripVertices(
     track,
     inner,
     outer,
     elevation,
-    jumps,
-    zones
+    jumps
   );
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute(
@@ -99,28 +93,10 @@ function roadStrip(
   );
   geometry.setIndex(indices);
   geometry.computeVertexNormals();
-  const isAsphalt = color === '#363b40' && zones.length > 0;
-  if (isAsphalt) {
-    const colors: number[] = [];
-    for (let index = 0; index <= track.samples.length; index++) {
-      const sample = track.samples[index % track.samples.length];
-      if (!sample) continue;
-      const surface = gripSurfaceAt(track, zones, sample.s);
-      const base = new THREE.Color(color);
-      if (surface.surface !== 'dry')
-        base.lerp(
-          new THREE.Color(surface.surface === 'wet' ? '#4d8197' : '#97764c'),
-          Math.min(1, (1 - surface.coefficient) * 4)
-        );
-      colors.push(base.r, base.g, base.b, base.r, base.g, base.b);
-    }
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-  }
   return new THREE.Mesh(
     geometry,
     new THREE.MeshLambertMaterial({
-      color: isAsphalt ? '#ffffff' : color,
-      vertexColors: isAsphalt,
+      color,
       side: THREE.DoubleSide,
     })
   );
@@ -187,16 +163,14 @@ function addStartLine(group: THREE.Group, track: Track): void {
 function kerbStrip(
   track: Track,
   side: -1 | 1,
-  jumps: readonly GapJump[] = [],
-  zones: readonly GripZone[] = []
+  jumps: readonly GapJump[] = track.jumps ?? []
 ): THREE.Mesh {
   const strip = buildRoadStripVertices(
     track,
     { side, offset: side * 0.04 },
     { side, offset: side * 0.64 },
     0.035,
-    jumps,
-    zones
+    jumps
   );
   const red = new THREE.Color('#cf634d');
   const cream = new THREE.Color('#fff2d7');
@@ -241,10 +215,8 @@ function kerbStrip(
 
 export function createTrackRenderer(
   track: Track,
-  jumps: readonly GapJump[] = [],
-  options: { dynamicGrip?: boolean; zones?: readonly GripZone[] } = {}
+  jumps: readonly GapJump[] = track.jumps ?? []
 ): THREE.Group {
-  const zones = options.zones ?? [];
   // Add exact section boundaries to the rendering strip using canonical frames.
   track = {
     ...track,
@@ -273,8 +245,7 @@ export function createTrackRenderer(
       { side: 1, offset: 0.8 },
       '#c4b18a',
       0,
-      jumps,
-      zones
+      jumps
     ),
     roadStrip(
       track,
@@ -282,8 +253,7 @@ export function createTrackRenderer(
       { side: 1, offset: 0 },
       '#363b40',
       0.03,
-      jumps,
-      zones
+      jumps
     ),
     roadStrip(
       track,
@@ -291,8 +261,7 @@ export function createTrackRenderer(
       { side: -1, offset: 0.32 },
       '#f6eed6',
       0.04,
-      jumps,
-      zones
+      jumps
     ),
     roadStrip(
       track,
@@ -300,14 +269,10 @@ export function createTrackRenderer(
       { side: 1, offset: -0.18 },
       '#f6eed6',
       0.04,
-      jumps,
-      zones
+      jumps
     )
   );
-  group.add(
-    kerbStrip(track, -1, jumps, zones),
-    kerbStrip(track, 1, jumps, zones)
-  );
+  group.add(kerbStrip(track, -1, jumps), kerbStrip(track, 1, jumps));
   for (const jump of jumps) {
     const walls: number[] = [],
       wallIndices: number[] = [];
@@ -330,10 +295,12 @@ export function createTrackRenderer(
           -0.04,
           b.z,
           a.x,
-          jumpRoadHeight(jumps, from),
+          (sampleTrack(track, from).y ?? 0) +
+            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, from)),
           a.z,
           b.x,
-          jumpRoadHeight(jumps, to),
+          (sampleTrack(track, to).y ?? 0) +
+            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, to)),
           b.z
         );
         wallIndices.push(
@@ -379,7 +346,13 @@ export function createTrackRenderer(
       ]) {
         if (s === undefined || lateral === undefined) continue;
         const point = roadPointAt(track, s, lateral);
-        vertices.push(point.x, jumpRoadHeight(jumps, s) + 0.06, point.z);
+        vertices.push(
+          point.x,
+          (sampleTrack(track, s).y ?? 0) +
+            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, s)) +
+            0.06,
+          point.z
+        );
       }
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute(
@@ -404,7 +377,7 @@ export function createTrackRenderer(
         new THREE.BoxGeometry(frame.width + 1.6, 0.35, 0.32),
         new THREE.MeshLambertMaterial({ color: '#d9c8a6' })
       );
-      lip.position.set(frame.x, jump.height - 0.18, frame.z);
+      lip.position.set(frame.x, (frame.y ?? jump.height) - 0.18, frame.z);
       lip.rotation.y = Math.atan2(frame.tx, frame.tz);
       lip.name = 'jump-ramp-cutaway';
       group.add(lip);
@@ -419,7 +392,13 @@ export function createTrackRenderer(
           new THREE.BoxGeometry(0.5, 0.035, 1.2),
           new THREE.MeshBasicMaterial({ color: '#fff1c6' })
         );
-        stripe.position.set(point.x, jumpRoadHeight(jumps, s) + 0.055, point.z);
+        stripe.position.set(
+          point.x,
+          (sampleTrack(track, s).y ?? 0) +
+            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, s)) +
+            0.055,
+          point.z
+        );
         stripe.rotation.y = Math.atan2(frame.tx, frame.tz);
         stripe.name = 'landing-target';
         group.add(stripe);
@@ -431,12 +410,17 @@ export function createTrackRenderer(
         new THREE.BoxGeometry(marker.width, 0.035, 0.45),
         new THREE.MeshBasicMaterial({ color: '#ffca60' })
       );
-      stripe.position.set(marker.x, jumpRoadHeight(jumps, s) + 0.055, marker.z);
+      stripe.position.set(
+        marker.x,
+        (sampleTrack(track, s).y ?? 0) +
+          (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, s)) +
+          0.055,
+        marker.z
+      );
       stripe.rotation.y = Math.atan2(marker.tx, marker.tz);
       group.add(stripe);
     }
   }
-  if (options.dynamicGrip) group.add(createGripMarkers(track, zones, jumps));
   addStartLine(group, track);
   if (track.schemaVersion === 2) group.add(createRoadStructure(track));
   return group;
@@ -452,7 +436,13 @@ function createRoadStructure(track: Track): THREE.Group {
   for (let i = 0; i < track.samples.length; i++) {
     const a = track.samples[i],
       b = track.samples[(i + 1) % track.samples.length];
-    if (!a || !b || Math.max(a.y ?? 0, b.y ?? 0) < 0.14) continue;
+    if (
+      !a ||
+      !b ||
+      Math.max(a.y ?? 0, b.y ?? 0) < 0.14 ||
+      track.jumps?.some((j) => a.s >= j.takeoff && b.s <= j.landing)
+    )
+      continue;
     for (const side of [-1, 1]) {
       const base = positions.length / 3;
       for (const sample of [a, b]) {
@@ -499,14 +489,22 @@ function createRoadStructure(track: Track): THREE.Group {
       })
     )
   );
+  const safeFootings = footings.filter(
+    (p) =>
+      !track.samples.some(
+        (road) =>
+          (road.y ?? 0) < p.y - 2 &&
+          Math.hypot(road.x - p.x, road.z - p.z) < road.width / 2 + 1.5
+      )
+  );
   const piers = new THREE.InstancedMesh(
     new THREE.BoxGeometry(1, 1, 1),
     new THREE.MeshLambertMaterial({ color: '#9aa6a0' }),
-    footings.length
+    safeFootings.length
   );
   piers.name = 'bridge-piers';
   const dummy = new THREE.Object3D();
-  footings.forEach((p, i) => {
+  safeFootings.forEach((p, i) => {
     dummy.position.set(p.x, p.y / 2, p.z);
     dummy.rotation.y = p.heading;
     dummy.scale.set(0.65, Math.max(0.1, p.y - 0.2), 0.85);

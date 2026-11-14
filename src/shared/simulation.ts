@@ -26,6 +26,9 @@ export type SimulationState = {
   recoveryCount: number;
   finishedTick: number | null;
   status: 'running' | 'finished';
+  /** Centreline handling: sustained overspeed costs momentum, never lateral control. */
+  cornerStress?: number;
+  cornerPenaltyTicks?: number;
   /** Present only for the retained schema-2 runtime; flat goldens stay byte-identical. */
   vertical?: {
     height: number;

@@ -3,8 +3,6 @@ import {
   practiceBestKey,
   type LocalBestResult,
 } from './practice-best';
-import type { GripZone } from '../shared/slot-grip';
-import { jumpRoadHeight, type GapJump } from '../shared/stunt-course';
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
 import {
@@ -71,9 +69,6 @@ export type GameSceneHooks = {
 export type GameSceneOptions = GameSceneHooks & {
   generated: boolean;
   continuousPractice?: boolean;
-  jumps?: readonly GapJump[];
-  dynamicGrip?: boolean;
-  gripZones?: readonly GripZone[];
 };
 export type GameSceneController = { dispose(): void };
 
@@ -245,10 +240,10 @@ export function initializeGame(
   // The uniformly lit field receives no shadows; match it with the clear color
   // to avoid a redundant full-screen ground draw on every racing frame.
   scene.background = new THREE.Color('#a5b18d');
+  const jumps = track.jumps ?? [];
   const countryside = generateSceneryLayout(track, {
     ...readSceneryOptions(),
-    jumps: options.jumps ?? [],
-    gripZones: options.gripZones ?? [],
+    jumps,
   });
   scene.add(createEnvironment(track, countryside.props, countryside));
   const vegetation = createVegetation(countryside);
@@ -270,12 +265,7 @@ export function initializeGame(
   sun.position.set(-30, 80, 30);
   scene.add(sun);
 
-  scene.add(
-    createTrackRenderer(track, options.jumps, {
-      dynamicGrip: options.dynamicGrip ?? false,
-      zones: options.gripZones ?? [],
-    })
-  );
+  scene.add(createTrackRenderer(track));
 
   if (
     import.meta.env.DEV &&
@@ -302,7 +292,7 @@ export function initializeGame(
   const carVisual = createCarVisual();
   const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
-    followContactHeight: options.dynamicGrip ?? false,
+    followContactHeight: true,
   });
   const rearLeft = new THREE.Vector3();
   const rearRight = new THREE.Vector3();
@@ -325,10 +315,7 @@ export function initializeGame(
   let activePointer: number | undefined;
   const rankedDriver = createSimulationDriver(track);
   const practiceDriver = options.continuousPractice
-    ? createPracticeDriver(track, options.jumps, {
-        dynamicGrip: options.dynamicGrip ?? false,
-        zones: options.gripZones ?? [],
-      })
+    ? createPracticeDriver(track)
     : null;
   const driver = practiceDriver ?? rankedDriver;
   const hud = element('race-hud');
@@ -502,22 +489,8 @@ export function initializeGame(
     const state = driver.state;
     element('practice-best-lap').hidden =
       attemptMode === 'ranked' || localBests.best(localBestKey) === null;
-    const gripWarning = element('grip-warning');
-    const grip = practiceDriver?.grip;
-    raceRoot.dataset.gripUsage = String(grip?.usage ?? 0);
-    raceRoot.dataset.surface = grip?.surface ?? 'dry';
-    gripWarning.hidden =
-      !options.dynamicGrip ||
-      driver.raceState.phase !== 'racing' ||
-      state.slip < 0.2 ||
-      state.recovering ||
-      !!practiceDriver?.airborne;
-    gripWarning.textContent = state.offRoad
-      ? 'Release'
-      : grip?.surface === 'wet'
-        ? 'Wet'
-        : 'Lift';
-    raceRoot.dataset.gripModel = options.dynamicGrip ? 'dynamic' : 'classic';
+    raceRoot.dataset.surface = 'dry';
+    raceRoot.dataset.gripModel = 'centreline';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
     timer.textContent = formatTime(
@@ -655,11 +628,7 @@ export function initializeGame(
       speed > 0.1 || Math.abs(lateralVelocity) > 0.1
         ? Math.atan2(velocityX, velocityZ)
         : Math.atan2(frame.tx, frame.tz);
-    const heading =
-      trajectoryHeading -
-      (options.dynamicGrip && !practiceDriver?.airborne
-        ? Math.sign(frame.curvature) * current.slip * 0.12
-        : 0);
+    const heading = trajectoryHeading;
     const phase = driver.raceState.phase;
     const scored = phase === 'racing';
     const acceleration = scored
@@ -687,12 +656,8 @@ export function initializeGame(
       worldZ = frame.z + frame.nz * lateral;
     const ground = groundHeightAt(countryside.surface, worldX, worldZ);
     const gap =
-      options.jumps?.some((j) => frame.s > j.takeoff && frame.s < j.landing) ??
-      false;
-    const deckHeight =
-      (frame.y ?? 0) +
-      jumpRoadHeight(options.jumps ?? [], frame.s) -
-      lateral * Math.tan(practiceDriver?.roadBank ?? 0);
+      jumps.some((j) => frame.s > j.takeoff && frame.s < j.landing) ?? false;
+    const deckHeight = frame.y ?? 0;
     const onDeck =
       Math.abs(lateral) <= frame.halfWidth + (current.vertical ? 0 : 0.8) &&
       !gap &&
@@ -716,22 +681,12 @@ export function initializeGame(
     const carChanged = carVisual.update({
       elevation,
       surfaceHeight,
-      bank:
-        !onDeck || practiceDriver?.airborne
-          ? 0
-          : (practiceDriver?.roadBank ?? 0),
+      bank: 0,
       jumpPitch: current.vertical
         ? -(airborne
             ? Math.atan2(verticalVelocity, Math.max(speed, 1))
-            : Math.atan(current.offRoad ? 0 : (frame.grade ?? 0)))
-        : !reducedMotion && options.jumps?.length
-          ? practiceDriver?.airborne
-            ? -Math.atan2(practiceDriver.verticalVelocity, Math.max(1, speed))
-            : -Math.atan(
-                jumpRoadHeight(options.jumps, frame.s + 0.5) -
-                  jumpRoadHeight(options.jumps, frame.s - 0.5)
-              )
-          : 0,
+            : Math.atan(frame.grade ?? 0))
+        : 0,
       x: frame.x + frame.nx * lateral,
       z: frame.z + frame.nz * lateral,
       heading,
@@ -933,8 +888,6 @@ export function initializeGame(
   function beginRace(): void {
     if (destroyed || preparing || racing || !viewportUsable) return;
     closeSettings();
-    const modes = element('practice-modes');
-    if (modes instanceof HTMLDetailsElement) modes.open = false;
     attemptId++;
     audio.setForeground(!document.hidden);
     audio.resetAttempt(attemptId);

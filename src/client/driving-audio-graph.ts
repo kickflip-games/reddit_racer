@@ -1,6 +1,6 @@
 import type { DrivingAudioFrame } from './driving-audio';
 
-export const AUDIO_GRAPH_NODE_COUNT = 12;
+export const AUDIO_GRAPH_NODE_COUNT = 14;
 export const AUDIO_GRAPH_BUFFER_COUNT = 1;
 export type DrivingAudioTargets = {
   engineHz: number;
@@ -9,15 +9,16 @@ export type DrivingAudioTargets = {
   squealHz: number;
   squealGain: number;
   offRoadGain: number;
+  windGain: number;
 };
 export type DrivingAudioCue =
-  'finish' | 'recovery' | 'countdown' | 'go' | 'lap';
+  'finish' | 'recovery' | 'countdown' | 'go' | 'lap' | 'landing';
 export type DrivingAudioGraph = {
   readonly nodeCount: number;
   readonly bufferCount: number;
   apply(targets: Readonly<DrivingAudioTargets>, atSeconds?: number): void;
   silence(atSeconds?: number): void;
-  cue(kind: DrivingAudioCue, atSeconds?: number): void;
+  cue(kind: DrivingAudioCue, atSeconds?: number, strength?: number): void;
   dispose(): void;
 };
 
@@ -53,6 +54,7 @@ export function calculateDrivingAudioTargets(
     engineGain: active ? (frame.held ? 0.045 : 0.025) + speed * 0.001 : 0,
     squealHz: 1400 + slip * 1300,
     squealGain: active && speed > 3 ? Math.max(0, slip - 0.08) * 0.07 : 0,
+    windGain: active ? bounded((speed - 14) / 8, 0, 1) * 0.025 : 0,
     offRoadGain:
       active &&
       !frame.state.vertical?.airborne &&
@@ -63,7 +65,7 @@ export function calculateDrivingAudioTargets(
   };
 }
 
-/** One fixed 12-node graph and one buffer; shared by real-time and offline checks. */
+/** One fixed 14-node graph and one buffer; shared by real-time and offline checks. */
 export function createDrivingAudioGraph(
   context: BaseAudioContext
 ): DrivingAudioGraph {
@@ -76,6 +78,8 @@ export function createDrivingAudioGraph(
   const squealGain = context.createGain();
   const offRoadFilter = context.createBiquadFilter();
   const offRoadGain = context.createGain();
+  const windFilter = context.createBiquadFilter();
+  const windGain = context.createGain();
   const result = context.createOscillator();
   const resultGain = context.createGain();
   const master = context.createGain();
@@ -89,6 +93,8 @@ export function createDrivingAudioGraph(
     squealGain,
     offRoadFilter,
     offRoadGain,
+    windFilter,
+    windGain,
     result,
     resultGain,
     master,
@@ -107,9 +113,18 @@ export function createDrivingAudioGraph(
   offRoadFilter.type = 'lowpass';
   offRoadFilter.frequency.value = 450;
   offRoadFilter.Q.value = 0.7;
+  windFilter.type = 'bandpass';
+  windFilter.frequency.value = 850;
+  windFilter.Q.value = 0.5;
   result.type = 'sine';
   result.frequency.value = 440;
-  for (const gain of [engineGain, squealGain, offRoadGain, resultGain])
+  for (const gain of [
+    engineGain,
+    squealGain,
+    offRoadGain,
+    windGain,
+    resultGain,
+  ])
     gain.gain.value = 0;
   master.gain.value = 0.35;
   const buffer = context.createBuffer(
@@ -130,6 +145,7 @@ export function createDrivingAudioGraph(
   engineFilter.connect(engineGain).connect(master);
   noise.connect(squealFilter).connect(squealGain).connect(master);
   noise.connect(offRoadFilter).connect(offRoadGain).connect(master);
+  noise.connect(windFilter).connect(windGain).connect(master);
   result.connect(resultGain).connect(master);
   master.connect(context.destination);
   for (const source of sources) source.start();
@@ -168,16 +184,23 @@ export function createDrivingAudioGraph(
       ramp(squealFilter.frequency, bounded(targets.squealHz, 1400, 2700), time);
       ramp(squealGain.gain, bounded(targets.squealGain, 0, 0.07), time);
       ramp(offRoadGain.gain, bounded(targets.offRoadGain, 0, 0.05), time);
+      ramp(windGain.gain, bounded(targets.windGain, 0, 0.025), time);
     },
     silence(atSeconds = context.currentTime) {
       if (disposed) return;
       const time = atTime(atSeconds);
-      for (const gain of [engineGain, squealGain, offRoadGain, resultGain]) {
+      for (const gain of [
+        engineGain,
+        squealGain,
+        offRoadGain,
+        windGain,
+        resultGain,
+      ]) {
         gain.gain.cancelScheduledValues(time);
         gain.gain.setValueAtTime(0, time);
       }
     },
-    cue(kind, atSeconds = context.currentTime) {
+    cue(kind, atSeconds = context.currentTime, strength = 1) {
       if (disposed) return;
       const time = atTime(atSeconds);
       // Triangle adds gentle harmonics so phone speakers can reproduce the cue.
@@ -185,7 +208,15 @@ export function createDrivingAudioGraph(
       result.frequency.cancelScheduledValues(time);
       resultGain.gain.cancelScheduledValues(time);
       resultGain.gain.setValueAtTime(0, time);
-      if (kind === 'lap' || kind === 'finish') {
+      if (kind === 'landing') {
+        result.frequency.setValueAtTime(140, time);
+        result.frequency.exponentialRampToValueAtTime(65, time + 0.12);
+        resultGain.gain.linearRampToValueAtTime(
+          0.04 + bounded(strength, 0, 1) * 0.06,
+          time + 0.008
+        );
+        resultGain.gain.linearRampToValueAtTime(0, time + 0.16);
+      } else if (kind === 'lap' || kind === 'finish') {
         // A soft ascending two-note chime, short enough not to mask the engine.
         for (const { offset, frequency } of [
           { offset: 0, frequency: 660 },

@@ -25,7 +25,7 @@ export type DrivingAudioBackend = {
   close(): Promise<void>;
   apply(targets: Readonly<DrivingAudioTargets>): void;
   silence(): void;
-  cue(kind: DrivingAudioCue): void;
+  cue(kind: DrivingAudioCue, strength?: number): void;
   subscribeState(listener: () => void): () => void;
 };
 export type DrivingAudioOptions = {
@@ -74,7 +74,7 @@ function browserBackend(): DrivingAudioBackend {
     suspend: () => context.suspend(),
     apply: (targets) => graph.apply(targets),
     silence: () => graph.silence(),
-    cue: (kind) => graph.cue(kind),
+    cue: (kind, strength) => graph.cue(kind, undefined, strength),
     subscribeState(listener) {
       context.addEventListener('statechange', listener);
       return () => context.removeEventListener('statechange', listener);
@@ -109,6 +109,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
   let lastWriteTime = -Infinity;
   let lastTick = -1;
   let lastRecoveryCount = 0;
+  let lastLandingCount = 0;
   let lastCountdown: number | undefined;
   let lastLap = 0;
   let closing: Promise<void> | undefined;
@@ -257,6 +258,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       lastFrame = undefined;
       lastTick = -1;
       lastRecoveryCount = 0;
+      lastLandingCount = 0;
       lastCountdown = undefined;
       lastLap = 0;
       publish(muted ? 'muted' : 'locked');
@@ -332,6 +334,16 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         scored &&
         frame.state.tick > lastTick &&
         frame.state.recoveryCount > lastRecoveryCount;
+      const landingCount = frame.state.vertical?.landings ?? 0;
+      const landing =
+        scored &&
+        lastFrame?.phase === 'racing' &&
+        frame.state.tick > lastTick &&
+        landingCount > lastLandingCount &&
+        !frame.state.recovering &&
+        !frame.state.vertical?.airborne &&
+        (frame.state.vertical?.impact ?? 0) > 0.05;
+      lastLandingCount = landingCount;
       // During async retry preparation the driver still displays the previous
       // completed lap. Its tick must not become the new race's progress floor.
       lastTick = scored ? frame.state.tick : -1;
@@ -341,6 +353,13 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       if (recovery && canPlay() && !finishing) {
         try {
           backend?.cue('recovery');
+        } catch {
+          unavailable();
+        }
+      }
+      if (landing && !recovery && canPlay() && !finishing) {
+        try {
+          backend?.cue('landing', frame.state.vertical?.impact);
         } catch {
           unavailable();
         }

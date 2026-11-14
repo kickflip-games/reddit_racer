@@ -658,3 +658,65 @@ void test('continuous laps chime once without finishing or suspending, muted cue
   assert.equal(audio.status, 'running');
   await audio.dispose();
 });
+
+void test('landing thumps only follow fresh grounded impact edges, never ready, recovery, redraw or unmute', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  function landings(
+    tick: number,
+    count: number,
+    impact = 0.6
+  ): DrivingAudioFrame {
+    const value = frame();
+    value.state = {
+      ...value.state,
+      tick,
+      vertical: {
+        height: 0,
+        velocity: 0,
+        airborne: false,
+        landings: count,
+        impact,
+      },
+    };
+    return value;
+  }
+  audio.update(landings(1, 2)); // Initial snapshot is not a landing event.
+  audio.update(landings(2, 3));
+  audio.update(landings(2, 3));
+  audio.update(landings(3, 4, 0));
+  const recovering = landings(4, 5);
+  recovering.state = { ...recovering.state, recovering: true };
+  audio.update(recovering);
+  assert.deepEqual(backend.cues, ['landing']);
+  audio.setMuted(true);
+  audio.update(landings(5, 6));
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  audio.update(landings(6, 6));
+  assert.deepEqual(backend.cues, ['landing']);
+  audio.update(landings(7, 7));
+  assert.deepEqual(backend.cues, ['landing', 'landing']);
+  await audio.dispose();
+});
+
+void test('wind rises smoothly only at speed, stays quiet and is gated with driving audio', () => {
+  const slow = frame();
+  const fast = frame();
+  fast.state = { ...fast.state, speed: 30 };
+  assert.equal(calculateDrivingAudioTargets(slow, true).windGain, 0);
+  assert.equal(calculateDrivingAudioTargets(fast, true).windGain, 0.025);
+  assert.equal(calculateDrivingAudioTargets(fast, false).windGain, 0);
+  fast.phase = 'countdown';
+  assert.equal(calculateDrivingAudioTargets(fast, true).windGain, 0);
+  fast.phase = 'racing';
+  fast.state = { ...fast.state, recovering: true };
+  assert.equal(calculateDrivingAudioTargets(fast, true).windGain, 0);
+});

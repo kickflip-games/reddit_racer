@@ -1,3 +1,4 @@
+import { addToonLighting } from './toon-material';
 import {
   createPracticeBestStore,
   practiceBestKey,
@@ -254,10 +255,7 @@ export function initializeGame(
     );
   }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  scene.add(new THREE.HemisphereLight('#fff1d3', '#71806a', 2.1));
-  const sun = new THREE.DirectionalLight('#fff0d6', 2.4);
-  sun.position.set(-30, 80, 30);
-  scene.add(sun);
+  addToonLighting(scene);
 
   scene.add(createTrackRenderer(track));
 

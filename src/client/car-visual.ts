@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { softCarShadow, toonMaterial } from './toon-material';
+import { softCarShadow, toonMaterial, toonGradient } from './toon-material';
 
 export const CAR_VISUAL_LENGTH = 3.8;
 export const CAR_VISUAL_GROUND_Y = 0.045;
@@ -98,6 +98,7 @@ export function createCarVisual(): CarVisual {
     const body = new THREE.Group();
     body.name = 'body';
     const paint = new THREE.MeshToonMaterial({
+      gradientMap: toonGradient,
       color: '#f57b24',
     });
     const main = ownedMesh(
@@ -107,7 +108,10 @@ export function createCarVisual(): CarVisual {
     main.position.y = 0.75;
     const cabin = ownedMesh(
       new THREE.BoxGeometry(1.4, 0.5, 1.55),
-      new THREE.MeshToonMaterial({ color: '#263f43' })
+      new THREE.MeshToonMaterial({
+        gradientMap: toonGradient,
+        color: '#263f43',
+      })
     );
     cabin.position.set(0, 1.23, -0.13);
     body.add(main, cabin);
@@ -115,6 +119,7 @@ export function createCarVisual(): CarVisual {
     const tyreGeometry = new THREE.CylinderGeometry(0.43, 0.43, 0.3, 10);
     tyreGeometry.rotateZ(Math.PI / 2);
     const tyreMaterial = new THREE.MeshToonMaterial({
+      gradientMap: toonGradient,
       color: '#24312f',
     });
     wheelNames.forEach((name, index) => {

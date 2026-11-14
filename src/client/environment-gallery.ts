@@ -1,3 +1,4 @@
+import { addToonLighting } from './toon-material';
 import * as THREE from 'three';
 import { generateElevatedCircuit } from '../shared/elevated-generator';
 import { generateValidatedCircuit } from '../shared/circuit-quality';
@@ -88,10 +89,7 @@ function preview(seed: string) {
   });
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('#a5b18d');
-  scene.add(new THREE.HemisphereLight('#fff1d3', '#71806a', 2.1));
-  const sun = new THREE.DirectionalLight('#fff0d6', 2.4);
-  sun.position.set(-30, 80, 30);
-  scene.add(sun);
+  addToonLighting(scene);
   scene.add(
     createEnvironment(track, layout.props, layout),
     createTrackRenderer(track, data.jumps)

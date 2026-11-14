@@ -266,7 +266,7 @@ test('settled ready scenes stop native drawing while countdown and short real dr
   expect(idle.clears).toBe(before.clears);
   expect(idle.draws).toBe(before.draws);
   await setRaceSettingsOpen(page, true);
-  await page.locator('#motion-select').selectOption('reduced');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect
     .poll(async () => (await counters(page)).clears)
     .toBeGreaterThan(idle.clears);
@@ -403,7 +403,7 @@ test('PRESENTATION FIXTURE keeps enlarged text, native safe areas, settings and 
   ]) {
     await page.setViewportSize(viewport);
     await setRaceSettingsOpen(page, true);
-    for (const id of ['sound-toggle', 'motion-select']) {
+    for (const id of ['sound-toggle']) {
       await page.locator(`#${id}`).focus();
       await page.locator(`#${id}`).scrollIntoViewIfNeeded();
       await expectControlHit(page, id);
@@ -495,7 +495,6 @@ test('an undersized view interrupts a real held attempt and restores accessible 
   });
   await setRaceSettingsOpen(page, true);
   await expectControlHit(page, 'sound-toggle');
-  await expectControlHit(page, 'motion-select');
   await page.screenshot({
     path: `test-results/mobile-minimum-settings-320-${test.info().project.name}.png`,
   });

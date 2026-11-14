@@ -24,7 +24,27 @@
             <h1>Reddit Racer<span class="title-dot">.</span></h1>
           </div>
           <div class="mode-stack">
-            <span id="mode-label" class="mode">Practice</span>
+            <span id="mode-label" class="mode" hidden>Practice</span>
+            <button
+              id="restart-button"
+              type="button"
+              aria-label="Restart race"
+              title="Restart race"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 10a9 9 0 1 1 2 8M3 4v6h6" />
+              </svg>
+            </button>
           </div>
         </header>
         <div class="timing" aria-label="Lap time">
@@ -178,7 +198,7 @@
             <div
               class="feedback-controls"
               role="group"
-              aria-label="Sound and motion settings"
+              aria-label="Sound settings"
             >
               <button
                 id="sound-toggle"
@@ -189,22 +209,6 @@
               >
                 Sound on
               </button>
-              <label class="motion-control">
-                <span>Motion</span>
-                <select id="motion-select" aria-label="Visual motion" disabled>
-                  <option value="system">Device</option>
-                  <option value="reduced">Reduced</option>
-                  <option value="full">Full</option>
-                </select>
-              </label>
-              <label class="motion-control"
-                ><span>Scenery</span
-                ><select id="scenery-detail" aria-label="Scenery detail">
-                  <option value="auto">Auto</option>
-                  <option value="standard">Full</option>
-                  <option value="light">Light</option>
-                </select></label
-              >
             </div>
             <p id="sound-feedback" class="sound-feedback" role="status"></p>
             <div class="course-info">

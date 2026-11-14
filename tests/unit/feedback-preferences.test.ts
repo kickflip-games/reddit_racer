@@ -36,7 +36,7 @@ class MemoryStorage implements PreferenceStorage {
   }
 }
 
-void test('preferences default to system motion, subscribe immediately, and retain explicit overrides', () => {
+void test('preferences default to system motion, subscribe immediately, and follow live device changes', () => {
   const system = new MotionSource();
   const storage = new MemoryStorage();
   const preferences = createFeedbackPreferences({
@@ -53,22 +53,12 @@ void test('preferences default to system motion, subscribe immediately, and reta
   system.change(true);
   assert.equal(preferences.snapshot.reducedMotion, true);
   assert.equal(storage.writes, 0);
-  preferences.setMotion('full');
+  system.change(false);
   assert.equal(preferences.snapshot.reducedMotion, false);
-  const count = snapshots.length;
-  system.change(false);
-  system.change(true);
-  assert.equal(snapshots.length, count, 'system changes do not override Full');
-  preferences.setMotion('system');
-  assert.equal(preferences.snapshot.reducedMotion, true);
-  preferences.setMotion('reduced');
-  system.change(false);
-  assert.equal(preferences.snapshot.reducedMotion, true);
   preferences.setMuted(true);
-  assert.equal(preferences.snapshot.motion, 'reduced');
+  assert.equal(preferences.snapshot.motion, 'system');
   const writes = storage.writes;
   preferences.setMuted(true);
-  preferences.setMotion('reduced');
   assert.equal(storage.writes, writes);
   assert.ok(Object.isFrozen(preferences.snapshot));
   unsubscribe();
@@ -107,13 +97,12 @@ void test('validated saved values roundtrip while corrupt/unsupported settings f
   const storage = new MemoryStorage();
   const first = createFeedbackPreferences({ systemMotion: system, storage });
   first.setMuted(true);
-  first.setMotion('reduced');
   first.dispose();
   const second = createFeedbackPreferences({ systemMotion: system, storage });
   assert.deepEqual(second.snapshot, {
     muted: true,
-    motion: 'reduced',
-    reducedMotion: true,
+    motion: 'system',
+    reducedMotion: false,
   });
   second.dispose();
 });
@@ -139,7 +128,6 @@ void test('storage and subscriber failures do not block in-memory preferences or
   preferences.subscribe(() => changes++);
   for (let retry = 0; retry < 30; retry++) {
     preferences.setMuted(retry % 2 === 0);
-    preferences.setMotion(retry % 2 === 0 ? 'reduced' : 'full');
     assert.equal(system.listeners.size, 1);
   }
   assert.ok(changes > 30);
@@ -149,9 +137,25 @@ void test('storage and subscriber failures do not block in-memory preferences or
   const final = preferences.snapshot;
   system.change(true);
   preferences.setMuted(true);
-  preferences.setMotion('system');
   assert.equal(preferences.snapshot, final);
   preferences.subscribe(() =>
     assert.fail('disposed subscription must not run')
   )();
+});
+
+void test('legacy motion overrides are ignored while saved sound remains', () => {
+  for (const motion of ['full', 'reduced']) {
+    const storage = new MemoryStorage();
+    storage.value = JSON.stringify({ schemaVersion: 1, muted: true, motion });
+    const system = new MotionSource();
+    const preferences = createFeedbackPreferences({
+      storage,
+      systemMotion: system,
+    });
+    assert.equal(preferences.snapshot.muted, true);
+    assert.equal(preferences.snapshot.reducedMotion, false);
+    system.change(true);
+    assert.equal(preferences.snapshot.reducedMotion, true);
+    preferences.dispose();
+  }
 });

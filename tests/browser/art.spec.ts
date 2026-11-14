@@ -391,3 +391,39 @@ for (const failure of ['network', 'palette', 'deadline']) {
     expect(errors).toEqual([]);
   });
 }
+
+test('a late car download cannot swap the car during a lap or after interruption and retry', async ({
+  page,
+}) => {
+  let releaseAsset: () => void = () => {};
+  const ready = new Promise<void>((resolve) => {
+    releaseAsset = resolve;
+  });
+  await page.route(binaryCar, async (route) => {
+    await ready;
+    await route.continue();
+  });
+  await page.goto('/game.html?practice=1&seed=practice-1');
+  await expect(page.locator('#start-button')).toBeEnabled();
+  await page.locator('#start-button').click();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-car-art',
+    'fallback'
+  );
+  releaseAsset();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-car-load',
+    'deferred'
+  );
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-car-art',
+    'fallback'
+  );
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(page.locator('#retry-button')).toBeVisible();
+  await page.locator('#retry-button').click();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-car-art',
+    'fallback'
+  );
+});

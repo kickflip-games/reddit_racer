@@ -507,12 +507,6 @@ select:focus-visible {
   background: var(--paper-soft);
   font-size: 14px;
 }
-.motion-control {
-  display: grid;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 800;
-}
 .sound-feedback,
 .course-info {
   margin: 14px 0 0;
@@ -854,4 +848,24 @@ select:focus-visible {
   .circuit-minimap {
     width: 88px;
   }
+}
+
+/* A small visual control with a generous touch target, not a mode badge. */
+#mode-label {
+  display: none;
+}
+#restart-button {
+  display: grid;
+  place-items: center;
+  justify-content: center;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#race[data-phase='loading'] #restart-button {
+  visibility: hidden;
 }

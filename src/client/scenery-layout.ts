@@ -1,3 +1,5 @@
+import { courseComposition, sceneryHash } from './scenery-profile';
+export { sceneryHash } from './scenery-profile';
 import type { Track } from '../shared/track';
 import { sampleTrack } from '../shared/track';
 import { handlingForTrack } from '../shared/scored-runtime';
@@ -7,7 +9,7 @@ import type { SceneryKind } from './scene-assets';
 import type { GapJump } from '../shared/stunt-course';
 import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
 
-export const SCENERY_VERSION = 'spring-countryside-v1';
+export const SCENERY_VERSION = 'green-composition-v2';
 export const SCENERY_LIMITS = Object.freeze({
   regions: 40,
   candidates: 18000,
@@ -67,6 +69,7 @@ export type GroundSurface = {
 export type SceneryLayout = {
   version: string;
   seed: string;
+  composition: ReturnType<typeof courseComposition>;
   regions: Region[];
   plants: Plant[];
   allPlants: Plant[];
@@ -91,12 +94,6 @@ export const SPRING_PALETTE = Object.freeze({
   bushes: ['#778d59', '#8d9e65', '#5f7e56'],
 });
 
-export function sceneryHash(value: string): number {
-  let result = 2166136261;
-  for (let i = 0; i < value.length; i++)
-    result = Math.imul(result ^ value.charCodeAt(i), 16777619);
-  return result >>> 0;
-}
 function randomSource(seed: string) {
   let state = sceneryHash(seed);
   return () => {
@@ -283,6 +280,7 @@ export function generateSceneryLayout(
   options: SceneryOptions = {}
 ): SceneryLayout {
   const seed = `${track.seed}|${SCENERY_VERSION}|${options.seed ?? 'default'}`;
+  const composition = courseComposition(track.seed);
   const random = randomSource(seed),
     field = createRoadField(track),
     surface = createGroundSurface(track, options.gripZones);
@@ -290,7 +288,7 @@ export function generateSceneryLayout(
     plants: Plant[] = [],
     props: SceneryProp[] = [];
   const regionDensity = density(options.regions),
-    treeDensity = density(options.trees),
+    treeDensity = density(options.trees) * composition.treeDensity,
     coverDensity = density(options.groundCover);
   const light = options.quality === 'light';
   let candidates = 0,
@@ -316,9 +314,11 @@ export function generateSceneryLayout(
     if (tall && trees >= SCENERY_LIMITS.trees) return;
     const scale = tall
       ? 0.72 + random() * 0.65
-      : kind === 'bush'
-        ? 0.65 + random() * 0.65
-        : 0.7 + random() * 0.7;
+      : kind === 'rock' && region === -2
+        ? 1.25 + random() * 0.65
+        : kind === 'bush'
+          ? 0.65 + random() * 0.65
+          : 0.7 + random() * 0.7;
     const radius =
       (tall
         ? 2.7
@@ -432,7 +432,7 @@ export function generateSceneryLayout(
       frame = sampleTrack(track, s);
     const side = random() < 0.5 ? -1 : 1,
       offset = frame.halfWidth + 13 + random() * 6;
-    let kind = pick(regionKinds, random);
+    let kind = pick(composition.regions ?? regionKinds, random);
     if (Math.abs(frame.curvature) > 0.05)
       kind = side === -Math.sign(frame.curvature) ? 'grove' : 'meadow';
     else if (
@@ -513,6 +513,34 @@ export function generateSceneryLayout(
       );
     }
   }
+  // Coherent, low outcrops act as landmarks, rather than isolated random rocks.
+  // Reuse the existing instanced rock geometry and conservative solid clearance.
+  for (
+    let group = 0;
+    group < Math.round(composition.outcrops * regionDensity);
+    group++
+  ) {
+    const frame = sampleTrack(
+      track,
+      track.totalLength *
+        ((group + 0.35 + random() * 0.3) / composition.outcrops)
+    );
+    const side = random() < 0.5 ? -1 : 1;
+    const offset = frame.halfWidth + 24 + random() * 10;
+    const x = frame.x + frame.nx * side * offset;
+    const z = frame.z + frame.nz * side * offset;
+    for (let j = 0; j < 15; j++) {
+      const angle = random() * Math.PI * 2;
+      const radius = Math.sqrt(random()) * 7;
+      plant(
+        j < 10 ? 'rock' : 'bush',
+        x + Math.cos(angle) * radius,
+        z + Math.sin(angle) * radius,
+        -2,
+        coverDensity
+      );
+    }
+  }
   // Unequal short strips leave deliberate gaps instead of lining the entire circuit.
   for (let strip = 0; strip < 24; strip++) {
     const start = random() * track.totalLength,
@@ -575,11 +603,16 @@ export function generateSceneryLayout(
   return {
     version: SCENERY_VERSION,
     seed,
+    composition,
     regions,
     allPlants: plants,
     plants: light
       ? plants.filter(
-          (p) => p.kind === 'tree' || p.kind === 'blossom' || p.detail < 0.35
+          (p) =>
+            p.kind === 'tree' ||
+            p.kind === 'blossom' ||
+            p.region === -2 ||
+            p.detail < 0.35
         )
       : plants,
     props,
@@ -588,7 +621,11 @@ export function generateSceneryLayout(
       candidates,
       accepted: light
         ? plants.filter(
-            (p) => p.kind === 'tree' || p.kind === 'blossom' || p.detail < 0.35
+            (p) =>
+              p.kind === 'tree' ||
+              p.kind === 'blossom' ||
+              p.region === -2 ||
+              p.detail < 0.35
           ).length
         : plants.length,
       segmentChecks: field.checks,

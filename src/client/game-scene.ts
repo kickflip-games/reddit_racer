@@ -17,11 +17,7 @@ import { createCarVisual } from './car-visual';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
-import {
-  readSceneryOptions,
-  readSceneryPreference,
-  saveSceneryPreference,
-} from './scenery-options';
+import { readSceneryOptions } from './scenery-options';
 import { getGameRenderer, releaseGameScene } from './game-renderer';
 import { createEnvironment } from './environment';
 import { createDrivingVfx } from './driving-vfx';
@@ -105,8 +101,8 @@ export function initializeGame(
   const inputLabel = element('status');
   const start = element('start-button');
   const retry = element('retry-button');
+  const restart = element('restart-button');
   const soundToggle = element('sound-toggle');
-  const motionSelect = element('motion-select');
   const soundFeedback = element('sound-feedback');
   const settingsElement = element('race-settings');
   if (!(settingsElement instanceof HTMLDetailsElement))
@@ -229,8 +225,6 @@ export function initializeGame(
   showLocalBest();
   if (!(soundToggle instanceof HTMLButtonElement))
     throw new Error('Missing sound control');
-  if (!(motionSelect instanceof HTMLSelectElement))
-    throw new Error('Missing motion control');
   element('mode-label').textContent = import.meta.env.DEV
     ? 'Practice'
     : 'Practice';
@@ -290,6 +284,12 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
+  // Do not flash the placeholder before the real car arrives. Starting early
+  // deliberately selects the fallback for this scene, including every retry.
+  carVisual.object.visible = false;
+  let carIdentityLocked = false;
+  let racingViewport:
+    { width: number; height: number; top: number } | undefined;
   const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: true,
@@ -329,32 +329,6 @@ export function initializeGame(
   let previousFrameTime: number | undefined;
   let sceneReady = false;
   let sceneDirty = true;
-  const sceneryDetail = element('scenery-detail');
-  if (!(sceneryDetail instanceof HTMLSelectElement))
-    throw new Error('Missing scenery detail');
-  sceneryDetail.value = readSceneryPreference();
-  sceneryDetail.addEventListener(
-    'change',
-    () => {
-      const preference =
-        sceneryDetail.value === 'light'
-          ? 'light'
-          : sceneryDetail.value === 'standard'
-            ? 'standard'
-            : 'auto';
-      saveSceneryPreference(preference);
-      const settings = readSceneryOptions(preference, true);
-      raceRoot.dataset.vegetationCount = String(
-        vegetation.setDetail(
-          settings.quality ?? 'standard',
-          settings.wind ?? true
-        )
-      );
-      sceneDirty = true;
-    },
-    { signal: lifetime.signal }
-  );
-
   let renderViewport: RenderViewport | undefined;
   let viewportUsable = true;
   const preferences = createFeedbackPreferences();
@@ -383,7 +357,6 @@ export function initializeGame(
     audio.setMuted(snapshot.muted);
     soundToggle.setAttribute('aria-pressed', String(!snapshot.muted));
     soundToggle.textContent = snapshot.muted ? 'Sound off' : 'Sound on';
-    motionSelect.value = snapshot.motion;
     raceRoot.dataset.reducedMotion = String(snapshot.reducedMotion);
     raceRoot.dataset.motionPreference = snapshot.motion;
     if (snapshot.reducedMotion) drivingVfx.reset();
@@ -395,7 +368,6 @@ export function initializeGame(
     }
   });
   soundToggle.disabled = false;
-  motionSelect.disabled = false;
   soundToggle.addEventListener(
     'click',
     () => {
@@ -407,26 +379,17 @@ export function initializeGame(
     },
     eventOptions
   );
-  motionSelect.addEventListener(
-    'change',
-    () => {
-      const value = motionSelect.value;
-      if (value === 'system' || value === 'reduced' || value === 'full')
-        preferences.setMotion(value);
-    },
-    eventOptions
-  );
-
   function applyPendingAssets(): boolean {
     // Read the actual driver now: a Start click can precede the next render.
     if (destroyed || preparing || driver.active) return false;
     let changed = false;
-    if (pendingCar) {
+    if (pendingCar && !carIdentityLocked) {
       const installed = carVisual.installModel(pendingCar);
       pendingCar = undefined;
+      carVisual.object.visible = true;
       raceRoot.dataset.carArt = carVisual.kind;
       raceRoot.dataset.carLoad = installed ? 'ready' : 'unavailable';
-      changed = installed;
+      changed = true;
     }
     if (pendingScenery) {
       const available = Object.keys(pendingScenery).length;
@@ -448,7 +411,14 @@ export function initializeGame(
     const canvasBounds = canvas.getBoundingClientRect();
     const hudBounds = hud.getBoundingClientRect();
     const cardBounds = card.hidden ? null : card.getBoundingClientRect();
-    const top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
+    let top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
+    if (driver.active) {
+      // Lap/best labels resize the HUD at the finish line. They must not move
+      // the world underneath the car. Only a real viewport resize refits it.
+      if (racingViewport?.width === width && racingViewport.height === height)
+        top = racingViewport.top;
+      else racingViewport = { width, height, top };
+    } else racingViewport = undefined;
     const portrait = width <= 700 && height > 480;
     const bottom =
       portrait && cardBounds
@@ -759,6 +729,7 @@ export function initializeGame(
   function enableAttemptButtons(enabled: boolean): void {
     start.toggleAttribute('disabled', !enabled);
     retry.toggleAttribute('disabled', !enabled);
+    restart.toggleAttribute('disabled', !enabled);
   }
   function applyVerification(id: number, result: VerificationOutcome): void {
     if (destroyed || id !== attemptId) return;
@@ -852,6 +823,10 @@ export function initializeGame(
     preparation = undefined;
     enableAttemptButtons(true);
     const timestamp = performance.now();
+    renderReadyArt();
+    carIdentityLocked = true;
+    carVisual.object.visible = true;
+    racingViewport = undefined;
     driver.start(timestamp);
     seenPracticeLaps = 0;
     card.dataset.result = 'false';
@@ -946,6 +921,19 @@ export function initializeGame(
   }
   start.addEventListener('click', beginRace, eventOptions);
   retry.addEventListener('click', beginRace, eventOptions);
+  restart.addEventListener(
+    'click',
+    () => {
+      if (destroyed || preparing || !viewportUsable) return;
+      if (racing) {
+        driver.abandon('focus');
+        showOutcome();
+      }
+      release();
+      beginRace();
+    },
+    eventOptions
+  );
   canvas.addEventListener(
     'pointerdown',
     (event) => {
@@ -1126,13 +1114,23 @@ export function initializeGame(
       if (destroyed) return;
       if (!template) {
         raceRoot.dataset.carLoad = 'unavailable';
+        carVisual.object.visible = true;
+        sceneDirty = true;
+        return;
+      }
+      if (carIdentityLocked) {
+        raceRoot.dataset.carLoad = 'deferred';
         return;
       }
       pendingCar = template;
       renderReadyArt();
     })
     .catch(() => {
-      if (!destroyed) raceRoot.dataset.carLoad = 'unavailable';
+      if (!destroyed) {
+        raceRoot.dataset.carLoad = 'unavailable';
+        carVisual.object.visible = true;
+        sceneDirty = true;
+      }
     });
   void sceneAssets
     .loadSceneryAssets()

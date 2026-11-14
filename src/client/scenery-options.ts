@@ -1,29 +1,9 @@
 import type { SceneryOptions } from './scenery-layout';
 
 export type SceneryPreference = 'auto' | 'standard' | 'light';
-const key = 'reddit-racer.scenery-detail.v1';
-let sessionPreference: SceneryPreference | undefined;
-export function readSceneryPreference(): SceneryPreference {
-  if (sessionPreference !== undefined) return sessionPreference;
-  try {
-    const value = localStorage.getItem(key);
-    return value === 'standard' || value === 'light' ? value : 'auto';
-  } catch {
-    return 'auto';
-  }
-}
-export function saveSceneryPreference(value: SceneryPreference): void {
-  sessionPreference = value;
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* Session choice still applies. */
-  }
-}
-
 /** Ranked production receives only the device fallback, never workshop overrides. */
 export function readSceneryOptions(
-  preference = readSceneryPreference(),
+  preference: SceneryPreference = 'auto',
   explicit = false
 ): SceneryOptions {
   const automatic =

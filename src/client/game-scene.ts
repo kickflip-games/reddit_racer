@@ -475,6 +475,7 @@ export function initializeGame(
         practiceDriver.lastLapTicks !== null
       ) {
         recordLocalLap(practiceDriver.lastLapTicks);
+        audio.lap(attemptId, completed);
       }
       seenPracticeLaps = completed;
       element('practice-lap-notice').hidden = true;
@@ -495,6 +496,14 @@ export function initializeGame(
     }
     raceRoot.dataset.phase = race.phase;
     raceRoot.dataset.preparing = String(preparing);
+    if (race.phase === 'countdown' || race.phase === 'racing') {
+      audio.countdown(
+        attemptId,
+        race.phase === 'countdown'
+          ? Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ)
+          : 0
+      );
+    }
     countdown.hidden = race.phase !== 'countdown';
     if (race.phase === 'countdown') {
       const value = String(

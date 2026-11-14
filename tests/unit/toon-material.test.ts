@@ -66,3 +66,22 @@ test('shadow adds no lighting pass and does not write depth', () => {
   assert.equal(material.lights, false);
   material.dispose();
 });
+
+test('toon ramp is shared, strictly stepped and costs no extra lighting passes', () => {
+  const source = new THREE.MeshStandardMaterial();
+  const first = toonMaterial(source);
+  const second = toonMaterial(source);
+  const ramp = first.gradientMap;
+  assert.ok(ramp instanceof THREE.DataTexture);
+  assert.equal(ramp, second.gradientMap);
+  assert.ok(ramp.image.data instanceof Uint8Array);
+  assert.deepEqual(Array.from(ramp.image.data), [45, 130, 255]);
+  assert.equal(ramp.image.width, 3);
+  assert.equal(ramp.magFilter, THREE.NearestFilter);
+  assert.equal(ramp.minFilter, THREE.NearestFilter);
+  assert.equal(ramp.generateMipmaps, false);
+  first.dispose();
+  assert.equal(second.gradientMap, ramp);
+  second.dispose();
+  source.dispose();
+});

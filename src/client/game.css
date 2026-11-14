@@ -96,12 +96,22 @@ select {
   padding: 10px 13px;
 }
 #race[data-phase='countdown'] .timing,
-#race[data-phase='racing'] .timing {
+#race[data-phase='racing'] .timing,
+#race[data-play-mode='practice']:is(
+    [data-phase='ready'],
+    [data-phase='abandoned']
+  )
+  .timing {
   display: block;
   order: -1;
 }
 #race[data-phase='countdown'] .race-brand,
-#race[data-phase='racing'] .race-brand {
+#race[data-phase='racing'] .race-brand,
+#race[data-play-mode='practice']:is(
+    [data-phase='ready'],
+    [data-phase='abandoned']
+  )
+  .race-brand {
   display: none;
 }
 #timer {
@@ -812,7 +822,9 @@ select:focus-visible {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
+  /* Keep dashes in the SVG coordinate system. Non-scaling-stroke scales the
+     normalized dash length differently from the route at responsive sizes,
+     making the completed highlight run ahead of the player marker. */
 }
 .minimap-halo {
   stroke: #292d325c;

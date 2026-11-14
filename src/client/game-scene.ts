@@ -1,3 +1,4 @@
+import { addToonLighting } from './toon-material';
 import {
   createPracticeBestStore,
   practiceBestKey,
@@ -124,7 +125,7 @@ export function initializeGame(
   function showLocalBest(): void {
     const best = localBests.best(localBestKey);
     const label = element('practice-best-lap');
-    label.hidden = best === null;
+    label.hidden = best === null && !options.continuousPractice;
     if (
       best !== null &&
       card.dataset.result !== 'true' &&
@@ -135,7 +136,7 @@ export function initializeGame(
         `Best ${formatTime(best / SIMULATION_HZ)} s`;
     }
     label.textContent =
-      best === null ? '' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
+      best === null ? 'Best —' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
   }
   function recordLocalLap(ticks: number): LocalBestResult {
     const result = localBests.record(localBestKey, ticks);
@@ -254,10 +255,7 @@ export function initializeGame(
     );
   }
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  scene.add(new THREE.HemisphereLight('#fff1d3', '#71806a', 2.1));
-  const sun = new THREE.DirectionalLight('#fff0d6', 2.4);
-  sun.position.set(-30, 80, 30);
-  scene.add(sun);
+  addToonLighting(scene);
 
   scene.add(createTrackRenderer(track));
 
@@ -410,9 +408,13 @@ export function initializeGame(
     const height = canvas.clientHeight;
     const canvasBounds = canvas.getBoundingClientRect();
     const hudBounds = hud.getBoundingClientRect();
-    const cardBounds = card.hidden ? null : card.getBoundingClientRect();
+    // Results are an overlay, not a request to move the track out of the way.
+    // The default one-lap race is no longer active when its results appear.
+    const chaseLayout = driver.active || driver.raceState.phase === 'finished';
+    const cardBounds =
+      card.hidden || chaseLayout ? null : card.getBoundingClientRect();
     let top = Math.max(12, hudBounds.bottom - canvasBounds.top + 8);
-    if (driver.active) {
+    if (chaseLayout) {
       // Lap/best labels resize the HUD at the finish line. They must not move
       // the world underneath the car. Only a real viewport resize refits it.
       if (racingViewport?.width === width && racingViewport.height === height)
@@ -458,7 +460,8 @@ export function initializeGame(
   function feedback(): void {
     const state = driver.state;
     element('practice-best-lap').hidden =
-      attemptMode === 'ranked' || localBests.best(localBestKey) === null;
+      attemptMode === 'ranked' ||
+      (!practiceDriver && localBests.best(localBestKey) === null);
     raceRoot.dataset.surface = state.offRoad ? 'grass' : 'dry';
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
@@ -475,16 +478,17 @@ export function initializeGame(
         practiceDriver.lastLapTicks !== null
       ) {
         recordLocalLap(practiceDriver.lastLapTicks);
+        audio.lap(attemptId, completed);
       }
       seenPracticeLaps = completed;
       element('practice-lap-notice').hidden = true;
       raceRoot.dataset.practiceLaps = String(completed);
       element('mode-label').textContent = `Lap ${completed + 1}`;
       const last = element('practice-last-lap');
-      last.hidden = practiceDriver.lastLapTicks === null;
+      last.hidden = false;
       const message =
         practiceDriver.lastLapTicks === null
-          ? ''
+          ? 'Last —'
           : `Last ${formatTime(practiceDriver.lastLapTicks / SIMULATION_HZ)}`;
       if (last.textContent !== message) last.textContent = message;
     }
@@ -495,6 +499,14 @@ export function initializeGame(
     }
     raceRoot.dataset.phase = race.phase;
     raceRoot.dataset.preparing = String(preparing);
+    if (race.phase === 'countdown' || race.phase === 'racing') {
+      audio.countdown(
+        attemptId,
+        race.phase === 'countdown'
+          ? Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ)
+          : 0
+      );
+    }
     countdown.hidden = race.phase !== 'countdown';
     if (race.phase === 'countdown') {
       const value = String(

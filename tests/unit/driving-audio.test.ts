@@ -601,3 +601,60 @@ void test('audio presentation enabled/disabled preserves the complete frozen rep
     await audio.dispose();
   }
 });
+
+void test('countdown emits each number once, distinct GO, and a fresh retry resets it', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  for (const seconds of [3, 3, 2, 2, 1, 1, 0, 0]) audio.countdown(1, seconds);
+  assert.deepEqual(backend.cues, ['countdown', 'countdown', 'countdown', 'go']);
+  audio.countdown(0, 3);
+  audio.countdown(1, -1);
+  audio.resetAttempt(2);
+  audio.unlockFromGesture();
+  await flush();
+  audio.countdown(2, 3);
+  assert.deepEqual(backend.cues, [
+    'countdown',
+    'countdown',
+    'countdown',
+    'go',
+    'countdown',
+  ]);
+  await audio.dispose();
+});
+
+void test('continuous laps chime once without finishing or suspending, muted cues never replay', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 1);
+  audio.lap(1, 1);
+  audio.lap(0, 2);
+  assert.deepEqual(backend.cues, ['lap']);
+  assert.equal(backend.suspends, 0);
+  audio.setMuted(true);
+  audio.lap(1, 2);
+  audio.countdown(1, 3);
+  audio.countdown(1, 0);
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 2);
+  audio.countdown(1, 0);
+  assert.deepEqual(backend.cues, ['lap']);
+  audio.lap(1, 3);
+  assert.deepEqual(backend.cues, ['lap', 'lap']);
+  assert.equal(audio.status, 'running');
+  await audio.dispose();
+});

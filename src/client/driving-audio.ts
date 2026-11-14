@@ -41,6 +41,8 @@ export type DrivingAudio = {
   setMuted(value: boolean): void;
   setForeground(value: boolean): void;
   update(frame: Readonly<DrivingAudioFrame>): void;
+  countdown(attemptId: number, seconds: number): void;
+  lap(attemptId: number, completedLaps: number): void;
   finish(attemptId: number): void;
   silence(reason: 'abandon' | 'background'): void;
   dispose(): Promise<void>;
@@ -107,6 +109,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
   let lastWriteTime = -Infinity;
   let lastTick = -1;
   let lastRecoveryCount = 0;
+  let lastCountdown: number | undefined;
+  let lastLap = 0;
   let closing: Promise<void> | undefined;
 
   function notify(): void {
@@ -253,6 +257,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       lastFrame = undefined;
       lastTick = -1;
       lastRecoveryCount = 0;
+      lastCountdown = undefined;
+      lastLap = 0;
       publish(muted ? 'muted' : 'locked');
     },
     unlockFromGesture() {
@@ -338,6 +344,49 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         } catch {
           unavailable();
         }
+      }
+    },
+    countdown(id, seconds) {
+      if (
+        disposed ||
+        id !== attemptId ||
+        finishing ||
+        !Number.isInteger(seconds) ||
+        seconds < 0 ||
+        seconds > 3 ||
+        seconds === lastCountdown
+      )
+        return;
+      // No delayed GO when a scene starts already racing or sound is re-enabled.
+      if (seconds === 0 && lastCountdown === undefined) return;
+      if (!canPlay()) {
+        // Give a gesture's pending resume a chance to play the current number,
+        // but never queue muted/background cues for later playback.
+        if (!resumePending) lastCountdown = seconds;
+        return;
+      }
+      lastCountdown = seconds;
+      try {
+        backend?.cue(seconds === 0 ? 'go' : 'countdown');
+      } catch {
+        unavailable();
+      }
+    },
+    lap(id, completedLaps) {
+      if (
+        disposed ||
+        id !== attemptId ||
+        finishing ||
+        !Number.isSafeInteger(completedLaps) ||
+        completedLaps <= lastLap
+      )
+        return;
+      lastLap = completedLaps;
+      if (!canPlay()) return;
+      try {
+        backend?.cue('lap');
+      } catch {
+        unavailable();
       }
     },
     finish(id) {

@@ -210,3 +210,43 @@ test('OFFLINE AUDIO FIXTURE renders the production graph with rising engine pitc
     contentType: 'application/json',
   });
 });
+
+test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-note lap chime', async ({
+  page,
+}) => {
+  await page.goto('/game.html');
+  const cues = await page.evaluate(async () => {
+    const url = '/driving-audio-graph.ts';
+    const {
+      createDrivingAudioGraph,
+    }: typeof import('../../src/client/driving-audio-graph.ts') = await import(
+      url
+    );
+    const results = [];
+    for (const kind of ['countdown', 'go', 'lap'] as const) {
+      const context = new OfflineAudioContext(1, 12000, 24000);
+      const graph = createDrivingAudioGraph(context);
+      graph.cue(kind, 0);
+      const samples = (await context.startRendering()).getChannelData(0);
+      let peak = 0;
+      let crossings = 0;
+      let tail = 0;
+      for (let i = 1; i < samples.length; i++) {
+        const current = samples[i] ?? 0;
+        peak = Math.max(peak, Math.abs(current));
+        if (i < 2400 && current > 0 && (samples[i - 1] ?? 0) <= 0) crossings++;
+        if (i > 7200) tail = Math.max(tail, Math.abs(current));
+      }
+      results.push({ kind, peak, crossings, tail });
+      graph.dispose();
+    }
+    return results;
+  });
+  expect(cues.map((c) => c.kind)).toEqual(['countdown', 'go', 'lap']);
+  for (const cue of cues) {
+    expect(cue.peak).toBeGreaterThan(0.01);
+    expect(cue.peak).toBeLessThan(0.04);
+    expect(cue.tail).toBeLessThan(0.0001);
+  }
+  expect(cues[1]!.crossings).toBeGreaterThan(cues[0]!.crossings * 1.8);
+});

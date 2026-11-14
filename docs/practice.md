@@ -1,6 +1,6 @@
 # Continuous practice
 
-Choose **Practice** on the ready/results card. **Start** begins one countdown; crossing the line keeps driving on the same generated circuit. The clock resets for the next lap and a quiet Last time appears. Holding, speed, corner momentum, jump flight, wheel motion and effects continue across the line. Practice has no leaderboard; local last/best lap times persist per course and handling version.
+Choose **Practice** on the ready/results card. **Start** begins one countdown; crossing the line keeps driving on the same generated circuit. The clock resets for the next lap. Best and Last times remain visible before starting, while driving and when interrupted, with a dash until a time is available. Holding, speed, corner momentum, jump flight, wheel motion and effects continue across the line. Practice has no leaderboard; the best lap persists locally per course and handling version, while Last shows the most recent completed lap of the current run.
 
 Open **Settings** for **New track**, **Daily race**, Sound, Motion and the requested seed. A new track stops the old session and waits for another explicit start. Returning to Daily reloads that post's saved course. Focus loss, a long frame gap or an unusable viewport interrupts practice and releases input; returning alone never resumes it.
 

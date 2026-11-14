@@ -10,7 +10,8 @@ export type DrivingAudioTargets = {
   squealGain: number;
   offRoadGain: number;
 };
-export type DrivingAudioCue = 'finish' | 'recovery';
+export type DrivingAudioCue =
+  'finish' | 'recovery' | 'countdown' | 'go' | 'lap';
 export type DrivingAudioGraph = {
   readonly nodeCount: number;
   readonly bufferCount: number;
@@ -180,18 +181,31 @@ export function createDrivingAudioGraph(
       if (disposed) return;
       const time = atTime(atSeconds);
       result.frequency.cancelScheduledValues(time);
-      result.frequency.setValueAtTime(kind === 'finish' ? 440 : 90, time);
-      result.frequency.linearRampToValueAtTime(
-        kind === 'finish' ? 660 : 55,
-        time + 0.12
-      );
       resultGain.gain.cancelScheduledValues(time);
       resultGain.gain.setValueAtTime(0, time);
-      resultGain.gain.linearRampToValueAtTime(
-        kind === 'finish' ? 0.07 : 0.05,
-        time + 0.02
-      );
-      resultGain.gain.linearRampToValueAtTime(0, time + 0.25);
+      if (kind === 'lap' || kind === 'finish') {
+        // A soft ascending two-note chime, short enough not to mask the engine.
+        for (const { offset, frequency } of [
+          { offset: 0, frequency: 660 },
+          { offset: 0.11, frequency: 880 },
+        ]) {
+          result.frequency.setValueAtTime(frequency, time + offset);
+          resultGain.gain.setValueAtTime(0, time + offset);
+          resultGain.gain.linearRampToValueAtTime(0.07, time + offset + 0.01);
+          resultGain.gain.linearRampToValueAtTime(0, time + offset + 0.13);
+        }
+      } else {
+        const frequency = kind === 'countdown' ? 440 : kind === 'go' ? 880 : 90;
+        const duration = kind === 'countdown' ? 0.12 : 0.25;
+        result.frequency.setValueAtTime(frequency, time);
+        if (kind === 'recovery')
+          result.frequency.linearRampToValueAtTime(55, time + 0.12);
+        resultGain.gain.linearRampToValueAtTime(
+          kind === 'recovery' ? 0.05 : 0.08,
+          time + 0.01
+        );
+        resultGain.gain.linearRampToValueAtTime(0, time + duration);
+      }
     },
     dispose() {
       if (disposed) return;

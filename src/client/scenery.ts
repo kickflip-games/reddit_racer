@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { toonMaterial } from './toon-material';
+import { toonMaterial, toonGradient } from './toon-material';
 import type { Track } from '../shared/track';
 import {
   generateSceneryLayout,
@@ -59,7 +59,10 @@ export function createScenery(
   let disposed = false;
   let installed: SceneryAssets | undefined;
   function mesh(geometry: THREE.BufferGeometry, color: string): THREE.Mesh {
-    const material = new THREE.MeshToonMaterial({ color });
+    const material = new THREE.MeshToonMaterial({
+      gradientMap: toonGradient,
+      color,
+    });
     ownedGeometries.add(geometry);
     ownedMaterials.add(material);
     return new THREE.Mesh(geometry, material);

@@ -252,7 +252,7 @@ test('painted progress ends at the player at every responsive minimap size', asy
   });
   await page.addStyleTag({
     content:
-      '#circuit-minimap {display:block !important} #minimap-halo, #minimap-course {stroke:#888888} #minimap-completed {stroke:#ff0000}',
+      '#circuit-minimap {display:block !important;top:100px;bottom:auto;background:white;z-index:100} #minimap-halo, #minimap-course {stroke:#888888} #minimap-completed {stroke:#ff0000}',
   });
   for (const width of [88, 100, 120, 140, 160]) {
     await map.evaluate((root, width) => {

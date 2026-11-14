@@ -96,12 +96,22 @@ select {
   padding: 10px 13px;
 }
 #race[data-phase='countdown'] .timing,
-#race[data-phase='racing'] .timing {
+#race[data-phase='racing'] .timing,
+#race[data-play-mode='practice']:is(
+    [data-phase='ready'],
+    [data-phase='abandoned']
+  )
+  .timing {
   display: block;
   order: -1;
 }
 #race[data-phase='countdown'] .race-brand,
-#race[data-phase='racing'] .race-brand {
+#race[data-phase='racing'] .race-brand,
+#race[data-play-mode='practice']:is(
+    [data-phase='ready'],
+    [data-phase='abandoned']
+  )
+  .race-brand {
   display: none;
 }
 #timer {

@@ -89,6 +89,10 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     'data-seed',
     seed
   );
+  await expect(page.locator('#practice-best-lap')).toBeVisible();
+  await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
+  await expect(page.locator('#practice-last-lap')).toBeVisible();
+  await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
@@ -124,6 +128,11 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   await expect(page.locator('#practice-last-lap')).toHaveText(
     `Last ${(first.lapTicks / 120).toFixed(3).padStart(6, '0')}`
   );
+  await expect(page.locator('#practice-best-lap')).toBeVisible();
+  await expect(page.locator('#practice-best-lap')).toHaveText(
+    `Best ${(first.lapTicks / 120).toFixed(3).padStart(6, '0')} s`
+  );
+  await expect(page.locator('#practice-last-lap')).toBeVisible();
   expect(Number(await page.locator('#timer').textContent())).toBeLessThan(0.06);
   await expect(page.locator('#circuit-minimap')).toBeVisible();
   await expect(page.locator('#minimap-progress')).toHaveAttribute(
@@ -157,6 +166,8 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   await expect(page.locator('#practice-last-lap')).toHaveText(
     `Last ${(second.lapTicks / 120).toFixed(3).padStart(6, '0')}`
   );
+  const best = `Best ${(Math.min(first.lapTicks, second.lapTicks) / 120).toFixed(3).padStart(6, '0')} s`;
+  await expect(page.locator('#practice-best-lap')).toHaveText(best);
   await expect(page.locator('#race')).toHaveAttribute('data-track-hash', hash);
   await expect(page.locator('#leaderboard')).toBeHidden();
   await expect(page.locator('#result-summary')).toBeHidden();
@@ -165,6 +176,23 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   });
   await page.keyboard.up('Space');
   await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-phase',
+    'abandoned'
+  );
+  await expect(page.locator('#practice-best-lap')).toBeVisible();
+  await expect(page.locator('#practice-best-lap')).toHaveText(best);
+  await expect(page.locator('#practice-last-lap')).toBeVisible();
+  await expect(page.locator('#practice-last-lap')).toHaveText(
+    `Last ${(second.lapTicks / 120).toFixed(3).padStart(6, '0')}`
+  );
+  await page.reload();
+  await ready(page);
+  await expect(page.locator('#practice-best-lap')).toBeVisible();
+  await expect(page.locator('#practice-best-lap')).toHaveText(best);
+  await expect(page.locator('#practice-last-lap')).toBeVisible();
+  await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
   expect(apiCalls).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -243,6 +271,8 @@ test('New track changes unranked geometry and returning Daily restores the immut
     '0'
   );
   await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
+  await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
   await setRaceSettingsOpen(page, true);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-reduced-motion',

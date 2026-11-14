@@ -124,7 +124,7 @@ export function initializeGame(
   function showLocalBest(): void {
     const best = localBests.best(localBestKey);
     const label = element('practice-best-lap');
-    label.hidden = best === null;
+    label.hidden = best === null && !options.continuousPractice;
     if (
       best !== null &&
       card.dataset.result !== 'true' &&
@@ -135,7 +135,7 @@ export function initializeGame(
         `Best ${formatTime(best / SIMULATION_HZ)} s`;
     }
     label.textContent =
-      best === null ? '' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
+      best === null ? 'Best —' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
   }
   function recordLocalLap(ticks: number): LocalBestResult {
     const result = localBests.record(localBestKey, ticks);
@@ -462,7 +462,8 @@ export function initializeGame(
   function feedback(): void {
     const state = driver.state;
     element('practice-best-lap').hidden =
-      attemptMode === 'ranked' || localBests.best(localBestKey) === null;
+      attemptMode === 'ranked' ||
+      (!practiceDriver && localBests.best(localBestKey) === null);
     raceRoot.dataset.surface = state.offRoad ? 'grass' : 'dry';
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
@@ -486,10 +487,10 @@ export function initializeGame(
       raceRoot.dataset.practiceLaps = String(completed);
       element('mode-label').textContent = `Lap ${completed + 1}`;
       const last = element('practice-last-lap');
-      last.hidden = practiceDriver.lastLapTicks === null;
+      last.hidden = false;
       const message =
         practiceDriver.lastLapTicks === null
-          ? ''
+          ? 'Last —'
           : `Last ${formatTime(practiceDriver.lastLapTicks / SIMULATION_HZ)}`;
       if (last.textContent !== message) last.textContent = message;
     }

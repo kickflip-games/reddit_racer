@@ -16,7 +16,7 @@ toonGradient.needsUpdate = true;
 
 /** Less ambient fill lets the toon bands read without darkening the road. */
 export function addToonLighting(scene: THREE.Scene): void {
-  scene.add(new THREE.HemisphereLight('#fff1d3', '#71806a', 1.05));
+  scene.add(new THREE.HemisphereLight('#e6f4ff', '#335967', 0.85));
   const sun = new THREE.DirectionalLight('#fff0d6', 2.4);
   sun.position.set(-30, 80, 30);
   scene.add(sun);

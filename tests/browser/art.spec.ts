@@ -112,7 +112,7 @@ test('ASSET FIXTURE loads the selected car and palette with grounded wheels and 
       for (const material of Array.isArray(node.material)
         ? node.material
         : [node.material]) {
-        if (material instanceof THREE.MeshStandardMaterial && material.map) {
+        if (material instanceof THREE.MeshToonMaterial && material.map) {
           const image: unknown = material.map.image;
           if (
             !(image instanceof ImageBitmap) &&
@@ -151,7 +151,7 @@ test('ASSET FIXTURE loads the selected car and palette with grounded wheels and 
           ? node.material
           : [node.material]) {
           ids.add(`material:${material.id}`);
-          if (material instanceof THREE.MeshStandardMaterial && material.map)
+          if (material instanceof THREE.MeshToonMaterial && material.map)
             ids.add(`texture:${material.map.id}`);
         }
       });

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import { generateSceneryLayout } from '../../src/client/scenery-layout.ts';
 import { createEnvironment } from '../../src/client/environment.ts';
 import {
   buildSceneryPlacements,
@@ -29,8 +30,11 @@ void test('terrain and contact shadows use bounded buffers and preserve road/run
   }
   const shadows = group.getObjectByName('scenery-contact-shadows');
   assert.ok(shadows instanceof THREE.InstancedMesh);
-  assert.equal(shadows.count, placements.length);
-  assert.ok(shadows.count <= 64);
+  const trees = generateSceneryLayout(track).plants.filter(
+    (p) => p.kind === 'tree' || p.kind === 'blossom'
+  );
+  assert.equal(shadows.count, placements.length + Math.min(256, trees.length));
+  assert.ok(shadows.count <= 64 + 256);
   for (const p of placements)
     assert.ok(hasSceneryClearance(track, p.x, p.z, p.radius));
 });

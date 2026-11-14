@@ -484,7 +484,7 @@ void test('corner roll lowers the world-space outward body side on fallback and 
   disposeAssetTemplate(imported);
 });
 
-void test('scenery theme clones preserve source maps and roughness and dispose only owned materials', () => {
+void test('scenery toon themes preserve source maps and dispose only owned materials', () => {
   const texture = new THREE.DataTexture(
     new Uint8Array([120, 200, 160, 255]),
     1,
@@ -514,7 +514,7 @@ void test('scenery theme clones preserve source maps and roughness and dispose o
   bark.addEventListener('dispose', () => sourceDisposals++);
   texture.addEventListener('dispose', () => sourceDisposals++);
   assert.ok(scenery.installAssets({ treeSmall: tree }));
-  const themed = new Set<THREE.MeshStandardMaterial>();
+  const themed = new Set<THREE.MeshToonMaterial>();
   scenery.object.traverse((node) => {
     if (
       node instanceof THREE.InstancedMesh &&
@@ -523,7 +523,7 @@ void test('scenery theme clones preserve source maps and roughness and dispose o
       for (const material of Array.isArray(node.material)
         ? node.material
         : [node.material]) {
-        assert.ok(material instanceof THREE.MeshStandardMaterial);
+        assert.ok(material instanceof THREE.MeshToonMaterial);
         themed.add(material);
       }
     }
@@ -537,10 +537,8 @@ void test('scenery theme clones preserve source maps and roughness and dispose o
     if (material.name === 'grass') {
       assert.equal(material.color.getHexString(), '647c55');
       assert.equal(material.map, texture);
-      assert.equal(material.roughness, foliage.roughness);
     } else {
       assert.equal(material.color.getHexString(), '8a6746');
-      assert.equal(material.roughness, bark.roughness);
     }
   }
   assert.ok(foliage.color.equals(originalFoliage));

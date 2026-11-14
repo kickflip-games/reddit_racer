@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { toonMaterial } from './toon-material';
 import type { Track } from '../shared/track';
 import {
   generateSceneryLayout,
@@ -58,7 +59,7 @@ export function createScenery(
   let disposed = false;
   let installed: SceneryAssets | undefined;
   function mesh(geometry: THREE.BufferGeometry, color: string): THREE.Mesh {
-    const material = new THREE.MeshStandardMaterial({ color, roughness: 1 });
+    const material = new THREE.MeshToonMaterial({ color });
     ownedGeometries.add(geometry);
     ownedMaterials.add(material);
     return new THREE.Mesh(geometry, material);
@@ -129,11 +130,10 @@ export function createScenery(
           : kind === 'barrierWhite'
             ? '#f4e5c7'
             : undefined;
-    if (!color) return material;
     const existing = themedMaterials.get(material);
     if (existing) return existing;
-    const themed = material.clone();
-    themed.color.set(color);
+    const themed = toonMaterial(material);
+    if (color) themed.color.set(color);
     themedMaterials.set(material, themed);
     ownedMaterials.add(themed);
     return themed;

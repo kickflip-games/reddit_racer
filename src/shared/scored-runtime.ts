@@ -26,7 +26,7 @@ export const LEGACY_HANDLING: Handling = Object.freeze({
   recoveryDistanceBeyondEdge: 8,
   recoveryTicks: 120,
 });
-export const ELEVATED_HANDLING: Handling = Object.freeze({
+export const CENTRELINE_HANDLING: Handling = Object.freeze({
   acceleration: 11.5,
   braking: 13.5,
   maximumSpeed: 30,
@@ -38,8 +38,12 @@ export const ELEVATED_HANDLING: Handling = Object.freeze({
   recoveryDistanceBeyondEdge: 8,
   recoveryTicks: 120,
 });
-export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v4';
-export const ELEVATED_HANDLING_VERSION = 'centreline-v1';
+export const ELEVATED_HANDLING: Handling = Object.freeze({
+  ...CENTRELINE_HANDLING,
+  offRoadDrag: 1.25,
+});
+export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v5';
+export const ELEVATED_HANDLING_VERSION = 'progressive-slip-v1';
 export const FLIGHT_GRAVITY = 11.5;
 
 const flatRuntime = Object.freeze({
@@ -48,13 +52,20 @@ const flatRuntime = Object.freeze({
   simulationHz: 120,
   handling: LEGACY_HANDLING,
 });
+const centrelineRuntime = Object.freeze({
+  simulationVersion: 'fixed-step-v4',
+  handlingVersion: 'centreline-v1',
+  simulationHz: 120,
+  handling: CENTRELINE_HANDLING,
+});
 const elevatedRuntime = Object.freeze({
   simulationVersion: ELEVATED_SIMULATION_VERSION,
   handlingVersion: ELEVATED_HANDLING_VERSION,
   simulationHz: 120,
   handling: ELEVATED_HANDLING,
 });
-export type ScoredRuntime = typeof flatRuntime | typeof elevatedRuntime;
+export type ScoredRuntime =
+  typeof flatRuntime | typeof elevatedRuntime | typeof centrelineRuntime;
 
 export function scoredRuntime(
   simulationVersion: unknown,
@@ -68,6 +79,11 @@ export function scoredRuntime(
   )
     return flatRuntime;
   if (
+    simulationVersion === centrelineRuntime.simulationVersion &&
+    handlingVersion === centrelineRuntime.handlingVersion
+  )
+    return centrelineRuntime;
+  if (
     simulationVersion === elevatedRuntime.simulationVersion &&
     handlingVersion === elevatedRuntime.handlingVersion
   )
@@ -76,7 +92,10 @@ export function scoredRuntime(
 }
 export function runtimeForTrack(track: Track): ScoredRuntime {
   if (track.schemaVersion === 1) return flatRuntime;
-  if (track.schemaVersion === 2) return elevatedRuntime;
+  if (track.schemaVersion === 2)
+    return track.generatorVersion === 'countryside-circuits-v1'
+      ? centrelineRuntime
+      : elevatedRuntime;
   throw new Error('Unsupported track runtime');
 }
 export const handlingForTrack = (track: Track): Handling =>

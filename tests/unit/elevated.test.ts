@@ -288,8 +288,8 @@ void test('immutable daily storage binds the complete elevated course and new ha
     requestedSeed: 'country-1',
     generated,
   });
-  assert.equal(stored.simulationVersion, 'fixed-step-v4');
-  assert.equal(stored.handlingVersion, 'centreline-v1');
+  assert.equal(stored.simulationVersion, 'fixed-step-v5');
+  assert.equal(stored.handlingVersion, 'progressive-slip-v1');
   assert.deepEqual(
     await parseDailyChallengeRecord(
       JSON.parse(serializeDailyChallengeRecord(stored))
@@ -366,7 +366,7 @@ void test('a frozen elevated daily replays every recorded grounded, airborne and
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), raw.states);
 });
 
-void test('centreline handling corrects lateral state without wandering or changing the road surface', () => {
+void test('slow recovery steers progressively instead of snapping sideways', () => {
   const initial: SimulationState = {
     ...createSimulationState(track),
     distance: 30,
@@ -382,10 +382,11 @@ void test('centreline handling corrects lateral state without wandering or chang
     },
   };
   const next = stepSimulation(track, initial, true);
-  assert.equal(next.offRoad, false);
+  assert.equal(next.offRoad, true);
   assert.equal(next.recovering, false);
-  assert.equal(next.lateralOffset, 0);
-  assert.equal(next.lateralVelocity, 0);
+  assert.ok(next.lateralOffset < initial.lateralOffset);
+  assert.ok(next.lateralOffset > 4.9);
+  assert.ok(next.lateralVelocity < 0);
   assert.ok(
     Math.abs(
       (next.vertical?.height ?? 0) - (sampleTrack(track, next.distance).y ?? 0)

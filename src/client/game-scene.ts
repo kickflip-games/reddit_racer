@@ -489,8 +489,8 @@ export function initializeGame(
     const state = driver.state;
     element('practice-best-lap').hidden =
       attemptMode === 'ranked' || localBests.best(localBestKey) === null;
-    raceRoot.dataset.surface = 'dry';
-    raceRoot.dataset.gripModel = 'centreline';
+    raceRoot.dataset.surface = state.offRoad ? 'grass' : 'dry';
+    raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
     timer.textContent = formatTime(

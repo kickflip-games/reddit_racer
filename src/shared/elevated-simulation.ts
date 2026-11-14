@@ -8,7 +8,7 @@ import type { SimulationState } from './simulation.ts';
 const hz = 120;
 const q = (value: number): number => Math.round(value * 1_000_000) / 1_000_000;
 
-/** One predictable route. Speed control, corner momentum and real ballistic gaps provide the skill. */
+/** Progressive lateral slip gives drivers time to lift; grass costs speed continuously. */
 export function stepElevatedSimulation(
   track: Track,
   state: SimulationState,
@@ -24,8 +24,10 @@ export function stepElevatedSimulation(
     return {
       ...state,
       tick,
-      speed: 0,
-      lateralOffset: 0,
+      speed: q((state.speed * remaining) / state.recoveryTicksRemaining),
+      lateralOffset: q(
+        (state.lateralOffset * remaining) / state.recoveryTicksRemaining
+      ),
       lateralVelocity: 0,
       offRoad: false,
       recovering: remaining > 0,
@@ -43,18 +45,19 @@ export function stepElevatedSimulation(
     };
   }
   const grounded = !vertical.airborne;
-  let penalty = Math.max(0, (state.cornerPenaltyTicks ?? 0) - 1);
+  const runoff = Math.max(0, Math.abs(state.lateralOffset) - frame.halfWidth);
+  // Blend the first metre of shoulder: no discontinuous penalty at the paint.
+  const grass = Math.min(1, runoff);
   const drive = grounded
     ? held
-      ? penalty > 0
-        ? 0
-        : handling.acceleration
+      ? handling.acceleration
       : -handling.braking
     : 0;
   const drag = grounded
-    ? handling.rollingDrag * state.speed * state.speed
+    ? handling.rollingDrag * state.speed * state.speed +
+      grass * handling.offRoadDrag * state.speed
     : state.speed * 0.035;
-  let speed = q(
+  const speed = q(
     Math.max(
       0,
       Math.min(
@@ -69,16 +72,38 @@ export function stepElevatedSimulation(
   );
   const demand =
     (Math.abs(frame.curvature) * speed * speed) / handling.lateralGrip;
-  let stress =
-    grounded && demand > 1.08 && penalty === 0
-      ? (state.cornerStress ?? 0) + 1
-      : 0;
-  // A short grace window lets a timely release save the turn. Repeatedly holding
-  // through a corner loses speed; early braking carries smooth momentum through it.
-  if (stress >= 12) {
-    speed = q(speed * 0.6);
-    stress = 0;
-    penalty = 72;
+  const excess = Math.max(0, demand - 1) * handling.lateralGrip;
+  const mobility = Math.min(1, speed / 3);
+  const sideways = grounded
+    ? (-Math.sign(frame.curvature) * excess -
+        handling.centering * state.lateralOffset -
+        handling.lateralDamping * state.lateralVelocity) *
+      mobility
+    : 0;
+  const lateralVelocity = q(
+    Math.max(
+      -speed * 0.7,
+      Math.min(speed * 0.7, state.lateralVelocity + sideways / hz)
+    )
+  );
+  const lateralOffset = q(state.lateralOffset + lateralVelocity / hz);
+  // Only extreme departures need rescue. A tyre over the edge is not a crash.
+  if (
+    Math.abs(lateralOffset) >
+    frame.halfWidth + handling.recoveryDistanceBeyondEdge
+  ) {
+    return {
+      ...state,
+      tick,
+      speed,
+      lateralOffset,
+      lateralVelocity: 0,
+      slip: 1,
+      offRoad: true,
+      recovering: true,
+      recoveryTicksRemaining: handling.recoveryTicks - 1,
+      recoveryCount: state.recoveryCount + 1,
+    };
   }
   let distance = Math.min(track.totalLength, q(state.distance + speed / hz));
   let next = sampleTrack(track, distance);
@@ -151,8 +176,8 @@ export function stepElevatedSimulation(
     tick,
     distance,
     speed,
-    lateralOffset: 0,
-    lateralVelocity: 0,
+    lateralOffset,
+    lateralVelocity,
     slip: grounded
       ? q(
           Math.max(
@@ -161,12 +186,12 @@ export function stepElevatedSimulation(
           )
         )
       : 0,
-    offRoad: false,
+    offRoad: Math.abs(lateralOffset) > next.halfWidth,
     recovering: false,
     recoveryTicksRemaining: 0,
     recoveryCount: state.recoveryCount,
-    cornerStress: stress,
-    cornerPenaltyTicks: penalty,
+    cornerStress: 0,
+    cornerPenaltyTicks: 0,
     finishedTick: finished ? tick : null,
     status: finished ? 'finished' : 'running',
     vertical: { height, velocity, airborne, landings, impact },

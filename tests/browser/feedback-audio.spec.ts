@@ -245,7 +245,8 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
   expect(cues.map((c) => c.kind)).toEqual(['countdown', 'go', 'lap']);
   for (const cue of cues) {
     expect(cue.peak).toBeGreaterThan(0.01);
-    expect(cue.peak).toBeLessThan(0.04);
+    expect(cue.peak).toBeLessThan(0.08);
+    if (cue.kind !== 'lap') expect(cue.peak).toBeGreaterThan(0.045);
     expect(cue.tail).toBeLessThan(0.0001);
   }
   expect(cues[1]!.crossings).toBeGreaterThan(cues[0]!.crossings * 1.8);

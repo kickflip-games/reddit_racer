@@ -180,6 +180,8 @@ export function createDrivingAudioGraph(
     cue(kind, atSeconds = context.currentTime) {
       if (disposed) return;
       const time = atTime(atSeconds);
+      // Triangle adds gentle harmonics so phone speakers can reproduce the cue.
+      result.type = kind === 'countdown' || kind === 'go' ? 'triangle' : 'sine';
       result.frequency.cancelScheduledValues(time);
       resultGain.gain.cancelScheduledValues(time);
       resultGain.gain.setValueAtTime(0, time);
@@ -201,7 +203,7 @@ export function createDrivingAudioGraph(
         if (kind === 'recovery')
           result.frequency.linearRampToValueAtTime(55, time + 0.12);
         resultGain.gain.linearRampToValueAtTime(
-          kind === 'recovery' ? 0.05 : 0.08,
+          kind === 'recovery' ? 0.05 : 0.18,
           time + 0.01
         );
         resultGain.gain.linearRampToValueAtTime(0, time + duration);

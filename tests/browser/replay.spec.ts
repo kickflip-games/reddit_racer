@@ -48,31 +48,35 @@ for (const fixture of [
     track: generated.track,
   },
 ]) {
-  test(`${fixture.name} replay agrees exactly with Node`, async ({ page }) => {
-    // A blank same-origin page isolates authoritative math from WebGL/platform SDKs.
-    await page.route('**/runtime-fixture.html', (route) =>
-      route.fulfill({
-        contentType: 'text/html',
-        body: '<!doctype html><title>Replay runtime fixture</title>',
-      })
-    );
-    await page.goto('/runtime-fixture.html');
-    const track = fixture.track;
-    const expected = runReplay(track, fixture.replay);
-    expect(expected.finishTicks).toBe(fixture.ticks);
-    const actual = await page.evaluate(
-      async ({ replayModuleUrl, trackModuleUrl, serialized, replay }) => {
-        const { parseTrack } = await import(trackModuleUrl);
-        const { runReplay } = await import(replayModuleUrl);
-        return runReplay(parseTrack(JSON.parse(serialized)), replay);
-      },
-      {
-        replayModuleUrl,
-        trackModuleUrl,
-        serialized: serializeTrack(track),
-        replay: fixture.replay,
-      }
-    );
-    expect(actual).toEqual(expected);
-  });
+  test(
+    `${fixture.name} replay agrees exactly with Node`,
+    { tag: '@smoke' },
+    async ({ page }) => {
+      // A blank same-origin page isolates authoritative math from WebGL/platform SDKs.
+      await page.route('**/runtime-fixture.html', (route) =>
+        route.fulfill({
+          contentType: 'text/html',
+          body: '<!doctype html><title>Replay runtime fixture</title>',
+        })
+      );
+      await page.goto('/runtime-fixture.html');
+      const track = fixture.track;
+      const expected = runReplay(track, fixture.replay);
+      expect(expected.finishTicks).toBe(fixture.ticks);
+      const actual = await page.evaluate(
+        async ({ replayModuleUrl, trackModuleUrl, serialized, replay }) => {
+          const { parseTrack } = await import(trackModuleUrl);
+          const { runReplay } = await import(replayModuleUrl);
+          return runReplay(parseTrack(JSON.parse(serialized)), replay);
+        },
+        {
+          replayModuleUrl,
+          trackModuleUrl,
+          serialized: serializeTrack(track),
+          replay: fixture.replay,
+        }
+      );
+      expect(actual).toEqual(expected);
+    }
+  );
 }

@@ -1,6 +1,11 @@
+import { courseWord } from '../shared/word-seed';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
-import { generatePracticeCourse } from './practice-course';
+import {
+  generatePracticeCourse,
+  generateWordPracticeCourse,
+  generateRandomWordPracticeCourse,
+} from './practice-course';
 import {
   DailyCourseIntegrityError,
   fetchDailyChallenge,
@@ -211,6 +216,8 @@ function prepareCourse(mode: PlayMode): void {
     'race-countdown',
   ])
     element(id).hidden = true;
+  const dialog = element('settings-dialog');
+  if (dialog instanceof HTMLDialogElement && dialog.open) dialog.close();
   const settings = element('race-settings');
   if (settings instanceof HTMLDetailsElement) settings.open = false;
   element('challenge-heading').hidden = true;
@@ -222,6 +229,7 @@ function prepareCourse(mode: PlayMode): void {
   element('card').hidden = false;
   element('card').scrollTop = 0;
   element('practice-button').hidden = mode === 'practice';
+  element('word-course-open').hidden = mode !== 'practice';
   element('practice-settings').hidden = mode === 'daily';
   element('verification-status').hidden = true;
   element('verification-status').textContent = '';
@@ -248,13 +256,24 @@ function prepareCourse(mode: PlayMode): void {
   copy.textContent = 'Hold to go. Release to slow.';
 }
 
-async function boot(mode: PlayMode, seed?: string): Promise<void> {
+async function boot(
+  mode: PlayMode,
+  seed?: string,
+  wordRequest?: { input: string; version: number }
+): Promise<void> {
   const focusWhenReady = courseGeneration > 0;
   const version = ++courseGeneration;
   prepareCourse(mode);
   try {
     if (mode !== 'daily') {
-      const course = await generatePracticeCourse(seed, lastPracticeTrackHash);
+      const course = wordRequest
+        ? await generateWordPracticeCourse(
+            wordRequest.input,
+            wordRequest.version
+          )
+        : seed === undefined
+          ? await generateRandomWordPracticeCourse(lastPracticeTrackHash)
+          : await generatePracticeCourse(seed, lastPracticeTrackHash);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
@@ -266,9 +285,18 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
       element('mode-label').textContent = 'Lap 1';
       element('start-label').textContent = 'Start';
       element('retry-label').textContent = 'Resume';
+      const selectedWord = course.wordCourse ?? null;
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
-      practiceSeed.textContent = `Unranked · ${course.seed}`;
+      practiceSeed.textContent = selectedWord
+        ? `Course code: ${selectedWord.code} · Unranked`
+        : `Unranked · ${course.seed}`;
+      const wordInput = element('course-word');
+      if (wordInput instanceof HTMLInputElement)
+        wordInput.value = selectedWord ? selectedWord.code : '';
+      race.dataset.wordCode = selectedWord ? selectedWord.code : '';
+      element('word-course-message').textContent =
+        'Share the code above, or enter another word. Unranked.';
       source.dataset.state = 'ready';
       source.dataset.fallback = String(course.fallbackUsed);
       source.dataset.seed = course.seed;
@@ -392,6 +420,35 @@ element('daily-mode-button').addEventListener(
   'click',
   () => void boot('daily')
 );
+element('word-course-open').addEventListener('click', () => {
+  const summary = document.querySelector('#race-settings summary');
+  if (summary instanceof HTMLElement) summary.click();
+  const dialog = element('settings-dialog');
+  if (!scene && dialog instanceof HTMLDialogElement && !dialog.open)
+    dialog.showModal();
+  element('course-word').focus();
+});
+element('settings-close').addEventListener('click', () => {
+  if (scene) return;
+  const dialog = element('settings-dialog');
+  if (dialog instanceof HTMLDialogElement) dialog.close();
+});
+element('word-course-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const input = element('course-word');
+  if (!(input instanceof HTMLInputElement)) return;
+  try {
+    const request = courseWord(input.value);
+    void boot('practice', undefined, {
+      input: request.word,
+      version: request.version,
+    });
+  } catch (error) {
+    element('word-course-message').textContent =
+      error instanceof Error ? error.message : 'Invalid course word.';
+    input.focus();
+  }
+});
 window.addEventListener('pagehide', (event) => {
   if (event.persisted) return;
   courseGeneration++;
@@ -399,10 +456,16 @@ window.addEventListener('pagehide', (event) => {
   cleanupDaily?.();
   cleanupLeaderboard?.();
 });
-const query = import.meta.env.DEV
-  ? new URLSearchParams(window.location.search)
-  : null;
+const query = new URLSearchParams(window.location.search);
 void boot(
   query?.get('practice') === '1' ? 'practice' : 'daily',
-  query?.get('practice') === '1' ? (query.get('seed') ?? undefined) : undefined
+  import.meta.env.DEV && query.get('practice') === '1'
+    ? (query.get('seed') ?? undefined)
+    : undefined,
+  query.get('practice') === '1' && query.has('word')
+    ? {
+        input: query.get('word') ?? '',
+        version: Number(query.get('wordVersion') ?? '1'),
+      }
+    : undefined
 );

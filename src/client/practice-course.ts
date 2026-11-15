@@ -1,6 +1,8 @@
+import { courseWord, type CourseWord } from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
 
 export type PracticeCourse = {
+  wordCourse?: CourseWord;
   track: Track;
   seed: string;
   fallbackUsed: boolean;
@@ -128,4 +130,76 @@ export async function generatePracticeCourse(
   avoidTrackHash?: string
 ): Promise<PracticeCourse> {
   return browserGenerator(seed, avoidTrackHash);
+}
+
+/** Explicit word courses use a separately versioned generator; legacy seeds stay unchanged. */
+export async function generateWordPracticeCourse(
+  input: string,
+  version = 1
+): Promise<PracticeCourse & { wordCourse: CourseWord }> {
+  const wordCourse = courseWord(input, version);
+  const { generateOtherTracksCircuit } =
+    await import('../shared/other-tracks-generator');
+  const result = generateOtherTracksCircuit(wordCourse.seed);
+  if (!result.quality.valid)
+    throw new Error('This word course did not pass the driving checks.');
+  let trackHash: string;
+  try {
+    trackHash = await hashTrack(result.track);
+  } catch {
+    trackHash = practiceTrackFingerprint(result.track);
+  }
+  return {
+    track: result.track,
+    seed: wordCourse.seed,
+    fallbackUsed: result.diagnostics.fallbackUsed,
+    trackHash,
+    wordCourse,
+  };
+}
+
+let wordCourseCounter = 0;
+/** Random selections expose a word code too, so they can be revisited/shared. */
+export async function generateRandomWordPracticeCourse(
+  avoidTrackHash?: string
+): Promise<PracticeCourse & { wordCourse: CourseWord }> {
+  const colors = [
+    'amber',
+    'jade',
+    'silver',
+    'coral',
+    'golden',
+    'violet',
+    'scarlet',
+    'azure',
+  ];
+  const places = [
+    'brook',
+    'meadow',
+    'valley',
+    'grove',
+    'hill',
+    'ridge',
+    'field',
+    'forest',
+  ];
+  for (let attempt = 0; attempt < 3; attempt++) {
+    wordCourseCounter++;
+    const bytes = new Uint8Array(4);
+    try {
+      globalThis.crypto.getRandomValues(bytes);
+    } catch {
+      for (let i = 0; i < bytes.length; i++)
+        bytes[i] = Math.floor(Math.random() * 256);
+    }
+    const suffix = Array.from(bytes, (value) =>
+      value.toString(16).padStart(2, '0')
+    ).join('');
+    const word = `${colors[bytes[0]! % colors.length]}-${places[bytes[1]! % places.length]}-${suffix}-${wordCourseCounter.toString(36)}`;
+    const result = await generateWordPracticeCourse(word);
+    if (result.trackHash !== avoidTrackHash) return result;
+  }
+  throw new Error(
+    'A different word course could not be created. Try another word.'
+  );
 }

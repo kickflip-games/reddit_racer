@@ -1158,3 +1158,25 @@ select:focus-visible {
     animation: none !important;
   }
 }
+#word-course-form {
+  margin: 12px 0;
+}
+#word-course-form label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+#course-word {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid #292d3250;
+  border-radius: 8px;
+  padding: 10px;
+  background: #fffaf0;
+  color: var(--ink);
+  font-size: 16px;
+}
+#word-course-message {
+  margin-top: 8px;
+}

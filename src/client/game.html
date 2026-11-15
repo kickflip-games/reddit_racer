@@ -176,6 +176,14 @@
             </div>
           </details>
         </section>
+        <button
+          id="word-course-open"
+          class="secondary-button"
+          type="button"
+          hidden
+        >
+          Choose a word
+        </button>
         <button id="practice-button" class="secondary-button" type="button">
           Other tracks
         </button>
@@ -221,6 +229,27 @@
             <div class="course-info">
               <div id="practice-settings" hidden>
                 <p id="practice-seed"></p>
+                <form id="word-course-form">
+                  <label for="course-word">Word or course code</label>
+                  <input
+                    id="course-word"
+                    name="word"
+                    type="text"
+                    maxlength="96"
+                    placeholder="banana or v1:banana"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                    enterkeyhint="go"
+                    aria-describedby="word-course-message"
+                  />
+                  <button id="word-course-submit" type="submit">
+                    Load word track
+                  </button>
+                  <p id="word-course-message" role="status">
+                    Same word and version, same track. Unranked.
+                  </p>
+                </form>
                 <button id="next-practice-button" type="button">
                   New track
                 </button>

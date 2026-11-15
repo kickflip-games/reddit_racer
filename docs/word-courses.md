@@ -44,3 +44,7 @@ the additional assertion against the actual historical banana track confirms
 its ghost key differs after remapping. Six desktop/mobile Chromium word-form
 cases passed (plain input, old-code alias, invalid input recovery, random word
 sharing). These are local browser tests, not physical-device or deployment tests.
+
+The production build also passed two desktop/mobile smoke cases with the old
+late generator URL blocked, including invalid-word recovery and normalized
+word reproducibility. The build does not emit the development fixture module.

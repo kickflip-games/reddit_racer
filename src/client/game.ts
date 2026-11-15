@@ -18,6 +18,7 @@ import {
 } from './ranked-client';
 import { createLeaderboardController } from './leaderboard-client';
 import { createTodayRaceController } from './today-race-client';
+import { createDailyHistoryController } from './daily-history-client';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -455,6 +456,10 @@ window.addEventListener('pagehide', (event) => {
   scene?.dispose();
   cleanupDaily?.();
   cleanupLeaderboard?.();
+});
+const dailyHistory = createDailyHistoryController();
+window.addEventListener('pagehide', (event) => {
+  if (!event.persisted) dailyHistory.dispose();
 });
 const query = new URLSearchParams(window.location.search);
 void boot(

@@ -187,7 +187,104 @@
         <button id="practice-button" class="secondary-button" type="button">
           Other tracks
         </button>
+        <section
+          id="daily-history-preview"
+          class="daily-history-preview"
+          aria-label="Previous daily results"
+        >
+          <button
+            id="daily-history-open"
+            type="button"
+            class="secondary-button"
+          >
+            Yesterday’s podium &amp; past results
+          </button>
+          <p id="daily-history-preview-status" aria-live="polite"></p>
+        </section>
       </div>
+      <dialog
+        id="daily-history-dialog"
+        class="daily-history-dialog"
+        aria-labelledby="daily-history-title"
+      >
+        <header class="daily-history-heading">
+          <h2 id="daily-history-title">Daily standings</h2>
+          <button
+            id="daily-history-close"
+            type="button"
+            aria-label="Close daily standings"
+          >
+            ✕
+          </button>
+        </header>
+        <p class="daily-history-note">Community races · previous 90 UTC days</p>
+        <form id="daily-history-form" class="daily-history-navigation">
+          <button
+            id="daily-history-previous"
+            type="button"
+            aria-label="Previous UTC day"
+          >
+            ←
+          </button>
+          <label
+            >Race date (UTC)<input id="daily-history-date" type="date" required
+          /></label>
+          <button
+            id="daily-history-next"
+            type="button"
+            aria-label="Next UTC day"
+          >
+            →
+          </button>
+          <button id="daily-history-go" type="submit">View</button>
+        </form>
+        <p id="daily-history-status" role="status"></p>
+        <p id="daily-history-provisional" class="daily-history-note" hidden>
+          Provisional: yesterday’s in-flight verified finishes can still arrive
+          after midnight UTC.
+        </p>
+        <ol
+          id="daily-history-podium"
+          class="daily-history-podium"
+          aria-label="Podium racers"
+        ></ol>
+        <p id="daily-history-ties" class="daily-history-note"></p>
+        <div
+          id="daily-history-table"
+          class="leaderboard-rows"
+          role="region"
+          aria-label="Historical standings"
+          tabindex="0"
+          hidden
+        >
+          <table aria-label="Historical daily racers">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Racer</th>
+                <th scope="col">Time</th>
+              </tr>
+            </thead>
+            <tbody id="daily-history-rows"></tbody>
+          </table>
+        </div>
+        <p class="daily-history-note">
+          Verified standings can update if a previously accepted finish is
+          reconciled later.
+        </p>
+        <div class="daily-history-actions">
+          <button id="daily-history-back" type="button" hidden>
+            Previous 20 racers
+          </button>
+          <button id="daily-history-more" type="button" hidden>
+            Next 20 racers
+          </button>
+          <button id="daily-history-post" type="button" hidden>
+            Open original race ↗
+          </button>
+          <button id="daily-history-retry" type="button" hidden>Retry</button>
+        </div>
+      </dialog>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary aria-label="Settings" title="Settings">

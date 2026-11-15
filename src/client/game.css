@@ -1183,3 +1183,165 @@ select:focus-visible {
 .race-settings > summary:hover {
   background: var(--accent-hover);
 }
+
+/* Historical results are optional home content, never a driving HUD. */
+.daily-history-preview {
+  margin-top: 4px;
+}
+.daily-history-preview p {
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  max-width: 34ch;
+}
+.daily-history-preview p:empty {
+  display: none;
+}
+#card[data-result='true'] .daily-history-preview {
+  display: none;
+}
+#daily-history-open {
+  min-height: 44px;
+  font-size: 13px;
+  padding-block: 8px;
+}
+.daily-history-dialog {
+  box-sizing: border-box;
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  padding: 20px;
+  background: #fff7e8;
+  color: var(--ink);
+  border: 1px solid #183b3533;
+  border-radius: 18px;
+  box-shadow: 0 18px 70px #10282366;
+}
+.daily-history-dialog::backdrop {
+  background: #10282399;
+}
+.daily-history-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.daily-history-heading h2 {
+  font-size: 24px;
+  margin: 0;
+}
+.daily-history-dialog button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.daily-history-dialog button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.daily-history-dialog button:focus-visible,
+.daily-history-dialog input:focus-visible {
+  outline: 3px solid #d26330;
+  outline-offset: 2px;
+}
+.daily-history-note {
+  font-size: 13px;
+  line-height: 1.4;
+}
+.daily-history-navigation {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.daily-history-navigation label {
+  flex: 1;
+  min-width: 130px;
+  font-size: 12px;
+}
+.daily-history-navigation input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  font: inherit;
+  font-size: 15px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #183b3555;
+  background: white;
+  color: var(--ink);
+}
+.daily-history-podium {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.daily-history-podium li {
+  border-left: 3px solid #d26330;
+  padding: 8px 10px;
+  background: #e7eddf;
+  border-radius: 4px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.daily-history-dialog .leaderboard-rows {
+  max-height: 300px;
+}
+.daily-history-dialog table {
+  width: 100%;
+  font-size: 14px;
+}
+.daily-history-dialog td {
+  overflow-wrap: anywhere;
+}
+.daily-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+@media (max-width: 380px) {
+  .daily-history-dialog {
+    padding: 14px;
+  }
+  .daily-history-navigation {
+    gap: 4px;
+  }
+  .daily-history-dialog button {
+    padding-inline: 10px;
+  }
+}
+.daily-history-dialog button {
+  width: auto;
+}
+.daily-history-heading h2 {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.1;
+}
+#daily-history-close {
+  flex: 0 0 44px;
+  width: 44px;
+  padding: 10px;
+  text-align: center;
+}
+.daily-history-navigation {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: end;
+}
+.daily-history-navigation label {
+  min-width: 0;
+}
+#daily-history-go {
+  grid-column: 1 / -1;
+  text-align: center;
+}
+/* Keep the bottom-left settings control clear of the home preview. */
+.daily-history-preview {
+  padding-bottom: 36px;
+}

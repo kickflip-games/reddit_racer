@@ -315,3 +315,140 @@ test('OFFLINE personal-best chime adds a third rising note without a loud or sus
   expect(best!.crossings[2]).toBeGreaterThan(best!.crossings[1]!);
   expect(best!.tail).toBeLessThan(0.0001);
 });
+
+test('BROWSER AUDIO FIXTURE delayed verified lead resumes the existing real context and respects mute/background', async ({
+  page,
+}) => {
+  await page.route('**/verified-audio-fixture.html', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><title>Verified audio fixture</title><button id="activate">Activate</button><button id="finish">Finish and await verification</button><button id="mute">Mute</button><button id="background">Background</button><button id="return">Return without unlocking</button><p id="state"></p>',
+    })
+  );
+  await page.goto('/verified-audio-fixture.html');
+  await page.evaluate(async () => {
+    const ownerUrl = '/driving-audio.ts';
+    const graphUrl = '/driving-audio-graph.ts';
+    const {
+      createDrivingAudio,
+    }: typeof import('../../src/client/driving-audio.ts') = await import(
+      ownerUrl
+    );
+    const {
+      createDrivingAudioGraph,
+    }: typeof import('../../src/client/driving-audio-graph.ts') = await import(
+      graphUrl
+    );
+    const observed = document.documentElement;
+    const state = document.getElementById('state')!;
+    let attempt = 0,
+      contexts = 0,
+      resumes = 0,
+      verifications = 0;
+    const cues: string[] = [];
+    // Real native AudioContext and production DSP graph, with lifecycle/cue
+    // telemetry at the injectable boundary. No speaker-audibility claim.
+    const owner = createDrivingAudio({
+      muted: false,
+      onStatusChange: (value) => {
+        state.textContent = value;
+      },
+      createBackend: () => {
+        const context = new AudioContext();
+        const graph = createDrivingAudioGraph(context);
+        observed.dataset.contexts = String(++contexts);
+        return {
+          get state() {
+            return context.state;
+          },
+          get currentTime() {
+            return context.currentTime;
+          },
+          resume() {
+            observed.dataset.resumes = String(++resumes);
+            return context.resume();
+          },
+          suspend: () => context.suspend(),
+          close() {
+            graph.dispose();
+            return context.close();
+          },
+          apply: (targets) => graph.apply(targets),
+          silence: () => graph.silence(),
+          cue(kind, strength) {
+            cues.push(kind);
+            observed.dataset.cues = JSON.stringify(cues);
+            graph.cue(kind, undefined, strength);
+          },
+          subscribeState(listener) {
+            context.addEventListener('statechange', listener);
+            return () => context.removeEventListener('statechange', listener);
+          },
+        };
+      },
+    });
+    state.textContent = owner.status;
+    document.getElementById('activate')!.addEventListener('click', () => {
+      owner.setMuted(false);
+      owner.setForeground(true);
+      owner.resetAttempt(++attempt);
+      owner.unlockFromGesture();
+    });
+    document.getElementById('finish')!.addEventListener('click', () => {
+      const id = attempt;
+      owner.finish(id);
+      setTimeout(() => {
+        // Confirmation is asynchronous, not inside another activation click.
+        owner.verifiedBest(id);
+        owner.verifiedBest(id);
+        observed.dataset.verifications = String(++verifications);
+      }, 650);
+    });
+    document
+      .getElementById('mute')!
+      .addEventListener('click', () => owner.setMuted(true));
+    document
+      .getElementById('background')!
+      .addEventListener('click', () => owner.setForeground(false));
+    document.getElementById('return')!.addEventListener('click', () => {
+      owner.setMuted(false);
+      owner.setForeground(true);
+      owner.verifiedBest(attempt);
+    });
+    window.addEventListener('pagehide', () => {
+      void owner.dispose();
+    });
+  });
+  const state = page.locator('#state');
+  const root = page.locator('html');
+  await page.locator('#activate').click();
+  await expect(state).toHaveText('running');
+  await page.locator('#finish').click();
+  await expect(root).toHaveAttribute('data-verifications', '1');
+  await expect(root).toHaveAttribute(
+    'data-cues',
+    JSON.stringify(['finish', 'personal-best'])
+  );
+  await expect(root).toHaveAttribute('data-contexts', '1');
+  await expect(root).toHaveAttribute('data-resumes', '2');
+  await expect(state).toHaveText('locked');
+  for (const [index, interruption] of ['mute', 'background'].entries()) {
+    await page.locator('#activate').click();
+    await expect(state).toHaveText('running');
+    await page.locator('#finish').click();
+    await page.locator(`#${interruption}`).click();
+    await expect(root).toHaveAttribute('data-verifications', String(index + 2));
+    await page.locator('#return').click();
+    await expect(state).toHaveText('locked');
+    await expect(root).toHaveAttribute(
+      'data-cues',
+      JSON.stringify([
+        'finish',
+        'personal-best',
+        ...Array(index + 1).fill('finish'),
+      ])
+    );
+  }
+  await expect(root).toHaveAttribute('data-contexts', '1');
+  await expect(root).toHaveAttribute('data-resumes', '4');
+});

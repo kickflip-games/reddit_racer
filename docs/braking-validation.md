@@ -6,22 +6,22 @@ Geometry is frozen at `49f248d` (other-tracks-v2), file SHA256
 `9095b1b1ac64e5da712919c0e7a2cf9fbf97cdb9f25b195a11e152022883c057`.
 The final change from the measured geometry snapshot labels the zero-benefit
 chicane easy rather than medium; no point, curvature or physics changed.
-Validation ran on UoA Apple M5 Max, arm64,36GiB, Node24.22.2. No handling values
+Validation ran on UoA Apple M5 Max, arm64, 36 GiB, Node 24.22.2. No handling values
 or input controls changed. The exact production continuous-practice driver
-advances at120Hz; stop at the first completed lap, with a123-second wall-clock
+advances at 120 Hz; stop at the first completed lap, with a 123-second wall-clock
 simulation cap including countdown. Its finish tick exactly matches the shared
 production search/replay in all fixed and paired comparisons.
 
-Production gate was declared before the final30-seed campaign:
+Production gate was declared before the final 30-seed campaign:
 
-- At most3 deterministic candidates, no unvalidated reserve or silent fallback.
+- At most 3 deterministic candidates, no unvalidated reserve or silent fallback.
 - Existing structural clearance/intersection, seam and curvature-smoothness gates.
-- Fast lap20–60seconds, at least0.75second faster than full hold.
-  -2–8meaningful releases (at least12ticks), no fast hard recovery, at most15%grass.
+- Fast lap 20–60 seconds, at least 0.75 seconds faster than full hold.
+- 2–8 meaningful releases (at least 12 ticks), no fast hard recovery, at most 15% grass.
 - Each scored control is checked through the production replay validator.
 
-The expanded duration limit is explicit: v2compositions are substantially longer
-than v1's~30-second courses, not a like-for-like speed improvement. A failure
+The expanded duration limit is explicit: v2 compositions are substantially longer
+than v1's ~30-second courses, not a like-for-like speed improvement. A failure
 returns `quality.valid=false` with all rejection codes; callers must not accept it.
 
 ## Fixed motif bank
@@ -41,22 +41,22 @@ that shifting one human brake press produces the whole difference.
 | Gentle sweeper          |    30.925 | 30.925 |     0 |             0 |         0% |         30.925 |        30.925 |
 | Switchback              |    40.625 | 39.433 | 1.192 |             3 |      2.87% |         43.442 |        40.617 |
 
-All full-hold and early runs finished with0hard recoveries. Hard motifs cause
+All full-hold and early runs finished with 0 hard recoveries. Hard motifs cause
 recoverable speed loss rather than a sudden stop: full-hold minimum speed after
-initial acceleration was9.26–11.28m/s on hairpin/double/tightening/switchback.
-Early envelope laps were slower but had0hard recoveries and0grass ticks.
-Gentle S and sweeper genuinely tolerate flat-out control with0grass ticks.
+initial acceleration was 9.26–11.28 m/s on hairpin/double/tightening/switchback.
+Early envelope laps were slower but had 0 hard recoveries and 0 grass ticks.
+Gentle S and sweeper genuinely tolerate flat-out control with 0 grass ticks.
 **Negative result:** the chicane still offers no measured brake benefit; it is
 flow variety, not advertised as a timing challenge. A single-hairpin fixed test
 has only one decision by design, so it is diagnostic, not a production course
-passing the whole-lap2-release gate.
+passing the whole-lap 2-release gate.
 
 ## Braking room
 
-At30m/s, the unchanged13.5m/s² braking needs about22–28m to approach the tight
+At 30 m/s, the unchanged 13.5 m/s² braking needs about 22–28 m to approach the tight
 corner traction speed, ignoring rolling drag (a conservative flat-ground
-estimate). The generated approach straights are75–100m. Measured search release
-leads range~14–38m for the immediately following hard corner; the fastest
+estimate). The generated approach straights are 75–100 m. Measured search release
+leads range ~14–38 m for the immediately following hard corner; the fastest
 search sometimes deliberately trades residual sliding for time. It does not
 prove perfect road adherence. Saved `brakingLeads` report actual release speed,
 distance to each sampled peak and the conservative stopping estimate; a reused
@@ -77,9 +77,9 @@ contrasting easy/hard sections, which still needs human playtesting.
 
 ##30-seed bounded production campaign
 
-Seeds `word-v2:evaluation-0` through`-29`:30/30accepted,23on attempt1,6on attempt2,
-1on attempt3. Accepted gains0.925–3.000seconds, all fast grass≤15%, all fast hard
-recoveries0. Measured p95generator wall time699ms, worst897ms. This desktop
+Seeds `word-v2:evaluation-0` through`-29`:30/30accepted,23on attempt1,6on attempt 2,
+1 on attempt 3. Accepted gains 0.925–3.000 seconds, all fast grass ≤15%, all fast hard
+recoveries 0. Measured p95generator wall time 699 ms, worst 897 ms. This desktop
 measurement had a separate fixed-test process running during the early samples;
 it is not mobile hardware throughput or a guarantee for every unseen seed.
 No rejection was discarded: per-attempt codes remain in the generated report.
@@ -88,14 +88,14 @@ No rejection was discarded: per-attempt codes remain in the generated report.
 
 1. An initial numerical angle-integration error failed closure; fixed by exact
    angle normalization, not by loosening geometric tolerance.
-2. Initial raw-seed banana/apple/orange candidates had17.5–20.5%fast grass,
-   exceeding the15%gate; they were not treated as acceptable.
-3. Widening every closure produced some1.6km /64–68second fast courses and
+2. Initial raw-seed banana/apple/orange candidates had 17.5–20.5% fast grass,
+   exceeding the 15% gate; they were not treated as acceptable.
+3. Widening every closure produced some 1.6 km /64–68second fast courses and
    19–22%grass; these first candidates failed. Composition was simplified.
-4. Before the one bounded technical-angle adjustment, switchback had0benefit;
-   it now has1.192seconds. Chicane remains negative and is labelled easy.
-5. Final word-v2banana/orange first candidates gained only0.608/0.542seconds;
-   apple first candidate was60.017seconds. Gate rejected those, accepted attempt2.
+4. Before the one bounded technical-angle adjustment, switchback had 0 benefit;
+   it now has 1.192 seconds. Chicane remains negative and is labelled easy.
+5. Final word-v2 banana/orange first candidates gained only 0.608/0.542 seconds;
+   apple first candidate was 60.017 seconds. Gate rejected those, accepted attempt 2.
 
 ## Reproduction
 

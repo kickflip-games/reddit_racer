@@ -1,26 +1,29 @@
 # Word courses in Other tracks
 
 Choose **Other tracks**, then **Choose a word** (also available in Settings).
-Enter a word such as `banana`, or paste its shareable code `v1:banana`.
+Enter a word such as `banana`, or paste its shareable code `v2:banana`.
+New words and random selections use v2 braking-rhythm courses. An existing
+`v1:banana` code still loads exactly its original course; versions never alias.
 The code shown in Settings is selectable text; friends can enter the same code.
 Random **Other tracks / New track** selections use this generator too and
 show a revisitable word code; explicit legacy seed links retain their original
 course. This avoids promising that an expanded Reddit iframe URL is a portable share link.
 
-Version 1 uses NFKC normalization, trim/collapsed spaces, locale-independent
+Both versions use the same frozen NFKC normalization, trim/collapsed spaces, locale-independent
 lowercase, and a maximum 48 Unicode code points. It accepts letters, combining
 marks, numbers, spaces, apostrophes, hyphens and underscores. Hidden/control/bidi
-characters are rejected. The full internal `word-v1:` seed is also capped at 96
+characters are rejected. The full internal versioned `word-vN:` seed is also capped at 96
 UTF-16 units for the generator. Invalid inputs keep the current track intact.
 Unsupported version codes are rejected rather than silently reinterpreted.
 
+V2 maps to `generateBrakingCircuit`; see its measured validation report.
 The v1 code maps only to `generateOtherTracksCircuit` / `other-tracks-v1`.
 Do not change this mapping when introducing a future word-course version.
 Legacy explicit development `?practice=1&seed=...` uses the original generator
 unchanged. The posted daily challenge and ranked flow are untouched.
 
-Explicit browser entry `?practice=1&word=banana&wordVersion=1` selects a word
-course. Without `practice=1`, word parameters cannot override the daily race.
+Explicit browser entry `?practice=1&word=banana&wordVersion=2` selects a v2
+course. Existing links with version 1 or no version retain v1. Without `practice=1`, word parameters cannot override the daily race.
 This is useful for local testing/direct browser entry, not a guaranteed Reddit
 share URL. Unknown versions show an error and can be repaired through the word
 form. No address navigation or reload is needed to choose another word.
@@ -41,3 +44,18 @@ version recovery, random reusable codes, two continuous laps, ghost appearance,
 returning to the immutable daily course, interrupted input and stopped-car pose.
 These are local browser tests, not a claim of an installed Reddit deployment
 or testing on a physical mobile keyboard/GPU.
+
+## V2 integrated validation
+
+The v2 rollout preserves the held/released input meaning, all existing v1 code
+hashes and daily/ranked generation. Accepted v2 banana/tui/river hashes also
+freeze the quality-selection outcome, not only raw candidate geometry.
+
+Integrated checks passed 410 unit tests and 200 legacy track checks before the
+additional three-word accepted-hash regression, which also passes. Ten local
+desktop/mobile browser cases passed: versioned words, recovery from unsupported
+codes, random reusable codes, stopped-car behavior and real replay-driven v2
+laps. The v2 lap test uses native input and the production renderer, matches the
+accepted time exactly and continues into the next lap without a countdown.
+Two production-built browser tests also pass with the old late-module URL
+blocked. This is not physical-phone testing, a deployment, or proof of human fun.

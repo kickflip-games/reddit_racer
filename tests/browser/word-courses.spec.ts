@@ -23,7 +23,7 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
   await page.locator('#word-course-open').click();
   await expect(page.locator('#course-word')).toBeFocused();
   await expect(page.locator('#course-word')).toHaveValue('v1:banana');
-  await page.locator('#course-word').fill('  ＢＡＮＡＮＡ  ');
+  await page.locator('#course-word').fill('v1:  ＢＡＮＡＮＡ  ');
   await page.locator('#word-course-submit').click();
   await waitForSceneAssets(page);
   await expect(page.locator('#settings-dialog')).not.toBeVisible();
@@ -32,7 +32,7 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
     banana!
   );
   await page.locator('#word-course-open').click();
-  await page.locator('#course-word').fill('v2:banana');
+  await page.locator('#course-word').fill('v99:banana');
   await page.locator('#word-course-submit').click();
   await expect(page.locator('#word-course-message')).toContainText(
     'not supported'
@@ -49,7 +49,7 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:apple'
+    'v2:apple'
   );
   expect(await page.locator('#race').getAttribute('data-track-hash')).not.toBe(
     banana
@@ -69,17 +69,17 @@ test('unsupported word link is explicit and can recover through the word form', 
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:banana'
+    'v2:banana'
   );
 });
 
-test('random Other tracks and New track expose reusable v1 codes', async ({
+test('random Other tracks and New track expose reusable v2 codes', async ({
   page,
 }) => {
   await page.goto('/game.html?practice=1');
   await waitForSceneAssets(page);
   const first = await page.locator('#race').getAttribute('data-word-code');
-  expect(first).toMatch(/^v1:/);
+  expect(first).toMatch(/^v2:/);
   const hash = await page.locator('#race').getAttribute('data-track-hash');
   await page.locator('#word-course-open').click();
   await page.locator('#next-practice-button').click();

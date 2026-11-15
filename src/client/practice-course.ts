@@ -1,5 +1,10 @@
+import { generateBrakingCircuit } from '../shared/braking-course-generator';
 import { generateOtherTracksCircuit } from '../shared/other-tracks-generator';
-import { courseWord, type CourseWord } from '../shared/word-seed';
+import {
+  COURSE_WORD_VERSION,
+  courseWord,
+  type CourseWord,
+} from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
 
 export type PracticeCourse = {
@@ -136,10 +141,13 @@ export async function generatePracticeCourse(
 /** Explicit word courses use a separately versioned generator; legacy seeds stay unchanged. */
 export async function generateWordPracticeCourse(
   input: string,
-  version = 1
+  version = COURSE_WORD_VERSION
 ): Promise<PracticeCourse & { wordCourse: CourseWord }> {
   const wordCourse = courseWord(input, version);
-  const result = generateOtherTracksCircuit(wordCourse.seed);
+  const result =
+    wordCourse.version === 1
+      ? generateOtherTracksCircuit(wordCourse.seed)
+      : generateBrakingCircuit(wordCourse.seed);
   if (!result.quality.valid)
     throw new Error('This word course did not pass the driving checks.');
   let trackHash: string;

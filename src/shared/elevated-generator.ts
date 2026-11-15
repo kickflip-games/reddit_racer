@@ -222,17 +222,22 @@ export function addOverpassElevation(flat: Track): Track {
 export function generateElevatedCandidate(
   seed: string,
   attempt = 1,
-  config: GeneratorConfig = normalizeElevatedGeneratorConfig()
+  config: GeneratorConfig = normalizeElevatedGeneratorConfig(),
+  style: 'legacy' | 'other-tracks-v1' = 'legacy'
 ): {
   track: Track | null;
   accepted: AcceptedCircuitDiagnostics;
   codes: string[];
 } {
+  const other = style === 'other-tracks-v1';
   const random = randomFor(
-    `countryside-circuits-v1|${seed}|${attempt}|${JSON.stringify({ ...config, maxAttempts: 12 })}`
+    `${other ? 'other-tracks-v1' : 'countryside-circuits-v1'}|${seed}|${attempt}|${JSON.stringify({ ...config, maxAttempts: 12 })}`
   );
-  const crossing = random() < 0.4;
+  const roll = random();
+  const family = other ? randomFor(`other-tracks-family|${seed}`)() : 0;
+  const crossing = other ? family < 0.3 : roll < 0.4;
   let controls: Point[];
+  let inlet = false;
   if (crossing) {
     const stretch = 0.9 + random() * 0.2;
     const bulge = 0.85 + random() * 0.3;
@@ -303,7 +308,7 @@ export function generateElevatedCandidate(
         longest = i;
     }
     controls = [];
-    const notches = 1 + Math.floor(random() * 3);
+    const notches = (other ? 2 : 1) + Math.floor(random() * (other ? 2 : 3));
     for (let i = 0; i < ring.length; i++) {
       const a = ring[(longest + i) % ring.length],
         b = ring[(longest + i + 1) % ring.length];
@@ -319,7 +324,9 @@ export function generateElevatedCandidate(
           controls.push({ x: a.x + (dx * j) / 10, z: a.z + (dz * j) / 10 });
       } else {
         const depth =
-          edge * (0.14 + random() * 0.3) * (i <= notches ? 1 : -0.35);
+          edge *
+          ((other ? 0.25 : 0.14) + random() * (other ? 0.16 : 0.3)) *
+          (i <= notches ? 1 : -0.35);
         if (i <= notches && edge > 40) {
           for (const [t, inset] of [
             [0.23, 0],
@@ -342,7 +349,47 @@ export function generateElevatedCandidate(
       }
     }
   }
-  for (let pass = 0; pass < (crossing ? 0 : 3); pass++) {
+  if (other && !crossing && family < 0.6) {
+    // A broad, coherent U inlet rather than a jagged spline perturbation.
+    // Its mouth and bowl are wide enough for the normal radius/runoff gates.
+    inlet = true;
+    const stretch = 0.92 + random() * 0.16;
+    const depth = 0.92 + random() * 0.16;
+    controls = [
+      [-120, -90],
+      [-90, -90],
+      [-60, -90],
+      [-30, -90],
+      [0, -90],
+      [30, -90],
+      [60, -90],
+      [90, -90],
+      [120, -90],
+      [155, -65],
+      [165, -20],
+      [150, 35],
+      [115, 75],
+      [75, 90],
+      [50, 80],
+      [38, 55],
+      [38, 20],
+      [25, -5],
+      [0, -15],
+      [-25, -5],
+      [-38, 20],
+      [-38, 55],
+      [-50, 80],
+      [-80, 90],
+      [-125, 70],
+      [-155, 25],
+      [-160, -35],
+    ].map(([x, z]) => {
+      if (x === undefined || z === undefined)
+        throw new Error('Missing inlet point');
+      return { x: x * stretch, z: z * depth };
+    });
+  }
+  for (let pass = 0; pass < (crossing ? 0 : other ? 2 : 3); pass++) {
     const before = controls;
     controls = before.map((p, i) => {
       if (i >= 1 && i <= 8) return p;
@@ -385,7 +432,7 @@ export function generateElevatedCandidate(
   try {
     const options = {
       seed,
-      generatorVersion: ELEVATED_GENERATOR_VERSION,
+      generatorVersion: other ? 'other-tracks-v1' : ELEVATED_GENERATOR_VERSION,
       width: config.width,
       sampleSpacing: 1,
       checkpointCount: 8,
@@ -418,6 +465,11 @@ export function generateElevatedCandidate(
       shoulder: config.shoulder,
     });
     const codes = [...structure.codes];
+    if (
+      other &&
+      structure.metrics.directionChanges < (crossing || inlet ? 2 : 4)
+    )
+      codes.push('insufficient-turn-variety');
     if (structure.metrics.startStraight < (crossing ? 75 : 95))
       codes.push('jump-runway');
     if (codes.length)
@@ -426,7 +478,16 @@ export function generateElevatedCandidate(
         accepted: { ...empty, ...structure.metrics },
         codes,
       };
-    return { track, accepted: { ...empty, ...structure.metrics }, codes: [] };
+    // Legacy labels stay untouched. New diagnostics describe only the measured
+    // reversal requirement; a named motif is not evidence of a tight hairpin.
+    const motifs = other
+      ? empty.motifs.filter((motif) => motif !== 'hairpin' || inlet)
+      : empty.motifs;
+    return {
+      track,
+      accepted: { ...empty, ...structure.metrics, motifs },
+      codes: [],
+    };
   } catch {
     return { track: null, accepted: empty, codes: ['malformed'] };
   }
@@ -436,14 +497,15 @@ export const ELEVATED_RESERVE_SEED = 'country-reserve-0';
 export const ELEVATED_RESERVE_ATTEMPT = 1;
 export function generateElevatedCircuit(
   seed: string,
-  overrides: Partial<GeneratorConfig> = {}
+  overrides: Partial<GeneratorConfig> = {},
+  style: 'legacy' | 'other-tracks-v1' = 'legacy'
 ): ValidatedCircuit {
   if (typeof seed !== 'string' || !seed.length || seed.length > 96)
     throw new Error('Circuit seed must contain 1–96 characters');
   const config = normalizeElevatedGeneratorConfig(overrides);
   const diagnostics: ValidatedDiagnostics = {
     requestedSeed: seed,
-    version: ELEVATED_GENERATOR_VERSION,
+    version: style === 'legacy' ? ELEVATED_GENERATOR_VERSION : style,
     config,
     attempts: 0,
     fallbackUsed: false,
@@ -493,7 +555,7 @@ export function generateElevatedCircuit(
   ) {
     diagnostics.attempts = attempt;
     diagnostics.validationWork.candidates++;
-    const candidate = generateElevatedCandidate(seed, attempt, config);
+    const candidate = generateElevatedCandidate(seed, attempt, config, style);
     if (!candidate.track) {
       diagnostics.rejections.push({ attempt, codes: candidate.codes });
       continue;
@@ -516,9 +578,10 @@ export function generateElevatedCircuit(
     return { track: candidate.track, diagnostics, quality };
   }
   const reserve = generateElevatedCandidate(
-    ELEVATED_RESERVE_SEED,
-    ELEVATED_RESERVE_ATTEMPT,
-    config
+    style === 'legacy' ? ELEVATED_RESERVE_SEED : 'other-tracks-reserve-0',
+    style === 'legacy' ? ELEVATED_RESERVE_ATTEMPT : 1,
+    config,
+    style
   );
   diagnostics.validationWork.candidates++;
   diagnostics.validationWork.reserveAssessments++;

@@ -433,17 +433,15 @@ export function generateSceneryLayout(
           track.totalLength * ((sector + 0.2 + (attempt % 6) * 0.1) / 4)
         );
         const side = attempt % 2 === 0 ? -1 : 1;
-        const offset = f.halfWidth + 24 + Math.floor(attempt / 6) * 5;
+        const offset = f.halfWidth + 17 + Math.floor(attempt / 6) * 3;
+        const x = f.x + f.nx * side * offset;
+        const z = f.z + f.nz * side * offset;
+        // On crossing/hairpin courses a distant candidate may belong to a
+        // different road section. Keep each landmark in its intended quarter.
+        const nearest = field.sample(x, z).s / track.totalLength;
+        if (nearest < sector / 4 || nearest >= (sector + 1) / 4) continue;
         const before = plants.length;
-        plant(
-          anchorKind,
-          f.x + f.nx * side * offset,
-          f.z + f.nz * side * offset,
-          tag,
-          1,
-          Math.atan2(f.tz, f.tx),
-          3.6
-        );
+        plant(anchorKind, x, z, tag, 1, Math.atan2(f.tz, f.tx), 3.6);
         if (plants.length > before) anchor = plants[plants.length - 1];
       }
       if (!anchor) continue;

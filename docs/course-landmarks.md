@@ -32,3 +32,14 @@ The historical scored track and replay/simulation contract are unchanged. This
 is a bounded scenery-composition improvement, not a guarantee that every
 possible pathological custom track has room for all pockets or a rewrite of
 route geometry.
+
+### Visibility follow-up
+
+Anchor search now starts 17 m beyond the road edge rather than 24 m, still
+respecting the existing footprint/recovery clearance. Its nearest road section
+must belong to the intended quarter, so crossing roads cannot steal another
+section’s landmark. The 100-seed regression checks this association explicitly.
+Actual desktop/mobile gameplay-camera captures at 30% of `landmarks-1` show the
+blossom pocket beside the bend; these are observed simulation positions, not
+substitute overview cameras. Rock scale bounds remain 4.2 maximum (anchor 3.6),
+while non-rock plants retain their existing ≤2 bound.

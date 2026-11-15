@@ -21,6 +21,9 @@ test('consecutive course seeds retain four scenic pockets within bounded safe sc
         pocket.length >= 4,
         `${seed}: sector ${sector} needs a recognizable group, got ${pocket.length}`
       );
+      const anchor = pocket[0]!;
+      const progress = field.sample(anchor.x, anchor.z).s / track.totalLength;
+      assert.ok(progress >= sector / 4 && progress < (sector + 1) / 4);
       for (const p of pocket.filter((p) =>
         ['rock', 'blossom', 'bush'].includes(p.kind)
       ))

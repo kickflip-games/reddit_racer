@@ -1,37 +1,20 @@
-# Daily standings archive
+# Historical daily standings
 
-The archive is a read-only view of the installed community's existing verified
-competition records. It does not generate historical courses, accept scores,
-change ranked admission, or merge scores across handling namespaces.
+`dailyStandings({ day?, offset? })` is a read-only tRPC query. Missing day defaults to yesterday UTC; future/current dates are rejected. Responses expose the server UTC date bounds for the previous 90 days. Older valid dates return `expired` without storage reads. Missing challenges are never generated.
 
-## Scope and retention
+The trusted installed subreddit selects all storage keys. The browser cannot select an account/subreddit/post. Pages contain at most 20 rows; `nextOffset` advances by 20, up to offset 100,000. `hasMore` remains true at that bound if additional racers exist, so UI must not claim the archive is exhaustive. Pagination uses Redis order and the first member at the page-leading score to preserve competition ranks, including more than 20 tied winners. Each page checks retained personal-best receipts against account, challenge hash, and sorted score, plus the board revision before/after (three bounded attempts). It never exposes user IDs or receipts.
 
-- The default is yesterday **UTC**, not the player's local calendar day.
-- Existing daily results expire 90 days after their UTC day ends. This is not a
-  permanent hall of fame. Missing days and expired records are not fabricated.
-- Standings belong to the request's trusted subreddit, not a client-supplied
-  community. Other tracks and local best laps are not included.
-- Each bounded request returns at most 20 racers. Equal verified times have equal
-  competition ranks, even when a tie spans pages. The first page is not the whole
-  winner group when more tied racers remain.
-- Yesterday is explicitly provisional during the existing three-minute rollover
-  grace. Later views still read current retained records, rather than promising
-  an immutable final snapshot: previously verified submissions can be reconciled.
-- Optional links point to the original registered daily race post. Missing or
-  deleted posts must not invalidate otherwise verified standings.
+The archive is a live view, not a finalized winners snapshot. `provisional` is true until three minutes after the requested UTC day ends, covering in-flight race admission. Later reconciliation of already verified receipts can still update retained results: do not label the post-grace board immutable. Concurrent changes across separate page requests can change pagination; each individual page is revision-consistent, not an all-pages transaction.
 
-## Integrity and cost
+States distinguish `available`, `empty` (no rows in selected window), `missing` (no saved challenge), `expired`, and `unavailable` (integrity/storage/read failure). Optional original post links are server-verified existing registry entries; link failures do not suppress valid standings. No historical course creation, post registration, score writes, or scheduled winner publication occurs.
 
-The server reads stored challenge identity, ordered results, matching retained
-personal-best receipts and board revision. Cross-challenge hashes, untrusted
-scores or inconsistent snapshots fail closed. Archive browsing never registers
-posts or recreates a missing challenge. Pages and date selection are bounded;
-there is no scan of all 90 days or continuous polling.
+Existing result retention is 90 days after day end, scoped to the current handling namespace. No old incompatible score migration or global/Other-tracks leaderboard is implied.
 
-## Validation
+Validation: six focused archive tests cover 23 tied winners across the page boundary, ranks, own-row highlighting, midnight grace, date/account/subreddit rejection, missing/empty/expiry, receipt inconsistency, revision retry limit, link failure, and malformed responses. Existing competition tests also pass. Types and lint pass.
 
-Integration results are recorded after the client and server are combined.
-Browser fixture results validate presentation and input isolation, not the
-existence of real historical racers in the private installation. Live historical
-Redis records are not assumed to exist. This feature is prepared locally and is
-not deployed until explicitly authorized.
+## Integration and deployment status
+
+Browser fixtures validate presentation and input isolation, not the existence of
+real historical racers in the private installation. Live historical Redis records
+are not assumed to exist. This feature is prepared locally and is not deployed
+until explicitly authorized.

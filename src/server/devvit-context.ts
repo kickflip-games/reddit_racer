@@ -1,3 +1,5 @@
+import { createDailyStandingsService } from './core/daily-standings';
+import { createCompetitionStore } from './competition-store';
 import { context } from '@devvit/web/server';
 import { createDevvitDailyService } from './devvit-daily';
 import { createDevvitCompetitionService } from './devvit-competition';
@@ -6,12 +8,20 @@ import { createDevvitTodayRacePostsService } from './devvit-today-race-posts';
 import type { RpcContext } from './trpc';
 
 export function createDevvitRpcContext(): RpcContext {
-  const { subredditId, postId } = context;
+  const { subredditId, postId, userId } = context;
   const daily = createDevvitDailyService();
   const competition = createDevvitCompetitionService(daily);
   const ranked = createDevvitRankedService(daily, competition.commitVerified);
   const todayPosts = createDevvitTodayRacePostsService(daily);
+  const dailyStandings = createDailyStandingsService({
+    context: { subredditId: subredditId ?? '', ...(userId ? { userId } : {}) },
+    daily,
+    store: createCompetitionStore(),
+    now: Date.now,
+    readPost: todayPosts.readRegisteredPost,
+  });
   return {
+    dailyStandings,
     getDailyChallenge: async () => {
       if (!subredditId || !postId)
         throw new Error('This request needs an installed subreddit and post.');

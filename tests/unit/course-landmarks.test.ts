@@ -16,13 +16,8 @@ test('consecutive course seeds retain four scenic pockets within bounded safe sc
     const layout = generateSceneryLayout(track);
     const field = createRoadField(track);
     assert.ok(
-      layout.props.every(
-        (p) => p.kind === 'treeSmall' || p.kind === 'flagCheckersSmall'
-      ),
+      layout.props.every((p) => p.kind === 'treeSmall'),
       `${seed}: no artificial meadow clutter`
-    );
-    assert.ok(
-      layout.props.filter((p) => p.kind === 'flagCheckersSmall').length <= 2
     );
     assert.ok(
       layout.allPlants.every((p) => p.kind !== 'fence'),

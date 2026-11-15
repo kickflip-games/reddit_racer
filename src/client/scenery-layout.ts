@@ -642,23 +642,7 @@ export function generateSceneryLayout(
       radius: p.radius,
       scale: Math.min(1, p.scale),
     });
-  // Only start/finish flags have a racing purpose here. Keep decorative cones,
-  // barriers and disconnected fence fragments out of the meadow.
-  for (const side of [-1, 1]) {
-    const f = sampleTrack(track, track.startS);
-    const radius = 1.1;
-    const d = side * (f.halfWidth + 13 + radius);
-    const x = f.x + f.nx * d,
-      z = f.z + f.nz * d;
-    if (sceneryClearance(track, x, z, radius, field))
-      props.push({
-        kind: 'flagCheckersSmall',
-        x,
-        z,
-        heading: Math.atan2(f.tx, f.tz),
-        radius,
-      });
-  }
+  // Start/finish is marked on the road; no decorative racing props in grass.
 
   return {
     version: SCENERY_VERSION,

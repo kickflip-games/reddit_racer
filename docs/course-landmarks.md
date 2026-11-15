@@ -47,8 +47,8 @@ while non-rock plants retain their existing ≤2 bound.
 ## Natural surroundings (v5)
 
 Removed decorative cone/barrier clusters and isolated fence strips from grass.
-Natural scenic pockets remain intact. The only racing props placed by this
-layout are up to two start/finish flags aligned with the actual `startS`.
+Natural scenic pockets remain intact. Decorative start/finish flags have also been removed; the existing checker
+stripe on the asphalt identifies the line without distant props.
 Road markings, ramp guidance, track geometry and driving physics are unchanged.
 Regression checks cover 100 seeds with no pylons/barriers/fence fragments and
 preserve existing scenic pockets, budgets and canonical track hashes.

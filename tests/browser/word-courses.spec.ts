@@ -72,3 +72,24 @@ test('unsupported word link is explicit and can recover through the word form', 
     'v1:banana'
   );
 });
+
+test('random Other tracks and New track expose reusable v1 codes', async ({
+  page,
+}) => {
+  await page.goto('/game.html?practice=1');
+  await waitForSceneAssets(page);
+  const first = await page.locator('#race').getAttribute('data-word-code');
+  expect(first).toMatch(/^v1:/);
+  const hash = await page.locator('#race').getAttribute('data-track-hash');
+  await page.locator('#word-course-open').click();
+  await page.locator('#next-practice-button').click();
+  await waitForSceneAssets(page);
+  expect(await page.locator('#race').getAttribute('data-track-hash')).not.toBe(
+    hash
+  );
+  await page.locator('#word-course-open').click();
+  await page.locator('#course-word').fill(first!);
+  await page.locator('#word-course-submit').click();
+  await waitForSceneAssets(page);
+  await expect(page.locator('#race')).toHaveAttribute('data-track-hash', hash!);
+});

@@ -3,7 +3,9 @@
 Choose **Other tracks**, then **Choose a word** (also available in Settings).
 Enter a word such as `banana`, or paste its shareable code `v1:banana`.
 The code shown in Settings is selectable text; friends can enter the same code.
-This avoids promising that an expanded Reddit iframe URL is a portable share link.
+Random **Other tracks / New track** selections use this generator too and
+show a revisitable word code; explicit legacy seed links retain their original
+course. This avoids promising that an expanded Reddit iframe URL is a portable share link.
 
 Version 1 uses NFKC normalization, trim/collapsed spaces, locale-independent
 lowercase, and a maximum 48 Unicode code points. It accepts letters, combining

@@ -52,3 +52,14 @@ void test('word courses reproduce their own geometry and ghost key without chang
     await hashTrack(generateElevatedCircuit('country-1').track)
   );
 });
+void test('random Other tracks also expose a reproducible versioned word code', async () => {
+  const { generateRandomWordPracticeCourse, generateWordPracticeCourse } =
+    await import('../../src/client/practice-course.ts');
+  const a = await generateRandomWordPracticeCourse();
+  const b = await generateRandomWordPracticeCourse(a.trackHash);
+  assert.notEqual(a.trackHash, b.trackHash);
+  assert.equal(
+    (await generateWordPracticeCourse(a.wordCourse.code)).trackHash,
+    a.trackHash
+  );
+});

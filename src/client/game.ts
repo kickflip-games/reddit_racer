@@ -4,6 +4,7 @@ import { initializeGame, type GameSceneController } from './game-scene';
 import {
   generatePracticeCourse,
   generateWordPracticeCourse,
+  generateRandomWordPracticeCourse,
 } from './practice-course';
 import {
   DailyCourseIntegrityError,
@@ -270,7 +271,9 @@ async function boot(
             wordRequest.input,
             wordRequest.version
           )
-        : await generatePracticeCourse(seed, lastPracticeTrackHash);
+        : seed === undefined
+          ? await generateRandomWordPracticeCourse(lastPracticeTrackHash)
+          : await generatePracticeCourse(seed, lastPracticeTrackHash);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
@@ -282,19 +285,16 @@ async function boot(
       element('mode-label').textContent = 'Lap 1';
       element('start-label').textContent = 'Start';
       element('retry-label').textContent = 'Resume';
+      const selectedWord = course.wordCourse ?? null;
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
-      practiceSeed.textContent = wordRequest
-        ? `Course code: ${courseWord(wordRequest.input, wordRequest.version).code} · Unranked`
+      practiceSeed.textContent = selectedWord
+        ? `Course code: ${selectedWord.code} · Unranked`
         : `Unranked · ${course.seed}`;
       const wordInput = element('course-word');
       if (wordInput instanceof HTMLInputElement)
-        wordInput.value = wordRequest
-          ? courseWord(wordRequest.input, wordRequest.version).code
-          : '';
-      race.dataset.wordCode = wordRequest
-        ? courseWord(wordRequest.input, wordRequest.version).code
-        : '';
+        wordInput.value = selectedWord ? selectedWord.code : '';
+      race.dataset.wordCode = selectedWord ? selectedWord.code : '';
       element('word-course-message').textContent =
         'Share the code above, or enter another word. Unranked.';
       source.dataset.state = 'ready';

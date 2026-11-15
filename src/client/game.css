@@ -1056,3 +1056,76 @@ select:focus-visible {
   border-radius: 5px;
   margin-bottom: 12px;
 }
+
+/* Numbers need a stable surface, not a glow over changing road/grass colours. */
+.timing {
+  padding: 9px 12px;
+  background: #174d3f;
+  color: #fff7e8;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 #0c322b;
+  text-shadow: none;
+  pointer-events: none;
+}
+#timer,
+.finish-time,
+#practice-last-lap,
+.practice-best-lap {
+  font-family:
+    ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-style: normal;
+  letter-spacing: 0;
+}
+#timer {
+  font-size: 27px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.practice-best-lap {
+  color: #fff7e8;
+  font-weight: 700;
+}
+#practice-last-lap {
+  color: #e1ecd7;
+  font-size: 12px;
+}
+.race-card[data-result='true'] {
+  background: #fff7e8;
+  color: #173d33;
+  border: 1px solid #e0d8c4;
+  border-top: 4px solid #174d3f;
+  border-radius: 8px 20px 8px 8px;
+  padding: 20px;
+  box-shadow: 0 6px 20px #102e292b;
+}
+.race-card[data-result='true'] .finish-time {
+  font-size: clamp(36px, 10vw, 58px);
+  font-weight: 700;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+.race-card[data-result='true'] .eyebrow,
+.race-card[data-result='true'] .challenge-heading,
+.race-card[data-result='true'] #result-target {
+  color: #3e5d50;
+}
+@media (max-width: 360px) {
+  .timing {
+    padding: 8px 9px;
+  }
+  #timer {
+    font-size: 24px;
+  }
+  .race-card[data-result='true'] {
+    padding: 16px;
+  }
+}
+@media (max-height: 480px) {
+  .race-card[data-result='true'] {
+    padding: 14px;
+  }
+  .race-card[data-result='true'] .finish-time {
+    font-size: 36px;
+  }
+}

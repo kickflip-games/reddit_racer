@@ -6,7 +6,7 @@ import {
   generateFlatPracticeCourse,
   practiceTrackFingerprint,
 } from '../../src/client/practice-course.ts';
-import { assessTrackQuality } from '../../src/shared/circuit-quality.ts';
+import { assessBrakingTrack } from '../../src/shared/braking-course-generator.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { hashTrack } from '../../src/shared/track.ts';
 
@@ -15,14 +15,14 @@ void test('an explicit practice seed reproduces an approved course and may inten
   const second = await generatePracticeCourse(first.seed, first.trackHash);
   assert.deepEqual(second, first);
   assert.equal(first.trackHash, await hashTrack(first.track));
-  const quality = assessTrackQuality(first.track);
+  const quality = assessBrakingTrack(first.track);
   assert.equal(quality.valid, true);
   assert.deepEqual(quality.codes, []);
   assert.ok(quality.metrics?.fast.finished);
   assert.ok(
     quality.metrics.fast.seconds !== null &&
       quality.metrics.fast.seconds >= 20 &&
-      quality.metrics.fast.seconds <= 40
+      quality.metrics.fast.seconds <= 60
   );
   assert.deepEqual(Object.keys(first).sort(), [
     'fallbackUsed',
@@ -129,7 +129,7 @@ void test('failing optional crypto capabilities still permit unranked practice',
   assert.equal(course.trackHash, practiceTrackFingerprint(course.track));
 });
 
-void test('normal practice uses elevation while experimental grip practice retains its flat runtime', async () => {
+void test('normal practice uses current schema2 braking courses while experimental grip practice retains its flat runtime', async () => {
   const elevated = await generatePracticeCourse('practice-runtime-separation');
   const flat = await generateFlatPracticeCourse('practice-runtime-separation');
   assert.equal(elevated.track.schemaVersion, 2);

@@ -19,7 +19,7 @@ test('v2 braking inputs complete a continuous real lap without changing the lega
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v2:banana'
+    'banana'
   );
   await page.clock.pauseAt(new Date('2026-11-15T00:01:00Z'));
   await page.locator('#start-button').click();

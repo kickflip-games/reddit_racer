@@ -29,7 +29,7 @@ test('built Other tracks needs no late generator fetch and bad words remain reco
   await page.locator('#word-course-submit').click();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v2:banana'
+    'banana'
   );
   await expect(page.locator('#race')).toHaveAttribute('data-car-load', 'ready');
   const hash = await page.locator('#race').getAttribute('data-track-hash');

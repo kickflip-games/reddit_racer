@@ -1,13 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { courseWord, normalizeCourseWord } from '../../src/shared/word-seed.ts';
-void test('v1 word normalization is explicit, Unicode-stable and reproducible', () => {
+void test('course words normalize reproducibly and old codes alias the current generator', () => {
   assert.deepEqual(courseWord('  ＢＡＮＡＮＡ '), courseWord('banana'));
-  assert.equal(courseWord('v1: Banana').code, 'v1:banana');
+  assert.equal(courseWord('v1: Banana').code, 'banana');
   assert.equal(normalizeCourseWord('Café   au lait'), 'café au lait');
   assert.equal(courseWord('banana').seed, 'word-v2:banana');
-  assert.equal(courseWord('banana', 1).seed, 'word-v1:banana');
-  assert.equal(courseWord('v1:banana').version, 1);
+  assert.deepEqual(courseWord('v1:banana'), courseWord('v2:banana'));
   assert.notEqual(courseWord('banana').seed, courseWord('apple').seed);
 });
 void test('rejects unsupported versions, controls, bidi, excessive and empty inputs', () => {
@@ -24,23 +23,18 @@ void test('rejects unsupported versions, controls, bidi, excessive and empty inp
     assert.throws(() => courseWord(input));
   assert.throws(() => courseWord('𐐀'.repeat(48)));
   assert.ok(courseWord('𐐀'.repeat(44)).seed.length <= 96);
-  assert.throws(() => courseWord('banana', 99));
-  assert.throws(() => courseWord('v1:banana', 99));
   assert.equal(normalizeCourseWord('a'.repeat(48)).length, 48);
 });
-void test('word courses reproduce their own geometry and ghost key without changing legacy seeds', async () => {
-  const { generateWordPracticeCourse, generatePracticeCourse } =
+void test('word courses reproduce geometry and isolate actual track ghost identities', async () => {
+  const { generateWordPracticeCourse } =
     await import('../../src/client/practice-course.ts');
   const { practiceBestKey } = await import('../../src/client/practice-best.ts');
-  const { generateElevatedCircuit } =
-    await import('../../src/shared/elevated-generator.ts');
-  const { hashTrack } = await import('../../src/shared/track.ts');
-  const a = await generateWordPracticeCourse('BANANA', 1),
+  const a = await generateWordPracticeCourse('BANANA'),
     b = await generateWordPracticeCourse('v1:banana'),
-    c = await generateWordPracticeCourse('apple', 1);
+    c = await generateWordPracticeCourse('apple');
   assert.equal(a.trackHash, b.trackHash);
   assert.notEqual(a.trackHash, c.trackHash);
-  assert.equal(a.track.generatorVersion, 'other-tracks-v1');
+  assert.equal(a.track.generatorVersion, 'other-tracks-v2');
   assert.equal(
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(b.track, { continuousPractice: true })
@@ -49,12 +43,8 @@ void test('word courses reproduce their own geometry and ghost key without chang
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(c.track, { continuousPractice: true })
   );
-  assert.equal(
-    (await generatePracticeCourse('country-1')).trackHash,
-    await hashTrack(generateElevatedCircuit('country-1').track)
-  );
 });
-void test('random Other tracks also expose a reproducible versioned word code', async () => {
+void test('random Other tracks also expose a reproducible plain word', async () => {
   const { generateRandomWordPracticeCourse, generateWordPracticeCourse } =
     await import('../../src/client/practice-course.ts');
   const a = await generateRandomWordPracticeCourse();
@@ -66,7 +56,7 @@ void test('random Other tracks also expose a reproducible versioned word code', 
   );
 });
 
-void test('v2 braking courses are deterministic and isolated from saved v1 ghosts', async () => {
+void test('old short codes remap to the current course, not historical geometry', async () => {
   const { generateWordPracticeCourse } =
     await import('../../src/client/practice-course.ts');
   const { practiceBestKey } = await import('../../src/client/practice-best.ts');
@@ -74,8 +64,15 @@ void test('v2 braking courses are deterministic and isolated from saved v1 ghost
   const b = await generateWordPracticeCourse('BANANA');
   const old = await generateWordPracticeCourse('v1:banana');
   assert.equal(a.trackHash, b.trackHash);
-  assert.notEqual(a.trackHash, old.trackHash);
+  assert.equal(a.trackHash, old.trackHash);
+  const { generateOtherTracksCircuit } =
+    await import('../../src/shared/other-tracks-generator.ts');
+  const historical = generateOtherTracksCircuit('word-v1:banana').track;
   assert.notEqual(
+    practiceBestKey(a.track, { continuousPractice: true }),
+    practiceBestKey(historical, { continuousPractice: true })
+  );
+  assert.equal(
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(old.track, { continuousPractice: true })
   );

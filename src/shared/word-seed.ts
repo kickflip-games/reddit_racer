@@ -1,8 +1,6 @@
-/** Version pins both text normalization and the Other tracks generator mapping. */
-export const COURSE_WORD_VERSION = 2;
+/** Internal seed namespace stays stable; players share plain words. */
 export type CourseWord = {
   word: string;
-  version: 1 | 2;
   seed: string;
   code: string;
 };
@@ -24,37 +22,16 @@ export function normalizeCourseWord(input: string): string {
     );
   return word;
 }
-export function courseWord(
-  input: string,
-  version = COURSE_WORD_VERSION
-): CourseWord {
+export function courseWord(input: string): CourseWord {
   if (/[\p{Cc}\p{Cf}]/u.test(input))
     throw new Error(
       'Remove hidden or control characters from the course word.'
     );
-  if (version !== 1 && version !== 2)
-    throw new Error(
-      'That course version is not supported. Use a v1 or v2 code.'
-    );
-  // The short code is shareable without depending on Reddit iframe URLs.
-  const code = /^v(\d+):(.*)$/iu.exec(input.trim());
-  if (code) {
-    version = Number(code[1]);
-    input = code[2] ?? '';
-  }
-  if (version !== 1 && version !== 2)
-    throw new Error(
-      'That course version is not supported. Use a v1 or v2 code.'
-    );
+  // Previously shared codes are aliases, not requests for historical geometry.
+  input = input.trim().replace(/^v[12]:/iu, '');
   const word = normalizeCourseWord(input);
-  if (`word-v${version}:${word}`.length > 96)
-    throw new Error(
-      'That word is too long for a course code. Try a shorter word.'
-    );
-  return {
-    word,
-    version,
-    seed: `word-v${version}:${word}`,
-    code: `v${version}:${word}`,
-  };
+  const seed = `word-v2:${word}`;
+  if (seed.length > 96)
+    throw new Error('That word is too long. Try a shorter word.');
+  return { word, seed, code: word };
 }

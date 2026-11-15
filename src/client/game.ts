@@ -2,8 +2,8 @@ import { courseWord } from '../shared/word-seed';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
 import {
-  generatePracticeCourse,
   generateWordPracticeCourse,
+  generatePracticeCourse,
   generateRandomWordPracticeCourse,
 } from './practice-course';
 import {
@@ -259,7 +259,7 @@ function prepareCourse(mode: PlayMode): void {
 async function boot(
   mode: PlayMode,
   seed?: string,
-  wordRequest?: { input: string; version: number }
+  wordRequest?: { input: string }
 ): Promise<void> {
   const focusWhenReady = courseGeneration > 0;
   const version = ++courseGeneration;
@@ -267,13 +267,14 @@ async function boot(
   try {
     if (mode !== 'daily') {
       const course = wordRequest
-        ? await generateWordPracticeCourse(
-            wordRequest.input,
-            wordRequest.version
-          )
+        ? await generateWordPracticeCourse(wordRequest.input)
         : seed === undefined
           ? await generateRandomWordPracticeCourse(lastPracticeTrackHash)
-          : await generatePracticeCourse(seed, lastPracticeTrackHash);
+          : import.meta.env.DEV
+            ? await (
+                await import('./legacy-practice-fixture')
+              ).generateLegacyPracticeFixture(seed)
+            : await generateWordPracticeCourse(seed);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
@@ -289,14 +290,14 @@ async function boot(
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
       practiceSeed.textContent = selectedWord
-        ? `Course code: ${selectedWord.code} · Unranked`
+        ? `Course word: ${selectedWord.code} · Unranked`
         : `Unranked · ${course.seed}`;
       const wordInput = element('course-word');
       if (wordInput instanceof HTMLInputElement)
         wordInput.value = selectedWord ? selectedWord.code : '';
       race.dataset.wordCode = selectedWord ? selectedWord.code : '';
       element('word-course-message').textContent =
-        'Share the code above, or enter another word. Unranked.';
+        'Share the word above, or enter another word. Unranked.';
       source.dataset.state = 'ready';
       source.dataset.fallback = String(course.fallbackUsed);
       source.dataset.seed = course.seed;
@@ -441,7 +442,6 @@ element('word-course-form').addEventListener('submit', (event) => {
     const request = courseWord(input.value);
     void boot('practice', undefined, {
       input: request.word,
-      version: request.version,
     });
   } catch (error) {
     element('word-course-message').textContent =
@@ -465,7 +465,6 @@ void boot(
   query.get('practice') === '1' && query.has('word')
     ? {
         input: query.get('word') ?? '',
-        version: Number(query.get('wordVersion') ?? '1'),
       }
     : undefined
 );

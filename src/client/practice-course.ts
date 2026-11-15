@@ -1,10 +1,5 @@
 import { generateBrakingCircuit } from '../shared/braking-course-generator';
-import { generateOtherTracksCircuit } from '../shared/other-tracks-generator';
-import {
-  COURSE_WORD_VERSION,
-  courseWord,
-  type CourseWord,
-} from '../shared/word-seed';
+import { courseWord, type CourseWord } from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
 
 export type PracticeCourse = {
@@ -79,12 +74,11 @@ export function createPracticeCourseGenerator(
       throw new RangeError(
         'Practice track seeds must contain 1–96 characters.'
       );
-    // Heavy generator/controller search code is downloaded only when choosing practice.
+    // Normal practice uses the same checked generator as named courses.
     const generate =
       capabilities.layout === 'flat'
         ? (await import('../shared/circuit-quality')).generateValidatedCircuit
-        : (await import('../shared/elevated-generator'))
-            .generateElevatedCircuit;
+        : generateBrakingCircuit;
     for (
       let attempt = 0;
       attempt < (explicit ? 1 : maximumAttempts);
@@ -138,16 +132,12 @@ export async function generatePracticeCourse(
   return browserGenerator(seed, avoidTrackHash);
 }
 
-/** Explicit word courses use a separately versioned generator; legacy seeds stay unchanged. */
+/** Every course word selects the current checked generator. */
 export async function generateWordPracticeCourse(
-  input: string,
-  version = COURSE_WORD_VERSION
+  input: string
 ): Promise<PracticeCourse & { wordCourse: CourseWord }> {
-  const wordCourse = courseWord(input, version);
-  const result =
-    wordCourse.version === 1
-      ? generateOtherTracksCircuit(wordCourse.seed)
-      : generateBrakingCircuit(wordCourse.seed);
+  const wordCourse = courseWord(input);
+  const result = generateBrakingCircuit(wordCourse.seed);
   if (!result.quality.valid)
     throw new Error('This word course did not pass the driving checks.');
   let trackHash: string;

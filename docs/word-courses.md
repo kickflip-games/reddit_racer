@@ -1,61 +1,46 @@
 # Word courses in Other tracks
 
-Choose **Other tracks**, then **Choose a word** (also available in Settings).
-Enter a word such as `banana`, or paste its shareable code `v2:banana`.
-New words and random selections use v2 braking-rhythm courses. An existing
-`v1:banana` code still loads exactly its original course; versions never alias.
-The code shown in Settings is selectable text; friends can enter the same code.
-Random **Other tracks / New track** selections use this generator too and
-show a revisitable word code; explicit legacy seed links retain their original
-course. This avoids promising that an expanded Reddit iframe URL is a portable share link.
+Choose **Other tracks**, then **Choose a word** (also in Settings).
+Enter and share a plain word such as `banana`. Random **Other tracks / New
+track** selections show a reusable plain word too. There is one current course
+generator, with no version selector or historical generation route.
 
-Both versions use the same frozen NFKC normalization, trim/collapsed spaces, locale-independent
-lowercase, and a maximum 48 Unicode code points. It accepts letters, combining
-marks, numbers, spaces, apostrophes, hyphens and underscores. Hidden/control/bidi
-characters are rejected. The full internal versioned `word-vN:` seed is also capped at 96
-UTF-16 units for the generator. Invalid inputs keep the current track intact.
-Unsupported version codes are rejected rather than silently reinterpreted.
+Previously shared `v1:banana` and `v2:banana` codes are accepted only as aliases
+for `banana`. In particular old v1 codes now remap to current geometry; they
+do not reproduce the old track. Unknown prefixed codes are invalid input.
+The internal `word-v2:` namespace is retained so the measured current courses
+remain identical. This is provenance, not a user-selectable version.
 
-V2 maps to `generateBrakingCircuit`; see its measured validation report.
-The v1 code maps only to `generateOtherTracksCircuit` / `other-tracks-v1`.
-Do not change this mapping when introducing a future word-course version.
-Legacy explicit development `?practice=1&seed=...` uses the original generator
-unchanged. The posted daily challenge and ranked flow are untouched.
+Normalization uses NFKC, trimming/collapsed spaces and locale-independent
+lowercase; maximum 48 Unicode code points and 96 UTF-16 units including the
+internal namespace. Letters, combining marks, numbers, spaces, apostrophes,
+hyphens and underscores are allowed; hidden/control/bidi characters rejected.
 
-Explicit browser entry `?practice=1&word=banana&wordVersion=2` selects a v2
-course. Existing links with version 1 or no version retain v1. Without `practice=1`, word parameters cannot override the daily race.
-This is useful for local testing/direct browser entry, not a guaranteed Reddit
-share URL. Unknown versions show an error and can be repaired through the word
-form. No address navigation or reload is needed to choose another word.
+Every ordinary practice generation path uses `generateBrakingCircuit` and
+its bounded quality gates. See `braking-validation.md` for measured results
+and negative cases. No unvalidated reserve is used.
 
-Local bests and ghosts use the serialized actual track fingerprint, including
-the generator version, plus the existing physics/handling/continuous-lap keys.
-They therefore reproduce across normalized word aliases without mixing with
-other words, changed versions or the daily circuit. This is local, unranked
-sharing, not a new leaderboard or shared ghost service.
+`?practice=1&word=banana` selects a named course. The old `wordVersion`
+parameter is ignored and cannot select another generator. Without practice=1,
+word parameters cannot override a posted daily challenge. Sharing the word is
+preferred over an iframe URL, which may not be portable outside Reddit.
 
-## Integrated validation
+Local bests and ghosts still use the serialized actual track and handling
+fingerprint. An old ghost cannot attach to remapped geometry. No score or
+stored daily-challenge data is rewritten by this change.
 
-Combined with the natural-scenery, ramp-side surface and stopped-car fixes:
-`npm run check` passed 401 unit tests, 200 legacy track checks, formatting,
-types, lint and production build. The existing large-chunk warning remains.
-Sixteen desktop/mobile Chromium cases passed across word input, unsupported
-version recovery, random reusable codes, two continuous laps, ghost appearance,
-returning to the immutable daily course, interrupted input and stopped-car pose.
-These are local browser tests, not a claim of an installed Reddit deployment
-or testing on a physical mobile keyboard/GPU.
+Only development builds retain `?practice=1&seed=...` for historical
+renderer/physics fixtures, through an explicitly development-only import.
+The separately injected flat test harness also remains; neither is an
+alternative in the production UI.
 
-## V2 integrated validation
+Validation for this simplification is recorded in the change report. Historical
+v1/v2 experiments remain in other reports as evidence, not selectable modes.
 
-The v2 rollout preserves the held/released input meaning, all existing v1 code
-hashes and daily/ranked generation. Accepted v2 banana/tui/river hashes also
-freeze the quality-selection outcome, not only raw candidate geometry.
+## Plain-word simplification checks
 
-Integrated checks passed 410 unit tests and 200 legacy track checks before the
-additional three-word accepted-hash regression, which also passes. Ten local
-desktop/mobile browser cases passed: versioned words, recovery from unsupported
-codes, random reusable codes, stopped-car behavior and real replay-driven v2
-laps. The v2 lap test uses native input and the production renderer, matches the
-accepted time exactly and continues into the next lap without a countdown.
-Two production-built browser tests also pass with the old late-module URL
-blocked. This is not physical-phone testing, a deployment, or proof of human fun.
+411 unit tests passed, including deterministic accepted current-course hashes;
+the additional assertion against the actual historical banana track confirms
+its ghost key differs after remapping. Six desktop/mobile Chromium word-form
+cases passed (plain input, old-code alias, invalid input recovery, random word
+sharing). These are local browser tests, not physical-device or deployment tests.

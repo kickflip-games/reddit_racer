@@ -720,7 +720,12 @@ export function initializeGame(
     const trajectoryHeading =
       speed > 0.1 || Math.abs(lateralVelocity) > 0.1
         ? Math.atan2(velocityX, velocityZ)
-        : Math.atan2(frame.tx, frame.tz);
+        : needsCameraReset
+          ? Math.atan2(frame.tx, frame.tz)
+          : carVisual.object.rotation.y;
+    // A stopped/sliding car has no new travel direction. Keep its last facing
+    // instead of snapping it back to the road tangent when speed crosses 0.1.
+    // Retry explicitly resets the pose; scored motion and steering are untouched.
     const heading = trajectoryHeading;
     const phase = driver.raceState.phase;
     const scored = phase === 'racing';

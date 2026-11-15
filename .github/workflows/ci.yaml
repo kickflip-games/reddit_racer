@@ -68,6 +68,8 @@ jobs:
           cache: npm
       - run: npm ci --no-fund
       - run: npx playwright install --with-deps chromium webkit
+      - name: Built production asset loading
+        run: npm run test:production -- --workers=1
       - name: Desktop and mobile smoke tests
         if: github.event_name != 'schedule' && !inputs.full_browser_suite
         run: npm run test:e2e -- --grep @smoke --workers=1 --reporter=line,json

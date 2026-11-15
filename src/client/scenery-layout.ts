@@ -9,7 +9,7 @@ import type { SceneryKind } from './scene-assets';
 import type { GapJump } from '../shared/stunt-course';
 import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
 
-export const SCENERY_VERSION = 'green-composition-v4';
+export const SCENERY_VERSION = 'green-composition-v5';
 export const SCENERY_LIMITS = Object.freeze({
   regions: 40,
   candidates: 18000,
@@ -628,7 +628,7 @@ export function generateSceneryLayout(
       );
     }
   }
-  // Reuse selected Kenney conifers and racing landmarks within the new region layout.
+  // Reuse selected Kenney conifers within the natural region layout.
   for (const p of plants
     .filter(
       (p) => p.kind === 'tree' || (p.kind === 'blossom' && p.detail < 0.25)
@@ -642,41 +642,22 @@ export function generateSceneryLayout(
       radius: p.radius,
       scale: Math.min(1, p.scale),
     });
-  function prop(kind: SceneryKind, s: number, side: number, along = 0) {
-    if (props.length >= SCENERY_LIMITS.props) return;
-    const f = sampleTrack(track, s),
-      radius = kind === 'pylon' ? 0.6 : 1.1,
-      d = side * (f.halfWidth + 13 + radius);
-    const x = f.x + f.nx * d + f.tx * along,
-      z = f.z + f.nz * d + f.tz * along;
-    if (sceneryClearance(track, x, z, radius, field))
-      props.push({ kind, x, z, heading: Math.atan2(f.tx, f.tz), radius });
-  }
+  // Only start/finish flags have a racing purpose here. Keep decorative cones,
+  // barriers and disconnected fence fragments out of the meadow.
   for (const side of [-1, 1]) {
-    prop('flagCheckersSmall', 0, side);
-    prop('pylon', 5, side);
-  }
-  // A few red/white landmark clusters mark sections, not an unbroken fence.
-  // Keep them outside the full recovery envelope and within the existing cap.
-  for (let sector = 1; sector < 4; sector++) {
-    const s = track.totalLength * (sector / 4);
-    const side = sector % 2 === 0 ? 1 : -1;
-    prop('barrierRed', s, side, -3);
-    prop('barrierWhite', s, side, 0);
-    prop('pylon', s, side, 4);
-  }
-  for (const region of regions.filter((r) => r.kind === 'hedge').slice(0, 5)) {
-    for (let j = 0; j < 4; j++) {
-      const offset = (j - 1.5) * 4;
-      plant(
-        'fence',
-        region.x + Math.cos(region.heading) * offset,
-        region.z + Math.sin(region.heading) * offset,
-        region.id,
-        1,
-        -region.heading
-      );
-    }
+    const f = sampleTrack(track, track.startS);
+    const radius = 1.1;
+    const d = side * (f.halfWidth + 13 + radius);
+    const x = f.x + f.nx * d,
+      z = f.z + f.nz * d;
+    if (sceneryClearance(track, x, z, radius, field))
+      props.push({
+        kind: 'flagCheckersSmall',
+        x,
+        z,
+        heading: Math.atan2(f.tx, f.tz),
+        radius,
+      });
   }
 
   return {

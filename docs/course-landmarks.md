@@ -43,3 +43,12 @@ Actual desktop/mobile gameplay-camera captures at 30% of `landmarks-1` show the
 blossom pocket beside the bend; these are observed simulation positions, not
 substitute overview cameras. Rock scale bounds remain 4.2 maximum (anchor 3.6),
 while non-rock plants retain their existing ≤2 bound.
+
+## Natural surroundings (v5)
+
+Removed decorative cone/barrier clusters and isolated fence strips from grass.
+Natural scenic pockets remain intact. The only racing props placed by this
+layout are up to two start/finish flags aligned with the actual `startS`.
+Road markings, ramp guidance, track geometry and driving physics are unchanged.
+Regression checks cover 100 seeds with no pylons/barriers/fence fragments and
+preserve existing scenic pockets, budgets and canonical track hashes.

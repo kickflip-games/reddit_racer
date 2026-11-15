@@ -15,6 +15,19 @@ test('consecutive course seeds retain four scenic pockets within bounded safe sc
     const before = await hashTrack(track);
     const layout = generateSceneryLayout(track);
     const field = createRoadField(track);
+    assert.ok(
+      layout.props.every(
+        (p) => p.kind === 'treeSmall' || p.kind === 'flagCheckersSmall'
+      ),
+      `${seed}: no artificial meadow clutter`
+    );
+    assert.ok(
+      layout.props.filter((p) => p.kind === 'flagCheckersSmall').length <= 2
+    );
+    assert.ok(
+      layout.allPlants.every((p) => p.kind !== 'fence'),
+      `${seed}: no disconnected fences`
+    );
     for (let sector = 0; sector < 4; sector++) {
       const pocket = layout.plants.filter((p) => p.region === -10 - sector);
       assert.ok(

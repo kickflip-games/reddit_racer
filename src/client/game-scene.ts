@@ -272,8 +272,8 @@ export function initializeGame(
   if (!(soundToggle instanceof HTMLButtonElement))
     throw new Error('Missing sound control');
   element('mode-label').textContent = import.meta.env.DEV
-    ? 'Practice'
-    : 'Practice';
+    ? 'Unranked'
+    : 'Unranked';
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
   const scene = new THREE.Scene();
@@ -439,6 +439,7 @@ export function initializeGame(
     let changed = false;
     if (pendingCar && carLoadState !== 'ready') {
       const installed = carVisual.installModel(pendingCar);
+      if (installed) ghostVisual.installModel(pendingCar);
       pendingCar = undefined;
       carVisual.object.visible = installed;
       raceRoot.dataset.carArt = installed ? carVisual.kind : 'unavailable';
@@ -908,7 +909,7 @@ export function initializeGame(
         driver.interruptionReason === 'focus'
           ? 'The game lost focus. Try again when you are ready.'
           : driver.interruptionReason === 'time-limit'
-            ? 'Practice timed out. Try another run.'
+            ? 'Run timed out. Try another run.'
             : driver.interruptionReason === 'invalid-progress'
               ? 'This lap missed a gate. Try another run.'
               : 'The race could not continue smoothly. Try another run.';

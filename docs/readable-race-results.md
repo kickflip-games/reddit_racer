@@ -25,8 +25,8 @@ motion removes the badge's small bloom. No rank is inferred from local timing.
 
 ### Best-lap ghost
 
-Continuous practice has a default-on **Best lap ghost** setting. A small cyan
-marker and one-second trail follow your fastest recorded lap in lap-relative
+Continuous practice has a default-on **Best lap ghost** setting. A translucent copy of the loaded Kenney car
+and a one-second trail follow your fastest recorded lap in lap-relative
 simulation time; the trace does not affect collisions, physics or ranking.
 The ghost disappears after its finish rather than wrapping early while your
 current lap is still running. Each new player lap restarts the ghost clock.
@@ -37,7 +37,17 @@ Overlong/incomplete laps are not stored; storage denial falls back to this
 session. Track fingerprints and simulation/handling versions reuse the same
 identity as local bests. Old best times from before this feature contain no
 trajectory: beat or match that time to record its ghost. The setting persists
-across courses; turning it off hides the marker, but recording continues.
-The effect has no pulse, camera movement, lights or particles and uses two
-small draw calls, with fixed geometry reused per frame. It supports the same
+across courses; turning it off hides the car and trail, but recording continues.
+The effect has no pulse, camera movement, lights or particles and uses
+bounded render objects: the existing car mesh geometry/textures are shared,
+its transparent materials are owned separately, and the fixed trail is reused
+per frame. Heading and pitch follow the saved trajectory tangent. It adds no
+shadow pass, collider or asset download. It supports the same
 mobile settings dialog. Ranked daily races do not show a local practice ghost.
+
+## Course naming
+
+The menu entry is **Other tracks**: it generates separate courses, rather than
+practising today's daily layout. **New track** continues to generate another
+course. Daily fallback/archived attempts are labelled **Unranked**, not Other
+tracks. Internal mode identifiers, URLs and saved-best keys remain unchanged.

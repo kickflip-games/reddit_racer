@@ -17,7 +17,10 @@ for (const [width, height] of [
     const card = page.locator('#card');
     await expect(page.locator('#start-button')).toBeEnabled();
     await expect(page.locator('.start-identity')).toBeVisible();
-    await expect(page.locator('.start-controls')).toContainText('Release');
+    await expect(
+      page.locator('.start-series, .start-checkers, .start-controls')
+    ).toHaveCount(0);
+    await expect(page.locator('#card-copy')).toContainText('Release to brake');
     const bounds = await card.boundingBox();
     expect(bounds!.x).toBeGreaterThanOrEqual(0);
     expect(bounds!.y).toBeGreaterThanOrEqual(60);

@@ -130,7 +130,7 @@ export function createLeaderboardController(
     return receipt
       ? 'Time verified · daily position unavailable.'
       : resultMode === 'practice'
-        ? 'Practice time · not ranked.'
+        ? 'Local time · not ranked.'
         : 'Time unverified · not ranked.';
   }
 

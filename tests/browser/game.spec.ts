@@ -14,7 +14,7 @@ test(
     await page.goto('/game.html');
     await waitForSceneAssets(page);
     await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
-    await expect(page.locator('#mode-label')).toContainText('Practice');
+    await expect(page.locator('#mode-label')).toContainText('Unranked');
     await expect(page.locator('#race-canvas')).toBeVisible();
     await expect(page.locator('#circuit-minimap')).toBeHidden();
     await page.locator('#start-button').click();

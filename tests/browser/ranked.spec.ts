@@ -419,9 +419,7 @@ test('signed-out practice can finish without submitting a score', async ({
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText(
-    'unranked practice'
-  );
+  await expect(page.locator('#verification-status')).toContainText('unranked');
   await driveFast(page);
   await expect(page.locator('#card-kicker')).toHaveText('');
   expect(submits).toBe(0);

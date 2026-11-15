@@ -24,7 +24,7 @@
             <h1>Reddit Racer<span class="title-dot">.</span></h1>
           </div>
           <div class="mode-stack">
-            <span id="mode-label" class="mode" hidden>Practice</span>
+            <span id="mode-label" class="mode" hidden>Unranked</span>
             <button
               id="restart-button"
               type="button"
@@ -82,11 +82,9 @@
       >
       <div id="card" class="race-card">
         <div class="start-identity" aria-hidden="true">
-          <span class="start-series">ONE BUTTON. EVERY CORNER.</span>
           <div class="start-wordmark">
             Reddit<span>Racer<i>.</i></span>
           </div>
-          <span class="start-checkers"></span>
         </div>
         <p id="card-kicker" class="eyebrow"></p>
         <p id="challenge-heading" class="challenge-heading" hidden></p>
@@ -107,18 +105,12 @@
           <p id="result-target" hidden></p>
         </div>
         <button id="start-button" type="button" disabled>
-          <span id="start-label">Start practice</span
-          ><span aria-hidden="true">↗</span>
+          <span id="start-label">Start</span><span aria-hidden="true">↗</span>
         </button>
         <button id="retry-button" type="button" hidden>
           <span id="retry-label">Try again</span
           ><span aria-hidden="true">↗</span>
         </button>
-        <div class="start-controls" aria-label="Driving controls">
-          <span><b>Hold</b> to accelerate</span>
-          <span><b>Release</b> to brake</span>
-          <small>Touch · Mouse · Space</small>
-        </div>
         <p id="track-note" class="card-note"></p>
         <section id="today-race" class="today-race" data-state="idle" hidden>
           <p id="today-race-status" role="status"></p>
@@ -185,7 +177,7 @@
           </details>
         </section>
         <button id="practice-button" class="secondary-button" type="button">
-          Practice
+          Other tracks
         </button>
       </div>
       <footer class="race-footer">

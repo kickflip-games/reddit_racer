@@ -23,6 +23,7 @@ import {
 import type { TodayRacePostView } from '../shared/today-race-post';
 
 export type RpcContext = {
+  /** Optional for narrow API adapters/tests; production always injects it. Absence fails closed. */
   dailyStandings?: (input: DailyStandingsQuery) => Promise<DailyStandingsView>;
   getDailyChallenge: () => Promise<DailyChallengeView>;
   startRankedRace: () => Promise<StartRankedRaceResponse>;

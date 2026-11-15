@@ -48,3 +48,16 @@ sharing). These are local browser tests, not physical-device or deployment tests
 The production build also passed two desktop/mobile smoke cases with the old
 late generator URL blocked, including invalid-word recovery and normalized
 word reproducibility. The build does not emit the development fixture module.
+
+## Final combined checks
+
+The plain-word client and single future-daily generator passed the full check
+with 414 unit tests and 200 track checks. After the corner-control layout was
+integrated, 14 desktop/mobile browser cases passed for plain words, invalid-input
+recovery, 320/390 px portrait and 640/960 px landscape controls, settings focus
+and restart behavior. Two production-built browser cases also passed. The
+restart button is top-right and the matching 44 px settings gear is bottom-left,
+using safe-area offsets and the existing accent color/stroke style.
+
+The deployed game was independently checked and remains version 0.0.26. These
+prepared changes have not been pushed, merged or deployed.

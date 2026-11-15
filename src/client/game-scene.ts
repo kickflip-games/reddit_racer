@@ -555,6 +555,7 @@ export function initializeGame(
           });
           ghostLap = ghostStore.get(localBestKey);
         }
+        if (ghostLap?.ticks !== result.bestTicks) ghostLap = null;
         ghostPoints = [[0, end[1], end[2], end[3]]];
         ghostOverflow = false;
         const improved = result.isNewBest && result.previousBestTicks !== null;

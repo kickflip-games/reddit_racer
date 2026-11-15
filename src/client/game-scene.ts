@@ -439,6 +439,7 @@ export function initializeGame(
     let changed = false;
     if (pendingCar && carLoadState !== 'ready') {
       const installed = carVisual.installModel(pendingCar);
+      if (installed) ghostVisual.installModel(pendingCar);
       pendingCar = undefined;
       carVisual.object.visible = installed;
       raceRoot.dataset.carArt = installed ? carVisual.kind : 'unavailable';

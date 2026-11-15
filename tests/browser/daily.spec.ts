@@ -139,7 +139,7 @@ test('old posts retain their original day and course as unranked practice', asyn
   await expect(page.locator('#mode-label')).toHaveText('Archive');
   await expect(page.locator('#daily-date')).toHaveText('2026-11-12 · UTC');
   await expect(page.locator('#daily-reset')).toHaveText(
-    'Archived course · practice'
+    'Archived course · unranked'
   );
   await expect(page.locator('#start-button')).toBeEnabled();
   await expect(page.locator('#race')).toHaveAttribute(
@@ -212,12 +212,14 @@ test('daily service failure offers explicitly labelled unranked reference practi
   });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#mode-label')).toHaveText('Practice');
+  await expect(page.locator('#mode-label')).toHaveText('Unranked');
   await expect(page.locator('#track-source')).toHaveAttribute(
     'data-mode',
     'reference-fallback'
   );
-  await expect(page.locator('#card-copy')).toHaveText('Practice is available.');
+  await expect(page.locator('#card-copy')).toHaveText(
+    'Unranked racing is available.'
+  );
   await expect(page.locator('#daily-details')).toBeHidden();
   await expect(page.locator('#start-button')).toBeEnabled();
   expect(

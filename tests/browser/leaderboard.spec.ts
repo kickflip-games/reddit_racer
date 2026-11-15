@@ -542,7 +542,7 @@ test('the standalone results controller honestly renders empty, signed-out, expi
   );
   await expect(page.locator('#leaderboard-top')).toBeHidden();
   await expect(page.locator('#leaderboard-me')).toHaveText(
-    'Practice time · not ranked.'
+    'Local time · not ranked.'
   );
 });
 

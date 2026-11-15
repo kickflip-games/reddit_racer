@@ -49,7 +49,7 @@ export function createRankedRaceHooks(
         present('practice');
         return {
           kind: 'practice',
-          message: 'Archived circuit. This attempt is unranked practice.',
+          message: 'Archived circuit. This attempt is unranked.',
         };
       }
       present('preparing');
@@ -67,12 +67,12 @@ export function createRankedRaceHooks(
         const code = errorCode(error);
         const message =
           code === 'UNAUTHORIZED'
-            ? 'Sign in to verify daily runs. This attempt is unranked practice.'
+            ? 'Sign in to verify daily runs. This attempt is unranked.'
             : code === 'PRECONDITION_FAILED'
-              ? 'Ranked racing is unavailable for this course. This attempt is unranked practice.'
+              ? 'Ranked racing is unavailable for this course. This attempt is unranked.'
               : code === 'TOO_MANY_REQUESTS'
-                ? 'Verification is busy. This attempt is unranked practice.'
-                : 'Verification is unavailable. This attempt is unranked practice.';
+                ? 'Verification is busy. This attempt is unranked.'
+                : 'Verification is unavailable. This attempt is unranked.';
         return { kind: 'practice', message };
       }
       if (signal.aborted || attemptId !== currentAttempt)

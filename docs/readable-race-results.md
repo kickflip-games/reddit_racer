@@ -44,3 +44,10 @@ its transparent materials are owned separately, and the fixed trail is reused
 per frame. Heading and pitch follow the saved trajectory tangent. It adds no
 shadow pass, collider or asset download. It supports the same
 mobile settings dialog. Ranked daily races do not show a local practice ghost.
+
+## Course naming
+
+The menu entry is **Other tracks**: it generates separate courses, rather than
+practising today's daily layout. **New track** continues to generate another
+course. Daily fallback/archived attempts are labelled **Unranked**, not Other
+tracks. Internal mode identifiers, URLs and saved-best keys remain unchanged.

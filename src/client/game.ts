@@ -30,8 +30,8 @@ const title = element('card-title');
 const copy = element('card-copy');
 start.disabled = true;
 element('mode-label').textContent = import.meta.env.DEV
-  ? 'Practice'
-  : 'Practice';
+  ? 'Unranked'
+  : 'Unranked';
 
 type LoadedCourse = {
   track: Track;
@@ -133,7 +133,7 @@ function renderDailyMode(): void {
         : dailyArchived
           ? 'Archive'
           : attemptPresentation === 'practice'
-            ? 'Practice'
+            ? 'Unranked'
             : 'Daily';
   element('start-label').textContent =
     attemptPresentation === 'preparing'
@@ -167,7 +167,7 @@ function showDailyCourse(view: DailyChallengeView): () => void {
     element('daily-reset').textContent = clock.archived
       ? attemptPresentation === 'ranked'
         ? 'Current race keeps this course'
-        : 'Archived course · practice'
+        : 'Archived course · unranked'
       : `UTC reset in ${resetLabel(clock.resetSeconds)}`;
   });
   return () => {
@@ -236,11 +236,15 @@ function prepareCourse(mode: PlayMode): void {
   element('sound-toggle').toggleAttribute('disabled', true);
   element('next-practice-button').toggleAttribute('disabled', true);
   element('mode-label').textContent =
-    mode !== 'daily' ? 'Practice' : import.meta.env.DEV ? 'Practice' : 'Daily';
+    mode !== 'daily'
+      ? 'Other tracks'
+      : import.meta.env.DEV
+        ? 'Unranked'
+        : 'Daily';
   element('start-label').textContent = 'Start';
   element('retry-label').textContent = mode !== 'daily' ? 'Resume' : 'Retry';
   title.textContent =
-    mode !== 'daily' ? 'Preparing practice…' : 'Preparing circuit…';
+    mode !== 'daily' ? 'Preparing another track…' : 'Preparing circuit…';
   copy.textContent = 'Hold to go. Release to slow.';
 }
 
@@ -320,14 +324,14 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
     if (course.daily) {
       cleanupDaily = showDailyCourse(course.daily);
     } else if (course.dailyUnavailable) {
-      element('mode-label').textContent = 'Practice';
+      element('mode-label').textContent = 'Unranked';
       source.hidden = false;
       source.textContent = 'DAILY SERVICE UNAVAILABLE';
       source.dataset.mode = 'reference-fallback';
       source.title =
         'The daily course could not be loaded. This is a separate, unranked reference course.';
       element('track-note').textContent =
-        'Unranked reference practice. Reload to try loading this post’s daily circuit.';
+        'Unranked reference course. Reload to try loading this post’s daily circuit.';
     } else if (course.generated) {
       source.hidden = false;
       source.dataset.seed = course.seed;
@@ -344,7 +348,7 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
     element('track-note').textContent = '';
     title.textContent = course.dailyUnavailable ? 'Daily unavailable' : '';
     copy.textContent = course.dailyUnavailable
-      ? 'Practice is available.'
+      ? 'Unranked racing is available.'
       : 'Hold to go. Release to brake.';
     start.disabled = false;
     if (focusWhenReady)

@@ -47,12 +47,12 @@ test('a daily request deadline gives explicit reference practice and ignores a l
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'loading');
   // No race exists yet; only the request deadline needs to fire.
   await page.clock.fastForward(10_010);
-  await expect(page.locator('#mode-label')).toHaveText('Practice');
+  await expect(page.locator('#mode-label')).toHaveText('Unranked');
   await expect(page.locator('#start-label')).toHaveText('Start');
   await expect(page.locator('#start-button')).toBeEnabled();
   release();
   await page.clock.runFor(32);
-  await expect(page.locator('#mode-label')).toHaveText('Practice');
+  await expect(page.locator('#mode-label')).toHaveText('Unranked');
   await expect(page.locator('#race')).not.toHaveAttribute('data-challenge-id');
 });
 
@@ -108,9 +108,7 @@ test('a preparation deadline starts labelled practice on the saved track and a f
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText(
-    'unranked practice'
-  );
+  await expect(page.locator('#verification-status')).toContainText('unranked');
   await expect(page.locator('#race')).toHaveAttribute(
     'data-track-hash',
     record.trackHash
@@ -348,8 +346,6 @@ test('an archived course offers explicit current-post navigation and expires its
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText(
-    'unranked practice'
-  );
+  await expect(page.locator('#verification-status')).toContainText('unranked');
   expect(rankedStarts).toBe(0);
 });

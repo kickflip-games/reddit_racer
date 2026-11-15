@@ -18,3 +18,18 @@ Browser fixtures validate presentation and input isolation, not the existence of
 real historical racers in the private installation. Live historical Redis records
 are not assumed to exist. This feature is prepared locally and is not deployed
 until explicitly authorized.
+
+### Integrated validation, 2026-11-15 UTC
+
+- Full project check: 426 unit tests, 200 generated-course checks, TypeScript,
+  ESLint, formatting and production build passed.
+- 24 combined desktop/mobile browser checks passed: archive (320/390/960 widths),
+  corner controls and word courses. Two initial word-course fixture failures were
+  obsolete zero-network expectations; the updated fixture permits exactly one
+  read-only archive preview request and still forbids ranked calls.
+- Two built-production desktop/mobile word-generation smoke tests passed.
+- Mobile home and archive screenshots were inspected. The gear remains clear of
+  the preview; the scrollable modal identifies tied leaders and continued pages.
+- API and presentation tests use controlled records/responses. Actual historical
+  participation and hosted archive behavior remain unverified until deployment.
+- Existing large-chunk and ineffective-dynamic-import build warnings remain.

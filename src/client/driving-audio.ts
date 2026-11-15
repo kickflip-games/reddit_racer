@@ -42,13 +42,16 @@ export type DrivingAudio = {
   setForeground(value: boolean): void;
   update(frame: Readonly<DrivingAudioFrame>): void;
   countdown(attemptId: number, seconds: number): void;
-  lap(attemptId: number, completedLaps: number): void;
+  lap(attemptId: number, completedLaps: number, personalBest?: boolean): void;
   finish(attemptId: number): void;
+  /** Only for a server-confirmed lead on this finished attempt. */
+  verifiedBest(attemptId: number): void;
   silence(reason: 'abandon' | 'background'): void;
   dispose(): Promise<void>;
 };
 export const AUDIO_RESUME_TIMEOUT_MS = 1500;
 export const AUDIO_FINISH_SUSPEND_MS = 300;
+export const AUDIO_VERIFIED_BEST_SUSPEND_MS = 400;
 export const AUDIO_PARAMETER_HZ = 30;
 
 function browserBackend(): DrivingAudioBackend {
@@ -103,6 +106,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
   let granted = false;
   let resumePending = false;
   let finishing = false;
+  let finishRewardEligible = false;
+  let verifiedBestSeen = false;
   let resumeTimer: ReturnType<typeof setTimeout> | undefined;
   let finishTimer: ReturnType<typeof setTimeout> | undefined;
   let lastFrame: DrivingAudioFrame | undefined;
@@ -157,7 +162,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       if (!disposed && !muted) publish('unavailable');
     }
   }
-  function stop(suspendBackend = true): void {
+  function stop(suspendBackend = true, preserveFinishReward = false): void {
+    if (!preserveFinishReward) finishRewardEligible = false;
     generation++;
     granted = false;
     resumePending = false;
@@ -255,6 +261,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       stop(false);
       attemptId = id;
       finishing = false;
+      verifiedBestSeen = false;
       lastFrame = undefined;
       lastTick = -1;
       lastRecoveryCount = 0;
@@ -391,7 +398,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         unavailable();
       }
     },
-    lap(id, completedLaps) {
+    lap(id, completedLaps, personalBest = false) {
       if (
         disposed ||
         id !== attemptId ||
@@ -403,7 +410,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       lastLap = completedLaps;
       if (!canPlay()) return;
       try {
-        backend?.cue('lap');
+        backend?.cue(personalBest ? 'personal-best' : 'lap');
       } catch {
         unavailable();
       }
@@ -415,6 +422,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         stop();
         return;
       }
+      finishRewardEligible = true;
       applyCurrent(true);
       try {
         backend?.cue('finish');
@@ -426,9 +434,73 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       finishTimer = setTimeout(() => {
         finishTimer = undefined;
         if (disposed || generation !== operation) return;
-        stop();
+        stop(true, true);
         publish(muted ? 'muted' : 'locked');
       }, AUDIO_FINISH_SUSPEND_MS);
+    },
+    verifiedBest(id) {
+      if (disposed || id !== attemptId || verifiedBestSeen) return;
+      // Consume even inaudible confirmations. Never queue a reward for unmute,
+      // foreground return, a retry, or a later activation gesture.
+      verifiedBestSeen = true;
+      const current = backend;
+      if (
+        !finishing ||
+        !finishRewardEligible ||
+        muted ||
+        !foreground ||
+        !current ||
+        (current.state !== 'running' && current.state !== 'suspended')
+      )
+        return;
+      finishRewardEligible = false;
+      clearTimers();
+      const operation = ++generation;
+      granted = true;
+      const play = () => {
+        if (disposed || backend !== current || generation !== operation) return;
+        resumePending = false;
+        clearResumeTimer();
+        if (!canPlay()) {
+          unavailable();
+          return;
+        }
+        try {
+          current.cue('personal-best');
+        } catch {
+          unavailable();
+          return;
+        }
+        publish('running');
+        finishTimer = setTimeout(() => {
+          if (disposed || generation !== operation) return;
+          finishTimer = undefined;
+          stop();
+          publish(muted ? 'muted' : 'locked');
+        }, AUDIO_VERIFIED_BEST_SUSPEND_MS);
+      };
+      if (current.state === 'running') {
+        play();
+        return;
+      }
+      // Only reawaken the existing gesture-unlocked graph suspended by finish.
+      // No backend creation and no attempt to obtain a new user gesture.
+      resumePending = true;
+      publish('starting');
+      resumeTimer = setTimeout(() => {
+        if (!disposed && generation === operation) unavailable();
+      }, AUDIO_RESUME_TIMEOUT_MS);
+      try {
+        void current
+          .resume()
+          .then(play)
+          .catch(() => {
+            if (!disposed && backend === current && generation === operation)
+              unavailable();
+          });
+      } catch {
+        unavailable();
+      }
     },
     silence(reason) {
       if (disposed) return;

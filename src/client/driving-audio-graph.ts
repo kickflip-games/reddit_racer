@@ -12,7 +12,13 @@ export type DrivingAudioTargets = {
   windGain: number;
 };
 export type DrivingAudioCue =
-  'finish' | 'recovery' | 'countdown' | 'go' | 'lap' | 'landing';
+  | 'finish'
+  | 'recovery'
+  | 'countdown'
+  | 'go'
+  | 'lap'
+  | 'personal-best'
+  | 'landing';
 export type DrivingAudioGraph = {
   readonly nodeCount: number;
   readonly bufferCount: number;
@@ -216,16 +222,30 @@ export function createDrivingAudioGraph(
           time + 0.008
         );
         resultGain.gain.linearRampToValueAtTime(0, time + 0.16);
-      } else if (kind === 'lap' || kind === 'finish') {
+      } else if (
+        kind === 'lap' ||
+        kind === 'finish' ||
+        kind === 'personal-best'
+      ) {
         // A soft ascending two-note chime, short enough not to mask the engine.
-        for (const { offset, frequency } of [
+        const notes = [
           { offset: 0, frequency: 660 },
           { offset: 0.11, frequency: 880 },
-        ]) {
+        ];
+        // Local course personal best: one extra major-third lift, not a victory
+        // fanfare or a claim about the online leaderboard. Same fixed graph.
+        if (kind === 'personal-best')
+          notes.push({ offset: 0.22, frequency: 1108.73 });
+        for (const { offset, frequency } of notes) {
           result.frequency.setValueAtTime(frequency, time + offset);
           resultGain.gain.setValueAtTime(0, time + offset);
-          resultGain.gain.linearRampToValueAtTime(0.07, time + offset + 0.01);
-          resultGain.gain.linearRampToValueAtTime(0, time + offset + 0.13);
+          resultGain.gain.linearRampToValueAtTime(
+            kind === 'personal-best' ? 0.085 : 0.07,
+            time + offset + 0.01
+          );
+          // End each note before the next starts; overlapping automation would
+          // let the previous release erase the new note.
+          resultGain.gain.linearRampToValueAtTime(0, time + offset + 0.1);
         }
       } else {
         const frequency = kind === 'countdown' ? 440 : kind === 'go' ? 880 : 90;

@@ -63,6 +63,21 @@ test('default one-lap finish does not reframe the camera when results appear', a
   await advanceTo(finish + 100);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'finished');
   await expect(page.locator('#retry-button')).toBeVisible();
+  await expect(page.locator('#card')).toHaveCSS(
+    'background-color',
+    'rgb(255, 247, 232)'
+  );
+  await expect(page.locator('.finish-time')).toHaveCSS(
+    'letter-spacing',
+    'normal'
+  );
+  const resultBounds = await page.locator('.finish-time').boundingBox();
+  const cardBounds = await page.locator('#card').boundingBox();
+  expect(resultBounds!.x).toBeGreaterThanOrEqual(cardBounds!.x);
+  expect(resultBounds!.x + resultBounds!.width).toBeLessThanOrEqual(
+    cardBounds!.x + cardBounds!.width
+  );
+
   const after = await page.locator('#race').evaluate((e) => ({
     top: e.style.getPropertyValue('--hud-bottom'),
     bottom: e.style.getPropertyValue('--footer-inset'),

@@ -604,3 +604,82 @@ test('a stored slower-run outcome never claims a new best from a newer current P
     `Best ${((personalBestTicks - 60) / 120).toFixed(3)}s · #1`
   );
 });
+
+test('server-confirmed joint daily lead celebrates once and clears on retry', async ({
+  page,
+}) => {
+  const record = await dailyRecord();
+  const view = personalBestBoard(record);
+  const self = {
+    username: 'DailyDriver',
+    isSelf: true,
+    rank: 1,
+    finishTicks: replay.endTick,
+  };
+  view.me = self;
+  view.top = [self, { ...self, username: 'Other', isSelf: false }];
+  view.nearby = view.top;
+  await page.route('**/api/trpc/dailyChallenge*', (route) =>
+    route.fulfill({
+      json: { result: { data: dailyChallengeView(record, view.serverNowMs) } },
+    })
+  );
+  await page.route('**/api/trpc/getLeaderboard*', (route) =>
+    route.fulfill({ json: { result: { data: view } } })
+  );
+  await page.goto('/game.html?daily=1');
+  await waitForSceneAssets(page);
+  await page.evaluate(
+    async ({ challenge, finishTicks, sessionId, serverNowMs }) => {
+      const url = '/leaderboard-client.ts';
+      const { createLeaderboardController } = await import(url);
+      const controller = createLeaderboardController(challenge, () => {
+        const root = document.documentElement;
+        root.dataset.celebrations = String(
+          Number(root.dataset.celebrations ?? 0) + 1
+        );
+      });
+      controller.onAttemptStart({ attemptId: 1 });
+      controller.recordVerified(1, {
+        sessionId,
+        challengeId: challenge.id,
+        challengeHash: challenge.challengeHash,
+        finishTicks,
+        simulationHz: 120,
+        finishTimeMs: (finishTicks * 1000) / 120,
+        verifiedAtMs: serverNowMs,
+      });
+      controller.onResults({ attemptId: 1, mode: 'ranked' });
+      document
+        .getElementById('retry-button')
+        ?.addEventListener('click', () =>
+          controller.onAttemptStart({ attemptId: 2 })
+        );
+      const retry = document.getElementById('retry-button');
+      if (retry) retry.hidden = false;
+    },
+    {
+      challenge: toPublicDailyChallenge(record),
+      finishTicks: replay.endTick,
+      sessionId,
+      serverNowMs: view.serverNowMs,
+    }
+  );
+  await expect(page.locator('#verified-leader')).toHaveText(
+    'Joint daily leader!'
+  );
+  await expect(page.locator('#verified-leader')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-celebrations', '1');
+  await page.locator('#leaderboard-title').click();
+  await page.locator('#leaderboard-refresh').click();
+  await expect(page.locator('#leaderboard')).toHaveAttribute(
+    'data-state',
+    'ready'
+  );
+  await expect(page.locator('html')).toHaveAttribute('data-celebrations', '1');
+  await page.screenshot({
+    path: `/tmp/racer-readable-evidence/verified-leader-${test.info().project.name}.png`,
+  });
+  await page.locator('#retry-button').click();
+  await expect(page.locator('#verified-leader')).toBeHidden();
+});

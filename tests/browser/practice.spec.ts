@@ -91,6 +91,14 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   );
   await expect(page.locator('#practice-best-lap')).toBeVisible();
   await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-visible',
+    'false'
+  );
+  await expect(page.locator('#ghost-toggle')).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
   await expect(page.locator('#practice-last-lap')).toBeVisible();
   await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
@@ -133,6 +141,18 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     `Best ${(first.lapTicks / 120).toFixed(3).padStart(6, '0')} s`
   );
   await expect(page.locator('#practice-last-lap')).toBeVisible();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-visible',
+    'true'
+  );
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-best-ticks',
+    String(first.lapTicks)
+  );
+  await expect(page.locator('#practice-lap-notice')).toBeVisible();
+  await expect(page.locator('#practice-lap-notice')).toContainText(
+    'First lap banked'
+  );
   expect(Number(await page.locator('#timer').textContent())).toBeLessThan(0.06);
   await expect(page.locator('#circuit-minimap')).toBeVisible();
   await expect(page.locator('#minimap-progress')).toHaveAttribute(
@@ -167,6 +187,9 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     `Last ${(second.lapTicks / 120).toFixed(3).padStart(6, '0')}`
   );
   const best = `Best ${(Math.min(first.lapTicks, second.lapTicks) / 120).toFixed(3).padStart(6, '0')} s`;
+  await expect(page.locator('#practice-lap-notice')).toContainText(
+    second.lapTicks < first.lapTicks ? 'Personal best!' : 'Lap complete'
+  );
   await expect(page.locator('#practice-best-lap')).toHaveText(best);
   await expect(page.locator('#race')).toHaveAttribute('data-track-hash', hash);
   await expect(page.locator('#leaderboard')).toBeHidden();
@@ -193,6 +216,22 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   await expect(page.locator('#practice-best-lap')).toHaveText(best);
   await expect(page.locator('#practice-last-lap')).toBeVisible();
   await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-best-ticks',
+    String(Math.min(first.lapTicks, second.lapTicks))
+  );
+  await setRaceSettingsOpen(page, true);
+  await page.locator('#ghost-toggle').click();
+  await expect(page.locator('#ghost-toggle')).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
+  await page.reload();
+  await ready(page);
+  await expect(page.locator('#ghost-toggle')).toHaveAttribute(
+    'aria-pressed',
+    'false'
+  );
   expect(apiCalls).toEqual([]);
   expect(errors).toEqual([]);
 });

@@ -1,4 +1,5 @@
 import { api } from './api';
+import { verifiedLeaderLabel } from './verified-leader';
 import type { DailyChallenge } from '../shared/daily-challenge';
 import {
   parseLeaderboardView,
@@ -65,7 +66,8 @@ function outcomeText(
 
 /** Only post-bound board queries leave this controller. Session tokens stay in memory. */
 export function createLeaderboardController(
-  challenge: DailyChallenge
+  challenge: DailyChallenge,
+  onVerifiedLeader?: (attemptId: number) => void
 ): LeaderboardController {
   const panel = element('leaderboard');
   const card = element('card');
@@ -75,6 +77,12 @@ export function createLeaderboardController(
   const me = element('leaderboard-me');
   const outcome = element('leaderboard-outcome');
   const summary = element('result-summary');
+  document.getElementById('verified-leader')?.remove();
+  const leaderBadge = document.createElement('p');
+  leaderBadge.id = 'verified-leader';
+  leaderBadge.hidden = true;
+  summary.prepend(leaderBadge);
+  let celebratedAttempt: number | undefined;
   const target = element('result-target');
   const detailsElement = element('leaderboard-details');
   if (!(detailsElement instanceof HTMLDetailsElement))
@@ -104,6 +112,9 @@ export function createLeaderboardController(
   }
 
   function clearRows(): void {
+    leaderBadge.hidden = true;
+    leaderBadge.textContent = '';
+    card.dataset.leader = 'false';
     fillRows(top, []);
     fillRows(nearby, []);
     top.hidden = true;
@@ -166,6 +177,16 @@ export function createLeaderboardController(
       card.dataset.best = String(view.outcome.isPersonalBest);
       const kicker = document.getElementById('card-kicker');
       if (kicker) kicker.textContent = 'Verified';
+    }
+    const leaderLabel = verifiedLeaderLabel(view, receipt);
+    if (leaderLabel) {
+      leaderBadge.textContent = leaderLabel;
+      leaderBadge.hidden = false;
+      card.dataset.leader = 'true';
+      if (celebratedAttempt !== currentAttempt) {
+        celebratedAttempt = currentAttempt;
+        onVerifiedLeader?.(currentAttempt);
+      }
     }
     outcome.textContent = outcomeText(view, receipt);
     outcome.hidden = !outcome.textContent;

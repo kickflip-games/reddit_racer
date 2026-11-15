@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   AUDIO_FINISH_SUSPEND_MS,
+  AUDIO_VERIFIED_BEST_SUSPEND_MS,
   AUDIO_RESUME_TIMEOUT_MS,
   createDrivingAudio,
   type DrivingAudioBackend,
@@ -719,4 +720,151 @@ void test('wind rises smoothly only at speed, stays quiet and is gated with driv
   fast.phase = 'racing';
   fast.state = { ...fast.state, recovering: true };
   assert.equal(calculateDrivingAudioTargets(fast, true).windGain, 0);
+});
+
+void test('personal-best laps lift once, stay continuous and never replay after mute/background', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 1);
+  audio.lap(1, 2, true);
+  audio.lap(1, 2, true);
+  audio.lap(0, 3, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best']);
+  assert.equal(backend.suspends, 0);
+  audio.setMuted(true);
+  audio.lap(1, 3, true);
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 3, true);
+  audio.setForeground(false);
+  audio.lap(1, 4, true);
+  audio.setForeground(true);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 4, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best']);
+  audio.lap(1, 5, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best', 'personal-best']);
+  assert.equal(audio.status, 'running');
+  await audio.dispose();
+});
+
+void test('verified lead reuses only the finished gesture-unlocked graph and suspends after its cue', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const backend = new Backend();
+  let creates = 0;
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => {
+      creates++;
+      return backend;
+    },
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  audio.finish(1);
+  t.mock.timers.tick(AUDIO_FINISH_SUSPEND_MS);
+  assert.equal(backend.state, 'suspended');
+  audio.verifiedBest(0);
+  audio.verifiedBest(1);
+  audio.verifiedBest(1);
+  await flush();
+  assert.deepEqual(backend.cues, ['finish', 'personal-best']);
+  assert.equal(creates, 1);
+  assert.equal(backend.resumes, 2);
+  t.mock.timers.tick(AUDIO_VERIFIED_BEST_SUSPEND_MS - 1);
+  assert.equal(backend.state, 'running');
+  t.mock.timers.tick(1);
+  assert.equal(backend.state, 'suspended');
+  await audio.dispose();
+});
+
+void test('early verified lead replaces finish timer without resuming, and never creates a locked graph', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.finish(1);
+  audio.verifiedBest(1);
+  assert.equal(backend.resumes, 0);
+  audio.resetAttempt(2);
+  audio.unlockFromGesture();
+  await flush();
+  audio.finish(2);
+  audio.verifiedBest(2);
+  t.mock.timers.tick(AUDIO_FINISH_SUSPEND_MS);
+  assert.equal(backend.state, 'running');
+  assert.equal(backend.resumes, 1);
+  assert.deepEqual(backend.cues, ['finish', 'personal-best']);
+  t.mock.timers.tick(AUDIO_VERIFIED_BEST_SUSPEND_MS);
+  assert.equal(backend.state, 'suspended');
+  await audio.dispose();
+});
+
+for (const action of [
+  'mute',
+  'background',
+  'retry',
+  'dispose',
+  'timeout',
+] as const) {
+  void test(`pending verified lead never plays after ${action}`, async (t) => {
+    t.mock.timers.enable({ apis: ['setTimeout'] });
+    const backend = new Backend();
+    const audio = createDrivingAudio({
+      muted: false,
+      createBackend: () => backend,
+    });
+    audio.resetAttempt(1);
+    audio.unlockFromGesture();
+    await flush();
+    audio.finish(1);
+    t.mock.timers.tick(AUDIO_FINISH_SUSPEND_MS);
+    const pending = deferred();
+    backend.resumeWork = () => pending.promise;
+    audio.verifiedBest(1);
+    if (action === 'mute') audio.setMuted(true);
+    else if (action === 'background') audio.setForeground(false);
+    else if (action === 'retry') audio.resetAttempt(2);
+    else if (action === 'dispose') await audio.dispose();
+    else t.mock.timers.tick(AUDIO_RESUME_TIMEOUT_MS);
+    backend.setState('running');
+    pending.resolve();
+    await flush();
+    assert.deepEqual(backend.cues, ['finish']);
+    if (action !== 'dispose') assert.equal(backend.state, 'suspended');
+    await audio.dispose();
+  });
+}
+
+void test('inaudible verified lead is consumed, not queued for returning foreground or unmute', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  audio.finish(1);
+  audio.setMuted(true);
+  audio.verifiedBest(1);
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  audio.verifiedBest(1);
+  assert.deepEqual(backend.cues, ['finish']);
+  await audio.dispose();
 });

@@ -19,3 +19,32 @@ Production-flow regression coverage now exercises both the default local entry a
 High-speed wind uses the existing noise buffer through two fixed filter/gain nodes (14 graph nodes total, still one context and one buffer). It fades in above the normalized 14/22 speed threshold (about 19/30 m/s on elevated courses), with gain capped at 0.025. It respects the same racing, mute and recovery gates. Existing tyre squeal and grass rumble are retained.
 
 Landings use a short 140-to-65 Hz low thump, driven by fresh `vertical.landings` edges and normalized `impact`. Initial snapshots, duplicate ticks, recovery, airborne states, very small impacts and muted events do not trigger or replay it. No extra per-landing node allocation or engine interruption.
+
+## Local course personal best
+
+`audio.lap(attemptId, completedLaps, personalBest = false)` selects a restrained
+three-note ascending chime when the caller has established a faster local course
+best. Compare against the prior best before saving the new time; the audio owner
+does not infer records or read the online leaderboard. Ordinary laps retain the
+two-note chime. Call only once per completed lap, with the record flag already
+known; repeating the same lap cannot upgrade or replay the cue.
+
+The personal-best cue adds a C♯6 above the ordinary E5/A5 pair (660, 880,
+1108.73 Hz), finishes after 320 ms, and raises the internal gain only from 0.07
+to 0.085. It uses the existing oscillator and graph, adds no assets or nodes, and
+does not suspend continuous driving. Muted/background/stale/duplicate events
+are consumed silently rather than replayed later. Offline browser tests verify
+the third rising note, bounded peak, silent tail and unchanged node count;
+owner tests verify lifecycle gating. Physical phone loudness is not measured.
+
+## Delayed verified leaderboard lead
+
+`audio.verifiedBest(attemptId)` is for a server-confirmed lead on a finished
+attempt, not optimistic local timing. The caller must first have called
+`finish(attemptId)`. It reuses the personal-best cue and consumes the event once
+per attempt. If the ordinary finish timer already suspended the existing
+successfully gesture-unlocked context, it can resume that same context without
+creating a new backend or requesting a gesture. Browser rejection is nonfatal;
+resume is bounded by the existing 1.5-second timeout. After the cue it suspends
+within 400 ms. Mute, background, reset, abandonment, disposal and late resolution
+invalidate playback; inaudible events are not queued for later replay.

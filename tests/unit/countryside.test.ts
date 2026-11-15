@@ -113,9 +113,7 @@ void test('all plant silhouettes stay off the road, solid scenery preserves reco
         Number.isFinite(p.x + p.y + p.z + p.heading + p.scale + p.phase)
       );
       assert.ok(
-        p.scale > 0 &&
-          p.scale <= (p.kind === 'rock' && p.region === -2 ? 4.2 : 2) &&
-          p.radius > 0
+        p.scale > 0 && p.scale <= (p.kind === 'rock' ? 4.2 : 2) && p.radius > 0
       );
       assert.equal(p.y, groundHeightAt(layout.surface, p.x, p.z));
       assert.ok(

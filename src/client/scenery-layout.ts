@@ -9,7 +9,7 @@ import type { SceneryKind } from './scene-assets';
 import type { GapJump } from '../shared/stunt-course';
 import { gripSurfaceAt, type GripZone } from '../shared/slot-grip';
 
-export const SCENERY_VERSION = 'green-composition-v3';
+export const SCENERY_VERSION = 'green-composition-v4';
 export const SCENERY_LIMITS = Object.freeze({
   regions: 40,
   candidates: 18000,
@@ -417,6 +417,52 @@ export function generateSceneryLayout(
       occupied.set(key, bucket);
     }
   }
+  // Reserve recognizable pockets around the whole lap before random filler can
+  // consume the plant budget. Bounded, deterministic searches use the same road
+  // clearance and occupancy checks as every other plant; never force an unsafe
+  // placement. These are scenery only, not changes to the scored route.
+  if (regionDensity > 0 && coverDensity > 0) {
+    for (let sector = 0; sector < 4; sector++) {
+      const tag = -10 - sector;
+      const anchorKind: PlantKind = sector % 2 === 0 ? 'rock' : 'blossom';
+      if (anchorKind === 'blossom' && treeDensity === 0) continue;
+      let anchor: Plant | undefined;
+      for (let attempt = 0; attempt < 24 && !anchor; attempt++) {
+        const f = sampleTrack(
+          track,
+          track.totalLength * ((sector + 0.2 + (attempt % 6) * 0.1) / 4)
+        );
+        const side = attempt % 2 === 0 ? -1 : 1;
+        const offset = f.halfWidth + 17 + Math.floor(attempt / 6) * 3;
+        const x = f.x + f.nx * side * offset;
+        const z = f.z + f.nz * side * offset;
+        // On crossing/hairpin courses a distant candidate may belong to a
+        // different road section. Keep each landmark in its intended quarter.
+        const nearest = field.sample(x, z).s / track.totalLength;
+        if (nearest < sector / 4 || nearest >= (sector + 1) / 4) continue;
+        const before = plants.length;
+        plant(anchorKind, x, z, tag, 1, Math.atan2(f.tz, f.tx), 3.6);
+        if (plants.length > before) anchor = plants[plants.length - 1];
+      }
+      if (!anchor) continue;
+      // Asymmetric groups read as deliberate places rather than isolated props.
+      for (let j = 0; j < 16; j++) {
+        const angle = j * 2.39996 + anchor.heading;
+        const radius = 5 + (j % 4) * 2.1;
+        const kind: PlantKind =
+          j < 3 ? anchorKind : j < 6 ? 'bush' : j < 11 ? 'flower' : 'grass';
+        plant(
+          kind,
+          anchor.x + Math.cos(angle) * radius,
+          anchor.z + Math.sin(angle) * radius,
+          tag,
+          1,
+          anchor.heading,
+          kind === 'rock' ? 1.8 + (j % 2) * 0.5 : undefined
+        );
+      }
+    }
+  }
   const regionKinds: readonly RegionKind[] = [
     'grove',
     'grove',
@@ -610,6 +656,15 @@ export function generateSceneryLayout(
     prop('flagCheckersSmall', 0, side);
     prop('pylon', 5, side);
   }
+  // A few red/white landmark clusters mark sections, not an unbroken fence.
+  // Keep them outside the full recovery envelope and within the existing cap.
+  for (let sector = 1; sector < 4; sector++) {
+    const s = track.totalLength * (sector / 4);
+    const side = sector % 2 === 0 ? 1 : -1;
+    prop('barrierRed', s, side, -3);
+    prop('barrierWhite', s, side, 0);
+    prop('pylon', s, side, 4);
+  }
   for (const region of regions.filter((r) => r.kind === 'hedge').slice(0, 5)) {
     for (let j = 0; j < 4; j++) {
       const offset = (j - 1.5) * 4;
@@ -636,6 +691,7 @@ export function generateSceneryLayout(
             p.kind === 'tree' ||
             p.kind === 'blossom' ||
             p.region === -2 ||
+            p.region <= -10 ||
             p.detail < 0.35
         )
       : plants,
@@ -649,6 +705,7 @@ export function generateSceneryLayout(
               p.kind === 'tree' ||
               p.kind === 'blossom' ||
               p.region === -2 ||
+              p.region <= -10 ||
               p.detail < 0.35
           ).length
         : plants.length,

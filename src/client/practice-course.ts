@@ -1,3 +1,4 @@
+import { generateOtherTracksCircuit } from '../shared/other-tracks-generator';
 import { courseWord, type CourseWord } from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
 
@@ -138,8 +139,6 @@ export async function generateWordPracticeCourse(
   version = 1
 ): Promise<PracticeCourse & { wordCourse: CourseWord }> {
   const wordCourse = courseWord(input, version);
-  const { generateOtherTracksCircuit } =
-    await import('../shared/other-tracks-generator');
   const result = generateOtherTracksCircuit(wordCourse.seed);
   if (!result.quality.valid)
     throw new Error('This word course did not pass the driving checks.');

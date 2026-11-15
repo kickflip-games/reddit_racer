@@ -21,7 +21,8 @@
     "check": "npm run format:check && npm run type-check && npm run lint && npm run test:unit && npm run tracks:check && npm run build",
     "test:e2e": "playwright test",
     "tracks:check": "tsx scripts/tracks-check.ts",
-    "balance:check": "tsx scripts/balance-check.ts"
+    "balance:check": "tsx scripts/balance-check.ts",
+    "test:production": "npm run build && playwright test -c playwright.production.config.ts"
   },
   "engines": {
     "node": "24.22.x"

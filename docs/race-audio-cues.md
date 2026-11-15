@@ -36,3 +36,15 @@ does not suspend continuous driving. Muted/background/stale/duplicate events
 are consumed silently rather than replayed later. Offline browser tests verify
 the third rising note, bounded peak, silent tail and unchanged node count;
 owner tests verify lifecycle gating. Physical phone loudness is not measured.
+
+## Delayed verified leaderboard lead
+
+`audio.verifiedBest(attemptId)` is for a server-confirmed lead on a finished
+attempt, not optimistic local timing. The caller must first have called
+`finish(attemptId)`. It reuses the personal-best cue and consumes the event once
+per attempt. If the ordinary finish timer already suspended the existing
+successfully gesture-unlocked context, it can resume that same context without
+creating a new backend or requesting a gesture. Browser rejection is nonfatal;
+resume is bounded by the existing 1.5-second timeout. After the cue it suspends
+within 400 ms. Mute, background, reset, abandonment, disposal and late resolution
+invalidate playback; inaudible events are not queued for later replay.

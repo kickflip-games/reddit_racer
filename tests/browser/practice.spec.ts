@@ -133,6 +133,10 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     `Best ${(first.lapTicks / 120).toFixed(3).padStart(6, '0')} s`
   );
   await expect(page.locator('#practice-last-lap')).toBeVisible();
+  await expect(page.locator('#practice-lap-notice')).toBeVisible();
+  await expect(page.locator('#practice-lap-notice')).toContainText(
+    'First lap banked'
+  );
   expect(Number(await page.locator('#timer').textContent())).toBeLessThan(0.06);
   await expect(page.locator('#circuit-minimap')).toBeVisible();
   await expect(page.locator('#minimap-progress')).toHaveAttribute(
@@ -167,6 +171,9 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
     `Last ${(second.lapTicks / 120).toFixed(3).padStart(6, '0')}`
   );
   const best = `Best ${(Math.min(first.lapTicks, second.lapTicks) / 120).toFixed(3).padStart(6, '0')} s`;
+  await expect(page.locator('#practice-lap-notice')).toContainText(
+    second.lapTicks < first.lapTicks ? 'Personal best!' : 'Lap complete'
+  );
   await expect(page.locator('#practice-best-lap')).toHaveText(best);
   await expect(page.locator('#race')).toHaveAttribute('data-track-hash', hash);
   await expect(page.locator('#leaderboard')).toBeHidden();

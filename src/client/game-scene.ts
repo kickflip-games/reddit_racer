@@ -123,6 +123,7 @@ export function initializeGame(
   const localBests = createPracticeBestStore(storage);
   const localBestKey = practiceBestKey(track, options);
   let seenPracticeLaps = 0;
+  let lapNoticeUntil = 0;
   function showLocalBest(): void {
     const best = localBests.best(localBestKey);
     const label = element('practice-best-lap');
@@ -490,11 +491,18 @@ export function initializeGame(
         completed > seenPracticeLaps &&
         practiceDriver.lastLapTicks !== null
       ) {
-        recordLocalLap(practiceDriver.lastLapTicks);
-        audio.lap(attemptId, completed);
+        const result = recordLocalLap(practiceDriver.lastLapTicks);
+        const improved = result.isNewBest && result.previousBestTicks !== null;
+        audio.lap(attemptId, completed, improved);
+        const notice = element('practice-lap-notice');
+        notice.dataset.kind = improved ? 'best' : 'lap';
+        notice.textContent = `${improved ? 'Personal best!' : result.previousBestTicks === null ? 'First lap banked' : 'Lap complete'} · ${formatTime(practiceDriver.lastLapTicks / SIMULATION_HZ)} s`;
+        // Presentation only: neither pause nor restart the continuing driver.
+        lapNoticeUntil = performance.now() + (improved ? 2400 : 1600);
       }
       seenPracticeLaps = completed;
-      element('practice-lap-notice').hidden = true;
+      element('practice-lap-notice').hidden =
+        race.phase !== 'racing' || performance.now() >= lapNoticeUntil;
       raceRoot.dataset.practiceLaps = String(completed);
       element('mode-label').textContent = `Lap ${completed + 1}`;
       const last = element('practice-last-lap');
@@ -872,6 +880,7 @@ export function initializeGame(
     racingViewport = undefined;
     driver.start(timestamp);
     seenPracticeLaps = 0;
+    lapNoticeUntil = 0;
     card.dataset.result = 'false';
     card.dataset.best = 'false';
     element('finish-time').hidden = true;

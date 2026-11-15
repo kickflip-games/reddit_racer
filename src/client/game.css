@@ -1129,3 +1129,48 @@ select:focus-visible {
     font-size: 36px;
   }
 }
+
+/* Lap feedback floats beneath the clock, so it never changes camera framing. */
+.timing {
+  position: relative;
+}
+.practice-lap-notice {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 28px));
+  margin-top: 8px;
+  padding: 9px 12px;
+  background: #fff7e8;
+  color: #174d3f;
+  border-radius: 5px;
+  border-left: 4px solid #174d3f;
+  box-shadow: 0 3px 8px #102e2926;
+  font-size: 12px;
+  pointer-events: none;
+  animation: lap-pop 180ms ease-out;
+}
+.practice-lap-notice[data-kind='best'] {
+  background: #ffe5a0;
+  border-color: #ae3924;
+  color: #65331f;
+}
+@keyframes lap-pop {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+#race[data-reduced-motion='true'] .practice-lap-notice {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .practice-lap-notice {
+    animation: none;
+  }
+}

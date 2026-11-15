@@ -1,8 +1,8 @@
 import { context, reddit, redis, type Post } from '@devvit/web/server';
 import {
-  generateElevatedCircuit,
-  ELEVATED_RESERVE_SEED,
-} from '../shared/elevated-generator';
+  generateCurrentDailyCircuit,
+  CURRENT_COURSE_RESERVE_SEED,
+} from '../shared/braking-course-generator';
 import { createDailyChallengeService } from './core/daily-challenges';
 
 /** Capture trusted request context; never accept a post ID or date from the browser. */
@@ -21,8 +21,7 @@ export function createDevvitDailyService(createdPost?: Post) {
         createdAtMs: post.createdAt.getTime(),
       };
     },
-    generate: (seed) => generateElevatedCircuit(seed),
-    reserve: () =>
-      generateElevatedCircuit(ELEVATED_RESERVE_SEED, { maxAttempts: 1 }),
+    generate: (seed) => generateCurrentDailyCircuit(seed),
+    reserve: () => generateCurrentDailyCircuit(CURRENT_COURSE_RESERVE_SEED),
   });
 }

@@ -1,5 +1,7 @@
 import { generateBrakeRhythmCandidate } from './brake-rhythm-generator';
 import { assessTrackQuality, type QualityAssessment } from './circuit-quality';
+import type { GeneratorConfig } from './circuit-generator';
+import type { ValidatedCircuit } from './circuit-quality';
 import type { Track } from './track';
 
 export const BRAKING_QUALITY_VERSION = 'braking-quality-v1';
@@ -32,12 +34,14 @@ export function generateBrakingCircuit(
   const rejections: { attempt: number; codes: string[] }[] = [];
   let last: { track: Track; quality: QualityAssessment } | undefined;
   let simulatedTicks = 0,
-    controllerRuns = 0;
+    controllerRuns = 0,
+    replayChecks = 0;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const candidate = generateBrakeRhythmCandidate(seed, attempt);
     const quality = assessBrakingTrack(candidate.track);
     simulatedTicks += quality.work.simulatedTicks;
     controllerRuns += quality.work.controllerRuns;
+    replayChecks += quality.work.replayChecks;
     last = { track: candidate.track, quality };
     if (quality.valid)
       return {
@@ -52,6 +56,7 @@ export function generateBrakingCircuit(
           rejections,
           simulatedTicks,
           controllerRuns,
+          replayChecks,
         },
       };
     rejections.push({ attempt, codes: [...quality.codes] });
@@ -69,6 +74,77 @@ export function generateBrakingCircuit(
       rejections,
       simulatedTicks,
       controllerRuns,
+      replayChecks,
+    },
+  };
+}
+
+/** Storage adapter for the one current generator; no legacy generation fallback. */
+export const CURRENT_COURSE_CONFIG: Readonly<GeneratorConfig> = Object.freeze({
+  width: 7,
+  lengthMin: 500,
+  lengthMax: 2200,
+  minRadius: 10,
+  clearance: 2,
+  shoulder: 0.8,
+  maxAttempts: MAX_BRAKING_QUALITY_ATTEMPTS,
+});
+export const CURRENT_COURSE_RESERVE_SEED = 'current-course-reserve';
+export function normalizeCurrentCourseConfig(
+  input: Partial<GeneratorConfig> = {}
+): GeneratorConfig {
+  const c = { ...CURRENT_COURSE_CONFIG, ...input };
+  if (
+    Object.keys(input).some((k) => !Object.hasOwn(CURRENT_COURSE_CONFIG, k)) ||
+    Object.entries(CURRENT_COURSE_CONFIG).some(
+      ([k, v]) => Object.entries(c).find(([key]) => key === k)?.[1] !== v
+    )
+  )
+    throw new Error(
+      'Current course audit configuration does not match the generator.'
+    );
+  return c;
+}
+export function generateCurrentDailyCircuit(seed: string): ValidatedCircuit {
+  const result = generateBrakingCircuit(seed);
+  if (!result.quality.valid || result.diagnostics.acceptedAttempt === null)
+    throw new Error('Current course failed bounded braking quality gates.');
+  if (
+    result.track.totalLength < CURRENT_COURSE_CONFIG.lengthMin ||
+    result.track.totalLength > CURRENT_COURSE_CONFIG.lengthMax
+  )
+    throw new Error('Current course length is outside its declared bounds.');
+  const d = result.diagnostics;
+  return {
+    track: result.track,
+    quality: result.quality,
+    diagnostics: {
+      requestedSeed: seed,
+      version: result.track.generatorVersion,
+      config: normalizeCurrentCourseConfig(),
+      attempts: d.attempts,
+      fallbackUsed: false,
+      rejections: d.rejections,
+      accepted: {
+        ...result.quality.structure.metrics,
+        candidateSeed: seed,
+        motifs: [],
+        controlPoints: [],
+      },
+      qualityVersion: result.quality.version,
+      qualityAttempts: d.attempts,
+      qualityRejections: d.rejections.map((r) => ({
+        ...r,
+        candidateSeed: seed,
+      })),
+      validationWork: {
+        candidates: d.attempts,
+        qualityAssessments: d.attempts,
+        reserveAssessments: 0,
+        controllerRuns: d.controllerRuns,
+        simulatedTicks: d.simulatedTicks,
+        replayChecks: d.replayChecks,
+      },
     },
   };
 }

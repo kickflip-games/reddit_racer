@@ -274,61 +274,61 @@ export function createTrackRenderer(
   );
   group.add(kerbStrip(track, -1, jumps), kerbStrip(track, 1, jumps));
   for (const jump of jumps) {
-    const walls: number[] = [],
-      wallIndices: number[] = [];
-    for (const [from, to] of [
-      [jump.rampStart, jump.takeoff],
-      [jump.landing, jump.rampEnd],
-    ]) {
-      if (from === undefined || to === undefined) continue;
-      for (const side of [-1, 1]) {
-        const start = sampleTrack(track, from),
-          end = sampleTrack(track, to);
-        const a = roadPointAt(track, from, side * (start.halfWidth + 0.8));
-        const b = roadPointAt(track, to, side * (end.halfWidth + 0.8));
-        const base = walls.length / 3;
-        walls.push(
-          a.x,
-          -0.04,
-          a.z,
-          b.x,
-          -0.04,
-          b.z,
-          a.x,
-          (sampleTrack(track, from).y ?? 0) +
-            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, from)),
-          a.z,
-          b.x,
-          (sampleTrack(track, to).y ?? 0) +
-            (track.schemaVersion === 2 ? 0 : jumpRoadHeight(jumps, to)),
-          b.z
-        );
-        wallIndices.push(
-          base,
-          base + 1,
-          base + 2,
-          base + 1,
-          base + 3,
-          base + 2
-        );
+    if (track.schemaVersion !== 2) {
+      const walls: number[] = [],
+        wallIndices: number[] = [];
+      for (const [from, to] of [
+        [jump.rampStart, jump.takeoff],
+        [jump.landing, jump.rampEnd],
+      ]) {
+        if (from === undefined || to === undefined) continue;
+        for (const side of [-1, 1]) {
+          const start = sampleTrack(track, from),
+            end = sampleTrack(track, to);
+          const a = roadPointAt(track, from, side * (start.halfWidth + 0.8));
+          const b = roadPointAt(track, to, side * (end.halfWidth + 0.8));
+          const base = walls.length / 3;
+          walls.push(
+            a.x,
+            -0.04,
+            a.z,
+            b.x,
+            -0.04,
+            b.z,
+            a.x,
+            (sampleTrack(track, from).y ?? 0) + jumpRoadHeight(jumps, from),
+            a.z,
+            b.x,
+            (sampleTrack(track, to).y ?? 0) + jumpRoadHeight(jumps, to),
+            b.z
+          );
+          wallIndices.push(
+            base,
+            base + 1,
+            base + 2,
+            base + 1,
+            base + 3,
+            base + 2
+          );
+        }
       }
+      const wallGeometry = new THREE.BufferGeometry();
+      wallGeometry.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(walls, 3)
+      );
+      wallGeometry.setIndex(wallIndices);
+      wallGeometry.computeVertexNormals();
+      group.add(
+        new THREE.Mesh(
+          wallGeometry,
+          new THREE.MeshToonMaterial({
+            color: '#a78456',
+            side: THREE.DoubleSide,
+          })
+        )
+      );
     }
-    const wallGeometry = new THREE.BufferGeometry();
-    wallGeometry.setAttribute(
-      'position',
-      new THREE.Float32BufferAttribute(walls, 3)
-    );
-    wallGeometry.setIndex(wallIndices);
-    wallGeometry.computeVertexNormals();
-    group.add(
-      new THREE.Mesh(
-        wallGeometry,
-        new THREE.MeshToonMaterial({
-          color: '#a78456',
-          side: THREE.DoubleSide,
-        })
-      )
-    );
     // Three bold launch chevrons make the upcoming jump readable at speed.
     for (const distance of [
       jump.rampStart + 3,
@@ -374,7 +374,7 @@ export function createTrackRenderer(
     for (const s of [jump.takeoff - 0.16, jump.landing + 0.16]) {
       const frame = sampleTrack(track, s);
       const lip = new THREE.Mesh(
-        new THREE.BoxGeometry(frame.width + 1.6, 0.35, 0.32),
+        new THREE.BoxGeometry(frame.width + 1.56, 0.35, 0.32),
         new THREE.MeshToonMaterial({ color: '#d9c8a6' })
       );
       lip.position.set(frame.x, (frame.y ?? jump.height) - 0.18, frame.z);
@@ -431,29 +431,46 @@ function createRoadStructure(track: Track): THREE.Group {
   const group = new THREE.Group();
   group.name = 'raised-road-structure';
   const positions: number[] = [],
-    indices: number[] = [];
+    indices: number[] = [],
+    colors: number[] = [];
+  const rampColor = new THREE.Color('#a78456');
+  const bridgeColor = new THREE.Color('#a9b5b1');
   const footings: { x: number; y: number; z: number; heading: number }[] = [];
   for (let i = 0; i < track.samples.length; i++) {
     const a = track.samples[i],
       b = track.samples[(i + 1) % track.samples.length];
+    const endS =
+      i === track.samples.length - 1 ? track.totalLength : (b?.s ?? 0);
     if (
       !a ||
       !b ||
       Math.max(a.y ?? 0, b.y ?? 0) < 0.14 ||
-      track.jumps?.some((j) => a.s >= j.takeoff && b.s <= j.landing)
+      track.jumps?.some(
+        (j) => a.s >= j.takeoff - 0.00001 && endS <= j.landing + 0.00001
+      )
     )
       continue;
+    // Exactly one owner for every outer side segment. Ramp sides extend to
+    // ground; bridge fascia remains shallow. Both follow canonical samples.
+    const ramp = track.jumps?.some(
+      (j) =>
+        (a.s >= j.rampStart - 0.00001 && endS <= j.takeoff + 0.00001) ||
+        (a.s >= j.landing - 0.00001 && endS <= j.rampEnd + 0.00001)
+    );
+    const color = ramp ? rampColor : bridgeColor;
     for (const side of [-1, 1]) {
       const base = positions.length / 3;
       for (const sample of [a, b]) {
         const lateral = side * (sample.width / 2 + 0.8);
         const y = sample.y ?? 0;
-        for (const bottom of [false, true])
+        for (const bottom of [false, true]) {
+          colors.push(color.r, color.g, color.b);
           positions.push(
             sample.x - sample.tz * lateral,
-            Math.max(0, y - (bottom ? 0.55 : 0.02)),
+            bottom && ramp ? -0.04 : Math.max(0, y - (bottom ? 0.55 : 0.02)),
             sample.z + sample.tx * lateral
           );
+        }
       }
       indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
     }
@@ -478,17 +495,18 @@ function createRoadStructure(track: Track): THREE.Group {
     'position',
     new THREE.Float32BufferAttribute(positions, 3)
   );
+  fascia.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   fascia.setIndex(indices);
   fascia.computeVertexNormals();
-  group.add(
-    new THREE.Mesh(
-      fascia,
-      new THREE.MeshToonMaterial({
-        color: '#a9b5b1',
-        side: THREE.DoubleSide,
-      })
-    )
+  const sides = new THREE.Mesh(
+    fascia,
+    new THREE.MeshToonMaterial({
+      vertexColors: true,
+      side: THREE.DoubleSide,
+    })
   );
+  sides.name = 'road-side-faces';
+  group.add(sides);
   const safeFootings = footings.filter(
     (p) =>
       !track.samples.some(

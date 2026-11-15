@@ -155,3 +155,52 @@ void test('ordinary jump roads use one asphalt material, level cross-sections an
   assert.equal(road.geometry.getAttribute('color'), undefined);
   assert.equal(road.material.vertexColors, false);
 });
+
+void test('elevated jump sides have one sampled surface owner and inset lip caps', async () => {
+  const { generateElevatedCircuit } =
+    await import('../../src/shared/elevated-generator.ts');
+  for (const seed of ['practice-1', 'country-1', 'showcase-3']) {
+    const track = generateElevatedCircuit(seed).track;
+    const group = createTrackRenderer(track);
+    const sides = group.getObjectByName('road-side-faces');
+    assert.ok(sides instanceof THREE.Mesh);
+    const positions = sides.geometry.getAttribute('position');
+    const faces = new Set<string>();
+    const indices = sides.geometry.getIndex();
+    assert.ok(indices);
+    for (let i = 0; i < indices.count; i += 3) {
+      const vertices = [0, 1, 2]
+        .map((offset) => {
+          const j = indices.getX(i + offset);
+          return [positions.getX(j), positions.getY(j), positions.getZ(j)]
+            .map((n) => n.toFixed(5))
+            .join(',');
+        })
+        .sort()
+        .join(';');
+      assert.equal(faces.has(vertices), false, 'duplicate fascia triangle');
+      faces.add(vertices);
+    }
+    let legacyWalls = 0;
+    group.traverse((node) => {
+      if (
+        node instanceof THREE.Mesh &&
+        node.material instanceof THREE.MeshToonMaterial &&
+        node.material.color.getHexString() === 'a78456'
+      )
+        legacyWalls++;
+      if (node instanceof THREE.Mesh && node.name === 'jump-ramp-cutaway') {
+        assert.ok(node.geometry instanceof THREE.BoxGeometry);
+        assert.ok(
+          node.geometry.parameters.width <
+            Math.max(...track.samples.map((sample) => sample.width)) + 1.6
+        );
+      }
+    });
+    assert.equal(
+      legacyWalls,
+      0,
+      'no second ground-to-deck mesh on same outer side plane'
+    );
+  }
+});

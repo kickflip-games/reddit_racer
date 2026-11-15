@@ -257,3 +257,61 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
   }
   expect(cues[1]!.crossings).toBeGreaterThan(cues[0]!.crossings * 1.8);
 });
+
+test('OFFLINE personal-best chime adds a third rising note without a loud or sustained tail', async ({
+  page,
+}) => {
+  await page.goto('/game.html');
+  const result = await page.evaluate(async () => {
+    const url = '/driving-audio-graph.ts';
+    const {
+      createDrivingAudioGraph,
+    }: typeof import('../../src/client/driving-audio-graph.ts') = await import(
+      url
+    );
+    const captures = [];
+    for (const kind of ['lap', 'personal-best'] as const) {
+      const context = new OfflineAudioContext(1, 14400, 24000);
+      const graph = createDrivingAudioGraph(context);
+      graph.cue(kind, 0);
+      const data = (await context.startRendering()).getChannelData(0);
+      const crossings = [0, 0, 0];
+      let peak = 0,
+        thirdEnergy = 0,
+        tail = 0;
+      for (let i = 1; i < data.length; i++) {
+        const value = data[i] ?? 0;
+        peak = Math.max(peak, Math.abs(value));
+        if (i >= 6000 && i < 7920) thirdEnergy += value * value;
+        if (i > 9600) tail = Math.max(tail, Math.abs(value));
+        for (let note = 0; note < 3; note++) {
+          const start = Math.round((note * 0.11 + 0.02) * 24000);
+          if (
+            i >= start &&
+            i < start + 1680 &&
+            value > 0 &&
+            (data[i - 1] ?? 0) <= 0
+          )
+            crossings[note] = (crossings[note] ?? 0) + 1;
+        }
+      }
+      captures.push({
+        peak,
+        thirdEnergy,
+        tail,
+        crossings,
+        nodes: graph.nodeCount,
+      });
+      graph.dispose();
+    }
+    return captures;
+  });
+  const [ordinary, best] = result;
+  expect(best!.nodes).toBe(ordinary!.nodes);
+  expect(best!.peak).toBeGreaterThan(ordinary!.peak);
+  expect(best!.peak).toBeLessThan(0.04);
+  expect(best!.thirdEnergy).toBeGreaterThan(ordinary!.thirdEnergy + 0.01);
+  expect(best!.crossings[1]).toBeGreaterThan(best!.crossings[0]!);
+  expect(best!.crossings[2]).toBeGreaterThan(best!.crossings[1]!);
+  expect(best!.tail).toBeLessThan(0.0001);
+});

@@ -42,7 +42,7 @@ export type DrivingAudio = {
   setForeground(value: boolean): void;
   update(frame: Readonly<DrivingAudioFrame>): void;
   countdown(attemptId: number, seconds: number): void;
-  lap(attemptId: number, completedLaps: number): void;
+  lap(attemptId: number, completedLaps: number, personalBest?: boolean): void;
   finish(attemptId: number): void;
   silence(reason: 'abandon' | 'background'): void;
   dispose(): Promise<void>;
@@ -391,7 +391,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         unavailable();
       }
     },
-    lap(id, completedLaps) {
+    lap(id, completedLaps, personalBest = false) {
       if (
         disposed ||
         id !== attemptId ||
@@ -403,7 +403,7 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       lastLap = completedLaps;
       if (!canPlay()) return;
       try {
-        backend?.cue('lap');
+        backend?.cue(personalBest ? 'personal-best' : 'lap');
       } catch {
         unavailable();
       }

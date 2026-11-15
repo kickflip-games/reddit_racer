@@ -720,3 +720,37 @@ void test('wind rises smoothly only at speed, stays quiet and is gated with driv
   fast.state = { ...fast.state, recovering: true };
   assert.equal(calculateDrivingAudioTargets(fast, true).windGain, 0);
 });
+
+void test('personal-best laps lift once, stay continuous and never replay after mute/background', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 1);
+  audio.lap(1, 2, true);
+  audio.lap(1, 2, true);
+  audio.lap(0, 3, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best']);
+  assert.equal(backend.suspends, 0);
+  audio.setMuted(true);
+  audio.lap(1, 3, true);
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 3, true);
+  audio.setForeground(false);
+  audio.lap(1, 4, true);
+  audio.setForeground(true);
+  audio.unlockFromGesture();
+  await flush();
+  audio.lap(1, 4, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best']);
+  audio.lap(1, 5, true);
+  assert.deepEqual(backend.cues, ['lap', 'personal-best', 'personal-best']);
+  assert.equal(audio.status, 'running');
+  await audio.dispose();
+});

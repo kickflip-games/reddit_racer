@@ -14,6 +14,11 @@ void test('terrain and contact shadows use bounded buffers and preserve road/run
   const group = createEnvironment(track, placements);
   const ground = group.getObjectByName('diorama-terrain');
   assert.ok(ground instanceof THREE.Mesh);
+  assert.ok(ground.material instanceof THREE.ShaderMaterial);
+  assert.equal(ground.material.transparent, false);
+  assert.equal(ground.material.lights, false);
+  assert.match(ground.material.fragmentShader, /float band/);
+  assert.equal(generateSceneryLayout(track).options.lighting, 'toon');
   const position = ground.geometry.getAttribute('position');
   assert.ok(position.count <= 65 * 65);
   for (let i = 0; i < position.count; i++) {

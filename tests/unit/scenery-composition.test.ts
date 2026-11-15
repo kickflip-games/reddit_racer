@@ -32,6 +32,13 @@ void test('quality changes only thin detail, preserving clustered landmarks and 
       .filter((p) => p.region === -2)
       .every((p) => p.kind === 'rock' || p.kind === 'bush')
   );
+  const anchors = full.allPlants.filter(
+    (p) => p.region === -2 && p.kind === 'rock' && p.scale > 3
+  );
+  assert.ok(anchors.length >= 2, 'outcrops have visible boulder anchors');
+  assert.ok(
+    anchors.every((p) => light.plants.some((q) => q.x === p.x && q.z === p.z))
+  );
   for (let i = 0; i < 40; i++) {
     const f = sampleTrack(track, (i / 40) * track.totalLength);
     for (const side of [-1, 1]) {

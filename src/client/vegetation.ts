@@ -41,7 +41,7 @@ void main() {
   vec3 n = normalize(mat3(instanceMatrix) * normal);
   float diffuse = max(0.0, dot(n, normalize(vec3(-0.35, 0.88, 0.32))));
   float soft = 0.72 + diffuse * 0.28;
-  float toon = diffuse < 0.2 ? 0.68 : (diffuse < 0.7 ? 0.88 : 1.04);
+  float toon = diffuse < 0.2 ? 0.55 : (diffuse < 0.7 ? 0.82 : 1.12);
   vColor = color * mix(vec3(1.0), instanceColor, aTint) * mix(soft, toon, uToon);
   gl_Position = projectionMatrix * modelViewMatrix * world;
 }`;

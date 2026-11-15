@@ -881,3 +881,178 @@ select:focus-visible {
 #race[data-phase='loading'] #restart-button {
   visibility: hidden;
 }
+
+/* Static peripheral streaks fade with speed: no extra draw calls or animation loop. */
+#race::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--speed-cue, 0);
+  background:
+    linear-gradient(12deg, transparent 49%, #fff 50%, transparent 51%) left
+      20% / 10% 18% no-repeat,
+    linear-gradient(-12deg, transparent 49%, #fff 50%, transparent 51%) right
+      20% / 10% 18% no-repeat,
+    linear-gradient(-18deg, transparent 49%, #fff 50%, transparent 51%) left
+      70% / 8% 20% no-repeat,
+    linear-gradient(18deg, transparent 49%, #fff 50%, transparent 51%) right
+      70% / 8% 20% no-repeat;
+}
+@media (prefers-reduced-motion: reduce) {
+  #race::after {
+    display: none;
+  }
+}
+/* A compact racing placard over the actual course, not another menu scene. */
+.start-identity,
+.start-controls {
+  display: none;
+}
+.race-card:has(#start-button:not([hidden])) {
+  width: min(360px, calc(100% - 40px));
+  padding: 22px;
+  background: #fff7e8f5;
+  border: 1px solid #ffffffa6;
+  border-bottom: 5px solid #174d3f;
+  border-radius: 5px 24px 5px 5px;
+  box-shadow: 0 14px 35px #113a2926;
+}
+.race-card:has(#start-button:not([hidden])) .start-identity {
+  display: block;
+  margin-bottom: 18px;
+}
+.start-series {
+  display: block;
+  color: #22604c;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+.start-wordmark {
+  margin: 10px 0 14px;
+  font-size: clamp(42px, 8vw, 58px);
+  font-weight: 950;
+  font-style: italic;
+  letter-spacing: -3px;
+  line-height: 0.85;
+  color: #174d3f;
+}
+.start-wordmark > span {
+  display: block;
+  padding-left: 32px;
+}
+.start-wordmark i {
+  color: #d34e28;
+}
+.start-checkers {
+  display: block;
+  height: 6px;
+  width: 64px;
+  background: repeating-conic-gradient(#174d3f 0% 25%, transparent 0% 50%) 0 /
+    12px 12px;
+}
+.race-card:has(#start-button:not([hidden])) #card-title {
+  font-size: 21px;
+  letter-spacing: -0.5px;
+}
+.race-card:has(#start-button:not([hidden])) #card-copy {
+  font-size: 12px;
+  margin-bottom: 14px;
+}
+.race-card:has(#start-button:not([hidden])) .start-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 15px;
+  font-size: 10px;
+  color: #52665b;
+}
+.start-controls b {
+  display: block;
+  font-size: 13px;
+  color: #174d3f;
+}
+.start-controls > span {
+  border-left: 3px solid #cbd5ba;
+  padding-left: 8px;
+}
+.start-controls small {
+  grid-column: 1 / -1;
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+#start-button {
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #853522;
+  background: #c8492d;
+  min-height: 50px;
+}
+#start-button:hover:not(:disabled) {
+  background: #ad381f;
+}
+#start-button:active:not(:disabled) {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 #853522;
+}
+#race:has(.race-card:not([hidden]) #start-button:not([hidden])) .race-brand {
+  opacity: 0;
+}
+@media (max-width: 700px) {
+  .race-card:has(#start-button:not([hidden])) {
+    left: 16px;
+    bottom: 16px;
+    width: min(320px, calc(100% - 32px));
+    padding: 18px;
+  }
+  .start-wordmark {
+    font-size: 44px;
+  }
+}
+@media (max-height: 540px) {
+  .race-card:has(#start-button:not([hidden])) {
+    padding: 14px;
+  }
+  .race-card:has(#start-button:not([hidden])) .start-identity {
+    margin-bottom: 10px;
+  }
+  .start-wordmark {
+    font-size: 32px;
+    margin: 8px 0;
+  }
+  .start-wordmark > span {
+    display: inline;
+    padding-left: 5px;
+  }
+  .start-series,
+  .start-checkers {
+    display: none;
+  }
+  .race-card:has(#start-button:not([hidden])) .start-controls {
+    margin-top: 10px;
+  }
+}
+@media (max-width: 700px) {
+  .race-card:has(#start-button:not([hidden])) {
+    max-height: calc(100% - 100px);
+    bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .start-wordmark {
+    font-size: 40px;
+  }
+  .start-wordmark > span {
+    display: inline;
+    padding-left: 6px;
+  }
+}
+#car-load-status {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #39594a;
+  margin: 0 0 12px;
+}
+#car-load-retry {
+  background: #174d3f;
+  border-radius: 5px;
+  margin-bottom: 12px;
+}

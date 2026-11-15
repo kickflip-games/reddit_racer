@@ -8,6 +8,7 @@ export const CAR_VISUAL_SETTLE_EPSILON = 0.00001;
 /** Conservative radius shared by both fallback and imported art placements. */
 export const CAR_VISUAL_FOOTPRINT = 2.3;
 export type CarVisualFrame = {
+  suspensionCompression?: number;
   elevation?: number;
   surfaceHeight?: number;
   bank?: number;
@@ -47,6 +48,7 @@ type Rig = {
   rearLeft: THREE.Vector3;
   rearRight: THREE.Vector3;
   leanLimit: number;
+  bodyRestY: number;
 };
 const wheelNames = [
   'wheel-front-left',
@@ -217,7 +219,15 @@ export function createCarVisual(): CarVisual {
     }
     normalized.updateMatrixWorld(true);
     body.attach(lamps);
-    return { object: normalized, body, wheels, rearLeft, rearRight, leanLimit };
+    return {
+      object: normalized,
+      body,
+      wheels,
+      rearLeft,
+      rearRight,
+      leanLimit,
+      bodyRestY: body.position.y,
+    };
   }
   const initial = buildRig(fallback());
   if (!initial) throw new Error('The fallback car could not be built');
@@ -239,6 +249,7 @@ export function createCarVisual(): CarVisual {
     pitch = 0;
     roll = 0;
     rig.body.rotation.set(0, 0, 0);
+    rig.body.position.y = rig.bodyRestY;
     for (const wheel of rig.wheels)
       wheel.node.quaternion.copy(wheel.quaternion);
     lampMaterial.color.set('#6f231c');
@@ -325,6 +336,16 @@ export function createCarVisual(): CarVisual {
       shadow.matrix.copy(object.matrix).invert().multiply(groundMatrix);
       shadowMaterial.uniforms.opacity!.value = 0.36 / (1 + altitude * 0.18);
       const active = frame.racing && !frame.reducedMotion;
+      const bodyY =
+        rig.bodyRestY -
+        (active
+          ? clamp(frame.suspensionCompression ?? 0, -0.035, 0.09) /
+            rig.object.scale.y
+          : 0);
+      if (rig.body.position.y !== bodyY) {
+        rig.body.position.y = bodyY;
+        changed = true;
+      }
       let targetPitch = active
         ? clamp(-frame.acceleration * 0.003, -0.055, 0.055)
         : 0;

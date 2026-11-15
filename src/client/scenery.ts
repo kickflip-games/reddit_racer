@@ -74,7 +74,7 @@ export function createScenery(
       '#896e50'
     );
     trunk.position.y = 1.2;
-    const crown = mesh(new THREE.ConeGeometry(1.3, 5.1, 6), '#557650');
+    const crown = mesh(new THREE.ConeGeometry(1.3, 5.1, 6), '#3e956a');
     crown.position.y = 4.45;
     tree.add(trunk, crown);
     function barrier(color: string): THREE.Group {
@@ -124,7 +124,7 @@ export function createScenery(
     const color =
       kind === 'treeSmall'
         ? material.name === 'grass'
-          ? '#647c55'
+          ? '#3e956a'
           : material.name === 'bark'
             ? '#8a6746'
             : undefined

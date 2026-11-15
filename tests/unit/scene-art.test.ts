@@ -535,7 +535,7 @@ void test('scenery toon themes preserve source maps and dispose only owned mater
     assert.notEqual(material, foliage);
     assert.notEqual(material, bark);
     if (material.name === 'grass') {
-      assert.equal(material.color.getHexString(), '647c55');
+      assert.equal(material.color.getHexString(), '3e956a');
       assert.equal(material.map, texture);
     } else {
       assert.equal(material.color.getHexString(), '8a6746');
@@ -695,4 +695,21 @@ void test('fallback and authored car change flags settle while pose, wheels, lam
     assert.equal(car.update(frame), false);
   }
   disposeAssetTemplate(imported);
+});
+
+void test('explicit car retry replaces a failed request and retains the successful model', async () => {
+  let calls = 0;
+  const model = template();
+  const cache = createSceneAssetCache(async () => {
+    calls++;
+    if (calls === 1) throw new Error('offline');
+    return model;
+  });
+  assert.equal(await cache.loadCarAsset(), undefined);
+  assert.equal(await cache.loadCarAsset(), undefined);
+  assert.equal(calls, 1);
+  assert.equal(await cache.loadCarAsset(true), model);
+  assert.equal(await cache.loadCarAsset(), model);
+  assert.equal(calls, 2);
+  cache.dispose();
 });

@@ -10,16 +10,19 @@ Two presentation defects were separate from the continuous practice physics:
   measured the top inset changing from 57px to 98.1875px, abruptly reframing the
   world even though practice distance, speed and interpolation remained continuous.
 
-The loading car is now hidden until the asset resolves or the player starts.
-Starting early selects the fallback for the lifetime of that scene, including
-retries; late completion cannot replace it. A new course may select the now-cached
-Kenney model before its first start. Failed loading still enables the fallback.
+The initial fix locked the first chosen car model. This has now been superseded
+by the owner's explicit Kenney-only requirement: the procedural placeholder is
+never shown or playable. Start and Restart remain disabled while the actual model
+loads. A network/palette failure or ten-second deadline shows a clear message and
+**Retry car load** action. Retry makes a fresh asset request; successful loading
+restores Start without automatically starting an attempt. No ranked session or
+countdown is created before the real model is installed.
 
 The active run keeps a stable top camera inset when lap HUD text changes. A real
 canvas size change recalculates it, and a new attempt captures a new inset. No
 movement, replay or scoring rules changed.
 
-Regression coverage: delayed asset delivery followed by interruption/retry, and
+Regression coverage: delayed asset delivery, network/palette/deadline failures and explicit load retry, and
 actual two-lap rendering with stable camera inset, retained held input, speed,
 track identity, lap time and no countdown/stop. Tests run in desktop and mobile
 Chromium projects; this is not a physical-phone or hosted Reddit verification.

@@ -22,3 +22,22 @@ cannot trigger this celebration. This is a snapshot of the daily board, not an
 all-time-record claim. Refreshing standings does not replay the reward. The
 short personal-best chime is bounded and respects mute/background/retry; reduced
 motion removes the badge's small bloom. No rank is inferred from local timing.
+
+### Best-lap ghost
+
+Continuous practice has a default-on **Best lap ghost** setting. A small cyan
+marker and one-second trail follow your fastest recorded lap in lap-relative
+simulation time; the trace does not affect collisions, physics or ranking.
+The ghost disappears after its finish rather than wrapping early while your
+current lap is still running. Each new player lap restarts the ghost clock.
+
+A maximum of eight course/handling-specific traces are retained locally, with
+4096 samples per trace and at least 12 simulation ticks between samples.
+Overlong/incomplete laps are not stored; storage denial falls back to this
+session. Track fingerprints and simulation/handling versions reuse the same
+identity as local bests. Old best times from before this feature contain no
+trajectory: beat or match that time to record its ghost. The setting persists
+across courses; turning it off hides the marker, but recording continues.
+The effect has no pulse, camera movement, lights or particles and uses two
+small draw calls, with fixed geometry reused per frame. It supports the same
+mobile settings dialog. Ranked daily races do not show a local practice ghost.

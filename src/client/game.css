@@ -505,6 +505,7 @@ select:focus-visible {
   display: grid;
   gap: 16px;
 }
+#ghost-toggle,
 .feedback-controls button,
 .feedback-controls select,
 #practice-settings button {

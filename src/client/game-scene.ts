@@ -1,3 +1,9 @@
+import {
+  createGhostStore,
+  MAX_GHOST_POINTS,
+  type GhostPoint,
+} from './best-ghost';
+import { createGhostVisual } from './ghost-visual';
 import { addToonLighting } from './toon-material';
 import {
   createPracticeBestStore,
@@ -125,6 +131,40 @@ export function initializeGame(
   }
   const localBests = createPracticeBestStore(storage);
   const localBestKey = practiceBestKey(track, options);
+  const ghostStore = createGhostStore(storage);
+  let ghostLap = ghostStore.get(localBestKey);
+  // Old best times have no trajectory. Do not mislabel a slower new lap as best.
+  if (ghostLap?.ticks !== localBests.best(localBestKey)) ghostLap = null;
+  let ghostPoints: GhostPoint[] = [];
+  let ghostOverflow = false;
+  let ghostEnabled = true;
+  try {
+    ghostEnabled = storage?.getItem('reddit-racer.ghost-enabled') !== 'false';
+  } catch {
+    /* Default on. */
+  }
+  const ghostToggle = element('ghost-toggle');
+  ghostToggle.hidden = !options.continuousPractice;
+  function showGhostToggle() {
+    ghostToggle.setAttribute('aria-pressed', String(ghostEnabled));
+    ghostToggle.textContent = ghostEnabled
+      ? 'Best lap ghost on'
+      : 'Best lap ghost off';
+  }
+  showGhostToggle();
+  ghostToggle.addEventListener(
+    'click',
+    () => {
+      ghostEnabled = !ghostEnabled;
+      showGhostToggle();
+      try {
+        storage?.setItem('reddit-racer.ghost-enabled', String(ghostEnabled));
+      } catch {
+        /* Session preference. */
+      }
+    },
+    eventOptions
+  );
   let seenPracticeLaps = 0;
   let lapNoticeUntil = 0;
   function showLocalBest(): void {
@@ -306,6 +346,8 @@ export function initializeGame(
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: true,
   });
+  const ghostVisual = createGhostVisual();
+  scene.add(ghostVisual.object);
   const rearLeft = new THREE.Vector3();
   const rearRight = new THREE.Vector3();
   scene.add(carVisual.object, scenery.object, drivingVfx.object);
@@ -495,6 +537,26 @@ export function initializeGame(
         practiceDriver.lastLapTicks !== null
       ) {
         const result = recordLocalLap(practiceDriver.lastLapTicks);
+        const seam = sampleTrack(track, track.startS);
+        const end: GhostPoint = [
+          practiceDriver.lastLapTicks,
+          seam.x + seam.nx * state.lateralOffset,
+          practiceDriver.elevation,
+          seam.z + seam.nz * state.lateralOffset,
+        ];
+        if (
+          !ghostOverflow &&
+          ghostPoints.length > 1 &&
+          result.bestTicks === practiceDriver.lastLapTicks
+        ) {
+          ghostStore.save(localBestKey, {
+            ticks: practiceDriver.lastLapTicks,
+            points: [...ghostPoints, end],
+          });
+          ghostLap = ghostStore.get(localBestKey);
+        }
+        ghostPoints = [[0, end[1], end[2], end[3]]];
+        ghostOverflow = false;
         const improved = result.isNewBest && result.previousBestTicks !== null;
         audio.lap(attemptId, completed, improved);
         const notice = element('practice-lap-notice');
@@ -504,6 +566,29 @@ export function initializeGame(
         lapNoticeUntil = performance.now() + (improved ? 2400 : 1600);
       }
       seenPracticeLaps = completed;
+      if (race.phase === 'racing') {
+        const ticks = practiceDriver.lapTicks;
+        if (!ghostPoints.length) {
+          const first = sampleTrack(track, track.startS);
+          ghostPoints.push([0, first.x, first.y ?? 0, first.z]);
+        }
+        if (ticks - ghostPoints[ghostPoints.length - 1]![0] >= 12) {
+          const frame = sampleTrack(track, track.startS + state.distance);
+          const x = frame.x + frame.nx * state.lateralOffset,
+            z = frame.z + frame.nz * state.lateralOffset;
+          const y = practiceDriver.elevation;
+          if (ghostPoints.length < MAX_GHOST_POINTS - 1)
+            ghostPoints.push([ticks, x, y, z]);
+          else ghostOverflow = true;
+        }
+      }
+      ghostVisual.update(
+        ghostLap,
+        practiceDriver.lapTicks,
+        ghostEnabled && race.phase === 'racing'
+      );
+      raceRoot.dataset.ghostVisible = String(ghostVisual.object.visible);
+      raceRoot.dataset.ghostBestTicks = String(ghostLap?.ticks ?? '');
       element('practice-lap-notice').hidden =
         race.phase !== 'racing' || performance.now() >= lapNoticeUntil;
       raceRoot.dataset.practiceLaps = String(completed);
@@ -883,6 +968,9 @@ export function initializeGame(
     racingViewport = undefined;
     driver.start(timestamp);
     seenPracticeLaps = 0;
+    ghostPoints = [];
+    ghostOverflow = false;
+    ghostVisual.object.visible = false;
     lapNoticeUntil = 0;
     card.dataset.result = 'false';
     card.dataset.best = 'false';
@@ -1264,6 +1352,8 @@ export function initializeGame(
     unsubscribePreferences();
     preferences.dispose();
     void audio.dispose().catch(() => {});
+    ghostVisual.dispose();
+    scene.remove(ghostVisual.object);
     drivingVfx.dispose();
     carVisual.dispose();
     scenery.dispose();

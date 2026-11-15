@@ -46,5 +46,10 @@ void test('gate retains failures, respects bounded attempts and never substitute
     generateFixedBrakeMotifCourse('sweeper').track
   );
   assert.equal(sweep.valid, false);
-  assert.ok(sweep.codes.includes('no-braking-benefit'));
+  assert.ok(sweep.codes.includes('corner-diversity'));
+  assert.equal(
+    sweep.metrics,
+    null,
+    'reject the easy-only loop before costly controller search'
+  );
 });

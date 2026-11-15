@@ -283,7 +283,10 @@ async function boot(mode: PlayMode, seed?: string): Promise<void> {
     const course = await loadCourse();
     if (version !== courseGeneration) return;
     const leaderboard = course.daily
-      ? createLeaderboardController(course.daily.challenge)
+      ? createLeaderboardController(course.daily.challenge, (attemptId) => {
+          if (version === courseGeneration)
+            scene?.celebrateVerifiedLeader(attemptId);
+        })
       : null;
     cleanupLeaderboard = leaderboard?.dispose;
     const hooks = course.daily

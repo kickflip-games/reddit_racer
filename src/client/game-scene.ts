@@ -68,7 +68,10 @@ export type GameSceneOptions = GameSceneHooks & {
   generated: boolean;
   continuousPractice?: boolean;
 };
-export type GameSceneController = { dispose(): void };
+export type GameSceneController = {
+  dispose(): void;
+  celebrateVerifiedLeader(attemptId: number): void;
+};
 
 export function initializeGame(
   track: Track,
@@ -1289,5 +1292,16 @@ export function initializeGame(
     },
     eventOptions
   );
-  return { dispose };
+  return {
+    dispose,
+    celebrateVerifiedLeader(id) {
+      if (
+        !lifetime.signal.aborted &&
+        id === attemptId &&
+        !racing &&
+        attemptMode === 'ranked'
+      )
+        audio.verifiedBest(id);
+    },
+  };
 }

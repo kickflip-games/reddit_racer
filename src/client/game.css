@@ -1174,3 +1174,30 @@ select:focus-visible {
     animation: none;
   }
 }
+
+#verified-leader:not([hidden]) {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 2px solid #d49d38;
+  border-radius: 16px;
+  background: #fff0b8;
+  color: #493914;
+  font-weight: 900;
+  animation: leader-bloom 450ms ease-out;
+}
+@keyframes leader-bloom {
+  from {
+    transform: scale(0.94);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+#race[data-reduced-motion='true'] #verified-leader {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #verified-leader {
+    animation: none !important;
+  }
+}

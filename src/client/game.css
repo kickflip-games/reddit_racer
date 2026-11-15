@@ -48,7 +48,7 @@ select {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
   left: max(14px, env(safe-area-inset-left));
-  right: max(100px, env(safe-area-inset-right));
+  right: max(14px, env(safe-area-inset-right));
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -80,8 +80,10 @@ select {
   padding: 12px;
 }
 .mode-stack {
-  margin-left: auto;
-  max-width: 48%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  max-width: none;
 }
 .mode {
   display: block;
@@ -441,8 +443,8 @@ select:focus-visible {
 }
 .race-footer {
   position: absolute;
-  right: max(14px, env(safe-area-inset-right));
-  top: max(14px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  bottom: max(14px, env(safe-area-inset-bottom));
   z-index: 4;
 }
 .race-settings > summary {
@@ -610,9 +612,6 @@ select:focus-visible {
   .race-brand h1 {
     font-size: 16px;
   }
-  .mode-stack {
-    max-width: 43%;
-  }
   .mode {
     font-size: 8px;
   }
@@ -675,12 +674,6 @@ select:focus-visible {
   .race-brand h1 {
     font-size: 14px;
     white-space: nowrap;
-  }
-  .mode-stack {
-    position: absolute;
-    right: -86px;
-    top: 54px;
-    max-width: 110px;
   }
 }
 
@@ -745,7 +738,13 @@ select:focus-visible {
   text-shadow: 0 1px 5px #fff7e8cc;
 }
 .race-settings > summary {
-  padding: 10px 0 10px 10px;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fffaf0;
+  touch-action: manipulation;
 }
 .race-card,
 .race-card[data-result='true'] {
@@ -1179,4 +1178,8 @@ select:focus-visible {
 }
 #word-course-message {
   margin-top: 8px;
+}
+
+.race-settings > summary:hover {
+  background: var(--accent-hover);
 }

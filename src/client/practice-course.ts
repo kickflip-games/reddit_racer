@@ -1,3 +1,4 @@
+import { courseWord, type CourseWord } from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
 
 export type PracticeCourse = {
@@ -128,4 +129,30 @@ export async function generatePracticeCourse(
   avoidTrackHash?: string
 ): Promise<PracticeCourse> {
   return browserGenerator(seed, avoidTrackHash);
+}
+
+/** Explicit word courses use a separately versioned generator; legacy seeds stay unchanged. */
+export async function generateWordPracticeCourse(
+  input: string,
+  version = 1
+): Promise<PracticeCourse & { wordCourse: CourseWord }> {
+  const wordCourse = courseWord(input, version);
+  const { generateOtherTracksCircuit } =
+    await import('../shared/other-tracks-generator');
+  const result = generateOtherTracksCircuit(wordCourse.seed);
+  if (!result.quality.valid)
+    throw new Error('This word course did not pass the driving checks.');
+  let trackHash: string;
+  try {
+    trackHash = await hashTrack(result.track);
+  } catch {
+    trackHash = practiceTrackFingerprint(result.track);
+  }
+  return {
+    track: result.track,
+    seed: wordCourse.seed,
+    fallbackUsed: result.diagnostics.fallbackUsed,
+    trackHash,
+    wordCourse,
+  };
 }

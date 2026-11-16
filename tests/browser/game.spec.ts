@@ -121,3 +121,64 @@ test(
     await expect(page.locator('#retry-button')).toBeVisible();
   }
 );
+
+test('interrupted cards stay readable and clear of settings in compact viewports', async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date('2026-11-12T00:00:00Z') });
+  await page.goto('/game.html');
+  await waitForSceneAssets(page);
+  await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
+  await page.locator('#start-button').click();
+  await page.clock.fastForward(1000);
+  await expect(page.locator('#card-copy')).toHaveText(
+    'The game paused too long to verify this time. Try another run.'
+  );
+  // Include the archived-post notice shown in the reported Android screenshot.
+  await page.locator('#today-race').evaluate((node) => {
+    node.removeAttribute('hidden');
+  });
+  await page.locator('#today-race-status').evaluate((node) => {
+    node.textContent =
+      'Today’s race is ready. This post keeps its original course.';
+  });
+  await page.locator('#today-race-button').evaluate((node) => {
+    node.removeAttribute('hidden');
+  });
+  for (const viewport of [
+    { width: 393, height: 690 },
+    { width: 320, height: 480 },
+    { width: 740, height: 360 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.clock.runFor(32);
+    await page.locator('#practice-button').scrollIntoViewIfNeeded();
+    const card = await page.locator('#card').boundingBox();
+    const settings = await page
+      .locator('#race-settings > summary')
+      .boundingBox();
+    expect(card).not.toBeNull();
+    expect(settings).not.toBeNull();
+    if (!card || !settings) throw new Error('Missing card or settings');
+    expect(card.y).toBeGreaterThanOrEqual(0);
+    expect(card.y + card.height).toBeLessThanOrEqual(settings.y - 8);
+    await expect(page.locator('#card')).toHaveCSS(
+      'background-color',
+      'rgb(255, 247, 232)'
+    );
+    await page.locator('#race-settings > summary').click();
+    await expect(page.locator('#settings-dialog')).toBeVisible();
+    await page.locator('#settings-close').click();
+    await expect(page.locator('#settings-dialog')).toBeHidden();
+    await expect(page.locator('#card-title')).toHaveText('Race interrupted.');
+  }
+  await page.setViewportSize({ width: 393, height: 690 });
+  await page.locator('#retry-button').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/interrupted-mobile-layout.png' });
+  await page.locator('#retry-button').click();
+  await page.clock.runFor(32);
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-phase',
+    'countdown'
+  );
+});

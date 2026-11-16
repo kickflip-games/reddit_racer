@@ -917,7 +917,9 @@ export function initializeGame(
             ? 'Run timed out. Try another run.'
             : driver.interruptionReason === 'invalid-progress'
               ? 'This lap missed a gate. Try another run.'
-              : 'The race could not continue smoothly. Try another run.';
+              : driver.interruptionReason === 'frame-gap'
+                ? 'The game paused too long to verify this time. Try another run.'
+                : 'Too many input changes to verify this run. Try again.';
       element('card-kicker').textContent = '';
     } else {
       audio.finish(attemptId);

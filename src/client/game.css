@@ -1345,3 +1345,29 @@ select:focus-visible {
 .daily-history-preview {
   padding-bottom: 36px;
 }
+
+/* Cards and the persistent settings control occupy separate vertical lanes.
+   Keep this after responsive card rules so short/embedded viewports also reserve it. */
+#race {
+  --footer-clearance: calc(max(14px, env(safe-area-inset-bottom)) + 56px);
+}
+#race .race-card {
+  bottom: var(--footer-clearance);
+  max-height: calc(
+    100% - var(--hud-bottom, 78px) - var(--footer-clearance) - 14px
+  );
+}
+#race[data-phase='abandoned'] .race-card {
+  background: #fff7e8;
+  color: #173d33;
+  border: 1px solid #e0d8c4;
+  border-top: 4px solid #174d3f;
+  border-radius: 8px 20px 8px 8px;
+  padding: 20px;
+  box-shadow: 0 6px 20px #102e292b;
+}
+@media (max-height: 480px), (max-width: 360px) {
+  #race[data-phase='abandoned'] .race-card {
+    padding: 14px;
+  }
+}

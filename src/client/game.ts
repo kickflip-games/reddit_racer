@@ -51,7 +51,7 @@ type LoadedCourse = {
 async function referenceCourse(
   dailyUnavailable = false
 ): Promise<LoadedCourse> {
-  const course = await generatePracticeCourse('country-1');
+  const course = await generatePracticeCourse('banana');
   return {
     track: course.track,
     generated: true,

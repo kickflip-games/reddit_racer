@@ -6,6 +6,7 @@ import {
 } from './circuit-validation.ts';
 import type { StructuralMetrics } from './circuit-validation.ts';
 import type { Track } from './track.ts';
+import { LINKED_COURSE_VERSION } from './course-rhythm';
 
 export const GENERATOR_VERSION = 'motif-loop-v1';
 export type MotifKind =
@@ -229,15 +230,28 @@ function hairpinControls(
   }));
 }
 
-function controlsFor(random: () => number): {
+function controlsFor(
+  random: () => number,
+  linked: boolean
+): {
   controls: Point[];
   motifs: MotifKind[];
 } {
-  const sectorCount = 6 + Math.floor(random() * 3);
+  const sectorCount = 6 + Math.floor(random() * (linked ? 2 : 3));
   const extras = Array.from({ length: sectorCount - 6 }, (): MotifKind =>
-    random() < 0.5 ? 's-bend' : 'sweeper'
+    linked || random() < 0.5 ? 's-bend' : 'sweeper'
   );
-  const motifs = shuffle([...MOTIF_KINDS, ...extras], random);
+  const base: readonly MotifKind[] = linked
+    ? [
+        'hairpin',
+        's-bend',
+        's-bend',
+        'decreasing-radius',
+        'straight',
+        'sweeper',
+      ]
+    : MOTIF_KINDS;
+  const motifs = shuffle([...base, ...extras], random);
   const weights = Array.from(
     { length: sectorCount },
     () => 0.9 + random() * 0.2
@@ -260,7 +274,9 @@ function controlsFor(random: () => number): {
       motif === 'hairpin'
         ? hairpinSpan
         : (weight / remainingWeight) * (Math.PI * 2 - hairpinSpan);
-    const amplitude = (0.55 + random() * 0.35) * (span / (Math.PI / 3)) ** 2;
+    const amplitude =
+      ((linked ? 0.9 : 0.55) + random() * (linked ? 0.3 : 0.35)) *
+      (span / (Math.PI / 3)) ** 2;
     if (motif === 'hairpin') {
       const start = controls.length;
       controls.push(...hairpinControls(angle, span, random));
@@ -326,15 +342,16 @@ function controlsFor(random: () => number): {
 }
 
 /** One bounded inspectable candidate; accepted output is still structural, not ranked quality. */
-export function generateCircuitCandidate(
+function generateMotifCandidate(
   seed: string,
   attempt = 1,
-  overrides: Partial<GeneratorConfig> = {}
+  overrides: Partial<GeneratorConfig> = {},
+  linked = false
 ): CircuitCandidate {
   checkSeed(seed);
   const config = normalizeGeneratorConfig(overrides);
-  if (!Number.isInteger(attempt) || attempt < 1 || attempt > 12)
-    throw new Error('Candidate attempt must be 1–12');
+  if (!Number.isInteger(attempt) || attempt < 1 || attempt > (linked ? 24 : 12))
+    throw new Error('Candidate attempt exceeds the versioned budget');
   const candidateSeed = `${seed}:attempt:${attempt}`;
   const fingerprint = JSON.stringify({
     width: config.width,
@@ -344,10 +361,9 @@ export function generateCircuitCandidate(
     clearance: config.clearance,
     shoulder: config.shoulder,
   });
-  const random = randomFor(
-    `${GENERATOR_VERSION}|${candidateSeed}|${fingerprint}`
-  );
-  const { controls, motifs } = controlsFor(random);
+  const version = linked ? LINKED_COURSE_VERSION : GENERATOR_VERSION;
+  const random = randomFor(`${version}|${candidateSeed}|${fingerprint}`);
+  const { controls, motifs } = controlsFor(random, linked);
   const rotation = random() * Math.PI * 2,
     cosine = Math.cos(rotation),
     sine = Math.sin(rotation);
@@ -388,7 +404,7 @@ export function generateCircuitCandidate(
   try {
     const options = {
       seed,
-      generatorVersion: GENERATOR_VERSION,
+      generatorVersion: version,
       width: config.width,
       sampleSpacing: 1,
       checkpointCount: 8,
@@ -444,6 +460,28 @@ export function generateCircuitCandidate(
       codes,
     },
   };
+}
+
+/** Frozen v1 entry point for legacy courses and geometry regression fixtures. */
+export function generateCircuitCandidate(
+  seed: string,
+  attempt = 1,
+  overrides: Partial<GeneratorConfig> = {}
+): CircuitCandidate {
+  return generateMotifCandidate(seed, attempt, overrides);
+}
+
+/** Linked corners replace the second straight and extra gentle sweeper sectors. */
+export function generateLinkedFlatCandidate(
+  seed: string,
+  attempt = 1
+): CircuitCandidate {
+  return generateMotifCandidate(
+    seed,
+    attempt,
+    { lengthMin: 540, lengthMax: 600 },
+    true
+  );
 }
 
 // This generated reserve candidate is pinned and structurally regression-tested.

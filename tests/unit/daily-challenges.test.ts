@@ -544,8 +544,8 @@ void test('historical generator/quality provenance remains readable with support
 void test('current generator creates future days without replacing an already-stored daily', async () => {
   const { generateCurrentDailyCircuit, CURRENT_COURSE_RESERVE_SEED } =
     await import('../../src/shared/braking-course-generator.ts');
-  const { BRAKE_RHYTHM_VERSION } =
-    await import('../../src/shared/brake-rhythm-generator.ts');
+  const { LINKED_COURSE_VERSION } =
+    await import('../../src/shared/course-rhythm.ts');
   const store = new AtomicHashStore();
   const original = await originalRecord;
   const encoded = serializeDailyChallengeRecord(original);
@@ -570,9 +570,9 @@ void test('current generator creates future days without replacing an already-st
     subredditId: home,
     day: '2026-11-13',
   });
-  assert.equal(next.generatorVersion, BRAKE_RHYTHM_VERSION);
+  assert.equal(next.generatorVersion, LINKED_COURSE_VERSION);
   assert.equal(next.track.schemaVersion, 2);
-  assert.equal(next.generatorConfig.lengthMax, 2200);
+  assert.equal(next.generatorConfig.lengthMax, 600);
   assert.equal(next.qualityThresholds.minGainTicks, 90);
   assert.equal(next.qualityThresholds.maxFastOffRoadFraction, 0.15);
   assert.equal(next.audit.generatorFallback, false);
@@ -593,8 +593,8 @@ void test('current generator creates future days without replacing an already-st
 void test('daily fallback is a freshly validated reserve from the same current generator', async () => {
   const { generateCurrentDailyCircuit, CURRENT_COURSE_RESERVE_SEED } =
     await import('../../src/shared/braking-course-generator.ts');
-  const { BRAKE_RHYTHM_VERSION } =
-    await import('../../src/shared/brake-rhythm-generator.ts');
+  const { LINKED_COURSE_VERSION } =
+    await import('../../src/shared/course-rhythm.ts');
   const service = createDailyChallengeService(
     dependencies(new AtomicHashStore(), {
       generate: () => {
@@ -607,7 +607,7 @@ void test('daily fallback is a freshly validated reserve from the same current g
     subredditId: home,
     day: '2026-11-13',
   });
-  assert.equal(record.generatorVersion, BRAKE_RHYTHM_VERSION);
+  assert.equal(record.generatorVersion, LINKED_COURSE_VERSION);
   assert.equal(record.track.seed, CURRENT_COURSE_RESERVE_SEED);
   assert.equal(record.audit.generatorFallback, true);
   assert.equal(record.qualityThresholds.minGainTicks, 90);

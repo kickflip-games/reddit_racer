@@ -86,7 +86,8 @@ export function stepSimulation(
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? stepCentrelineSimulation(track, state, held)
-      : track.generatorVersion === 'other-tracks-v3'
+      : track.generatorVersion === 'other-tracks-v3' ||
+          track.generatorVersion === 'linked-circuits-v1'
         ? stepElevatedSimulation(track, state, held)
         : stepElevatedSimulationV5(track, state, held);
   const tick = state.tick + 1;

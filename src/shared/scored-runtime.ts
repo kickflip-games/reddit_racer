@@ -109,7 +109,8 @@ export function runtimeForTrack(track: Track): ScoredRuntime {
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? centrelineRuntime
-      : track.generatorVersion === 'other-tracks-v3'
+      : track.generatorVersion === 'other-tracks-v3' ||
+          track.generatorVersion === 'linked-circuits-v1'
         ? elevatedRuntime
         : priorElevatedRuntime;
   throw new Error('Unsupported track runtime');

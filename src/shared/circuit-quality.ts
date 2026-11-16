@@ -23,11 +23,21 @@ import { runReplay } from './replay.ts';
 import type { Replay } from './replay.ts';
 import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { Track } from './track.ts';
+import {
+  LINKED_COURSE_VERSION,
+  LINKED_QUALITY_VERSION,
+  LINKED_RHYTHM_LIMITS,
+  longestThrottleTicks,
+} from './course-rhythm';
 
 export const QUALITY_VERSION = 'quality-v1';
 export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
-  track.schemaVersion === 2 ? ELEVATED_QUALITY_VERSION : QUALITY_VERSION;
+  track.generatorVersion === LINKED_COURSE_VERSION
+    ? LINKED_QUALITY_VERSION
+    : track.schemaVersion === 2
+      ? ELEVATED_QUALITY_VERSION
+      : QUALITY_VERSION;
 export const MAX_QUALITY_ASSESSMENTS = 4;
 export const MAX_REPLAY_CHECKS = 3;
 export const MAX_QUALITY_TICKS =
@@ -217,6 +227,17 @@ export function assessTrackQuality(
     codes.push('start-straight');
   if (structure.metrics.directionChanges < thresholds.minDirectionChanges)
     codes.push('corner-diversity');
+  if (track.generatorVersion === LINKED_COURSE_VERSION) {
+    if (
+      structure.metrics.longestStraight > LINKED_RHYTHM_LIMITS.longestStraight
+    )
+      codes.push('passive-straight');
+    if (
+      Math.max(...track.samples.map((p) => p.y ?? 0)) <
+      LINKED_RHYTHM_LIMITS.minElevation
+    )
+      codes.push('missing-elevation');
+  }
   const smooth = smoothness(track);
   if (smooth.maxCurvatureSlope > thresholds.maxCurvatureSlope)
     codes.push('curvature-smoothness');
@@ -289,6 +310,12 @@ export function assessTrackQuality(
     }
   }
   result.fastReplay = fast.finished ? search.fast.replay : null;
+  if (
+    track.generatorVersion === LINKED_COURSE_VERSION &&
+    longestThrottleTicks(search.fast.replay, thresholds.minLiftTicks) >
+      LINKED_RHYTHM_LIMITS.longestThrottleTicks
+  )
+    codes.push('passive-driving');
   result.valid = codes.length === 0;
   return result;
 }

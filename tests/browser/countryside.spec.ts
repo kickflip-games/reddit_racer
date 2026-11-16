@@ -1,4 +1,11 @@
 import { test, expect } from '@playwright/test';
+
+// These visual/physics tests use Vite without the Reddit archive backend.
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/trpc/dailyStandings*', (route) =>
+    route.fulfill({ status: 200, json: { result: { data: null } } })
+  );
+});
 import { waitForSceneAssets } from './scene-ready';
 
 test('ordinary game track remounts reuse their GL state without accumulating fallback textures', async ({

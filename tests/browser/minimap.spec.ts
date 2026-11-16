@@ -131,7 +131,12 @@ test(
       if (!b || !settings || !hud) throw new Error('Missing visible HUD');
       expect(b.x + b.width).toBeLessThanOrEqual(width - 13);
       expect(b.y + b.height).toBeLessThanOrEqual(height - 13);
-      expect(b.y).toBeGreaterThan(settings.y + settings.height);
+      // Settings now lives bottom-left; require geometric separation, not old top-right placement.
+      expect(
+        b.x > settings.x + settings.width ||
+          b.y > settings.y + settings.height ||
+          b.y + b.height < settings.y
+      ).toBe(true);
       expect(b.y).toBeGreaterThan(hud.y + hud.height);
       expect(b.width).toBeGreaterThanOrEqual(height <= 480 ? 87 : 99);
       expect(b.width).toBeLessThanOrEqual(width > 700 ? 141 : 121);

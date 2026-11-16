@@ -657,3 +657,82 @@ void test('landing particles are bounded, impact-sensitive and never fabricated 
     vfx.dispose();
   }
 });
+
+void test('speed ribbons grow smoothly, taper, stay pixel-readable and travel with distance', () => {
+  const vfx = createDrivingVfx(track);
+  const ribbons = vfx.object.getObjectByName('car-speed-streaks');
+  assert.ok(ribbons instanceof THREE.Mesh);
+  const positions = ribbons.geometry.getAttribute('position');
+  const colors = ribbons.geometry.getAttribute('color');
+  const sample = frameAt(120, { state: { speed: 20, slip: 0 } });
+  vfx.update(sample);
+  const lowAlpha = colors.getW(4);
+  const lowLength = new THREE.Vector3()
+    .fromBufferAttribute(positions, 0)
+    .distanceTo(new THREE.Vector3().fromBufferAttribute(positions, 2));
+  vfx.update({ ...sample, state: { ...sample.state, tick: 122, speed: 32 } });
+  assert.ok(colors.getW(4) > lowAlpha * 5);
+  const head = new THREE.Vector3()
+    .fromBufferAttribute(positions, 0)
+    .distanceTo(new THREE.Vector3().fromBufferAttribute(positions, 1));
+  const tail = new THREE.Vector3()
+    .fromBufferAttribute(positions, 2)
+    .distanceTo(new THREE.Vector3().fromBufferAttribute(positions, 3));
+  assert.ok(head > tail * 5);
+  assert.ok(head * sample.cssPixelsPerMetre >= 1.3);
+  assert.ok(
+    new THREE.Vector3()
+      .fromBufferAttribute(positions, 0)
+      .distanceTo(new THREE.Vector3().fromBufferAttribute(positions, 2)) >
+      lowLength
+  );
+  const before = Array.from(positions.array);
+  vfx.update({ ...sample, state: { ...sample.state, tick: 124, speed: 32 } });
+  assert.deepEqual(
+    Array.from(positions.array),
+    before,
+    'clock alone cannot move streaks'
+  );
+  vfx.update({
+    ...sample,
+    state: {
+      ...sample.state,
+      tick: 126,
+      distance: sample.state.distance + 1,
+      speed: 32,
+    },
+  });
+  assert.notDeepEqual(Array.from(positions.array), before);
+  vfx.dispose();
+});
+
+void test('decisive lift emits one bounded tyre puff, not constant braking smoke', () => {
+  const vfx = createDrivingVfx(track);
+  vfx.update(frameAt(0, { state: { speed: 12, slip: 0 } }));
+  const lift = {
+    ...frameAt(2, { state: { speed: 12, slip: 0 } }),
+    held: false,
+    acceleration: -5,
+  };
+  vfx.update(lift);
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 2);
+  for (let tick = 4; tick <= 30; tick += 2) {
+    vfx.update({
+      ...frameAt(tick, { state: { speed: 12, slip: 0 } }),
+      held: false,
+      acceleration: -5,
+    });
+  }
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 2);
+  assert.equal(liveSkids(vfx), 0, 'normal lift does not fake a skid');
+  vfx.reset();
+  vfx.update(lift);
+  assert.equal(
+    particles(vfx, 'tyre-smoke').geometry.drawRange.count,
+    0,
+    'no puff on first frame'
+  );
+  vfx.update({ ...lift, reducedMotion: true });
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
+  vfx.dispose();
+});

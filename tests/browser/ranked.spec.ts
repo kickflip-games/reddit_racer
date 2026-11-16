@@ -342,6 +342,15 @@ test(
       'practice'
     );
     await expect(page.locator('#mode-label')).toHaveText('Archive');
+    await page.clock.runFor(3200);
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-ghost-best-ticks',
+      String(replay.endTick)
+    );
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-ghost-visible',
+      'true'
+    );
     expect(starts).toBe(1);
     expect(submissions.length).toBe(1);
   }
@@ -422,6 +431,18 @@ test('signed-out practice can finish without submitting a score', async ({
   await expect(page.locator('#verification-status')).toContainText('unranked');
   await driveFast(page);
   await expect(page.locator('#card-kicker')).toHaveText('');
+  await page.reload();
+  await waitForSceneAssets(page);
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-best-ticks',
+    String(replay.endTick)
+  );
+  await page.locator('#start-button').click();
+  await page.clock.runFor(3200);
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-ghost-visible',
+    'true'
+  );
   expect(submits).toBe(0);
 });
 

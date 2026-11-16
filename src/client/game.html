@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#183b35" />
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
+    <link rel="stylesheet" href="tutorial.css" />
     <title>Reddit Racer</title>
   </head>
   <body>
@@ -104,9 +105,12 @@
           <p id="leaderboard-outcome" hidden></p>
           <p id="result-target" hidden></p>
         </div>
-        <button id="start-button" type="button" disabled>
-          <span id="start-label">Start</span><span aria-hidden="true">↗</span>
-        </button>
+        <div class="start-actions">
+          <button id="start-button" type="button" disabled>
+            <span id="start-label">Start</span><span aria-hidden="true">↗</span>
+          </button>
+          <button id="tutorial-open" type="button">New? Learn to play</button>
+        </div>
         <button id="retry-button" type="button" hidden>
           <span id="retry-label">Try again</span
           ><span aria-hidden="true">↗</span>
@@ -197,7 +201,7 @@
             type="button"
             class="secondary-button"
           >
-            Yesterday’s podium &amp; past results
+            Past results
           </button>
           <p id="daily-history-preview-status" aria-live="polite"></p>
         </section>
@@ -285,6 +289,41 @@
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>
       </dialog>
+      <dialog
+        id="tutorial-dialog"
+        aria-labelledby="tutorial-title"
+        aria-describedby="tutorial-description"
+      >
+        <p class="eyebrow">PRACTICE</p>
+        <h2 id="tutorial-title">Learn the controls</h2>
+        <p id="tutorial-description">
+          The car steers itself. Hold the race screen or Space to accelerate.
+          Release to brake before corners.
+        </p>
+        <p
+          id="tutorial-progress"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        ></p>
+        <div class="tutorial-road" aria-hidden="true">
+          <span id="tutorial-car">➜</span>
+        </div>
+        <button
+          id="tutorial-pad"
+          type="button"
+          aria-describedby="tutorial-progress"
+        >
+          Hold here or hold Space
+        </button>
+        <p class="tutorial-tip">
+          In a race, hold the track. Menus won’t accelerate.
+        </p>
+        <div class="tutorial-actions">
+          <button id="tutorial-replay" type="button" hidden>Try again</button>
+          <button id="tutorial-close" type="button">Skip for now</button>
+        </div>
+      </dialog>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary aria-label="Settings" title="Settings">
@@ -319,7 +358,7 @@
                 aria-label="Close settings"
                 autofocus
               >
-                Close ×
+                ×
               </button>
             </div>
             <div
@@ -337,7 +376,12 @@
                 Sound on
               </button>
             </div>
-            <button id="ghost-toggle" type="button" aria-pressed="true">
+            <button
+              id="ghost-toggle"
+              type="button"
+              aria-pressed="true"
+              title="Your personal best lap on this device, not a verified ranking."
+            >
               Best lap ghost on
             </button>
             <p id="sound-feedback" class="sound-feedback" role="status"></p>
@@ -359,14 +403,14 @@
                     aria-describedby="word-course-message"
                   />
                   <button id="word-course-submit" type="submit">
-                    Load word track
+                    Load track
                   </button>
                   <p id="word-course-message" role="status">
-                    Same word, same track. Unranked.
+                    Word tracks are unranked.
                   </p>
                 </form>
                 <button id="next-practice-button" type="button">
-                  New track
+                  Random track
                 </button>
                 <button id="daily-mode-button" type="button">Daily race</button>
               </div>

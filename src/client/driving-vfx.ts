@@ -406,6 +406,9 @@ function createSpeedStreaks() {
         state.speed <= 18 ||
         !Number.isFinite(
           state.speed +
+            state.distance +
+            frame.acceleration +
+            frame.cssPixelsPerMetre +
             frame.rearLeft.x +
             frame.rearLeft.y +
             frame.rearLeft.z +
@@ -430,16 +433,27 @@ function createSpeedStreaks() {
       const cx = (frame.rearLeft.x + frame.rearRight.x) / 2;
       const cy = (frame.rearLeft.y + frame.rearRight.y) / 2;
       const cz = (frame.rearLeft.z + frame.rearRight.z) / 2;
-      const strength = THREE.MathUtils.clamp((state.speed - 18) / 10, 0, 1);
+      // Smooth onset avoids a hard switch at cruising speed. Travel, not wall time,
+      // moves the ribbons: lifting slows their flow naturally with the car.
+      const speedRatio = THREE.MathUtils.clamp((state.speed - 18) / 14, 0, 1);
+      const strength = speedRatio * speedRatio * (3 - 2 * speedRatio);
+      const drive = THREE.MathUtils.clamp(frame.acceleration / 8, 0, 1);
+      const halfWidth = THREE.MathUtils.clamp(
+        0.7 / Math.max(1, frame.cssPixelsPerMetre),
+        0.045,
+        0.14
+      );
       for (let i = 0; i < count; i++) {
-        const phase = ((state.tick / SIMULATION_HZ) * 1.8 + i * 0.618) % 1;
+        const phase = (((state.distance / 9 + i * 0.618) % 1) + 1) % 1;
         const side = (i % 2 ? -1 : 1) * (width / 2 + 0.35 + (i % 3) * 0.3);
-        const back = 0.3 + phase * 3.5;
-        const length = 0.65 + strength * 1.9;
-        const fade = Math.sin(phase * Math.PI) * strength * 0.55;
+        const back = -0.7 + phase * 4.2;
+        const length = 0.8 + strength * (2.6 + drive * 0.5);
+        const fade = Math.sin(phase * Math.PI) ** 2 * strength * 0.7;
         for (let corner = 0; corner < 4; corner++) {
           const along = -back - (corner < 2 ? 0 : length);
-          const across = side + (corner % 2 ? 1 : -1) * 0.055;
+          // A tapered tail, rather than eight flat bars, keeps the road readable.
+          const across =
+            side + (corner % 2 ? 1 : -1) * halfWidth * (corner < 2 ? 1 : 0.15);
           const offset = i * 12 + corner * 3;
           positions[offset] = cx + forwardX * along + sideX * across;
           positions[offset + 1] = cy + 0.32 + (i % 3) * 0.18;
@@ -571,6 +585,7 @@ export function createDrivingVfx(
     colorDirty = false,
     pendingChanged = false;
   function breakHistory(): void {
+    braking = false;
     lastTick = undefined;
     birthCredit = 0;
     skidCredit = 0;
@@ -588,6 +603,7 @@ export function createDrivingVfx(
     lastDistance = frame.state.distance;
     lastLateral = frame.state.lateralOffset;
     lastRecoveryCount = frame.state.recoveryCount;
+    braking = !frame.held && frame.acceleration < -3;
   }
   function flush(): boolean {
     const smokeChanged = smoke.flush(),
@@ -616,6 +632,7 @@ export function createDrivingVfx(
     return changed;
   }
   let lastLandings: number | undefined;
+  let braking = false;
   function reset(): void {
     lastLandings = undefined;
     if (disposed) return;
@@ -822,6 +839,26 @@ export function createDrivingVfx(
       }
       const moving =
         state.speed > 2 && progress > 0 && leftMove + rightMove > 0.004;
+      // One tiny tyre puff acknowledges a decisive lift, not a continuous smoke
+      // curtain. Shares the existing pool/draw call and never changes physics.
+      const nextBraking = !frame.held && frame.acceleration < -3;
+      if (
+        moving &&
+        !state.offRoad &&
+        state.speed > 8 &&
+        state.slip <= 0.12 &&
+        nextBraking &&
+        !braking
+      ) {
+        smoke.emit(frame.rearLeft.x, frame.rearLeft.y, frame.rearLeft.z, 0, 0);
+        smoke.emit(
+          frame.rearRight.x,
+          frame.rearRight.y,
+          frame.rearRight.z,
+          0,
+          0
+        );
+      }
       const dusty = moving && state.offRoad,
         smoky = moving && !state.offRoad && state.slip > 0.12;
       if (dusty || smoky) {

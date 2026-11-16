@@ -37,3 +37,17 @@ Native Chrome controls at 393×852 drove `practice-1` across the line into lap t
 ![Actual local flying lap](screenshots/practice-flying-lap-mobile.jpg)
 
 ![Actual local practice settings](screenshots/practice-settings-mobile.jpg)
+
+## Shared settings
+
+Daily, archived daily and word tracks share Sound and Best lap ghost preferences.
+Settings also offers Course word and New track in every mode: these explicitly
+switch to an **unranked** track, never replace a stored daily course or alter its
+ranking rules. Daily race returns from a word track to the original daily course.
+
+The ghost is the fastest completed local lap recorded on this device, not a
+verified leaderboard record. It works for daily standing-start attempts as well
+as continuous practice; interrupted attempts never save a trajectory. Geometry,
+simulation/handling versions and standing/flying-lap mode remain in its storage
+key, so a different course or mode cannot borrow an incompatible ghost. Sound
+and ghost visibility preferences persist across mode switches and reloads.

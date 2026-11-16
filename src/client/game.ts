@@ -1,3 +1,4 @@
+import { initializeTutorial } from './tutorial';
 import { courseWord } from '../shared/word-seed';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
@@ -35,6 +36,7 @@ const source = element('track-source');
 const title = element('card-title');
 const copy = element('card-copy');
 start.disabled = true;
+initializeTutorial();
 element('mode-label').textContent = import.meta.env.DEV
   ? 'Unranked'
   : 'Unranked';
@@ -231,7 +233,9 @@ function prepareCourse(mode: PlayMode): void {
   element('card').scrollTop = 0;
   element('practice-button').hidden = mode === 'practice';
   element('word-course-open').hidden = mode !== 'practice';
-  element('practice-settings').hidden = mode === 'daily';
+  element('practice-settings').hidden = false;
+  element('practice-seed').hidden = mode === 'daily';
+  element('daily-mode-button').hidden = mode === 'daily';
   element('verification-status').hidden = true;
   element('verification-status').textContent = '';
   source.hidden = true;
@@ -290,15 +294,14 @@ async function boot(
       const selectedWord = course.wordCourse ?? null;
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
-      practiceSeed.textContent = selectedWord
-        ? `Course word: ${selectedWord.code} · Unranked`
-        : `Unranked · ${course.seed}`;
+      practiceSeed.textContent = 'Unranked';
       const wordInput = element('course-word');
       if (wordInput instanceof HTMLInputElement)
         wordInput.value = selectedWord ? selectedWord.code : '';
       race.dataset.wordCode = selectedWord ? selectedWord.code : '';
-      element('word-course-message').textContent =
-        'Share the word above, or enter another word. Unranked.';
+      element('word-course-message').textContent = selectedWord
+        ? 'Share this word to race the same track.'
+        : 'Word tracks are unranked.';
       source.dataset.state = 'ready';
       source.dataset.fallback = String(course.fallbackUsed);
       source.dataset.seed = course.seed;

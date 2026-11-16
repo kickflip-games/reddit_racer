@@ -134,7 +134,11 @@ export function initializeGame(
   const ghostStore = createGhostStore(storage);
   let ghostLap = ghostStore.get(localBestKey);
   // Old best times have no trajectory. Do not mislabel a slower new lap as best.
-  if (ghostLap?.ticks !== localBests.best(localBestKey)) ghostLap = null;
+  if (
+    options.continuousPractice &&
+    ghostLap?.ticks !== localBests.best(localBestKey)
+  )
+    ghostLap = null;
   let ghostPoints: GhostPoint[] = [];
   let ghostOverflow = false;
   let ghostEnabled = true;
@@ -144,7 +148,7 @@ export function initializeGame(
     /* Default on. */
   }
   const ghostToggle = element('ghost-toggle');
-  ghostToggle.hidden = !options.continuousPractice;
+  ghostToggle.hidden = false;
   function showGhostToggle() {
     ghostToggle.setAttribute('aria-pressed', String(ghostEnabled));
     ghostToggle.textContent = ghostEnabled
@@ -165,6 +169,14 @@ export function initializeGame(
     },
     eventOptions
   );
+  // A ghost is local visual feedback, never a verified leaderboard record.
+  function saveGhost(ticks: number, bestTicks: number, end: GhostPoint): void {
+    if (!ghostOverflow && ghostPoints.length > 1 && bestTicks === ticks) {
+      ghostStore.save(localBestKey, { ticks, points: [...ghostPoints, end] });
+      ghostLap = ghostStore.get(localBestKey);
+    }
+    if (ghostLap?.ticks !== bestTicks) ghostLap = null;
+  }
   let seenPracticeLaps = 0;
   let lapNoticeUntil = 0;
   function showLocalBest(): void {
@@ -545,18 +557,7 @@ export function initializeGame(
           practiceDriver.elevation,
           seam.z + seam.nz * state.lateralOffset,
         ];
-        if (
-          !ghostOverflow &&
-          ghostPoints.length > 1 &&
-          result.bestTicks === practiceDriver.lastLapTicks
-        ) {
-          ghostStore.save(localBestKey, {
-            ticks: practiceDriver.lastLapTicks,
-            points: [...ghostPoints, end],
-          });
-          ghostLap = ghostStore.get(localBestKey);
-        }
-        if (ghostLap?.ticks !== result.bestTicks) ghostLap = null;
+        saveGhost(practiceDriver.lastLapTicks, result.bestTicks, end);
         ghostPoints = [[0, end[1], end[2], end[3]]];
         ghostOverflow = false;
         const improved = result.isNewBest && result.previousBestTicks !== null;
@@ -568,29 +569,6 @@ export function initializeGame(
         lapNoticeUntil = performance.now() + (improved ? 2400 : 1600);
       }
       seenPracticeLaps = completed;
-      if (race.phase === 'racing') {
-        const ticks = practiceDriver.lapTicks;
-        if (!ghostPoints.length) {
-          const first = sampleTrack(track, track.startS);
-          ghostPoints.push([0, first.x, first.y ?? 0, first.z]);
-        }
-        if (ticks - ghostPoints[ghostPoints.length - 1]![0] >= 12) {
-          const frame = sampleTrack(track, track.startS + state.distance);
-          const x = frame.x + frame.nx * state.lateralOffset,
-            z = frame.z + frame.nz * state.lateralOffset;
-          const y = practiceDriver.elevation;
-          if (ghostPoints.length < MAX_GHOST_POINTS - 1)
-            ghostPoints.push([ticks, x, y, z]);
-          else ghostOverflow = true;
-        }
-      }
-      ghostVisual.update(
-        ghostLap,
-        practiceDriver.lapTicks,
-        ghostEnabled && race.phase === 'racing'
-      );
-      raceRoot.dataset.ghostVisible = String(ghostVisual.object.visible);
-      raceRoot.dataset.ghostBestTicks = String(ghostLap?.ticks ?? '');
       element('practice-lap-notice').hidden =
         race.phase !== 'racing' || performance.now() >= lapNoticeUntil;
       raceRoot.dataset.practiceLaps = String(completed);
@@ -603,6 +581,31 @@ export function initializeGame(
           : `Last ${formatTime(practiceDriver.lastLapTicks / SIMULATION_HZ)}`;
       if (last.textContent !== message) last.textContent = message;
     }
+    const ghostTicks = practiceDriver?.lapTicks ?? state.tick;
+    if (race.phase === 'racing') {
+      if (!ghostPoints.length) {
+        const first = sampleTrack(track, track.startS);
+        ghostPoints.push([0, first.x, first.y ?? 0, first.z]);
+      }
+      if (ghostTicks - ghostPoints[ghostPoints.length - 1]![0] >= 12) {
+        const frame = sampleTrack(track, track.startS + state.distance);
+        if (ghostPoints.length < MAX_GHOST_POINTS - 1)
+          ghostPoints.push([
+            ghostTicks,
+            frame.x + frame.nx * state.lateralOffset,
+            state.vertical?.height ?? practiceDriver?.elevation ?? frame.y ?? 0,
+            frame.z + frame.nz * state.lateralOffset,
+          ]);
+        else ghostOverflow = true;
+      }
+    }
+    ghostVisual.update(
+      ghostLap,
+      ghostTicks,
+      ghostEnabled && race.phase === 'racing'
+    );
+    raceRoot.dataset.ghostVisible = String(ghostVisual.object.visible);
+    raceRoot.dataset.ghostBestTicks = String(ghostLap?.ticks ?? '');
     speedLabel.textContent = String(Math.round(state.speed * 3.6));
     if (raceRoot.dataset.phase !== race.phase) {
       viewportDirty = true;
@@ -924,6 +927,18 @@ export function initializeGame(
     } else {
       audio.finish(attemptId);
       const finishTicks = state.finishedTick ?? state.tick;
+      // Save only completed, uninterrupted laps, separately from ranked receipts.
+      const finishFrame = sampleTrack(track, track.startS + state.distance);
+      saveGhost(
+        finishTicks,
+        Math.min(ghostLap?.ticks ?? Infinity, finishTicks),
+        [
+          finishTicks,
+          finishFrame.x + finishFrame.nx * state.lateralOffset,
+          state.vertical?.height ?? finishFrame.y ?? 0,
+          finishFrame.z + finishFrame.nz * state.lateralOffset,
+        ]
+      );
       showFinishTime(finishTicks);
       cardTitle.textContent = `${formatTime(finishTicks / SIMULATION_HZ)} seconds`;
       cardCopy.textContent = '';

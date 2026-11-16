@@ -70,6 +70,30 @@ test('one hold drives two procedural practice laps without a stop, countdown or 
   const errors = errorsOn(page);
   const apiCalls: string[] = [];
   await page.route('**/api/trpc/**', async (route) => {
+    if (new URL(route.request().url()).pathname.endsWith('/dailyStandings')) {
+      // Archive preview is a read-only request, not a ranked race submission.
+      await route.fulfill({
+        json: {
+          result: {
+            data: {
+              day: '2026-11-12',
+              minDay: '2026-11-12',
+              maxDay: '2026-11-12',
+              offset: 0,
+              serverNowMs: Date.parse('2026-11-12T00:00:00Z'),
+              retainedUntilMs: Date.parse('2027-01-01T00:00:00Z'),
+              status: 'empty',
+              provisional: true,
+              rows: [],
+              nextOffset: null,
+              hasMore: false,
+              postUrl: null,
+            },
+          },
+        },
+      });
+      return;
+    }
     apiCalls.push(new URL(route.request().url()).pathname);
     await route.fulfill({
       status: 500,
@@ -252,6 +276,28 @@ test('New track changes unranked geometry and returning Daily restores the immut
         json: {
           result: {
             data: dailyChallengeView(record, record.startsAtMs + 60_000),
+          },
+        },
+      });
+    } else if (method === 'dailyStandings') {
+      // Opening Other tracks also loads its archive preview.
+      await route.fulfill({
+        json: {
+          result: {
+            data: {
+              day: record.day,
+              minDay: record.day,
+              maxDay: record.day,
+              offset: 0,
+              serverNowMs: record.startsAtMs + 60_000,
+              retainedUntilMs: record.endsAtMs + 90 * 86400_000,
+              status: 'empty',
+              provisional: true,
+              rows: [],
+              nextOffset: null,
+              hasMore: false,
+              postUrl: null,
+            },
           },
         },
       });

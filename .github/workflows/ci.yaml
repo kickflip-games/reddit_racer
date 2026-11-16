@@ -47,7 +47,7 @@ jobs:
         run: npm run tracks:check -- --elevated --prefix elevated-regression --report artifacts/elevated-quality.json
       - name: Validate linked daily courses and braking rhythm
         run: npm run courses:check -- artifacts/linked-courses
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: track-validation-attempt-${{ github.run_attempt }}
@@ -79,7 +79,7 @@ jobs:
       - name: Complete browser suite
         if: github.event_name == 'schedule' || inputs.full_browser_suite
         run: npm run test:e2e -- --workers=1 --reporter=line,json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: browser-validation-attempt-${{ github.run_attempt }}

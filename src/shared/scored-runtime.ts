@@ -42,7 +42,7 @@ export const ELEVATED_HANDLING: Handling = Object.freeze({
   ...CENTRELINE_HANDLING,
   offRoadDrag: 1.25,
 });
-export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v5';
+export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v6';
 export const ELEVATED_HANDLING_VERSION = 'progressive-slip-v1';
 export const FLIGHT_GRAVITY = 11.5;
 
@@ -58,6 +58,12 @@ const centrelineRuntime = Object.freeze({
   simulationHz: 120,
   handling: CENTRELINE_HANDLING,
 });
+const priorElevatedRuntime = Object.freeze({
+  simulationVersion: 'fixed-step-v5',
+  handlingVersion: ELEVATED_HANDLING_VERSION,
+  simulationHz: 120,
+  handling: ELEVATED_HANDLING,
+});
 const elevatedRuntime = Object.freeze({
   simulationVersion: ELEVATED_SIMULATION_VERSION,
   handlingVersion: ELEVATED_HANDLING_VERSION,
@@ -65,7 +71,10 @@ const elevatedRuntime = Object.freeze({
   handling: ELEVATED_HANDLING,
 });
 export type ScoredRuntime =
-  typeof flatRuntime | typeof elevatedRuntime | typeof centrelineRuntime;
+  | typeof flatRuntime
+  | typeof elevatedRuntime
+  | typeof centrelineRuntime
+  | typeof priorElevatedRuntime;
 
 export function scoredRuntime(
   simulationVersion: unknown,
@@ -88,6 +97,11 @@ export function scoredRuntime(
     handlingVersion === elevatedRuntime.handlingVersion
   )
     return elevatedRuntime;
+  if (
+    simulationVersion === priorElevatedRuntime.simulationVersion &&
+    handlingVersion === priorElevatedRuntime.handlingVersion
+  )
+    return priorElevatedRuntime;
   throw new Error('Unsupported scored runtime');
 }
 export function runtimeForTrack(track: Track): ScoredRuntime {
@@ -95,7 +109,9 @@ export function runtimeForTrack(track: Track): ScoredRuntime {
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? centrelineRuntime
-      : elevatedRuntime;
+      : track.generatorVersion === 'other-tracks-v3'
+        ? elevatedRuntime
+        : priorElevatedRuntime;
   throw new Error('Unsupported track runtime');
 }
 export const handlingForTrack = (track: Track): Handling =>

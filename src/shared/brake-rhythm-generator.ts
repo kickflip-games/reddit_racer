@@ -2,7 +2,7 @@ import { createTrackFromPoints, type TrackPoint } from './track-authoring';
 import { assessTrackStructure } from './circuit-validation';
 import { validateTrack, type Track } from './track';
 
-export const BRAKE_RHYTHM_VERSION = 'other-tracks-v2';
+export const BRAKE_RHYTHM_VERSION = 'other-tracks-v3';
 export type BrakeMotifKind =
   | 'fast-straight'
   | 'hairpin'
@@ -214,7 +214,7 @@ function composeBrakeRhythm(
     attempt > 32
   )
     throw new Error('Invalid rhythm seed/attempt');
-  const random = rng(BRAKE_RHYTHM_VERSION + '|' + seed + '|' + attempt);
+  const random = rng('other-tracks-v2|' + seed + '|' + attempt);
   const config = {
     ...BRAKE_MOTIF_DEFAULTS,
     hairpinRadius: 14 + random() * 4,
@@ -305,15 +305,40 @@ function composeBrakeRhythm(
     sampleSpacing: 1,
     checkpointCount: 8,
   });
+  // Compact C2 hills: flat seams and no compulsory gap. Slow cars can roll over
+  // the small crest; fast cars get a short hop with a continuous road below.
+  const hill = (
+    distance: number,
+    from: number,
+    span: number,
+    height: number
+  ) => {
+    const t = (distance - from) / span;
+    if (t <= 0 || t >= 1) return { y: 0, grade: 0, verticalCurvature: 0 };
+    return {
+      y: height * 64 * t ** 3 * (1 - t) ** 3,
+      grade: (height * 192 * t ** 2 * (1 - t) ** 2 * (1 - 2 * t)) / span,
+      verticalCurvature:
+        (height * (384 * t - 2304 * t ** 2 + 3840 * t ** 3 - 1920 * t ** 4)) /
+        span ** 2,
+    };
+  };
+  const round = (n: number) => Math.round(n * 1e6) / 1e6 || 0;
   const track: Track = {
     ...flat,
     schemaVersion: 2,
-    samples: flat.samples.map((s) => ({
-      ...s,
-      y: 0,
-      grade: 0,
-      verticalCurvature: 0,
-    })),
+    samples: flat.samples.map((s) => {
+      const crest = hill(s.s, 22, 48, 4);
+      const ridge = hill(s.s, flat.totalLength * 0.55 - 70, 140, 7.4);
+      return {
+        ...s,
+        y: round(crest.y + ridge.y),
+        grade: round(crest.grade + ridge.grade),
+        verticalCurvature: round(
+          crest.verticalCurvature + ridge.verticalCurvature
+        ),
+      };
+    }),
     jumps: [],
   };
   validateTrack(track);

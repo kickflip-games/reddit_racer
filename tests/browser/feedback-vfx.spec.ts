@@ -235,7 +235,25 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
         dust.geometry.drawRange.count,
         skids.geometry.drawRange.count,
       ];
+      effects.reset();
+      const fast = frame(20, false);
+      effects.update({ ...fast, state: { ...fast.state, speed: 28, slip: 0 } });
+      const streaks = effects.object.getObjectByName('car-speed-streaks');
+      if (!(streaks instanceof THREE.Mesh))
+        throw new Error('Missing speed streak mesh');
+      streaks.visible = false;
+      const withoutSpeed = pixels();
+      streaks.visible = true;
+      const withSpeed = pixels();
+      const speedStreakPixels = changedPixels(withoutSpeed, withSpeed);
+      const speedStreakCount = streaks.geometry.drawRange.count;
+      snapshot('high-speed car-relative wind ribbons');
+      effects.update({ ...fast, reducedMotion: true });
+      const reducedStreakCount = streaks.geometry.drawRange.count;
       const result = {
+        speedStreakPixels,
+        speedStreakCount,
+        reducedStreakCount,
         smokeCount,
         dustCount,
         skidCount,
@@ -272,6 +290,9 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
     },
     { track, poses }
   );
+  expect(metrics.speedStreakPixels).toBeGreaterThan(0);
+  expect(metrics.speedStreakCount).toBe(48);
+  expect(metrics.reducedStreakCount).toBe(0);
   expect(metrics.smokeCount).toBeGreaterThan(0);
   expect(metrics.dustCount).toBeGreaterThan(0);
   expect(metrics.skidCount).toBeGreaterThan(0);

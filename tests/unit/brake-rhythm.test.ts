@@ -69,7 +69,7 @@ test('100 consecutive rhythm seeds preserve structural safety and composed pacin
     }
     assert.ok(
       r.track.samples.every(
-        (s) => s.y === 0 && s.grade === 0 && s.verticalCurvature === 0
+        (s) => Number.isFinite(s.y) && (s.y ?? 0) >= 0 && (s.y ?? 0) <= 7.4
       )
     );
   }
@@ -107,11 +107,11 @@ test('seven isolated motif courses close safely without an unlabelled technical 
   }
 });
 
-test('v2 geometry candidates stay frozen under their explicit version', async () => {
+test('v3 elevated geometry candidates stay frozen under their explicit version', async () => {
   const hashes = {
-    banana: 'b5880d7a769740b8c2af4d0744a67c36e91bd6c27b942dacf81b9e000baf21d8',
-    tui: 'cc1bcece2a66f20c5d3f65458c90b0e14fa23195e442ecc77e45a84aae368e9a',
-    river: '45f87b0f15e6ff5a9e0fdb596551db486e2f47cb92a3df3218fafe13001a3798',
+    banana: '4cd98c1d3aa35802e0f7c0d41a4b29d1e5f0d97e13988f1ddb291cada4481022',
+    tui: '24d0ad8f91151a67356b6979c933ea43620a3efca00fa15db481a398cd1a8393',
+    river: '29fc948d6d95b32eea8b57b311641dcaa2af3d919b53fff8909a11aef6ad7579',
   };
   for (const [word, hash] of Object.entries(hashes))
     assert.equal(

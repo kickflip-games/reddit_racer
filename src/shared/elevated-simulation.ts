@@ -37,13 +37,18 @@ export function stepElevatedSimulation(
       slip: 0,
       vertical: {
         ...vertical,
-        height: q(frame.y ?? 0),
+        height: q(
+          (frame.y ?? 0) +
+            ((vertical.height - (frame.y ?? 0)) * remaining) /
+              state.recoveryTicksRemaining
+        ),
         velocity: 0,
         airborne: false,
         impact: 0,
       },
     };
   }
+  const offDeck = Math.abs(state.lateralOffset) > frame.halfWidth;
   const grounded = !vertical.airborne;
   const runoff = Math.max(0, Math.abs(state.lateralOffset) - frame.halfWidth);
   // Blend the first metre of shoulder: no discontinuous penalty at the paint.
@@ -65,7 +70,7 @@ export function stepElevatedSimulation(
         state.speed +
           (drive -
             drag -
-            (grounded ? FLIGHT_GRAVITY * (frame.grade ?? 0) : 0)) /
+            (grounded && !offDeck ? FLIGHT_GRAVITY * (frame.grade ?? 0) : 0)) /
             hz
       )
     )
@@ -107,6 +112,23 @@ export function stepElevatedSimulation(
   }
   let distance = Math.min(track.totalLength, q(state.distance + speed / hz));
   let next = sampleTrack(track, distance);
+  const nextOffDeck = Math.abs(lateralOffset) > next.halfWidth;
+  const surfaceY = nextOffDeck ? 0 : (next.y ?? 0);
+  const surfaceGrade = nextOffDeck ? 0 : (next.grade ?? 0);
+  // Never snap up onto the underside of a bridge when sliding back inward.
+  if (offDeck && !nextOffDeck && vertical.height < surfaceY - 0.3) {
+    return {
+      ...state,
+      tick,
+      speed,
+      lateralOffset,
+      lateralVelocity: 0,
+      recovering: true,
+      recoveryCount: state.recoveryCount + 1,
+      recoveryTicksRemaining: handling.recoveryTicks - 1,
+      vertical: { ...vertical, velocity: 0, airborne: false, impact: 0 },
+    };
+  }
   let height = vertical.height,
     velocity = vertical.velocity,
     airborne = vertical.airborne;
@@ -117,22 +139,25 @@ export function stepElevatedSimulation(
   );
   const launch =
     grounded &&
+    !offDeck &&
+    !nextOffDeck &&
     (jump !== undefined ||
       ((frame.verticalCurvature ?? 0) * speed * speed < -FLIGHT_GRAVITY &&
         height +
           ((frame.grade ?? 0) * speed) / hz -
           FLIGHT_GRAVITY / (2 * hz * hz) >
           (next.y ?? 0) + 0.00001));
-  if (launch) {
+  const leaveDeck = grounded && nextOffDeck && height > 0.08;
+  if (launch || leaveDeck) {
     airborne = true;
-    velocity = q((frame.grade ?? 0) * speed);
+    velocity = q(offDeck ? 0 : (frame.grade ?? 0) * speed);
   }
   if (airborne) {
     height = q(height + velocity / hz - FLIGHT_GRAVITY / (2 * hz * hz));
     velocity = q(velocity - FLIGHT_GRAVITY / hz);
-    const inGap = track.jumps?.find(
-      (j) => distance >= j.takeoff && distance < j.landing
-    );
+    const inGap =
+      !nextOffDeck &&
+      track.jumps?.find((j) => distance >= j.takeoff && distance < j.landing);
     if (inGap && height <= 0.05) {
       distance = inGap.landing;
       next = sampleTrack(track, distance);
@@ -159,17 +184,17 @@ export function stepElevatedSimulation(
         },
       };
     }
-    const relativeVelocity = velocity - (next.grade ?? 0) * speed;
-    if (!inGap && height <= (next.y ?? 0) && relativeVelocity <= 0) {
-      height = q(next.y ?? 0);
+    const relativeVelocity = velocity - surfaceGrade * speed;
+    if (!inGap && height <= surfaceY && relativeVelocity <= 0) {
+      height = q(surfaceY);
       airborne = false;
-      velocity = q((next.grade ?? 0) * speed);
+      velocity = q(surfaceGrade * speed);
       landings++;
       impact = q(Math.min(1, Math.max(0, -relativeVelocity / 12)));
     }
   } else {
-    height = q(next.y ?? 0);
-    velocity = q((next.grade ?? 0) * speed);
+    height = q(surfaceY);
+    velocity = q(surfaceGrade * speed);
   }
   const finished = distance >= track.totalLength;
   return {

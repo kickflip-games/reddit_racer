@@ -34,7 +34,7 @@ void test('word courses reproduce geometry and isolate actual track ghost identi
     c = await generateWordPracticeCourse('apple');
   assert.equal(a.trackHash, b.trackHash);
   assert.notEqual(a.trackHash, c.trackHash);
-  assert.equal(a.track.generatorVersion, 'other-tracks-v2');
+  assert.equal(a.track.generatorVersion, 'other-tracks-v3');
   assert.equal(
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(b.track, { continuousPractice: true })
@@ -77,18 +77,18 @@ void test('old short codes remap to the current course, not historical geometry'
     practiceBestKey(old.track, { continuousPractice: true })
   );
 });
-void test('accepted v2 course hashes freeze quality selection as well as candidate geometry', async () => {
+void test('accepted v3 course hashes freeze quality selection as well as candidate geometry', async () => {
   const { generateWordPracticeCourse } =
     await import('../../src/client/practice-course.ts');
   for (const [word, hash] of [
     [
       'banana',
-      '7a2f14c36cee974326c18801e0b8aa5cc2a4078555ad91a08f5f3291484d4d23',
+      '4cd98c1d3aa35802e0f7c0d41a4b29d1e5f0d97e13988f1ddb291cada4481022',
     ],
-    ['tui', 'cc1bcece2a66f20c5d3f65458c90b0e14fa23195e442ecc77e45a84aae368e9a'],
+    ['tui', '24d0ad8f91151a67356b6979c933ea43620a3efca00fa15db481a398cd1a8393'],
     [
       'river',
-      'c4155b844fd00ec05d0192ce88f8772453ea201c01135cf83ab499df038f2483',
+      '29fc948d6d95b32eea8b57b311641dcaa2af3d919b53fff8909a11aef6ad7579',
     ],
   ])
     assert.equal(

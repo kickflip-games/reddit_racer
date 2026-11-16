@@ -5,6 +5,7 @@ import {
   assessBrakingTrack,
   generateBrakingCircuit,
   MAX_BRAKING_QUALITY_ATTEMPTS,
+  MAX_BRAKING_CANDIDATES,
 } from '../../src/shared/braking-course-generator.ts';
 import { evaluateBraking } from '../../scripts/lib/braking-validation.ts';
 import { hashTrack } from '../../src/shared/track.ts';
@@ -29,19 +30,22 @@ void test('tightening corner rewards a real brake input and early braking only c
   assert.ok(r.searched.offRoadTicks < r.fullHold.offRoadTicks);
 });
 void test('gate retains failures, respects bounded attempts and never substitutes an unvalidated reserve', async () => {
-  const invalid = generateBrakingCircuit('word-v2:evaluation-2', 1);
-  assert.equal(invalid.quality.valid, false);
-  assert.equal(invalid.diagnostics.fallbackUsed, false);
-  assert.equal(invalid.diagnostics.attempts, 1);
-  assert.ok(invalid.diagnostics.rejections.length);
-  const accepted = generateBrakingCircuit('word-v2:evaluation-2');
+  assert.throws(() => generateBrakingCircuit('word-v2:evaluation-0', 1));
+  const accepted = generateBrakingCircuit('word-v2:evaluation-0');
   assert.equal(accepted.quality.valid, true);
-  assert.ok(accepted.diagnostics.attempts <= MAX_BRAKING_QUALITY_ATTEMPTS);
+  assert.equal(accepted.diagnostics.fallbackUsed, false);
+  assert.ok(accepted.diagnostics.rejections.length);
+  assert.ok(accepted.diagnostics.attempts <= MAX_BRAKING_CANDIDATES);
+  assert.ok(
+    accepted.diagnostics.qualityAttempts <= MAX_BRAKING_QUALITY_ATTEMPTS
+  );
   assert.equal(
     await hashTrack(accepted.track),
-    await hashTrack(generateBrakingCircuit('word-v2:evaluation-2').track)
+    await hashTrack(generateBrakingCircuit('word-v2:evaluation-0').track)
   );
-  assert.throws(() => generateBrakingCircuit('banana', 4));
+  assert.throws(() =>
+    generateBrakingCircuit('banana', MAX_BRAKING_CANDIDATES + 1)
+  );
   const sweep = assessBrakingTrack(
     generateFixedBrakeMotifCourse('sweeper').track
   );

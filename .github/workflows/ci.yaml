@@ -45,6 +45,8 @@ jobs:
           RACER_TRACK_REPORT: artifacts/track-quality.json
       - name: Validate 200 elevated circuits and authoritative jump replays
         run: npm run tracks:check -- --elevated --prefix elevated-regression --report artifacts/elevated-quality.json
+      - name: Validate linked daily courses and braking rhythm
+        run: npm run courses:check -- artifacts/linked-courses
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
@@ -52,6 +54,7 @@ jobs:
           path: |
             artifacts/track-quality.json
             artifacts/elevated-quality.json
+            artifacts/linked-courses
           retention-days: 7
   browser:
     runs-on: ubuntu-latest

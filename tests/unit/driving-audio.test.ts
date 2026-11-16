@@ -868,3 +868,85 @@ void test('inaudible verified lead is consumed, not queued for returning foregro
   assert.deepEqual(backend.cues, ['finish']);
   await audio.dispose();
 });
+
+void test('virtual gears lift revs within a gear and dip on an upshift without changing driving state', () => {
+  const atSpeed = (speed: number) => ({
+    ...frame(),
+    acceleration: 0,
+    state: { ...frame().state, speed },
+  });
+  const low = calculateDrivingAudioTargets(atSpeed(3), true, 0);
+  const revved = calculateDrivingAudioTargets(atSpeed(7.4), true, 0);
+  const shifted = calculateDrivingAudioTargets(atSpeed(7.4), true, 1);
+  assert.ok(revved.engineHz > low.engineHz + 50);
+  assert.ok(shifted.engineHz < revved.engineHz - 70);
+  assert.equal(shifted.engineGain, revved.engineGain);
+});
+
+void test('gear shifts have hysteresis, dwell, no initial cue, and no muted or airborne catch-up burst', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  const update = (tick: number, speed: number, airborne = false) => {
+    backend.currentTime = tick / 120;
+    audio.update({
+      ...frame(),
+      state: {
+        ...frame().state,
+        tick,
+        speed,
+        ...(airborne
+          ? {
+              vertical: {
+                height: 1,
+                velocity: 1,
+                airborne: true,
+                landings: 0,
+                impact: 0,
+              },
+            }
+          : {}),
+      },
+    });
+  };
+  update(1, 6.8);
+  assert.deepEqual(backend.cues, []);
+  update(61, 7.4);
+  assert.deepEqual(backend.cues, ['shift-up']);
+  const postShift = backend.targets.at(-1)?.engineHz ?? 0;
+  for (let tick = 62; tick < 190; tick++) update(tick, tick % 2 ? 6.9 : 7.4);
+  assert.deepEqual(
+    backend.cues,
+    ['shift-up'],
+    'hovering around the threshold never chatters'
+  );
+  update(190, 5.6);
+  assert.deepEqual(backend.cues, ['shift-up', 'shift-down']);
+  assert.ok((backend.targets.at(-1)?.engineHz ?? 0) > postShift);
+  update(191, 15);
+  assert.equal(backend.cues.length, 2, 'no rapid second shift');
+  update(260, 20, true);
+  assert.equal(backend.cues.length, 2, 'flight does not shift');
+  audio.setMuted(true);
+  update(300, 14);
+  audio.setMuted(false);
+  audio.unlockFromGesture();
+  await flush();
+  update(301, 14);
+  assert.equal(backend.cues.length, 2, 'muted shift is consumed, not queued');
+  audio.resetAttempt(2);
+  audio.unlockFromGesture();
+  await flush();
+  audio.update({ ...frame(2), state: { ...frame().state, speed: 21 } });
+  assert.equal(
+    backend.cues.length,
+    2,
+    'retry/flying initial snapshot does not replay gears'
+  );
+  await audio.dispose();
+});

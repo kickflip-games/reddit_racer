@@ -18,18 +18,21 @@ test('built Other tracks needs no late generator fetch and bad words remain reco
   await page.locator('#practice-button').click();
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#start-button')).toBeEnabled();
-  await expect(page.locator('#race')).toHaveAttribute('data-word-code', /^v1:/);
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-word-code',
+    /^[a-z]+-[a-z]+-/
+  );
   await page.locator('#word-course-open').click();
   await page.locator('#course-word').fill('v99:banana');
   await page.locator('#word-course-submit').click();
   await expect(page.locator('#word-course-message')).toContainText(
-    'not supported'
+    'Use letters'
   );
   await page.locator('#course-word').fill('banana');
   await page.locator('#word-course-submit').click();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:banana'
+    'banana'
   );
   await expect(page.locator('#race')).toHaveAttribute('data-car-load', 'ready');
   const hash = await page.locator('#race').getAttribute('data-track-hash');

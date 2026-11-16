@@ -223,7 +223,14 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
       url
     );
     const results = [];
-    for (const kind of ['countdown', 'go', 'lap', 'landing'] as const) {
+    for (const kind of [
+      'countdown',
+      'go',
+      'lap',
+      'landing',
+      'shift-up',
+      'shift-down',
+    ] as const) {
       const context = new OfflineAudioContext(1, 12000, 24000);
       const graph = createDrivingAudioGraph(context);
       graph.cue(kind, 0);
@@ -247,6 +254,8 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
     'go',
     'lap',
     'landing',
+    'shift-up',
+    'shift-down',
   ]);
   for (const cue of cues) {
     expect(cue.peak).toBeGreaterThan(0.01);

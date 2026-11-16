@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { waitForSceneAssets } from './scene-ready.ts';
-test('Other tracks accepts a word, preserves versioned identity and mobile settings usability', async ({
+test('Other tracks accepts a word, uses plain words and mobile settings usability', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -17,13 +17,13 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:banana'
+    'banana'
   );
   const banana = await page.locator('#race').getAttribute('data-track-hash');
   await page.locator('#word-course-open').click();
   await expect(page.locator('#course-word')).toBeFocused();
-  await expect(page.locator('#course-word')).toHaveValue('v1:banana');
-  await page.locator('#course-word').fill('  ＢＡＮＡＮＡ  ');
+  await expect(page.locator('#course-word')).toHaveValue('banana');
+  await page.locator('#course-word').fill('v1:  ＢＡＮＡＮＡ  ');
   await page.locator('#word-course-submit').click();
   await waitForSceneAssets(page);
   await expect(page.locator('#settings-dialog')).not.toBeVisible();
@@ -32,10 +32,10 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
     banana!
   );
   await page.locator('#word-course-open').click();
-  await page.locator('#course-word').fill('v2:banana');
+  await page.locator('#course-word').fill('v99:banana');
   await page.locator('#word-course-submit').click();
   await expect(page.locator('#word-course-message')).toContainText(
-    'not supported'
+    'Use letters'
   );
   await expect(page.locator('#race')).toHaveAttribute(
     'data-track-hash',
@@ -49,37 +49,40 @@ test('Other tracks accepts a word, preserves versioned identity and mobile setti
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:apple'
+    'apple'
   );
   expect(await page.locator('#race').getAttribute('data-track-hash')).not.toBe(
     banana
   );
   await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
-  expect(calls).toEqual([]);
+  // The home preview reads yesterday's retained standings; changing words must
+  // still never start or submit a ranked attempt. One bounded archive read only.
+  expect(calls).toHaveLength(1);
+  expect(new URL(calls[0]!).pathname).toBe('/api/trpc/dailyStandings');
   expect(errors).toEqual([]);
 });
-test('unsupported word link is explicit and can recover through the word form', async ({
+test('invalid word link is explicit and can recover through the word form', async ({
   page,
 }) => {
-  await page.goto('/game.html?practice=1&word=banana&wordVersion=99');
-  await expect(page.locator('#error')).toContainText('not supported');
+  await page.goto('/game.html?practice=1&word=v99:banana');
+  await expect(page.locator('#error')).toContainText('Use letters');
   await page.locator('#word-course-open').click();
   await page.locator('#course-word').fill('banana');
   await page.locator('#word-course-submit').click();
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-word-code',
-    'v1:banana'
+    'banana'
   );
 });
 
-test('random Other tracks and New track expose reusable v1 codes', async ({
+test('random Other tracks and New track expose reusable plain words', async ({
   page,
 }) => {
   await page.goto('/game.html?practice=1');
   await waitForSceneAssets(page);
   const first = await page.locator('#race').getAttribute('data-word-code');
-  expect(first).toMatch(/^v1:/);
+  expect(first).toMatch(/^[a-z]+-[a-z]+-/);
   const hash = await page.locator('#race').getAttribute('data-track-hash');
   await page.locator('#word-course-open').click();
   await page.locator('#next-practice-button').click();

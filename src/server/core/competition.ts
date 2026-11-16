@@ -249,7 +249,7 @@ function score(value: number | undefined): number | undefined {
 function ticks(best: PersonalBestRecord): number {
   return best.receipt.response.finishTicks;
 }
-function boundBest(
+export function boundBest(
   best: PersonalBestRecord,
   expected: {
     userId: string;

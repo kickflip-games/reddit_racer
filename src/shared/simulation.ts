@@ -1,3 +1,4 @@
+import { stepElevatedSimulationV5 } from './elevated-simulation-v5.ts';
 import { LEGACY_HANDLING } from './scored-runtime.ts';
 import { stepCentrelineSimulation } from './centreline-simulation.ts';
 import { stepElevatedSimulation } from './elevated-simulation.ts';
@@ -85,7 +86,9 @@ export function stepSimulation(
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? stepCentrelineSimulation(track, state, held)
-      : stepElevatedSimulation(track, state, held);
+      : track.generatorVersion === 'other-tracks-v3'
+        ? stepElevatedSimulation(track, state, held)
+        : stepElevatedSimulationV5(track, state, held);
   const tick = state.tick + 1;
   const frame = sampleTrack(track, state.distance);
   const halfWidth = quantizeSimulation(frame.halfWidth);

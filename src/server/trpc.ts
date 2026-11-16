@@ -1,3 +1,8 @@
+import {
+  parseDailyStandingsQuery,
+  type DailyStandingsQuery,
+  type DailyStandingsView,
+} from '../shared/daily-standings';
 import { initTRPC, TRPCError } from '@trpc/server';
 import {
   DailyChallengeError,
@@ -18,6 +23,8 @@ import {
 import type { TodayRacePostView } from '../shared/today-race-post';
 
 export type RpcContext = {
+  /** Optional for narrow API adapters/tests; production always injects it. Absence fails closed. */
+  dailyStandings?: (input: DailyStandingsQuery) => Promise<DailyStandingsView>;
   getDailyChallenge: () => Promise<DailyChallengeView>;
   startRankedRace: () => Promise<StartRankedRaceResponse>;
   submitRun: (input: RankedSubmission) => Promise<VerifiedRunResponse>;
@@ -80,6 +87,16 @@ function publicRaceError(error: unknown): TRPCError {
 }
 
 export const appRouter = t.router({
+  dailyStandings: t.procedure
+    .input(parseDailyStandingsQuery)
+    .query(async ({ ctx, input }) => {
+      try {
+        if (!ctx.dailyStandings) throw new Error('Daily archive unavailable');
+        return await ctx.dailyStandings(input);
+      } catch (error) {
+        throw publicRaceError(error);
+      }
+    }),
   todayRacePost: t.procedure.input(noInput).query(async ({ ctx }) => {
     try {
       return await ctx.todayRacePost();

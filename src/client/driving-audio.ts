@@ -1,6 +1,9 @@
 import type { RacePhase } from '../shared/race-rules';
 import type { SimulationState } from '../shared/simulation';
 import {
+  AUDIO_GEAR_STARTS,
+  drivingAudioGear,
+  drivingAudioSpeed,
   calculateDrivingAudioTargets,
   createDrivingAudioGraph,
   type DrivingAudioCue,
@@ -117,6 +120,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
   let lastLandingCount = 0;
   let lastCountdown: number | undefined;
   let lastLap = 0;
+  let virtualGear: number | undefined;
+  let lastShiftTick = -Infinity;
   let closing: Promise<void> | undefined;
 
   function notify(): void {
@@ -197,7 +202,11 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       return;
     try {
       current.apply(
-        calculateDrivingAudioTargets(frame, canPlay() && !finishing)
+        calculateDrivingAudioTargets(
+          frame,
+          canPlay() && !finishing,
+          virtualGear
+        )
       );
       lastWriteTime = time;
     } catch {
@@ -268,6 +277,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
       lastLandingCount = 0;
       lastCountdown = undefined;
       lastLap = 0;
+      virtualGear = undefined;
+      lastShiftTick = -Infinity;
       publish(muted ? 'muted' : 'locked');
     },
     unlockFromGesture() {
@@ -350,13 +361,42 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         !frame.state.recovering &&
         !frame.state.vertical?.airborne &&
         (frame.state.vertical?.impact ?? 0) > 0.05;
+      const audioSpeed = drivingAudioSpeed(frame);
+      let shift: DrivingAudioCue | undefined;
+      if (virtualGear === undefined || !scored || frame.state.recovering) {
+        virtualGear = drivingAudioGear(audioSpeed);
+        lastShiftTick = frame.state.tick;
+      } else if (
+        frame.state.tick > lastTick &&
+        frame.state.tick - lastShiftTick >= 60 &&
+        !frame.state.vertical?.airborne
+      ) {
+        // Separate up/down boundaries and a half-second dwell stop threshold chatter.
+        const up = AUDIO_GEAR_STARTS[virtualGear + 1] ?? Infinity;
+        const down = (AUDIO_GEAR_STARTS[virtualGear] ?? 0) - 1.2;
+        if (audioSpeed >= up + 0.3 && virtualGear < 3) {
+          virtualGear++;
+          shift = 'shift-up';
+        } else if (audioSpeed < down && virtualGear > 0) {
+          virtualGear--;
+          shift = 'shift-down';
+        }
+        if (shift) lastShiftTick = frame.state.tick;
+      }
       lastLandingCount = landingCount;
       // During async retry preparation the driver still displays the previous
       // completed lap. Its tick must not become the new race's progress floor.
       lastTick = scored ? frame.state.tick : -1;
       lastRecoveryCount = scored ? frame.state.recoveryCount : 0;
       lastFrame = { ...frame, state: { ...frame.state } };
-      applyCurrent(force);
+      applyCurrent(force || shift !== undefined);
+      if (shift && !landing && !recovery && canPlay() && !finishing) {
+        try {
+          backend?.cue(shift);
+        } catch {
+          unavailable();
+        }
+      }
       if (recovery && canPlay() && !finishing) {
         try {
           backend?.cue('recovery');

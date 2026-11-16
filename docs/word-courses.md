@@ -1,43 +1,63 @@
 # Word courses in Other tracks
 
-Choose **Other tracks**, then **Choose a word** (also available in Settings).
-Enter a word such as `banana`, or paste its shareable code `v1:banana`.
-The code shown in Settings is selectable text; friends can enter the same code.
-Random **Other tracks / New track** selections use this generator too and
-show a revisitable word code; explicit legacy seed links retain their original
-course. This avoids promising that an expanded Reddit iframe URL is a portable share link.
+Choose **Other tracks**, then **Choose a word** (also in Settings).
+Enter and share a plain word such as `banana`. Random **Other tracks / New
+track** selections show a reusable plain word too. There is one current course
+generator, with no version selector or historical generation route.
 
-Version 1 uses NFKC normalization, trim/collapsed spaces, locale-independent
-lowercase, and a maximum 48 Unicode code points. It accepts letters, combining
-marks, numbers, spaces, apostrophes, hyphens and underscores. Hidden/control/bidi
-characters are rejected. The full internal `word-v1:` seed is also capped at 96
-UTF-16 units for the generator. Invalid inputs keep the current track intact.
-Unsupported version codes are rejected rather than silently reinterpreted.
+Previously shared `v1:banana` and `v2:banana` codes are accepted only as aliases
+for `banana`. In particular old v1 codes now remap to current geometry; they
+do not reproduce the old track. Unknown prefixed codes are invalid input.
+The internal `word-v2:` namespace is retained so the measured current courses
+remain identical. This is provenance, not a user-selectable version.
 
-The v1 code maps only to `generateOtherTracksCircuit` / `other-tracks-v1`.
-Do not change this mapping when introducing a future word-course version.
-Legacy explicit development `?practice=1&seed=...` uses the original generator
-unchanged. The posted daily challenge and ranked flow are untouched.
+Normalization uses NFKC, trimming/collapsed spaces and locale-independent
+lowercase; maximum 48 Unicode code points and 96 UTF-16 units including the
+internal namespace. Letters, combining marks, numbers, spaces, apostrophes,
+hyphens and underscores are allowed; hidden/control/bidi characters rejected.
 
-Explicit browser entry `?practice=1&word=banana&wordVersion=1` selects a word
-course. Without `practice=1`, word parameters cannot override the daily race.
-This is useful for local testing/direct browser entry, not a guaranteed Reddit
-share URL. Unknown versions show an error and can be repaired through the word
-form. No address navigation or reload is needed to choose another word.
+Every ordinary practice generation path uses `generateBrakingCircuit` and
+its bounded quality gates. See `braking-validation.md` for measured results
+and negative cases. No unvalidated reserve is used.
 
-Local bests and ghosts use the serialized actual track fingerprint, including
-the generator version, plus the existing physics/handling/continuous-lap keys.
-They therefore reproduce across normalized word aliases without mixing with
-other words, changed versions or the daily circuit. This is local, unranked
-sharing, not a new leaderboard or shared ghost service.
+`?practice=1&word=banana` selects a named course. The old `wordVersion`
+parameter is ignored and cannot select another generator. Without practice=1,
+word parameters cannot override a posted daily challenge. Sharing the word is
+preferred over an iframe URL, which may not be portable outside Reddit.
 
-## Integrated validation
+Local bests and ghosts still use the serialized actual track and handling
+fingerprint. An old ghost cannot attach to remapped geometry. No score or
+stored daily-challenge data is rewritten by this change.
 
-Combined with the natural-scenery, ramp-side surface and stopped-car fixes:
-`npm run check` passed 401 unit tests, 200 legacy track checks, formatting,
-types, lint and production build. The existing large-chunk warning remains.
-Sixteen desktop/mobile Chromium cases passed across word input, unsupported
-version recovery, random reusable codes, two continuous laps, ghost appearance,
-returning to the immutable daily course, interrupted input and stopped-car pose.
-These are local browser tests, not a claim of an installed Reddit deployment
-or testing on a physical mobile keyboard/GPU.
+Only development builds retain `?practice=1&seed=...` for historical
+renderer/physics fixtures, through an explicitly development-only import.
+The separately injected flat test harness also remains; neither is an
+alternative in the production UI.
+
+Validation for this simplification is recorded in the change report. Historical
+v1/v2 experiments remain in other reports as evidence, not selectable modes.
+
+## Plain-word simplification checks
+
+411 unit tests passed, including deterministic accepted current-course hashes;
+the additional assertion against the actual historical banana track confirms
+its ghost key differs after remapping. Six desktop/mobile Chromium word-form
+cases passed (plain input, old-code alias, invalid input recovery, random word
+sharing). These are local browser tests, not physical-device or deployment tests.
+
+The production build also passed two desktop/mobile smoke cases with the old
+late generator URL blocked, including invalid-word recovery and normalized
+word reproducibility. The build does not emit the development fixture module.
+
+## Final combined checks
+
+The plain-word client and single future-daily generator passed the full check
+with 414 unit tests and 200 track checks. After the corner-control layout was
+integrated, 14 desktop/mobile browser cases passed for plain words, invalid-input
+recovery, 320/390 px portrait and 640/960 px landscape controls, settings focus
+and restart behavior. Two production-built browser cases also passed. The
+restart button is top-right and the matching 44 px settings gear is bottom-left,
+using safe-area offsets and the existing accent color/stroke style.
+
+The deployed game was independently checked and remains version 0.0.26. These
+prepared changes have not been pushed, merged or deployed.

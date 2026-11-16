@@ -301,8 +301,8 @@ void test('20 retries reuse every GPU resource and teardown disposes each resour
       if (material instanceof THREE.PointsMaterial && material.map)
         textures.add(material.map);
     }
-  assert.equal(geometries.size, 3);
-  assert.equal(materials.size, 3);
+  assert.equal(geometries.size, 4);
+  assert.equal(materials.size, 4);
   assert.equal(textures.size, 1);
   for (let retry = 0; retry < 20; retry++) {
     emit(vfx, 0, 60, { deltaSeconds: 0 });
@@ -325,8 +325,8 @@ void test('20 retries reuse every GPU resource and teardown disposes each resour
     texture.addEventListener('dispose', () => textureDisposals++);
   vfx.dispose();
   vfx.dispose();
-  assert.equal(geometryDisposals, 3);
-  assert.equal(materialDisposals, 3);
+  assert.equal(geometryDisposals, 4);
+  assert.equal(materialDisposals, 4);
   assert.equal(textureDisposals, 1);
   assert.equal(vfx.object.children.length, 0);
 });
@@ -568,4 +568,92 @@ void test('reset and reduced-motion clears retain exactly one pending visual inv
   assert.equal(vfx.update(frameAt(68, { deltaSeconds: 0 })), false);
   assert.equal(vfx.update(frameAt(72, { deltaSeconds: 0 })), true);
   vfx.dispose();
+});
+
+void test('speed streaks follow the car at speed, including flight, with fixed buffers and safe lifecycle', () => {
+  const vfx = createDrivingVfx(track);
+  const streaks = vfx.object.getObjectByName('car-speed-streaks');
+  assert.ok(streaks instanceof THREE.Mesh);
+  const p = streaks.geometry.getAttribute('position');
+  assert.equal(p.count, DRIVING_VFX_LIMITS.speedStreaks * 4);
+  const fly = frameAt(120, {
+    state: {
+      speed: 28,
+      slip: 0,
+      vertical: {
+        height: 5,
+        velocity: 1,
+        airborne: true,
+        landings: 0,
+        impact: 0,
+      },
+    },
+  });
+  const airborne = {
+    ...fly,
+    rearLeft: { ...fly.rearLeft, y: 5 },
+    rearRight: { ...fly.rearRight, y: 5 },
+  };
+  assert.equal(vfx.update(airborne), true);
+  assert.equal(
+    streaks.geometry.drawRange.count,
+    DRIVING_VFX_LIMITS.speedStreaks * 6
+  );
+  for (let i = 0; i < p.count; i++) assert.ok(p.getY(i) > 5 && p.getY(i) < 6);
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
+  assert.equal(liveSkids(vfx), 0);
+  assert.equal(vfx.update({ ...airborne, deltaSeconds: 0 }), false);
+  assert.equal(vfx.update({ ...airborne, phase: 'finished' }), true);
+  assert.equal(streaks.geometry.drawRange.count, 0);
+  vfx.update(airborne);
+  vfx.update({ ...airborne, reducedMotion: true });
+  assert.equal(streaks.geometry.drawRange.count, 0);
+  vfx.update({ ...airborne, state: { ...airborne.state, speed: 0 } });
+  assert.equal(streaks.geometry.drawRange.count, 0);
+  vfx.update({ ...airborne, state: { ...airborne.state, recovering: true } });
+  assert.equal(streaks.geometry.drawRange.count, 0);
+  vfx.dispose();
+});
+
+void test('landing particles are bounded, impact-sensitive and never fabricated on initial state', () => {
+  for (const impact of [0, 1]) {
+    const vfx = createDrivingVfx(track);
+    const initial = frameAt(0, {
+      state: {
+        vertical: {
+          height: 0,
+          velocity: 0,
+          airborne: false,
+          landings: 4,
+          impact,
+        },
+      },
+    });
+    vfx.update(initial);
+    assert.equal(particles(vfx, 'offroad-dust').geometry.drawRange.count, 0);
+    const landed = frameAt(4, {
+      state: {
+        slip: 0,
+        vertical: {
+          height: 0,
+          velocity: 0,
+          airborne: false,
+          landings: 5,
+          impact,
+        },
+      },
+      deltaSeconds: 0,
+    });
+    vfx.update(landed);
+    assert.equal(
+      particles(vfx, 'offroad-dust').geometry.drawRange.count,
+      6 + impact * 6
+    );
+    vfx.update(landed);
+    assert.equal(
+      particles(vfx, 'offroad-dust').geometry.drawRange.count,
+      6 + impact * 6
+    );
+    vfx.dispose();
+  }
 });

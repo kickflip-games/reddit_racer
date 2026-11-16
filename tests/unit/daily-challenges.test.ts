@@ -540,3 +540,91 @@ void test('historical generator/quality provenance remains readable with support
   assert.equal(parsed.qualityVersion, 'historic-quality');
   assert.equal(parsed.challengeHash, historical.challengeHash);
 });
+
+void test('current generator creates future days without replacing an already-stored daily', async () => {
+  const { generateCurrentDailyCircuit, CURRENT_COURSE_RESERVE_SEED } =
+    await import('../../src/shared/braking-course-generator.ts');
+  const { BRAKE_RHYTHM_VERSION } =
+    await import('../../src/shared/brake-rhythm-generator.ts');
+  const store = new AtomicHashStore();
+  const original = await originalRecord;
+  const encoded = serializeDailyChallengeRecord(original);
+  store.inject(dailyChallengeKey(home, '2026-11-12'), 'record', encoded);
+  let generations = 0;
+  const service = createDailyChallengeService(
+    dependencies(store, {
+      generate: (seed) => {
+        generations++;
+        return generateCurrentDailyCircuit(seed);
+      },
+      reserve: () => generateCurrentDailyCircuit(CURRENT_COURSE_RESERVE_SEED),
+    })
+  );
+  const existing = await service.getOrCreate({
+    subredditId: home,
+    day: '2026-11-12',
+  });
+  assert.equal(serializeDailyChallengeRecord(existing), encoded);
+  assert.equal(generations, 0);
+  const next = await service.getOrCreate({
+    subredditId: home,
+    day: '2026-11-13',
+  });
+  assert.equal(next.generatorVersion, BRAKE_RHYTHM_VERSION);
+  assert.equal(next.track.schemaVersion, 2);
+  assert.equal(next.generatorConfig.lengthMax, 2200);
+  assert.equal(next.qualityThresholds.minGainTicks, 90);
+  assert.equal(next.qualityThresholds.maxFastOffRoadFraction, 0.15);
+  assert.equal(next.audit.generatorFallback, false);
+  assert.ok(next.audit.replayChecks >= 6);
+  assert.equal(generations, 1);
+  assert.equal(
+    await store.hGet(dailyChallengeKey(home, '2026-11-12'), 'record'),
+    encoded
+  );
+  assert.equal(
+    (await service.getOrCreate({ subredditId: home, day: '2026-11-13' }))
+      .challengeHash,
+    next.challengeHash
+  );
+  assert.equal(generations, 1);
+});
+
+void test('daily fallback is a freshly validated reserve from the same current generator', async () => {
+  const { generateCurrentDailyCircuit, CURRENT_COURSE_RESERVE_SEED } =
+    await import('../../src/shared/braking-course-generator.ts');
+  const { BRAKE_RHYTHM_VERSION } =
+    await import('../../src/shared/brake-rhythm-generator.ts');
+  const service = createDailyChallengeService(
+    dependencies(new AtomicHashStore(), {
+      generate: () => {
+        throw new Error('Injected bounded primary failure');
+      },
+      reserve: () => generateCurrentDailyCircuit(CURRENT_COURSE_RESERVE_SEED),
+    })
+  );
+  const record = await service.getOrCreate({
+    subredditId: home,
+    day: '2026-11-13',
+  });
+  assert.equal(record.generatorVersion, BRAKE_RHYTHM_VERSION);
+  assert.equal(record.track.seed, CURRENT_COURSE_RESERVE_SEED);
+  assert.equal(record.audit.generatorFallback, true);
+  assert.equal(record.qualityThresholds.minGainTicks, 90);
+});
+
+void test('current daily creation rejects forged generator audit bounds', async () => {
+  const { generateCurrentDailyCircuit } =
+    await import('../../src/shared/braking-course-generator.ts');
+  const generated = generateCurrentDailyCircuit('daily:t5_home:2026-11-13');
+  generated.diagnostics.config.minRadius = 1;
+  await assert.rejects(
+    createDailyChallengeRecord({
+      subredditId: home,
+      day: '2026-11-13',
+      createdAtMs: noon,
+      requestedSeed: 'fixture',
+      generated,
+    })
+  );
+});

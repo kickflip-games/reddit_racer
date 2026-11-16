@@ -18,7 +18,9 @@ export type DrivingAudioCue =
   | 'go'
   | 'lap'
   | 'personal-best'
-  | 'landing';
+  | 'landing'
+  | 'shift-up'
+  | 'shift-down';
 export type DrivingAudioGraph = {
   readonly nodeCount: number;
   readonly bufferCount: number;
@@ -35,16 +37,33 @@ function bounded(value: number, minimum: number, maximum: number): number {
   );
 }
 
-/** Pure presentation targets; no handling constants, clocks, inputs or state writes. */
-export function calculateDrivingAudioTargets(
-  frame: Readonly<DrivingAudioFrame>,
-  audible: boolean
-): DrivingAudioTargets {
-  const speed = bounded(
+// Virtual gears affect sound only. Speeds are normalized to the original 22 m/s pace.
+export const AUDIO_GEAR_STARTS = [0, 7, 13, 19] as const;
+export function drivingAudioSpeed(frame: Readonly<DrivingAudioFrame>): number {
+  return bounded(
     frame.state.speed * (frame.state.vertical ? 22 / 30 : 1),
     0,
     22
   );
+}
+export function drivingAudioGear(speed: number): number {
+  let gear = 0;
+  for (let i = 1; i < AUDIO_GEAR_STARTS.length; i++)
+    if (speed >= (AUDIO_GEAR_STARTS[i] ?? Infinity)) gear = i;
+  return gear;
+}
+
+/** Pure presentation targets; no handling constants, clocks, inputs or state writes. */
+export function calculateDrivingAudioTargets(
+  frame: Readonly<DrivingAudioFrame>,
+  audible: boolean,
+  virtualGear = drivingAudioGear(drivingAudioSpeed(frame))
+): DrivingAudioTargets {
+  const speed = drivingAudioSpeed(frame);
+  const gear = Math.round(bounded(virtualGear, 0, 3));
+  const start = AUDIO_GEAR_STARTS[gear] ?? 0;
+  const end = AUDIO_GEAR_STARTS[gear + 1] ?? 22;
+  const revs = bounded((speed - start) / (end - start), 0, 1);
   const acceleration = bounded(frame.acceleration, -10, 7);
   const slip = frame.state.vertical?.airborne
     ? 0
@@ -55,7 +74,13 @@ export function calculateDrivingAudioTargets(
     frame.state.status === 'running' &&
     !frame.state.recovering;
   return {
-    engineHz: bounded(65 + speed * 12 + acceleration * 1.1, 50, 340),
+    engineHz: bounded(
+      65 +
+        Math.min(speed / 2, 1) * (75 + gear * 20 + revs * 135) +
+        acceleration * 1.1,
+      50,
+      340
+    ),
     engineFilterHz: 700 + speed * 45,
     engineGain: active ? (frame.held ? 0.045 : 0.025) + speed * 0.001 : 0,
     squealHz: 1400 + slip * 1300,
@@ -214,7 +239,16 @@ export function createDrivingAudioGraph(
       result.frequency.cancelScheduledValues(time);
       resultGain.gain.cancelScheduledValues(time);
       resultGain.gain.setValueAtTime(0, time);
-      if (kind === 'landing') {
+      if (kind === 'shift-up' || kind === 'shift-down') {
+        // A tiny gearbox clunk/blip, not another race chime. No new nodes/buffers.
+        result.frequency.setValueAtTime(kind === 'shift-up' ? 170 : 110, time);
+        result.frequency.exponentialRampToValueAtTime(
+          kind === 'shift-up' ? 85 : 185,
+          time + 0.055
+        );
+        resultGain.gain.linearRampToValueAtTime(0.045, time + 0.006);
+        resultGain.gain.linearRampToValueAtTime(0, time + 0.075);
+      } else if (kind === 'landing') {
         result.frequency.setValueAtTime(140, time);
         result.frequency.exponentialRampToValueAtTime(65, time + 0.12);
         resultGain.gain.linearRampToValueAtTime(

@@ -4,6 +4,7 @@ import type { RacePhase } from '../shared/race-rules';
 import type { Track } from '../shared/track';
 
 export const DRIVING_VFX_LIMITS = Object.freeze({
+  speedStreaks: 8,
   smokeParticles: 48,
   dustParticles: 48,
   skidQuads: 384,
@@ -345,6 +346,124 @@ function createParticlePool(
   };
 }
 
+/** Eight small world-space ribbons alongside the car, never a full-screen overlay. */
+function createSpeedStreaks() {
+  const count = DRIVING_VFX_LIMITS.speedStreaks;
+  const positions = new Float32Array(count * 12);
+  const colors = new Float32Array(count * 16);
+  const indices = new Uint16Array(count * 6);
+  const tint = new THREE.Color('#e3ffe8');
+  for (let i = 0; i < count; i++) {
+    const v = i * 4;
+    indices.set([v, v + 1, v + 2, v + 1, v + 3, v + 2], i * 6);
+    for (let j = 0; j < 4; j++) {
+      colors[i * 16 + j * 4] = tint.r;
+      colors[i * 16 + j * 4 + 1] = tint.g;
+      colors[i * 16 + j * 4 + 2] = tint.b;
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  const position = new THREE.BufferAttribute(positions, 3).setUsage(
+    THREE.DynamicDrawUsage
+  );
+  const color = new THREE.BufferAttribute(colors, 4).setUsage(
+    THREE.DynamicDrawUsage
+  );
+  geometry.setAttribute('position', position);
+  geometry.setAttribute('color', color);
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+  geometry.setDrawRange(0, 0);
+  const material = new THREE.MeshBasicMaterial({
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const object = new THREE.Mesh(geometry, material);
+  material.forceSinglePass = true;
+  object.name = 'car-speed-streaks';
+  object.visible = false;
+  object.frustumCulled = false;
+  let tick = -1;
+  const reset = (): boolean => {
+    tick = -1;
+    const visible = geometry.drawRange.count > 0;
+    object.visible = false;
+    geometry.setDrawRange(0, 0);
+    return visible;
+  };
+  return {
+    object,
+    reset,
+    update(frame: Readonly<DrivingVfxFrame>): boolean {
+      const state = frame.state;
+      if (
+        frame.reducedMotion ||
+        frame.phase !== 'racing' ||
+        state.status !== 'running' ||
+        state.recovering ||
+        state.recoveryTicksRemaining > 0 ||
+        state.speed <= 18 ||
+        !Number.isFinite(
+          state.speed +
+            frame.rearLeft.x +
+            frame.rearLeft.y +
+            frame.rearLeft.z +
+            frame.rearRight.x +
+            frame.rearRight.y +
+            frame.rearRight.z
+        ) ||
+        !Number.isSafeInteger(state.tick) ||
+        state.tick < 0
+      )
+        return reset();
+      if (tick === state.tick) return false;
+      tick = state.tick;
+      const nx = frame.rearLeft.x - frame.rearRight.x;
+      const nz = frame.rearLeft.z - frame.rearRight.z;
+      const width = Math.hypot(nx, nz);
+      if (width < 0.001) return reset();
+      const sideX = nx / width,
+        sideZ = nz / width;
+      const forwardX = -sideZ,
+        forwardZ = sideX;
+      const cx = (frame.rearLeft.x + frame.rearRight.x) / 2;
+      const cy = (frame.rearLeft.y + frame.rearRight.y) / 2;
+      const cz = (frame.rearLeft.z + frame.rearRight.z) / 2;
+      const strength = THREE.MathUtils.clamp((state.speed - 18) / 10, 0, 1);
+      for (let i = 0; i < count; i++) {
+        const phase = ((state.tick / SIMULATION_HZ) * 1.8 + i * 0.618) % 1;
+        const side = (i % 2 ? -1 : 1) * (width / 2 + 0.35 + (i % 3) * 0.3);
+        const back = 0.3 + phase * 3.5;
+        const length = 0.65 + strength * 1.9;
+        const fade = Math.sin(phase * Math.PI) * strength * 0.55;
+        for (let corner = 0; corner < 4; corner++) {
+          const along = -back - (corner < 2 ? 0 : length);
+          const across = side + (corner % 2 ? 1 : -1) * 0.055;
+          const offset = i * 12 + corner * 3;
+          positions[offset] = cx + forwardX * along + sideX * across;
+          positions[offset + 1] = cy + 0.32 + (i % 3) * 0.18;
+          positions[offset + 2] = cz + forwardZ * along + sideZ * across;
+          colors[i * 16 + corner * 4 + 3] = corner < 2 ? fade : 0;
+        }
+      }
+      object.visible = true;
+      geometry.setDrawRange(0, count * 6);
+      position.clearUpdateRanges();
+      color.clearUpdateRanges();
+      position.addUpdateRange(0, positions.length);
+      color.addUpdateRange(0, colors.length);
+      position.needsUpdate = true;
+      color.needsUpdate = true;
+      return true;
+    },
+    dispose() {
+      geometry.dispose();
+      material.dispose();
+    },
+  };
+}
+
 export function createDrivingVfx(
   track: Track,
   options: { noiseSeed?: number; followContactHeight?: boolean } = {}
@@ -364,6 +483,7 @@ export function createDrivingVfx(
     seed ^= seed << 5;
     return (seed >>> 0) / 0x100000000;
   };
+  const speedStreaks = createSpeedStreaks();
   const mask = particleMask();
   const smoke = createParticlePool(
     'tyre-smoke',
@@ -429,7 +549,7 @@ export function createDrivingVfx(
   skids.name = 'tyre-skids';
   skids.frustumCulled = false;
   skids.renderOrder = 1;
-  object.add(skids, smoke.object, dust.object);
+  object.add(skids, smoke.object, dust.object, speedStreaks.object);
   const onRoad = createRoadContainment(track),
     quad = new Float64Array(8);
   const previous = new Float64Array(6),
@@ -495,11 +615,12 @@ export function createDrivingVfx(
     }
     return changed;
   }
-  let lastLandings = 0;
+  let lastLandings: number | undefined;
   function reset(): void {
-    lastLandings = 0;
+    lastLandings = undefined;
     if (disposed) return;
     pendingChanged = true;
+    speedStreaks.reset();
     smoke.reset();
     dust.reset();
     lives.fill(0);
@@ -584,6 +705,7 @@ export function createDrivingVfx(
         reduced = false;
         breakHistory();
       }
+      pendingChanged = speedStreaks.update(frame) || pendingChanged;
       const delta = Number.isFinite(frame.deltaSeconds)
         ? THREE.MathUtils.clamp(frame.deltaSeconds, 0, 0.05)
         : 0;
@@ -605,19 +727,22 @@ export function createDrivingVfx(
       const state = frame.state;
       const landings = state.vertical?.landings ?? 0;
       if (
+        lastLandings !== undefined &&
         landings > lastLandings &&
         frame.phase === 'racing' &&
         !state.vertical?.airborne &&
         !state.recovering
       ) {
-        for (let i = 0; i < 6; i++) {
+        const impact = THREE.MathUtils.clamp(state.vertical?.impact ?? 0, 0, 1);
+        const births = 6 + Math.floor(impact * 6);
+        for (let i = 0; i < births; i++) {
           const contact = i % 2 === 0 ? frame.rearLeft : frame.rearRight;
           dust.emit(
             contact.x,
             contact.y,
             contact.z,
-            (i - 2.5) * 0.3,
-            ((i % 3) - 1) * 0.5
+            Math.cos((i / births) * Math.PI * 2) * (0.6 + impact * 1.2),
+            Math.sin((i / births) * Math.PI * 2) * (0.6 + impact * 1.2)
           );
         }
       }
@@ -758,6 +883,7 @@ export function createDrivingVfx(
       disposed = true;
       object.removeFromParent();
       object.clear();
+      speedStreaks.dispose();
       smoke.dispose();
       dust.dispose();
       geometry.dispose();

@@ -567,10 +567,14 @@ export async function createDailyChallengeRecord(
     await import('./circuit-quality.ts');
   const { normalizeGeneratorConfig } = await import('./circuit-generator.ts');
   const normalize =
-    track.schemaVersion === 2
-      ? (await import('./elevated-generator.ts'))
-          .normalizeElevatedGeneratorConfig
-      : normalizeGeneratorConfig;
+    track.generatorVersion ===
+    (await import('./brake-rhythm-generator.ts')).BRAKE_RHYTHM_VERSION
+      ? (await import('./braking-course-generator.ts'))
+          .normalizeCurrentCourseConfig
+      : track.schemaVersion === 2
+        ? (await import('./elevated-generator.ts'))
+            .normalizeElevatedGeneratorConfig
+        : normalizeGeneratorConfig;
   const generatorConfig = normalize(generated.diagnostics.config);
   if (
     JSON.stringify(numericMap(generatorConfig, 'generatorConfig')) !==

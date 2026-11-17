@@ -68,17 +68,12 @@ test('share sheet emits versioned exact-course data, not a claim of delivery', a
   await waitForSceneAssets(page);
   await page.getByRole('button', { name: 'Choose a seed' }).click();
   await expect(page.getByLabel('Seed', { exact: true })).toHaveValue('banana');
-  await expect(page.locator('#share-track-seed')).toHaveText(
-    'Current seed: banana'
-  );
-  await expect(page.locator('#share-track-help')).toContainText(
-    'depends on your device'
-  );
-  await page
-    .getByRole('button', { name: 'Try Reddit sharing', exact: true })
-    .click();
+  await expect(page.locator('#share-track-seed')).toHaveCount(0);
+  await expect(page.locator('#share-track-help')).toHaveCount(0);
+  await expect(page.locator('#word-course-message')).toBeHidden();
+  await page.getByRole('button', { name: 'Share track', exact: true }).click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Reddit sharing requested'
+    'No share options? Copy seed.'
   );
   const payload = JSON.parse(
     (await page.locator('html').getAttribute('data-shared'))!
@@ -172,21 +167,16 @@ test('unavailable share has honest copy seed fallback with clipboard success and
   await page.goto('/game.html?practice=1&courseSeed=banana');
   await waitForSceneAssets(page);
   await page.locator('#word-course-open').click();
-  await expect(page.locator('#share-track-seed')).toHaveText(
-    'Current seed: banana'
-  );
-  await expect(page.locator('#share-track-help')).toContainText(
-    'depends on your device'
-  );
-  await page
-    .getByRole('button', { name: 'Try Reddit sharing', exact: true })
-    .click();
+  await expect(page.locator('#share-track-seed')).toHaveCount(0);
+  await expect(page.locator('#share-track-help')).toHaveCount(0);
+  await expect(page.locator('#word-course-message')).toBeHidden();
+  await page.getByRole('button', { name: 'Share track', exact: true }).click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Sharing is unavailable'
+    'Sharing unavailable'
   );
   await page.getByRole('button', { name: 'Copy seed', exact: true }).click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Seed copied: banana'
+    'Copied: banana'
   );
   expect(await page.locator('html').getAttribute('data-copied-seed')).toBe(
     'banana'
@@ -203,7 +193,7 @@ test('unavailable share has honest copy seed fallback with clipboard success and
   );
   await page.getByRole('button', { name: 'Copy seed', exact: true }).click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Copy this seed manually: banana'
+    'Copy manually: banana'
   );
   expect(
     await page
@@ -276,7 +266,7 @@ test('missing canonical hashing never claims a share or loads an unchecked share
   await page.locator('#word-course-open').click();
   await page.locator('#share-track-button').click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Sharing is unavailable'
+    'Sharing unavailable'
   );
   expect(await page.locator('html').getAttribute('data-shared')).toBeNull();
   const course = await generateWordPracticeCourse('banana');

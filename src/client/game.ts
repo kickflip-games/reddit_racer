@@ -309,9 +309,7 @@ async function boot(
       if (wordInput instanceof HTMLInputElement)
         wordInput.value = selectedWord ? selectedWord.code : '';
       race.dataset.wordCode = selectedWord ? selectedWord.code : '';
-      element('word-course-message').textContent = selectedWord
-        ? 'Seeds recreate tracks in this game version.'
-        : 'Seed tracks are unranked.';
+      element('word-course-message').textContent = '';
       source.dataset.state = 'ready';
       source.dataset.fallback = String(course.fallbackUsed);
       source.dataset.seed = course.seed;

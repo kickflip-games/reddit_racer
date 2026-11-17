@@ -1680,6 +1680,7 @@ select:focus-visible {
   font-size: 12px;
 }
 #share-track-seed,
+#share-track-help,
 #share-track-status {
   overflow-wrap: anywhere;
   font-size: 12px;

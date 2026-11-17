@@ -7,6 +7,7 @@ export function initializeTrackSharing() {
   const copy = document.getElementById('copy-seed-button')!;
   const status = document.getElementById('share-track-status')!;
   const seedLabel = document.getElementById('share-track-seed')!;
+  const help = document.getElementById('share-track-help')!;
   let current: { seed: string; track: Track } | undefined;
   let generation = 0;
   share.addEventListener('click', async () => {
@@ -27,7 +28,7 @@ export function initializeTrackSharing() {
       });
       if (version === generation)
         status.textContent =
-          'Choose where to share. If no share options appeared, use Copy seed.';
+          'Reddit sharing requested. If no share options appeared, use Copy seed.';
     } catch {
       if (version === generation)
         status.textContent =
@@ -53,14 +54,14 @@ export function initializeTrackSharing() {
     clear() {
       generation++;
       current = undefined;
-      share.hidden = copy.hidden = seedLabel.hidden = true;
+      share.hidden = copy.hidden = seedLabel.hidden = help.hidden = true;
       seedLabel.textContent = '';
       status.textContent = '';
     },
     set(seed: string, track: Track) {
       generation++;
       current = { seed, track };
-      share.hidden = copy.hidden = seedLabel.hidden = false;
+      share.hidden = copy.hidden = seedLabel.hidden = help.hidden = false;
       seedLabel.textContent = `Current seed: ${seed}`;
       share.removeAttribute('disabled');
       status.textContent = '';

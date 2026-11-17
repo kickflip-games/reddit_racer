@@ -5,12 +5,12 @@ normalization rules and old `?practice=1&word=...` links are unchanged.
 `?practice=1&courseSeed=...` is also supported. Plain seeds select the current
 generator, not historical geometry.
 
-In Other tracks, open Choose a seed and select Share track. The official Devvit
+In Other tracks, open Choose a seed and select Try Reddit sharing. The official Devvit
 `showShareSheet` receives a compact JSON descriptor: type, schema version,
 current generator version, normalized seed and canonical SHA-256 track hash.
 No identity, score or ranked authorization is shared. The host owns the share URL
 and destination. Resolving the effect does not prove anyone copied or sent it;
-the UI only says to choose where to share. Copy seed separately confirms a
+the UI only confirms that Reddit sharing was requested. A permanent note explains device dependence and offers Copy seed. Copy seed separately confirms a
 successful clipboard write, or displays the seed for manual copying.
 
 Incoming `getShareData()` always takes precedence over daily/query selection.
@@ -36,3 +36,5 @@ Tests cover official effect payload shape, exact-course roundtrip, splash handof
 malformed/version/hash failures, no ranked calls, clipboard success/denial and
 unavailable Web Crypto. Browser tests simulate host effects, not a real Reddit
 native share destination or off-platform link delivery.
+
+Hosted desktop observation: the SDK effect resolved without visible share options. Direct native delivery has not been verified; it must not be described as confirmed working. The validated effect remains available for supporting clients, with the explicit seed fallback.

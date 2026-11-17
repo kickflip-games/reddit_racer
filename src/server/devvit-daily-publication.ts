@@ -17,15 +17,17 @@ import {
 export const PRIVATE_RACE_APP = 'full-throttle-dev';
 export const PRIVATE_RACE_COMMUNITY = 'full_throttle_dev_dev';
 export const PRIVATE_RACE_SUBREDDIT_ID = 't5_kv7foq';
+export const PUBLIC_RACE_COMMUNITY = 'theDailyLap';
+export const PUBLIC_RACE_SUBREDDIT_ID = 't5_kyc33w';
 export const PUBLICATION_MARKER = 'racerPublicationId';
 const maximumReconcilePosts = 20;
 
-type PrivateScope = {
+type PublicationScope = {
   appSlug: string;
   subredditId: `t5_${string}`;
   subredditName: string;
 };
-export type PrivatePublicationScopeInput = {
+export type PublicationScopeInput = {
   appSlug: unknown;
   subredditId: unknown;
   subredditName: unknown;
@@ -43,30 +45,51 @@ function isSubredditId(value: unknown): value is `t5_${string}` {
   return typeof value === 'string' && /^t5_[a-z0-9]+$/.test(value);
 }
 
-/** Request-local SDK metadata and a real private-community read gate every write. */
-export async function requirePrivatePublicationScope(
-  input: PrivatePublicationScopeInput
-): Promise<PrivateScope> {
+/** Both destinations are explicitly authorized; no caller can add a community. */
+const publicationScopes: readonly (PublicationScope & { type: string })[] = [
+  {
+    appSlug: PRIVATE_RACE_APP,
+    subredditId: PRIVATE_RACE_SUBREDDIT_ID,
+    subredditName: PRIVATE_RACE_COMMUNITY,
+    type: 'private',
+  },
+  {
+    appSlug: PRIVATE_RACE_APP,
+    subredditId: PUBLIC_RACE_SUBREDDIT_ID,
+    subredditName: PUBLIC_RACE_COMMUNITY,
+    type: 'public',
+  },
+];
+
+/** Request-local SDK context and a matching live community read gate every write. */
+export async function requirePublicationScope(
+  input: PublicationScopeInput
+): Promise<PublicationScope> {
   if (
-    input.appSlug !== PRIVATE_RACE_APP ||
     !isSubredditId(input.subredditId) ||
-    input.subredditId !== PRIVATE_RACE_SUBREDDIT_ID ||
-    typeof input.subredditName !== 'string' ||
-    input.subredditName.toLowerCase() !== PRIVATE_RACE_COMMUNITY
+    typeof input.subredditName !== 'string'
   )
     throw new DailyPublicationError('unavailable');
-  const checked = await input.getSubreddit(input.subredditId);
+  const name = input.subredditName.toLowerCase();
+  const scope = publicationScopes.find(
+    (candidate) =>
+      candidate.appSlug === input.appSlug &&
+      candidate.subredditId === input.subredditId &&
+      candidate.subredditName.toLowerCase() === name
+  );
+  if (!scope) throw new DailyPublicationError('unavailable');
+  const checked = await input.getSubreddit(scope.subredditId);
   if (
     !checked ||
-    checked.id !== input.subredditId ||
-    checked.name.toLowerCase() !== PRIVATE_RACE_COMMUNITY ||
-    checked.type !== 'private'
+    checked.id !== scope.subredditId ||
+    checked.name.toLowerCase() !== scope.subredditName.toLowerCase() ||
+    checked.type !== scope.type
   )
     throw new DailyPublicationError('unavailable');
   return {
-    appSlug: PRIVATE_RACE_APP,
-    subredditId: input.subredditId,
-    subredditName: PRIVATE_RACE_COMMUNITY,
+    appSlug: scope.appSlug,
+    subredditId: scope.subredditId,
+    subredditName: scope.subredditName,
   };
 }
 
@@ -84,7 +107,7 @@ export function createDevvitDailyPublicationService(): {
 } {
   return {
     async ensureToday() {
-      const scope = await requirePrivatePublicationScope({
+      const scope = await requirePublicationScope({
         appSlug: context.appSlug,
         subredditId: context.subredditId,
         subredditName: context.subredditName,

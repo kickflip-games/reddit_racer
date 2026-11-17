@@ -7,110 +7,108 @@ test.beforeEach(async ({ page }) => {
   await waitForSceneAssets(page);
 });
 
-test('first-time lesson waits for hold and release; replay and completion persist', async ({
-  page,
-}) => {
-  await expect(page.locator('#tutorial-open')).toHaveText('New? Learn to play');
-  const phase = await page.locator('#race').getAttribute('data-phase');
-  await page.locator('#tutorial-open').click();
-  const dialog = page.locator('#tutorial-dialog');
-  await expect(dialog).toBeVisible();
-  await expect(page.locator('#tutorial-pad')).toBeFocused();
-  await page.clock.runFor(1000);
-  await expect(dialog).toHaveAttribute('data-step', 'hold');
-  await page.keyboard.down('Space');
-  await page.clock.runFor(700);
-  await expect(dialog).toHaveAttribute('data-step', 'release');
-  await page.clock.runFor(1000);
-  await expect(dialog).toHaveAttribute('data-step', 'release');
-  await page.keyboard.up('Space');
-  await expect(dialog).toHaveAttribute('data-step', 'done');
-  await page.locator('#tutorial-replay').click();
-  await expect(dialog).toHaveAttribute('data-step', 'hold');
-  await page.keyboard.down('Space');
-  await page.clock.runFor(700);
-  await page.keyboard.up('Space');
-  await page.locator('#tutorial-close').click();
-  await expect(dialog).toBeHidden();
-  await expect(page.locator('#tutorial-open')).toBeFocused();
-  await expect(page.locator('#race')).toHaveAttribute('data-phase', phase!);
-  await page.reload();
-  await expect(page.locator('#tutorial-open')).toHaveText('How to play');
-  await expect(dialog).toBeHidden();
-});
-
-test('skip, Escape, early release and interrupted input leave race untouched', async ({
+test('lesson uses the real course and responds to actual driving, then returns safely', async ({
   page,
 }) => {
   await page.locator('#tutorial-open').click();
-  await page.keyboard.down('Space');
-  await page.clock.runFor(100);
-  await page.keyboard.up('Space');
-  await expect(page.locator('#tutorial-dialog')).toHaveAttribute(
-    'data-step',
-    'hold'
+  await waitForSceneAssets(page);
+  await page.locator('#race-canvas').focus();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-play-mode',
+    'tutorial'
   );
   await page.keyboard.down('Space');
-  await page.clock.runFor(700);
+  await page.clock.runFor(5000);
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
+  await expect(page.locator('#card')).toBeHidden();
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '1'
+  );
+  await page.keyboard.down('Space');
+  await page.clock.runFor(5000);
+
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '1'
+  );
+  await page.keyboard.up('Space');
+  await page.clock.runFor(2200);
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '2'
+  );
+  await page.keyboard.down('Space');
+  await page.clock.runFor(5000);
+  await page.keyboard.up('Space');
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '3'
+  );
+  await page.screenshot({
+    path: test.info().outputPath('course-tutorial.png'),
+  });
+  await page.locator('#tutorial-finish').click();
+  await waitForSceneAssets(page);
+  await expect(page.locator('#tutorial-overlay')).toBeHidden();
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-play-mode',
+    'practice'
+  );
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await page.locator('#tutorial-open').click();
+  await waitForSceneAssets(page);
+  await page.keyboard.down('Space');
+  await page.clock.runFor(3500);
   await page.evaluate(() => window.dispatchEvent(new Event('blur')));
   await page.keyboard.up('Space');
-  await expect(page.locator('#tutorial-dialog')).toHaveAttribute(
-    'data-step',
-    'hold'
-  );
-  await page.keyboard.press('Escape');
-  await expect(page.locator('#tutorial-dialog')).toBeHidden();
-  await page.locator('#tutorial-open').click();
-  await page.locator('#tutorial-close').click();
-  await expect(page.locator('#tutorial-open')).toHaveText('New? Learn to play');
-  await page.locator('#start-button').click();
-  await page.clock.runFor(3200);
+  await expect(page.locator('#tutorial-resume')).toBeVisible();
+  await page.locator('#tutorial-resume').click();
+  await page.clock.runFor(3500);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#tutorial-overlay')).toBeHidden();
 });
 
-test('mouse or touch holds finish without scoring; compact dialog stays inside viewport', async ({
+test('touch the course to learn, compact overlay leaves the road usable', async ({
   page,
   isMobile,
 }) => {
-  await page.setViewportSize({ width: 320, height: 480 });
+  await page.setViewportSize({ width: 390, height: 680 });
   await page.locator('#tutorial-open').click();
-  const dialog = page.locator('#tutorial-dialog');
-  const box = await dialog.boundingBox();
-  expect(box!.x).toBeGreaterThanOrEqual(0);
-  expect(box!.y).toBeGreaterThanOrEqual(0);
-  expect(box!.y + box!.height).toBeLessThanOrEqual(480);
-  const pad = page.locator('#tutorial-pad');
+  await waitForSceneAssets(page);
+  await page.clock.runFor(3500);
+  const overlay = await page.locator('#tutorial-overlay').boundingBox();
+  expect(overlay!.height).toBeLessThan(180);
+  const point = { x: 200, y: 400 };
   if (isMobile) {
-    // Chromium's actual touch events, not synthetic pointer handlers.
     const session = await page.context().newCDPSession(page);
-    const bounds = await pad.boundingBox();
-    const touchPoints = [
-      { x: bounds!.x + bounds!.width / 2, y: bounds!.y + bounds!.height / 2 },
-    ];
     await session.send('Input.dispatchTouchEvent', {
       type: 'touchStart',
-      touchPoints,
+      touchPoints: [point],
     });
-    await page.clock.runFor(700);
-    await expect(dialog).toHaveAttribute('data-step', 'release');
+    await page.clock.runFor(5000);
     await session.send('Input.dispatchTouchEvent', {
       type: 'touchEnd',
       touchPoints: [],
     });
   } else {
-    await pad.hover();
+    await page.mouse.move(point.x, point.y);
     await page.mouse.down();
-    await page.clock.runFor(700);
-    await expect(dialog).toHaveAttribute('data-step', 'release');
+    await page.clock.runFor(5000);
     await page.mouse.up();
   }
-  await expect(dialog).toHaveAttribute('data-step', 'done');
-  await page.screenshot({
-    path: test.info().outputPath('tutorial-complete.png'),
-  });
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '1'
+  );
+  await page.clock.runFor(2200);
+  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
+    'data-step',
+    '2'
+  );
   await page.locator('#tutorial-close').click();
-  await expect(page.locator('#card')).toBeVisible();
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#tutorial-overlay')).toBeHidden();
 });
 
 test('tutorial preserves daily identity and never starts or submits a ranked attempt', async ({
@@ -138,7 +136,7 @@ test('tutorial preserves daily identity and never starts or submits a ranked att
   );
   let attempts = 0;
   page.on('request', (request) => {
-    if (/startRankedRace|submitRankedRace/.test(request.url())) attempts++;
+    if (/startRankedRace|submitRun/.test(request.url())) attempts++;
   });
   await page.goto('/game.html?daily=1');
   await waitForSceneAssets(page);
@@ -146,10 +144,13 @@ test('tutorial preserves daily identity and never starts or submits a ranked att
     .locator('#race')
     .getAttribute('data-challenge-hash');
   await page.locator('#tutorial-open').click();
-  await page.keyboard.down('Space');
-  await page.clock.runFor(700);
-  await page.keyboard.up('Space');
+  await waitForSceneAssets(page);
+  await expect(page.locator('#race')).toHaveAttribute(
+    'data-play-mode',
+    'tutorial'
+  );
   await page.locator('#tutorial-close').click();
+  await waitForSceneAssets(page);
   expect(attempts).toBe(0);
   await expect(page.locator('#race')).toHaveAttribute(
     'data-challenge-hash',

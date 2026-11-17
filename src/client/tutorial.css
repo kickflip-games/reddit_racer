@@ -2,97 +2,92 @@
   display: flex;
   gap: 8px;
 }
-.start-actions #start-button {
+.start-actions #start-button,
+.start-actions #retry-button {
   flex: 1;
 }
 #tutorial-open {
-  width: 104px;
+  width: auto;
   flex-shrink: 0;
-  padding: 8px;
+  padding: 8px 12px;
   font-size: 12px;
   color: var(--ink);
   background: var(--paper-soft);
 }
-#tutorial-dialog {
-  width: min(420px, calc(100vw - 28px));
-  max-height: calc(100dvh - 28px);
-  box-sizing: border-box;
-  overflow: auto;
-  padding: 24px;
-  color: var(--ink);
-  background: var(--paper);
-  border: 1px solid #fffaf0;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+#tutorial-overlay {
+  position: absolute;
+  z-index: 12;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  max-width: 380px;
+  margin: auto;
+  color: #fff7e8;
+  padding: 12px 16px;
+  background: #173d33ed;
+  border-radius: 4px;
+  pointer-events: none;
 }
-#tutorial-dialog::backdrop {
-  background: rgb(10 28 24 / 72%);
+#tutorial-overlay[hidden] {
+  display: none;
 }
-#tutorial-dialog h2 {
-  font-size: 28px;
-}
-#tutorial-description,
-#tutorial-progress {
-  line-height: 1.45;
-  font-size: 14px;
-}
-#tutorial-progress {
-  min-height: 42px;
-  font-weight: 800;
-}
-#tutorial-pad {
-  min-height: 64px;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-.tutorial-tip {
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--muted);
-}
-.tutorial-actions {
+.tutorial-heading {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
 }
-.tutorial-actions button {
+#tutorial-overlay button {
+  pointer-events: auto;
   min-height: 44px;
-  padding: 10px;
-  font-size: 13px;
-  color: var(--ink);
-  background: var(--paper-soft);
+  width: auto;
+  padding: 8px 12px;
+  background: #fff7e8;
+  color: #173d33;
 }
-.tutorial-road {
-  overflow: hidden;
-  border-bottom: 2px dashed var(--muted);
-  margin-bottom: 16px;
+#tutorial-progress {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 8px 0;
 }
-#tutorial-car {
-  display: block;
-  font-size: 32px;
-  transition: transform 600ms ease-out;
+#tutorial-hint {
+  font-size: 12px;
+  margin: 0;
+  line-height: 1.4;
 }
-#tutorial-dialog[data-step='accelerating'] #tutorial-car,
-#tutorial-dialog[data-step='release'] #tutorial-car {
-  transform: translateX(65%);
+#tutorial-finish {
+  margin-top: 12px;
 }
-#tutorial-dialog[data-step='done'] #tutorial-car {
-  transform: translateX(72%);
+#race[data-play-mode='tutorial'] .race-hud,
+#race[data-play-mode='tutorial'] .race-footer {
+  visibility: hidden;
 }
-@media (prefers-reduced-motion: reduce) {
-  #tutorial-car {
-    transition: none;
-  }
+#race[data-play-mode='tutorial'][data-car-load='ready'] .race-card {
+  display: none;
 }
 @media (max-height: 480px) {
-  #tutorial-dialog {
-    padding: 16px;
+  #tutorial-overlay {
+    left: 12px;
+    right: auto;
+    top: 12px;
+    width: 220px;
+    padding: 8px 12px;
   }
-  .tutorial-road {
-    display: none;
+  #tutorial-progress {
+    font-size: 18px;
   }
-  #tutorial-dialog h2 {
-    font-size: 24px;
-  }
+}
+
+#race #tutorial-open {
+  background: transparent;
+  padding: 8px;
+  margin-top: 0;
+  font-size: 12px;
+  min-height: 44px;
+}
+
+.start-actions #retry-button {
+  margin-top: 0;
 }

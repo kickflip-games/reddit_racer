@@ -73,6 +73,13 @@ export type GameSceneHooks = {
 export type GameSceneOptions = GameSceneHooks & {
   generated: boolean;
   continuousPractice?: boolean;
+  tutorial?: boolean;
+  onTutorialSample?: (sample: {
+    held: boolean;
+    speed: number;
+    racing: boolean;
+    interrupted: boolean;
+  }) => void;
 };
 export type GameSceneController = {
   dispose(): void;
@@ -171,7 +178,12 @@ export function initializeGame(
   );
   // A ghost is local visual feedback, never a verified leaderboard record.
   function saveGhost(ticks: number, bestTicks: number, end: GhostPoint): void {
-    if (!ghostOverflow && ghostPoints.length > 1 && bestTicks === ticks) {
+    if (
+      !options.tutorial &&
+      !ghostOverflow &&
+      ghostPoints.length > 1 &&
+      bestTicks === ticks
+    ) {
       ghostStore.save(localBestKey, { ticks, points: [...ghostPoints, end] });
       ghostLap = ghostStore.get(localBestKey);
     }
@@ -196,6 +208,13 @@ export function initializeGame(
       best === null ? 'Best —' : `Best ${formatTime(best / SIMULATION_HZ)} s`;
   }
   function recordLocalLap(ticks: number): LocalBestResult {
+    if (options.tutorial)
+      return {
+        bestTicks: ticks,
+        previousBestTicks: null,
+        isNewBest: false,
+        tied: false,
+      };
     const result = localBests.record(localBestKey, ticks);
     showLocalBest();
     return result;
@@ -538,6 +557,12 @@ export function initializeGame(
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
+    options.onTutorialSample?.({
+      held: held(),
+      speed: state.speed,
+      racing: race.phase === 'racing',
+      interrupted: race.phase === 'abandoned',
+    });
     timer.textContent = formatTime(
       (practiceDriver
         ? practiceDriver.lapTicks
@@ -1111,6 +1136,7 @@ export function initializeGame(
   canvas.addEventListener(
     'pointerdown',
     (event) => {
+      if (options.tutorial && !racing && event.button === 0) beginRace();
       if (
         (!racing && !preparing) ||
         activePointer !== undefined ||
@@ -1143,6 +1169,13 @@ export function initializeGame(
   window.addEventListener(
     'keydown',
     (event) => {
+      if (
+        options.tutorial &&
+        !racing &&
+        event.code === 'Space' &&
+        event.target === canvas
+      )
+        beginRace();
       if (
         event.code !== 'Space' ||
         (!racing && !preparing) ||
@@ -1294,6 +1327,8 @@ export function initializeGame(
           : '';
     carLoadRetry.hidden = state !== 'unavailable';
     enableAttemptButtons(state === 'ready');
+    if (options.tutorial && state === 'ready')
+      canvas.focus({ preventScroll: true });
     sceneDirty = true;
   }
   async function loadRequiredCar(retry = false): Promise<void> {

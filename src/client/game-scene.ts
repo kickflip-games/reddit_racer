@@ -141,7 +141,7 @@ export function initializeGame(
   const localBests = createPracticeBestStore(storage);
   const localBestKey =
     practiceBestKey(track, options) +
-    (options.continuousPractice ? ':drift-v1' : '');
+    (options.continuousPractice ? ':drift-v2' : '');
   const ghostStore = createGhostStore(storage);
   let ghostLap = ghostStore.get(localBestKey);
   // Old best times have no trajectory. Do not mislabel a slower new lap as best.

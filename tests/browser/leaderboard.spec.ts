@@ -385,6 +385,28 @@ test('presentation fixture keeps responsive results and native standings accessi
   await page.screenshot({
     path: `test-results/quick-results-320-presentation-mock-${test.info().project.name}.png`,
   });
+  await page.locator('#leaderboard-title').click();
+  await expect(page.locator('#leaderboard-day')).toHaveText(
+    '12 Nov 2026 · UTC'
+  );
+  const dateBox = await page.locator('#leaderboard-day').boundingBox();
+  const refreshBox = await page.locator('#leaderboard-refresh').boundingBox();
+  expect(dateBox).not.toBeNull();
+  expect(refreshBox).not.toBeNull();
+  expect(dateBox!.height).toBeLessThan(25);
+  expect(refreshBox!.height).toBeGreaterThanOrEqual(44);
+  expect(refreshBox!.width).toBeLessThan(100);
+  expect(dateBox!.x + dateBox!.width).toBeLessThanOrEqual(refreshBox!.x);
+  await page.locator('#leaderboard-refresh').scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: `test-results/standings-320-${test.info().project.name}.png`,
+  });
+  await page.locator('#leaderboard-refresh').click();
+  await expect(page.locator('#leaderboard')).toHaveAttribute(
+    'data-state',
+    'ready'
+  );
+  await page.locator('#leaderboard-title').click();
   await page.setViewportSize({ width: 640, height: 360 });
   await page.clock.runFor(32);
   await expect(page.locator('#retry-button')).toBeInViewport();
@@ -475,7 +497,7 @@ test('presentation fixture keeps responsive results and native standings accessi
       (await page.locator(`#${id}`).boundingBox())?.height
     ).toBeGreaterThanOrEqual(44);
   }
-  expect(boardCalls).toBe(1);
+  expect(boardCalls).toBe(2);
   expect(await page.locator('html').innerHTML()).not.toContain(sessionId);
   expect(errors).toEqual([]);
 });

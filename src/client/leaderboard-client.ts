@@ -96,7 +96,14 @@ export function createLeaderboardController(
   panelOwners.set(panel, owner);
   const listeners = new AbortController();
   let disposed = false;
-  element('leaderboard-day').textContent = `${challenge.day} · UTC`;
+  // Format the server's race day in UTC, never the viewer's local timezone.
+  const raceDate = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(`${challenge.day}T00:00:00Z`));
+  element('leaderboard-day').textContent = `${raceDate} · UTC`;
   let currentAttempt = 0;
   let showingResults = false;
   let receipt: VerifiedRunResponse | undefined;

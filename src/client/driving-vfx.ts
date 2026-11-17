@@ -1,3 +1,4 @@
+import { createDriftSparks } from './drift-feedback';
 import * as THREE from 'three';
 import { SIMULATION_HZ, type SimulationState } from '../shared/simulation';
 import type { RacePhase } from '../shared/race-rules';
@@ -27,6 +28,7 @@ export type DrivingVfxFrame = {
   deltaSeconds: number;
   cssPixelsPerMetre: number;
   reducedMotion: boolean;
+  practiceDriftSeconds?: number | undefined;
 };
 export type DrivingVfx = {
   object: THREE.Group;
@@ -498,6 +500,7 @@ export function createDrivingVfx(
     return (seed >>> 0) / 0x100000000;
   };
   const speedStreaks = createSpeedStreaks();
+  const driftSparks = createDriftSparks();
   const mask = particleMask();
   const smoke = createParticlePool(
     'tyre-smoke',
@@ -563,7 +566,13 @@ export function createDrivingVfx(
   skids.name = 'tyre-skids';
   skids.frustumCulled = false;
   skids.renderOrder = 1;
-  object.add(skids, smoke.object, dust.object, speedStreaks.object);
+  object.add(
+    skids,
+    smoke.object,
+    dust.object,
+    speedStreaks.object,
+    driftSparks.object
+  );
   const onRoad = createRoadContainment(track),
     quad = new Float64Array(8);
   const previous = new Float64Array(6),
@@ -638,6 +647,7 @@ export function createDrivingVfx(
     if (disposed) return;
     pendingChanged = true;
     speedStreaks.reset();
+    driftSparks.reset();
     smoke.reset();
     dust.reset();
     lives.fill(0);
@@ -723,6 +733,7 @@ export function createDrivingVfx(
         breakHistory();
       }
       pendingChanged = speedStreaks.update(frame) || pendingChanged;
+      pendingChanged = driftSparks.update(frame) || pendingChanged;
       const delta = Number.isFinite(frame.deltaSeconds)
         ? THREE.MathUtils.clamp(frame.deltaSeconds, 0, 0.05)
         : 0;
@@ -921,6 +932,7 @@ export function createDrivingVfx(
       object.removeFromParent();
       object.clear();
       speedStreaks.dispose();
+      driftSparks.dispose();
       smoke.dispose();
       dust.dispose();
       geometry.dispose();

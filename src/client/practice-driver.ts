@@ -93,6 +93,11 @@ export class PracticeDriver {
       !this.state.recovering
     );
   }
+  get activeDriftSeconds(): number | undefined {
+    return this.track.schemaVersion === 2 && this.drifting
+      ? this.driftSeconds
+      : undefined;
+  }
   private completedLapCount = 0;
   private currentLapTicks = 0;
   private lastCompletedLapTicks: number | null = null;

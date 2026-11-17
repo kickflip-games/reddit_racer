@@ -1657,3 +1657,25 @@ select:focus-visible {
 #race[data-phase='abandoned'] .race-card {
   border-radius: 4px;
 }
+
+/* Result actions are full width; the standings utility must not squeeze its date. */
+#race .race-card .leaderboard-heading {
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+#race .race-card #leaderboard-day {
+  flex: 1 0 auto;
+  white-space: nowrap;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+#race .race-card #leaderboard-refresh {
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 12px;
+  background: #173d33;
+  color: #fff7e8;
+  font-size: 12px;
+}

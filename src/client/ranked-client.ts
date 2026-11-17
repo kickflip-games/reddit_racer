@@ -1,3 +1,4 @@
+import { submissionFailureMessage } from './verification-feedback';
 import { api } from './api';
 import type { DailyChallenge } from '../shared/daily-challenge';
 import {
@@ -168,15 +169,13 @@ export function createRankedRaceHooks(
         ) {
           return {
             status: 'rejected',
-            message:
-              code === 'NOT_FOUND' || code === 'PRECONDITION_FAILED'
-                ? 'This attempt can no longer be checked. Try a new race.'
-                : 'This run could not be accepted. Try a new attempt.',
+            message: submissionFailureMessage(code),
           };
         }
         return {
           status: 'unavailable',
-          message: 'Verification is unavailable. This time remains unverified.',
+          message:
+            'Could not confirm this time with the server. Check your connection and try again.',
         };
       } finally {
         sessions.delete(attemptId);

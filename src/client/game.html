@@ -172,7 +172,7 @@
           type="button"
           hidden
         >
-          Choose a word
+          Choose a seed
         </button>
         <button id="practice-button" class="secondary-button" type="button">
           Other tracks
@@ -326,7 +326,7 @@
               <div id="practice-settings" hidden>
                 <p id="practice-seed"></p>
                 <form id="word-course-form">
-                  <label for="course-word">Course word</label>
+                  <label for="course-word">Seed</label>
                   <input
                     id="course-word"
                     name="word"
@@ -343,9 +343,17 @@
                     Load track
                   </button>
                   <p id="word-course-message" role="status">
-                    Word tracks are unranked.
+                    Seed tracks are unranked.
                   </p>
                 </form>
+                <p id="share-track-seed" hidden></p>
+                <button id="share-track-button" type="button" hidden>
+                  Share track
+                </button>
+                <button id="copy-seed-button" type="button" hidden>
+                  Copy seed
+                </button>
+                <p id="share-track-status" role="status"></p>
                 <button id="next-practice-button" type="button">
                   Random track
                 </button>

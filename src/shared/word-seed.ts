@@ -15,7 +15,7 @@ export function normalizeCourseWord(input: string): string {
     .replace(/\s+/gu, ' ')
     .toLowerCase();
   if (!word || [...word].length > 48)
-    throw new Error('Enter a word or short phrase of 1–48 characters.');
+    throw new Error('Enter a seed (word or short phrase) of 1–48 characters.');
   if (!/^[\p{L}\p{M}\p{N} _'-]+$/u.test(word))
     throw new Error(
       'Use letters, numbers, spaces, apostrophes, underscores or hyphens.'
@@ -24,14 +24,12 @@ export function normalizeCourseWord(input: string): string {
 }
 export function courseWord(input: string): CourseWord {
   if (/[\p{Cc}\p{Cf}]/u.test(input))
-    throw new Error(
-      'Remove hidden or control characters from the course word.'
-    );
+    throw new Error('Remove hidden or control characters from the seed.');
   // Previously shared codes are aliases, not requests for historical geometry.
   input = input.trim().replace(/^v[12]:/iu, '');
   const word = normalizeCourseWord(input);
   const seed = `word-v2:${word}`;
   if (seed.length > 96)
-    throw new Error('That word is too long. Try a shorter word.');
+    throw new Error('That seed is too long. Try a shorter seed.');
   return { word, seed, code: word };
 }

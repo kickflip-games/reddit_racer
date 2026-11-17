@@ -1679,3 +1679,12 @@ select:focus-visible {
   color: #fff7e8;
   font-size: 12px;
 }
+#share-track-seed,
+#share-track-status {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.4;
+}
+#share-track-status:empty {
+  display: none;
+}

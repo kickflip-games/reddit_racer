@@ -1,3 +1,4 @@
+import { rememberShareForExpansion } from './share-handoff';
 import { context, requestExpandedMode } from '@devvit/web/client';
 
 const start = document.getElementById('start-button');
@@ -24,5 +25,12 @@ start?.addEventListener('click', (event) => {
       status.textContent = 'Open /game.html for local unranked practice.';
     return;
   }
-  requestExpandedMode(event, 'game');
+  try {
+    rememberShareForExpansion();
+    requestExpandedMode(event, 'game');
+  } catch (error) {
+    if (status)
+      status.textContent =
+        error instanceof Error ? error.message : 'Shared track unavailable.';
+  }
 });

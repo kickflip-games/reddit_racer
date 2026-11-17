@@ -651,3 +651,33 @@ void test('invalid committed winner cannot replace ownership, replay or authorit
     kind('integrity')
   );
 });
+
+void test('submission parser accepts every retained runtime pair including live v6/v7', () => {
+  for (const [simulationVersion, handlingVersion] of [
+    ['fixed-step-v2', 'arcade-v1'],
+    ['fixed-step-v4', 'centreline-v1'],
+    ['fixed-step-v5', 'progressive-slip-v1'],
+    ['fixed-step-v6', 'progressive-slip-v1'],
+    ['fixed-step-v7', 'road-finish-v1'],
+  ]) {
+    const payload = {
+      sessionId: uuid(1),
+      replay: { ...replay, simulationVersion, handlingVersion },
+    };
+    assert.deepEqual(parseRankedSubmission(payload), payload);
+  }
+  for (const [simulationVersion, handlingVersion] of [
+    ['fixed-step-v7', 'arcade-v1'],
+    ['future-v8', 'road-finish-v1'],
+    ['fixed-step-v6', 'future-handling'],
+  ]) {
+    assert.throws(
+      () =>
+        parseRankedSubmission({
+          sessionId: uuid(1),
+          replay: { ...replay, simulationVersion, handlingVersion },
+        }),
+      kind('unsupported')
+    );
+  }
+});

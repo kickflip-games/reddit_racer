@@ -103,15 +103,11 @@ export function parseRankedSubmission(value: unknown): RankedSubmission {
   if (record(value.replay)) {
     const sim = value.replay.simulationVersion,
       handling = value.replay.handlingVersion;
+    // Runtime pairs have a single authority. A second version whitelist here
+    // silently rejected the supported v6/v7 tracks at the RPC input boundary.
     if (
-      (typeof sim === 'string' &&
-        !['fixed-step-v2', 'fixed-step-v4', 'fixed-step-v5'].includes(sim)) ||
-      (typeof handling === 'string' &&
-        !['arcade-v1', 'centreline-v1', 'progressive-slip-v1'].includes(
-          handling
-        )) ||
-      (typeof value.replay.schemaVersion === 'number' &&
-        value.replay.schemaVersion !== 1)
+      typeof value.replay.schemaVersion === 'number' &&
+      value.replay.schemaVersion !== 1
     )
       throw new RankedRaceError(
         'unsupported',

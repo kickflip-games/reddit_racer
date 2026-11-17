@@ -20,3 +20,11 @@ test('Daily Lap splash has consistent branding and a plain CTA @smoke', async ({
     path: test.info().outputPath('daily-lap-splash.png'),
   });
 });
+
+test('expanded race menu uses the same Daily Lap wordmark @smoke', async ({
+  page,
+}) => {
+  await page.goto('/game.html');
+  await expect(page.locator('.start-wordmark')).toHaveText('The Daily Lap.');
+  expect(await page.locator('body').innerText()).not.toContain('Reddit Racer');
+});

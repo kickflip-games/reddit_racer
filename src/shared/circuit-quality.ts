@@ -35,9 +35,11 @@ export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
   track.generatorVersion === LINKED_COURSE_VERSION
     ? LINKED_QUALITY_VERSION
-    : track.schemaVersion === 2
-      ? ELEVATED_QUALITY_VERSION
-      : QUALITY_VERSION;
+    : track.generatorVersion === 'linked-circuits-v1'
+      ? 'linked-quality-v1'
+      : track.schemaVersion === 2
+        ? ELEVATED_QUALITY_VERSION
+        : QUALITY_VERSION;
 export const MAX_QUALITY_ASSESSMENTS = 4;
 export const MAX_REPLAY_CHECKS = 3;
 export const MAX_QUALITY_TICKS =

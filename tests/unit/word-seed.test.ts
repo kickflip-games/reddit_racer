@@ -34,7 +34,7 @@ void test('word courses reproduce geometry and isolate actual track ghost identi
     c = await generateWordPracticeCourse('apple');
   assert.equal(a.trackHash, b.trackHash);
   assert.notEqual(a.trackHash, c.trackHash);
-  assert.equal(a.track.generatorVersion, 'linked-circuits-v1');
+  assert.equal(a.track.generatorVersion, 'linked-circuits-v2');
   assert.equal(
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(b.track, { continuousPractice: true })
@@ -83,12 +83,12 @@ void test('accepted linked course hashes freeze quality selection as well as can
   for (const [word, hash] of [
     [
       'banana',
-      'ea48b815d175ae3f1b89ca035e743330984aaa4114d14da278a82bba9f217804',
+      '80e5711375bb89392e5f7d66f5cbef70abdf36488fd30d16eef5c988052738f0',
     ],
-    ['tui', '83aef43b7d74ed8f67eb05da1a93a19b825f5c489782c22828160d7918a33825'],
+    ['tui', '3a69fdf48719d2d010da19743a41632cfb7eb72cffdcca3fb5e20334a21cd777'],
     [
       'river',
-      '98dd648c8cec92cb8d64d24ab863e566687ceffbed8f2b46b424b613863b8851',
+      '205830f19d171e48b985333ced9d9cf142965eb0abfd188f65a2757fe410b895',
     ],
   ])
     assert.equal(

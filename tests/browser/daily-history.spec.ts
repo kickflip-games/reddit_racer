@@ -6,7 +6,7 @@ import {
 } from '../../src/shared/daily-standings';
 
 const now = Date.parse('2026-11-15T00:01:00Z');
-function view(day = '2026-11-14', offset = 0): DailyStandingsView {
+function view(day = '2026-11-15', offset = 0): DailyStandingsView {
   const count = offset === 0 ? 20 : 5;
   return {
     day,
@@ -15,7 +15,7 @@ function view(day = '2026-11-14', offset = 0): DailyStandingsView {
     serverNowMs: now,
     retainedUntilMs: Date.parse(`${day}T00:00:00Z`) + 91 * 86_400_000,
     status: 'available',
-    provisional: day === '2026-11-14',
+    provisional: day >= '2026-11-14',
     rows: Array.from({ length: count }, (_, index) => ({
       username: `racer_${offset + index}`,
       finishTicks: 3600,
@@ -41,7 +41,7 @@ async function boot(
       json: {
         result: {
           data: (response ?? view)(
-            input.day ?? '2026-11-14',
+            input.day ?? '2026-11-15',
             input.offset ?? 0
           ),
         },
@@ -64,20 +64,20 @@ for (const viewport of [
   }) => {
     await page.setViewportSize(viewport);
     const queries = await boot(page);
-    await expect(page.locator('#daily-history-preview-status')).toContainText(
-      '2026-11-14 UTC'
-    );
+    expect(queries).toHaveLength(0);
+    await expect(page.locator('#daily-history-preview-status')).toHaveCount(0);
+    await expect(page.locator('#card')).not.toContainText('2026-11-15 UTC');
     await page.screenshot({
       path: `test-results/daily-history-home-${viewport.width}.png`,
     });
     await page.locator('#daily-history-open').click();
     const dialog = page.getByRole('dialog', {
-      name: 'Daily standings',
+      name: 'Leaderboard',
       exact: true,
     });
     await expect(dialog).toBeVisible();
     await expect(page.locator('#daily-history-status')).toContainText(
-      '2026-11-14 UTC'
+      '2026-11-15 UTC'
     );
     await expect(page.locator('#daily-history-provisional')).toBeVisible();
     await expect(page.locator('#daily-history-rows tr')).toHaveCount(20);
@@ -86,7 +86,7 @@ for (const viewport of [
     );
     await expect(page.locator('#daily-history-date')).toHaveAttribute(
       'max',
-      '2026-11-14'
+      '2026-11-15'
     );
     await expect(page.locator('#daily-history-date')).toHaveAttribute(
       'min',
@@ -102,9 +102,9 @@ for (const viewport of [
     await expect(page.locator('#daily-history-rows tr')).toHaveCount(20);
     await page.locator('#daily-history-previous').click();
     await expect(page.locator('#daily-history-status')).toContainText(
-      '2026-11-13 UTC'
+      '2026-11-14 UTC'
     );
-    await expect(page.locator('#daily-history-provisional')).toBeHidden();
+    await expect(page.locator('#daily-history-provisional')).toBeVisible();
     await page.locator('#daily-history-next').click();
     await expect(page.locator('#daily-history-next')).toBeDisabled();
     const bounds = await dialog.boundingBox();
@@ -140,7 +140,7 @@ test('archive distinguishes missing and empty and recovers from unavailable', as
 }) => {
   await boot(page, (day, offset) => {
     const result = view(day, offset);
-    if (day === '2026-11-14')
+    if (day === '2026-11-15')
       return {
         ...result,
         status: 'unavailable',
@@ -151,7 +151,7 @@ test('archive distinguishes missing and empty and recovers from unavailable', as
       };
     return {
       ...result,
-      status: day === '2026-11-13' ? 'empty' : 'missing',
+      status: day === '2026-11-14' ? 'empty' : 'missing',
       rows: [],
       nextOffset: null,
       hasMore: false,
@@ -180,7 +180,7 @@ test('archive handles request errors and retention rollover honestly', async ({
   await boot(page);
   await page.locator('#daily-history-open').click();
   await expect(page.locator('#daily-history-status')).toContainText(
-    '2026-11-14 UTC'
+    '2026-11-15 UTC'
   );
   await page.unroute('**/api/trpc/dailyStandings*');
   await page.route('**/api/trpc/dailyStandings*', (route) => route.abort());
@@ -229,4 +229,42 @@ test('archive handles request errors and retention rollover honestly', async ({
   await expect(page.locator('#daily-history-status')).toContainText(
     '2026-08-18 UTC'
   );
+});
+
+test('leaderboard opens today and swipes or keys through previous UTC days', async ({
+  page,
+  isMobile,
+}) => {
+  await boot(page);
+  await page.locator('#daily-history-open').click();
+  const status = page.locator('#daily-history-status');
+  await expect(status).toContainText('Today · 2026-11-15 UTC');
+  const box = (await page.locator('#daily-history-title').boundingBox())!;
+  const start = { x: box.x + box.width - 10, y: box.y + box.height / 2 };
+  if (isMobile) {
+    const session = await page.context().newCDPSession(page);
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [start],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [{ x: start.x - 80, y: start.y }],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+  } else {
+    await page.mouse.move(start.x, start.y);
+    await page.mouse.down();
+    await page.mouse.move(start.x - 80, start.y, { steps: 8 });
+    await page.mouse.up();
+  }
+  await expect(status).toContainText('2026-11-14 UTC');
+  await page.locator('#daily-history-close').focus();
+  await page.keyboard.press('ArrowLeft');
+  await expect(status).toContainText('2026-11-13 UTC');
+  await page.keyboard.press('ArrowRight');
+  await expect(status).toContainText('2026-11-14 UTC');
 });

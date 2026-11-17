@@ -55,10 +55,8 @@ test('Other tracks accepts a word, uses plain words and mobile settings usabilit
     banana
   );
   await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
-  // The home preview reads yesterday's retained standings; changing words must
-  // still never start or submit a ranked attempt. One bounded archive read only.
-  expect(calls).toHaveLength(1);
-  expect(new URL(calls[0]!).pathname).toBe('/api/trpc/dailyStandings');
+  // No leaderboard or ranked network calls until the player opens Leaderboard.
+  expect(calls).toHaveLength(0);
   expect(errors).toEqual([]);
 });
 test('invalid word link is explicit and can recover through the word form', async ({

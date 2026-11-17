@@ -249,7 +249,7 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
       const speedDrawCalls = renderer.info.render.calls - withoutSpeedCalls;
       const speedStreakPixels = changedPixels(withoutSpeed, withSpeed);
       const speedStreakCount = streaks.geometry.drawRange.count;
-      snapshot('high-speed car-relative wind ribbons');
+      snapshot('single-plane rear tyre afterimages');
       effects.update({ ...fast, reducedMotion: true });
       const reducedStreakCount = streaks.geometry.drawRange.count;
       const result = {
@@ -295,7 +295,7 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
   );
   expect(metrics.speedStreakPixels).toBeGreaterThan(0);
   expect(metrics.speedDrawCalls).toBe(1);
-  expect(metrics.speedStreakCount).toBe(48);
+  expect(metrics.speedStreakCount).toBe(12);
   expect(metrics.reducedStreakCount).toBe(0);
   expect(metrics.smokeCount).toBeGreaterThan(0);
   expect(metrics.dustCount).toBeGreaterThan(0);

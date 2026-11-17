@@ -131,9 +131,7 @@ test('interrupted cards stay readable and clear of settings in compact viewports
   await page.clock.pauseAt(new Date('2026-11-12T00:01:00Z'));
   await page.locator('#start-button').click();
   await page.clock.fastForward(1000);
-  await expect(page.locator('#card-copy')).toHaveText(
-    'The game paused too long to verify this time. Try another run.'
-  );
+  await expect(page.locator('#card-copy')).toHaveText('');
   // Include the archived-post notice shown in the reported Android screenshot.
   await page.locator('#today-race').evaluate((node) => {
     node.removeAttribute('hidden');

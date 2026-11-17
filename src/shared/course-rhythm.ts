@@ -1,7 +1,10 @@
 import type { Replay } from './replay';
 
-export const LINKED_COURSE_VERSION = 'linked-circuits-v1';
-export const LINKED_QUALITY_VERSION = 'linked-quality-v1';
+export const LINKED_COURSE_VERSION = 'linked-circuits-v2';
+export const LINKED_QUALITY_VERSION = 'linked-quality-v2';
+/** V2 searches more candidates without weakening any acceptance threshold. */
+export const LINKED_CANDIDATE_BUDGET = 32;
+export const LINKED_QUALITY_BUDGET = 12;
 /** Versioned acceptance limits; also enforced when a daily record is created. */
 export const LINKED_RHYTHM_LIMITS = Object.freeze({
   longestStraight: 65,

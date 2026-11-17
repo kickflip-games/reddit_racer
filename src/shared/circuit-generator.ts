@@ -6,7 +6,10 @@ import {
 } from './circuit-validation.ts';
 import type { StructuralMetrics } from './circuit-validation.ts';
 import type { Track } from './track.ts';
-import { LINKED_COURSE_VERSION } from './course-rhythm';
+import {
+  LINKED_COURSE_VERSION,
+  LINKED_CANDIDATE_BUDGET,
+} from './course-rhythm';
 
 export const GENERATOR_VERSION = 'motif-loop-v1';
 export type MotifKind =
@@ -350,7 +353,11 @@ function generateMotifCandidate(
 ): CircuitCandidate {
   checkSeed(seed);
   const config = normalizeGeneratorConfig(overrides);
-  if (!Number.isInteger(attempt) || attempt < 1 || attempt > (linked ? 24 : 12))
+  if (
+    !Number.isInteger(attempt) ||
+    attempt < 1 ||
+    attempt > (linked ? LINKED_CANDIDATE_BUDGET : 12)
+  )
     throw new Error('Candidate attempt exceeds the versioned budget');
   const candidateSeed = `${seed}:attempt:${attempt}`;
   const fingerprint = JSON.stringify({

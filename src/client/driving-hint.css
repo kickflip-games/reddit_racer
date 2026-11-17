@@ -1,0 +1,60 @@
+.start-actions {
+  display: flex;
+}
+.start-actions #start-button,
+.start-actions #retry-button {
+  flex: 1;
+  margin-top: 0;
+}
+#driving-hint {
+  position: absolute;
+  z-index: 6;
+  left: 14px;
+  right: 14px;
+  bottom: calc(
+    max(14px, env(safe-area-inset-bottom)) + clamp(100px, 29vw, 120px) + 12px
+  );
+  width: fit-content;
+  max-width: calc(100% - 28px);
+  margin: 0 auto;
+  padding: 9px 12px;
+  color: #fff7e8;
+  background: #173d33e8;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+  animation: driving-hint-fade 5s linear forwards;
+}
+#driving-hint[hidden] {
+  display: none;
+}
+@keyframes driving-hint-fade {
+  0%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+#race[data-settings-open='true'] #driving-hint {
+  visibility: hidden;
+}
+@media (prefers-reduced-motion: reduce) {
+  #driving-hint {
+    animation: none;
+  }
+}
+
+@media (min-width: 701px) {
+  #driving-hint {
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 152px);
+  }
+}
+@media (max-height: 480px) {
+  #driving-hint {
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px);
+  }
+}

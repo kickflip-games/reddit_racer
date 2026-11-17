@@ -90,12 +90,12 @@ function path(input: unknown): string {
   return `/api/trpc/dailyStandings?input=${encodeURIComponent(JSON.stringify(input))}`;
 }
 
-test('HTTP archive defaults yesterday UTC and accepts date/page without writes or generation', async () => {
+test('HTTP archive defaults today UTC and accepts date/page without writes or generation', async () => {
   const h = harness(),
     before = h.snapshot();
   const view = parseDailyStandingsView(await h.client.dailyStandings.query({}));
-  assert.equal(view.day, '2026-11-12');
-  assert.equal(view.status, 'empty');
+  assert.equal(view.day, '2026-11-13');
+  assert.equal(view.status, 'missing');
   assert.equal(view.provisional, true);
   const paged = await h.client.dailyStandings.query({
     day: '2026-11-12',
@@ -130,9 +130,9 @@ test('HTTP archive rejects client account/subreddit/post fields and malformed pa
   assert.equal(h.mutatingCalls(), 0);
   assert.equal(h.generationCalls(), 0);
 });
-test('HTTP date scope maps current/future to400 and expired dates to explicit readonly status', async () => {
+test('HTTP date scope maps future to400 and expired dates to explicit readonly status', async () => {
   const h = harness();
-  for (const day of ['2026-11-13', '2026-11-14'])
+  for (const day of ['2026-11-14', '2026-11-15'])
     assert.equal((await h.app.request(path({ day }))).status, 400);
   assert.equal(h.reads.length, 0);
   const expired = await h.client.dailyStandings.query({ day: '2026-01-01' });

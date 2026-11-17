@@ -122,7 +122,7 @@ async function setup(count = 25) {
 }
 test('historical pages retain >20 tied winners and true subsequent ranks', async () => {
   const h = await setup();
-  const first = await h.read();
+  const first = await h.read({ day: '2026-11-12' });
   assert.equal(first.status, 'available');
   assert.equal(first.rows.length, 20);
   assert.equal(first.nextOffset, 20);
@@ -139,13 +139,13 @@ test('historical pages retain >20 tied winners and true subsequent ranks', async
   assert.equal(second.nextOffset, null);
   assert.equal(second.hasMore, false);
   h.setTime(Date.parse('2026-11-13T00:04:00Z'));
-  assert.equal((await h.read()).provisional, false);
+  assert.equal((await h.read({ day: '2026-11-12' })).provisional, false);
   assert.deepEqual(parseDailyStandingsView(second), second);
 });
 test('date scope rejects future/current and client-supplied identities, never creates historical days', async () => {
   const h = await setup(0);
   for (const q of [
-    { day: '2026-11-13' },
+    { day: '2026-11-14' },
     { day: '2026-11-14' },
     { day: '2026-02-30' },
     { subredditId: 't5_other' },
@@ -158,7 +158,7 @@ test('date scope rejects future/current and client-supplied identities, never cr
     await assert.rejects(() => h.read(q));
   assert.equal(h.reads(), 0);
   assert.equal((await h.read({ day: '2026-11-11' })).status, 'missing');
-  assert.equal((await h.read()).status, 'empty');
+  assert.equal((await h.read({ day: '2026-11-12' })).status, 'empty');
   const before = h.reads();
   assert.equal((await h.read({ day: '2026-01-01' })).status, 'expired');
   assert.equal(h.reads(), before);
@@ -176,13 +176,13 @@ test('missing or mismatched trusted personal best is unavailable, never an empty
   h.store.rawDelete(
     personalBestKey(actor.subredditId, '2026-11-12', 't2_r000')
   );
-  assert.equal((await h.read()).status, 'unavailable');
+  assert.equal((await h.read({ day: '2026-11-12' })).status, 'unavailable');
   const other = await setup(1);
   const key = personalBestKey(actor.subredditId, '2026-11-12', 't2_r000');
   const raw = await other.store.get(key);
   assert(raw);
   other.store.rawSet(key, raw.replace('t5_home', 't5_other'));
-  assert.equal((await other.read()).status, 'unavailable');
+  assert.equal((await other.read({ day: '2026-11-12' })).status, 'unavailable');
 });
 test('revision races retry boundedly and report unavailable; optional post failure preserves scores', async () => {
   const h = await setup(1);
@@ -194,7 +194,7 @@ test('revision races retry boundedly and report unavailable; optional post failu
       h.store.rawSet(key, String(reads + 100));
     }
   };
-  assert.equal((await h.read()).status, 'unavailable');
+  assert.equal((await h.read({ day: '2026-11-12' })).status, 'unavailable');
   assert.equal(reads, 6);
   h.store.afterGet = undefined;
   const read = createDailyStandingsService({
@@ -203,13 +203,13 @@ test('revision races retry boundedly and report unavailable; optional post failu
       throw new Error('Reddit down');
     },
   });
-  const result = await read();
+  const result = await read({ day: '2026-11-12' });
   assert.equal(result.status, 'available');
   assert.equal(result.postUrl, null);
 });
 test('response parser rejects forged rank, continuation, expired and URL metadata', async () => {
   const h = await setup();
-  const view = await h.read();
+  const view = await h.read({ day: '2026-11-12' });
   for (const bad of [
     { ...view, rows: [{ ...view.rows[0], rank: 2 }] },
     { ...view, nextOffset: 40 },
@@ -220,4 +220,15 @@ test('response parser rejects forged rank, continuation, expired and URL metadat
   ])
     assert.throws(() => parseDailyStandingsView(bad));
   assert.deepEqual(parseDailyStandingsQuery(undefined), {});
+});
+
+test('default leaderboard uses today UTC and reads verified live scores', async () => {
+  const h = await setup();
+  h.setTime(noon);
+  const result = await h.read();
+  assert.equal(result.day, '2026-11-12');
+  assert.equal(result.maxDay, '2026-11-12');
+  assert.equal(result.status, 'available');
+  assert.equal(result.provisional, true);
+  assert.equal(result.rows[0]?.finishTicks, 1200);
 });

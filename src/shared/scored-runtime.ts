@@ -42,6 +42,10 @@ export const ELEVATED_HANDLING: Handling = Object.freeze({
   ...CENTRELINE_HANDLING,
   offRoadDrag: 1.25,
 });
+export const ROAD_FINISH_HANDLING: Handling = Object.freeze({
+  ...ELEVATED_HANDLING,
+  offRoadDrag: 3,
+});
 export const ELEVATED_SIMULATION_VERSION = 'fixed-step-v6';
 export const ELEVATED_HANDLING_VERSION = 'progressive-slip-v1';
 export const FLIGHT_GRAVITY = 11.5;
@@ -70,11 +74,18 @@ const elevatedRuntime = Object.freeze({
   simulationHz: 120,
   handling: ELEVATED_HANDLING,
 });
+const roadFinishRuntime = Object.freeze({
+  ...elevatedRuntime,
+  simulationVersion: 'fixed-step-v7',
+  handlingVersion: 'road-finish-v1',
+  handling: ROAD_FINISH_HANDLING,
+});
 export type ScoredRuntime =
   | typeof flatRuntime
   | typeof elevatedRuntime
   | typeof centrelineRuntime
-  | typeof priorElevatedRuntime;
+  | typeof priorElevatedRuntime
+  | typeof roadFinishRuntime;
 
 export function scoredRuntime(
   simulationVersion: unknown,
@@ -102,16 +113,25 @@ export function scoredRuntime(
     handlingVersion === priorElevatedRuntime.handlingVersion
   )
     return priorElevatedRuntime;
+  if (
+    simulationVersion === roadFinishRuntime.simulationVersion &&
+    handlingVersion === roadFinishRuntime.handlingVersion
+  )
+    return roadFinishRuntime;
   throw new Error('Unsupported scored runtime');
 }
 export function runtimeForTrack(track: Track): ScoredRuntime {
+  if (
+    track.schemaVersion === 2 &&
+    track.generatorVersion === 'linked-circuits-v2'
+  )
+    return roadFinishRuntime;
   if (track.schemaVersion === 1) return flatRuntime;
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? centrelineRuntime
       : track.generatorVersion === 'other-tracks-v3' ||
-          track.generatorVersion === 'linked-circuits-v1' ||
-          track.generatorVersion === 'tutorial-circuit-v1'
+          track.generatorVersion === 'linked-circuits-v1'
         ? elevatedRuntime
         : priorElevatedRuntime;
   throw new Error('Unsupported track runtime');

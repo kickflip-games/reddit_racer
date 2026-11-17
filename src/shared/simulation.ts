@@ -1,3 +1,4 @@
+import { stepElevatedSimulationV7 } from './elevated-simulation-v7.ts';
 import { stepElevatedSimulationV5 } from './elevated-simulation-v5.ts';
 import { LEGACY_HANDLING } from './scored-runtime.ts';
 import { stepCentrelineSimulation } from './centreline-simulation.ts';
@@ -83,6 +84,11 @@ export function stepSimulation(
   if (state.status === 'finished') return state;
   if (state.tick >= MAX_SIMULATION_TICKS)
     throw new Error('Simulation duration limit exceeded');
+  if (
+    track.schemaVersion === 2 &&
+    track.generatorVersion === 'linked-circuits-v2'
+  )
+    return stepElevatedSimulationV7(track, state, held);
   if (track.schemaVersion === 2)
     return track.generatorVersion === 'countryside-circuits-v1'
       ? stepCentrelineSimulation(track, state, held)

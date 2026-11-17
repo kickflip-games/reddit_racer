@@ -1,6 +1,6 @@
 # Historical daily standings
 
-`dailyStandings({ day?, offset? })` is a read-only tRPC query. Missing day defaults to yesterday UTC; future/current dates are rejected. Responses expose the server UTC date bounds for the previous 90 days. Older valid dates return `expired` without storage reads. Missing challenges are never generated.
+`dailyStandings({ day?, offset? })` is a read-only tRPC query. Missing day defaults to today UTC; future dates are rejected. Responses expose the server UTC date bounds for today and the previous 90 days. Older valid dates return `expired` without storage reads. Missing challenges are never generated.
 
 The trusted installed subreddit selects all storage keys. The browser cannot select an account/subreddit/post. Pages contain at most 20 rows; `nextOffset` advances by 20, up to offset 100,000. `hasMore` remains true at that bound if additional racers exist, so UI must not claim the archive is exhaustive. Pagination uses Redis order and the first member at the page-leading score to preserve competition ranks, including more than 20 tied winners. Each page checks retained personal-best receipts against account, challenge hash, and sorted score, plus the board revision before/after (three bounded attempts). It never exposes user IDs or receipts.
 
@@ -33,3 +33,5 @@ until explicitly authorized.
 - API and presentation tests use controlled records/responses. Actual historical
   participation and hosted archive behavior remain unverified until deployment.
 - Existing large-chunk and ineffective-dynamic-import build warnings remain.
+
+The centered home menu exposes one Leaderboard button, with no historical preview or prefetch. Opening it fetches today’s verified standings. Swipe left or use Previous/Left arrow for earlier UTC days; swipe right or use Next/Right arrow to return toward today. The date input and paginated results remain available. Empty/missing/unavailable states are explicit, never fabricated scores.

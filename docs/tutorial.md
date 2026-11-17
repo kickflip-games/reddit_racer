@@ -1,16 +1,9 @@
-# First-drive course
+# On-course control hint
 
-**Learn to drive** opens a wide, unranked beginner oval with the same real car,
-physics and hold/release controls as racing. There is no pretend-car menu or
-practice pad. Touch the course (or focus it and hold Space) to start.
+Starting or retrying a race shows “Hold to accelerate · Lift to brake” near the
+bottom of the actual course. It fades and disappears after five seconds. There
+is no separate lesson, menu entry or change to the chosen course or handling.
 
-A compact, nonblocking coach asks the player to accelerate, release and slow,
-then accelerate again. Progress uses actual speed and input, not elapsed time.
-After completion the player may keep driving or return to the race. Exit and
-Escape work at any stage. An interrupted lesson offers Resume on the course.
-
-The lesson has no ranked hooks and does not write personal bests or ghosts.
-The underlying daily post is reloaded on exit without replacing its stored
-course. Sound/motion preferences are shared. Completion storage is optional.
-
-Browser regressions exercise the actual canvas with keyboard, mouse and touch.
+The hint never captures input. It stays above the settings control and responsive minimap footprint, without
+hiding either control. Reduced-motion users get the same brief hint
+without an animated fade. Finishing, interruption or changing course clears it.

@@ -28,11 +28,9 @@ for (const [width, height] of [
       el('leaderboard-me').textContent = 'You have no verified daily time yet.';
     });
     const retry = (await page.locator('#retry-button').boundingBox())!;
-    const learn = (await page.locator('#tutorial-open').boundingBox())!;
-    expect(Math.abs(retry.y - learn.y)).toBeLessThan(2);
-    expect(retry.width).toBeGreaterThan(learn.width);
+    expect(retry.width).toBeGreaterThan(200);
     await expect(page.locator('#retry-button')).toBeInViewport();
-    await expect(page.locator('#tutorial-open')).toBeInViewport();
+    await expect(page.locator('#tutorial-open')).toHaveCount(0);
     await page.screenshot({
       path: test.info().outputPath('rejected-result-layout-fixture.png'),
     });

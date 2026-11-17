@@ -46,8 +46,7 @@ export function createDailyHistoryController(): { dispose(): void } {
     retry = button('daily-history-retry');
   const go = button('daily-history-go');
   const back = button('daily-history-back');
-  const status = element('daily-history-status'),
-    preview = element('daily-history-preview-status');
+  const status = element('daily-history-status');
   const rows = element('daily-history-rows'),
     podium = element('daily-history-podium');
   const table = element('daily-history-table'),
@@ -59,7 +58,6 @@ export function createDailyHistoryController(): { dispose(): void } {
     disposed = false;
   let current: DailyStandingsView | undefined;
   let currentOffset = 0;
-  let previewView: DailyStandingsView | undefined;
 
   function bounds(view: DailyStandingsView): void {
     date.min = view.minDay;
@@ -94,9 +92,13 @@ export function createDailyHistoryController(): { dispose(): void } {
     post.hidden = view.postUrl === null;
     retry.hidden = view.status !== 'unavailable';
     provisional.hidden = !view.provisional;
+    provisional.textContent =
+      view.day === view.maxDay
+        ? 'Live standings: verified finishes update throughout today.'
+        : 'Provisional: in-flight verified finishes can still arrive after midnight UTC.';
     dialog.dataset.state = view.status;
     const messages = {
-      available: `${view.day} UTC · verified community standings`,
+      available: `${view.day === view.maxDay ? 'Today · ' : ''}${view.day} UTC · verified community standings`,
       empty: `${view.day} UTC · no verified finishes were recorded.`,
       missing: `${view.day} UTC · no saved daily race is available.`,
       expired: `${view.day} UTC · these standings are no longer retained.`,
@@ -133,16 +135,12 @@ export function createDailyHistoryController(): { dispose(): void } {
         ties.textContent = `Podium preview; more tied podium racers appear in the standings below. ${ties.textContent}`;
     }
   }
-  async function load(
-    day?: string,
-    offset = 0,
-    initial = false
-  ): Promise<void> {
+  async function load(day?: string, offset = 0): Promise<void> {
     request?.abort();
     request = new AbortController();
     const controller = request,
       version = ++generation;
-    if (!initial) {
+    {
       if (day) date.value = day;
       currentOffset = offset;
       busy(true);
@@ -172,28 +170,69 @@ export function createDailyHistoryController(): { dispose(): void } {
       const view = parseDailyStandingsView(value);
       if ((day && view.day !== day) || view.offset !== offset)
         throw new Error('Historical day mismatch');
-      if (initial) {
-        previewView = view;
-        if (view.status === 'available' && view.rows[0]) {
-          const first = view.rows[0];
-          preview.textContent = `${view.day} UTC · ${view.rows[1]?.rank === 1 ? 'Tied lead: ' : ''}${first.username} · ${seconds(first.finishTicks)}${view.rows[1]?.rank === 1 || view.nextOffset !== null ? ' · view all standings' : ''}${view.provisional ? ' · provisional' : ''}`;
-        } else if (view.status === 'empty')
-          preview.textContent = 'No verified finishes yesterday.';
-        else preview.textContent = '';
-      } else render(view, offset);
+      render(view, offset);
     } catch {
       if (disposed || version !== generation || controller.signal.aborted)
         return;
-      if (!initial) {
+      {
         status.textContent =
           'Standings are temporarily unavailable. Please try again.';
         dialog.dataset.state = 'unavailable';
         retry.hidden = false;
       }
     } finally {
-      if (!disposed && version === generation && !initial) busy(false);
+      if (!disposed && version === generation) busy(false);
     }
   }
+  function moveDay(delta: number): void {
+    if (date.disabled || !date.value) return;
+    const day = shiftDay(date.value, delta);
+    if (day >= date.min && day <= date.max) void load(day);
+  }
+  let swipe: { x: number; y: number } | undefined;
+  dialog.addEventListener(
+    'pointerdown',
+    (event) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('button, input, a')
+      )
+        return;
+      swipe = { x: event.clientX, y: event.clientY };
+    },
+    { signal: listeners.signal }
+  );
+  dialog.addEventListener(
+    'pointerup',
+    (event) => {
+      if (!swipe) return;
+      const dx = event.clientX - swipe.x,
+        dy = event.clientY - swipe.y;
+      swipe = undefined;
+      if (Math.abs(dx) >= 60 && Math.abs(dx) > Math.abs(dy) * 1.5)
+        moveDay(dx < 0 ? -1 : 1);
+    },
+    { signal: listeners.signal }
+  );
+  dialog.addEventListener(
+    'pointercancel',
+    () => {
+      swipe = undefined;
+    },
+    { signal: listeners.signal }
+  );
+  dialog.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.target instanceof Element && event.target.closest('input'))
+        return;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+        event.preventDefault();
+        moveDay(event.key === 'ArrowLeft' ? -1 : 1);
+      }
+    },
+    { signal: listeners.signal }
+  );
   function selected(): void {
     if (!date.reportValidity()) return;
     void load(date.value);
@@ -203,7 +242,6 @@ export function createDailyHistoryController(): { dispose(): void } {
     () => {
       dialog.showModal();
       close.focus();
-      if (previewView) render(previewView, 0);
       void load();
     },
     { signal: listeners.signal }
@@ -286,7 +324,6 @@ export function createDailyHistoryController(): { dispose(): void } {
     attributes: true,
     attributeFilter: ['hidden'],
   });
-  void load(undefined, 0, true);
   return {
     dispose() {
       disposed = true;

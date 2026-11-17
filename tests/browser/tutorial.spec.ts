@@ -1,119 +1,58 @@
 import { expect, test } from '@playwright/test';
-import { waitForSceneAssets } from './scene-ready.ts';
+import { waitForSceneAssets } from './scene-ready';
 
-test.beforeEach(async ({ page }) => {
-  await page.clock.install();
-  await page.goto('/game.html?practice=1&seed=practice-1');
-  await waitForSceneAssets(page);
-  // Keep wall-clock rendering from racing manual frame advances between inputs.
-  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-});
-
-test('lesson uses the real course and responds to actual driving, then returns safely', async ({
-  page,
-}) => {
-  await page.locator('#tutorial-open').click();
-  await waitForSceneAssets(page);
-  await page.locator('#race-canvas').focus();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-play-mode',
-    'tutorial'
-  );
-  await page.keyboard.down('Space');
-  await page.clock.runFor(5000);
-  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
-  await expect(page.locator('#card')).toBeHidden();
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '1'
-  );
-  await page.keyboard.down('Space');
-  await page.clock.runFor(5000);
-
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '1'
-  );
-  await page.keyboard.up('Space');
-  await page.clock.runFor(2200);
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '2'
-  );
-  await page.keyboard.down('Space');
-  await page.clock.runFor(5000);
-  await page.keyboard.up('Space');
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '3'
-  );
-  await page.screenshot({
-    path: test.info().outputPath('course-tutorial.png'),
+for (const [width, height] of [
+  [390, 680],
+  [320, 480],
+  [640, 360],
+  [960, 720],
+]) {
+  test(`on-course hint is brief and nonblocking at ${width}x${height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: width!, height: height! });
+    await page.clock.install();
+    await page.goto('/game.html?practice=1&seed=practice-1');
+    await waitForSceneAssets(page);
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+    const hint = page.locator('#driving-hint');
+    await expect(hint).toBeHidden();
+    await expect(
+      page.getByRole('button', { name: 'Learn to drive' })
+    ).toHaveCount(0);
+    await page.locator('#start-button').click();
+    await expect(hint).toContainText('Hold to accelerate · Lift to brake');
+    await expect(hint).toBeInViewport();
+    const bounds = (await hint.boundingBox())!;
+    expect(bounds.height).toBeLessThan(60);
+    expect(bounds.y).toBeGreaterThan(height! / 2);
+    expect(
+      await hint.evaluate((el) => getComputedStyle(el).pointerEvents)
+    ).toBe('none');
+    await page.screenshot({
+      path: test.info().outputPath('on-course-hint.png'),
+    });
+    await page.clock.runFor(3200);
+    await expect(hint).toBeVisible();
+    await expect(page.locator('#circuit-minimap')).toBeVisible();
+    const hintBounds = (await hint.boundingBox())!;
+    const mapBounds = (await page.locator('#circuit-minimap').boundingBox())!;
+    expect(hintBounds.y + hintBounds.height).toBeLessThanOrEqual(
+      mapBounds.y - 8
+    );
+    await page.clock.runFor(1900);
+    await expect(hint).toBeHidden();
+    await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    await expect(hint).toBeHidden();
+    await page.locator('#retry-button').click();
+    await expect(hint).toBeVisible();
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    await expect(hint).toBeHidden();
   });
-  await page.locator('#tutorial-finish').click();
-  await waitForSceneAssets(page);
-  await expect(page.locator('#tutorial-overlay')).toBeHidden();
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-play-mode',
-    'practice'
-  );
-  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await page.locator('#tutorial-open').click();
-  await waitForSceneAssets(page);
-  await page.keyboard.down('Space');
-  await page.clock.runFor(3500);
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
-  await page.keyboard.up('Space');
-  await expect(page.locator('#tutorial-resume')).toBeVisible();
-  await page.locator('#tutorial-resume').click();
-  await page.clock.runFor(3500);
-  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('#tutorial-overlay')).toBeHidden();
-});
+}
 
-test('touch the course to learn, compact overlay leaves the road usable', async ({
-  page,
-  isMobile,
-}) => {
-  await page.setViewportSize({ width: 390, height: 680 });
-  await page.locator('#tutorial-open').click();
-  await waitForSceneAssets(page);
-  await page.clock.runFor(3500);
-  const overlay = await page.locator('#tutorial-overlay').boundingBox();
-  expect(overlay!.height).toBeLessThan(180);
-  const point = { x: 200, y: 400 };
-  if (isMobile) {
-    const session = await page.context().newCDPSession(page);
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      touchPoints: [point],
-    });
-    await page.clock.runFor(5000);
-    await session.send('Input.dispatchTouchEvent', {
-      type: 'touchEnd',
-      touchPoints: [],
-    });
-  } else {
-    await page.mouse.move(point.x, point.y);
-    await page.mouse.down();
-    await page.clock.runFor(5000);
-    await page.mouse.up();
-  }
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '1'
-  );
-  await page.clock.runFor(2200);
-  await expect(page.locator('#tutorial-overlay')).toHaveAttribute(
-    'data-step',
-    '2'
-  );
-  await page.locator('#tutorial-close').click();
-  await expect(page.locator('#tutorial-overlay')).toBeHidden();
-});
-
-test('tutorial preserves daily identity and never starts or submits a ranked attempt', async ({
+test('daily start shows same hint without changing challenge identity', async ({
   page,
 }) => {
   const { createDailyChallengeRecord, dailyChallengeView } =
@@ -121,7 +60,7 @@ test('tutorial preserves daily identity and never starts or submits a ranked att
   const { generateElevatedCircuit } =
     await import('../../src/shared/elevated-generator.ts');
   const record = await createDailyChallengeRecord({
-    subredditId: 't5_tutorial',
+    subredditId: 't5_hint',
     day: '2026-11-16',
     createdAtMs: Date.parse('2026-11-16T12:00:00Z'),
     requestedSeed: 'showcase-3',
@@ -136,27 +75,48 @@ test('tutorial preserves daily identity and never starts or submits a ranked att
       },
     })
   );
-  let attempts = 0;
-  page.on('request', (request) => {
-    if (/startRankedRace|submitRun/.test(request.url())) attempts++;
-  });
+  await page.route('**/api/trpc/startRankedRace*', (route) =>
+    route.fulfill({
+      json: {
+        error: {
+          message: 'Sign in',
+          code: -32603,
+          data: { code: 'UNAUTHORIZED', httpStatus: 401 },
+        },
+      },
+    })
+  );
   await page.goto('/game.html?daily=1');
   await waitForSceneAssets(page);
-  const identity = await page
-    .locator('#race')
-    .getAttribute('data-challenge-hash');
-  await page.locator('#tutorial-open').click();
-  await waitForSceneAssets(page);
-  await expect(page.locator('#race')).toHaveAttribute(
-    'data-play-mode',
-    'tutorial'
-  );
-  await page.locator('#tutorial-close').click();
-  await waitForSceneAssets(page);
-  expect(attempts).toBe(0);
+  const hash = await page.locator('#race').getAttribute('data-challenge-hash');
+  // A signed-out daily run uses the normal practice start path.
+  await page.locator('#start-button').click();
+  await expect(page.locator('#driving-hint')).toBeVisible();
   await expect(page.locator('#race')).toHaveAttribute(
     'data-challenge-hash',
-    identity!
+    hash!
   );
-  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+});
+
+test('word course keeps selected course and respects reduced motion', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.install();
+  await page.goto('/game.html?practice=1&word=river');
+  await waitForSceneAssets(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  const seed = await page.locator('#practice-seed').getAttribute('data-seed');
+  await page.locator('#start-button').click();
+  const hint = page.locator('#driving-hint');
+  await expect(hint).toBeVisible();
+  expect(await hint.evaluate((el) => getComputedStyle(el).animationName)).toBe(
+    'none'
+  );
+  await page.clock.runFor(5100);
+  await expect(hint).toBeHidden();
+  await expect(page.locator('#practice-seed')).toHaveAttribute(
+    'data-seed',
+    seed!
+  );
 });

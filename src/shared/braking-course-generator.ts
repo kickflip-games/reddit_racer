@@ -1,13 +1,17 @@
 import { generateLinkedCourseCandidate } from './linked-course-generator';
-import { LINKED_QUALITY_VERSION } from './course-rhythm';
+import {
+  LINKED_QUALITY_VERSION,
+  LINKED_CANDIDATE_BUDGET,
+  LINKED_QUALITY_BUDGET,
+} from './course-rhythm';
 import { assessTrackQuality, type QualityAssessment } from './circuit-quality';
 import type { GeneratorConfig } from './circuit-generator';
 import type { ValidatedCircuit } from './circuit-quality';
 import type { Track } from './track';
 
 export const BRAKING_QUALITY_VERSION = LINKED_QUALITY_VERSION;
-export const MAX_BRAKING_CANDIDATES = 24;
-export const MAX_BRAKING_QUALITY_ATTEMPTS = 8;
+export const MAX_BRAKING_CANDIDATES = LINKED_CANDIDATE_BUDGET;
+export const MAX_BRAKING_QUALITY_ATTEMPTS = LINKED_QUALITY_BUDGET;
 /** Declared before the evaluation campaign; never relax these on rejected seeds. */
 export const BRAKING_QUALITY_THRESHOLDS = Object.freeze({
   minFastSeconds: 20,
@@ -30,7 +34,9 @@ export function generateBrakingCircuit(
     maxAttempts < 1 ||
     maxAttempts > MAX_BRAKING_CANDIDATES
   )
-    throw new Error('Braking candidate attempts must be 1–24.');
+    throw new Error(
+      `Braking candidate attempts must be 1–${MAX_BRAKING_CANDIDATES}.`
+    );
   if (!seed || seed.length > 96)
     throw new Error('Braking course seeds must contain1–96 characters.');
   const rejections: { attempt: number; codes: string[] }[] = [];

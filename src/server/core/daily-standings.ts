@@ -60,7 +60,7 @@ export function createDailyStandingsService(deps: DailyStandingsDependencies) {
     if (day > bounds.maxDay)
       throw new RankedRaceError(
         'invalid',
-        'Archive dates must be before today UTC'
+        'Leaderboard dates cannot be after today UTC'
       );
     const end = utcDayWindow(day).endsAtMs,
       retainedUntilMs = end + RESULTS_RETENTION_MS;

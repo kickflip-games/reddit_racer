@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#183b35" />
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
-    <link rel="stylesheet" href="tutorial.css" />
+    <link rel="stylesheet" href="driving-hint.css" />
     <title>Reddit Racer</title>
   </head>
   <body>
@@ -113,7 +113,6 @@
             <span id="retry-label">Try again</span
             ><span aria-hidden="true">↗</span>
           </button>
-          <button id="tutorial-open" type="button">Learn to drive</button>
         </div>
         <p id="track-note" class="card-note"></p>
         <section id="today-race" class="today-race" data-state="idle" hidden>
@@ -289,20 +288,9 @@
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>
       </dialog>
-      <section id="tutorial-overlay" aria-label="Driving lesson" hidden>
-        <div class="tutorial-heading">
-          <span>Driving lesson · unranked</span
-          ><button id="tutorial-close" type="button">Exit</button>
-        </div>
-        <p id="tutorial-progress" role="status" aria-live="polite">
-          Hold to accelerate
-        </p>
-        <p id="tutorial-hint">Touch the course or hold Space</p>
-        <button id="tutorial-resume" type="button" hidden>Resume lesson</button>
-        <button id="tutorial-finish" type="button" hidden>
-          Back to race ↗
-        </button>
-      </section>
+      <p id="driving-hint" role="status" hidden>
+        Hold to accelerate · Lift to brake
+      </p>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary aria-label="Settings" title="Settings">

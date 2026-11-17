@@ -1,5 +1,3 @@
-import { initializeTutorial } from './tutorial';
-import { createTutorialCourse } from './tutorial-course';
 import { courseWord } from '../shared/word-seed';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
@@ -37,7 +35,6 @@ const source = element('track-source');
 const title = element('card-title');
 const copy = element('card-copy');
 start.disabled = true;
-
 element('mode-label').textContent = import.meta.env.DEV
   ? 'Unranked'
   : 'Unranked';
@@ -185,16 +182,7 @@ function showDailyCourse(view: DailyChallengeView): () => void {
   };
 }
 
-type PlayMode = 'daily' | 'practice' | 'tutorial';
-let returnCourse: [
-  PlayMode,
-  string | undefined,
-  { input: string } | undefined,
-] = ['daily', undefined, undefined];
-const tutorial = initializeTutorial(
-  () => void boot('tutorial'),
-  () => void boot(...returnCourse)
-);
+type PlayMode = 'daily' | 'practice';
 let scene: GameSceneController | undefined;
 let cleanupDaily: (() => void) | undefined;
 let cleanupLeaderboard: (() => void) | undefined;
@@ -276,25 +264,10 @@ async function boot(
   seed?: string,
   wordRequest?: { input: string }
 ): Promise<void> {
-  if (mode !== 'tutorial') returnCourse = [mode, seed, wordRequest];
   const focusWhenReady = courseGeneration > 0;
   const version = ++courseGeneration;
   prepareCourse(mode);
   try {
-    if (mode === 'tutorial') {
-      tutorial.reset();
-      scene = initializeGame(createTutorialCourse(), {
-        generated: false,
-        continuousPractice: true,
-        tutorial: true,
-        onTutorialSample: tutorial.sample,
-      });
-      element('mode-label').textContent = 'Learn';
-      title.textContent = 'Loading driving lesson…';
-      copy.textContent = '';
-      start.disabled = false;
-      return;
-    }
     if (mode !== 'daily') {
       const course = wordRequest
         ? await generateWordPracticeCourse(wordRequest.input)
@@ -317,8 +290,6 @@ async function boot(
       element('start-label').textContent = 'Start';
       element('retry-label').textContent = 'Resume';
       const selectedWord = course.wordCourse ?? null;
-      if (selectedWord)
-        returnCourse = ['practice', undefined, { input: selectedWord.code }];
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
       practiceSeed.textContent = 'Unranked';

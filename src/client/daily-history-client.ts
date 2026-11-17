@@ -1,4 +1,3 @@
-import { navigateTo } from '@devvit/web/client';
 import { api } from './api';
 import { withRequestDeadline } from './request-deadline';
 import {
@@ -39,12 +38,8 @@ export function createDailyHistoryController(): { dispose(): void } {
     date = foundDate;
   const open = button('daily-history-open'),
     close = button('daily-history-close');
-  const previous = button('daily-history-previous'),
-    next = button('daily-history-next');
   const more = button('daily-history-more'),
-    post = button('daily-history-post'),
     retry = button('daily-history-retry');
-  const go = button('daily-history-go');
   const back = button('daily-history-back');
   const status = element('daily-history-status');
   const rows = element('daily-history-rows'),
@@ -63,21 +58,11 @@ export function createDailyHistoryController(): { dispose(): void } {
     date.min = view.minDay;
     date.max = view.maxDay;
     date.value = view.day;
-    previous.disabled = view.day <= view.minDay;
-    next.disabled = view.day >= view.maxDay;
   }
   function busy(value: boolean): void {
-    go.disabled = value;
     date.disabled = value;
     more.disabled = value;
     back.disabled = value;
-    if (value) {
-      previous.disabled = true;
-      next.disabled = true;
-    } else if (date.min && date.max) {
-      previous.disabled = date.value <= date.min;
-      next.disabled = date.value >= date.max;
-    }
   }
   function render(view: DailyStandingsView, offset: number): void {
     current = view;
@@ -89,7 +74,6 @@ export function createDailyHistoryController(): { dispose(): void } {
     table.hidden = !view.rows.length;
     more.hidden = view.nextOffset === null;
     back.hidden = offset === 0;
-    post.hidden = view.postUrl === null;
     retry.hidden = view.status !== 'unavailable';
     provisional.hidden = !view.provisional;
     provisional.textContent =
@@ -150,7 +134,6 @@ export function createDailyHistoryController(): { dispose(): void } {
       ties.textContent = '';
       more.hidden = true;
       back.hidden = true;
-      post.hidden = true;
       retry.hidden = true;
       provisional.hidden = true;
       status.textContent = 'Loading verified standings…';
@@ -273,22 +256,7 @@ export function createDailyHistoryController(): { dispose(): void } {
     },
     { signal: listeners.signal }
   );
-  previous.addEventListener(
-    'click',
-    () => {
-      if (date.value && date.value > date.min)
-        void load(shiftDay(date.value, -1));
-    },
-    { signal: listeners.signal }
-  );
-  next.addEventListener(
-    'click',
-    () => {
-      if (date.value && date.value < date.max)
-        void load(shiftDay(date.value, 1));
-    },
-    { signal: listeners.signal }
-  );
+  date.addEventListener('change', selected, { signal: listeners.signal });
   more.addEventListener(
     'click',
     () => {
@@ -308,13 +276,6 @@ export function createDailyHistoryController(): { dispose(): void } {
   retry.addEventListener(
     'click',
     () => void load(date.value || undefined, currentOffset),
-    { signal: listeners.signal }
-  );
-  post.addEventListener(
-    'click',
-    () => {
-      if (current?.postUrl) navigateTo(current.postUrl);
-    },
     { signal: listeners.signal }
   );
   const observer = new MutationObserver(() => {

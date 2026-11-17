@@ -206,34 +206,12 @@
             Close
           </button>
         </header>
-        <p class="daily-history-note">
-          Today and previous races · swipe or use Previous / Next
-        </p>
         <form id="daily-history-form" class="daily-history-navigation">
-          <button
-            id="daily-history-previous"
-            type="button"
-            aria-label="Previous UTC day"
-          >
-            Previous
-          </button>
           <label
             >Race date (UTC)<input id="daily-history-date" type="date" required
           /></label>
-          <button
-            id="daily-history-next"
-            type="button"
-            aria-label="Next UTC day"
-          >
-            Next
-          </button>
-          <button id="daily-history-go" type="submit">View</button>
         </form>
         <p id="daily-history-status" role="status"></p>
-        <p id="daily-history-provisional" class="daily-history-note" hidden>
-          Provisional: yesterday’s in-flight verified finishes can still arrive
-          after midnight UTC.
-        </p>
         <ol
           id="daily-history-podium"
           class="daily-history-podium"
@@ -259,6 +237,10 @@
             <tbody id="daily-history-rows"></tbody>
           </table>
         </div>
+        <p id="daily-history-provisional" class="daily-history-note" hidden>
+          Provisional: yesterday’s in-flight verified finishes can still arrive
+          after midnight UTC.
+        </p>
         <p class="daily-history-note">
           Verified standings can update if a previously accepted finish is
           reconciled later.
@@ -269,9 +251,6 @@
           </button>
           <button id="daily-history-more" type="button" hidden>
             Next 20 racers
-          </button>
-          <button id="daily-history-post" type="button" hidden>
-            Open original race
           </button>
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>

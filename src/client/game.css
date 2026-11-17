@@ -1337,10 +1337,6 @@ select:focus-visible {
 .daily-history-navigation label {
   min-width: 0;
 }
-#daily-history-go {
-  grid-column: 1 / -1;
-  text-align: center;
-}
 /* Keep the bottom-left settings control clear of the home preview. */
 .daily-history-preview {
   padding-bottom: 36px;
@@ -1651,9 +1647,6 @@ select:focus-visible {
     max-height: calc(100% - 28px);
   }
 }
-.daily-history-dialog {
-  touch-action: pan-y;
-}
 #race[data-phase='abandoned'] .race-card {
   border-radius: 4px;
 }
@@ -1688,4 +1681,12 @@ select:focus-visible {
 }
 #share-track-status:empty {
   display: none;
+}
+
+/* The date picker is the only visible day-navigation control. */
+.daily-history-navigation {
+  grid-template-columns: minmax(0, 1fr);
+}
+.daily-history-dialog {
+  touch-action: pan-y;
 }

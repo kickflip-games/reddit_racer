@@ -1523,3 +1523,47 @@ select:focus-visible {
     );
   }
 }
+
+/* One primary action lane, with quiet secondary links beneath it. */
+#race .race-card {
+  width: min(360px, calc(100% - 28px));
+  padding: 16px;
+}
+#race .race-card[data-result='true'] #card-copy {
+  font-size: 13px;
+  margin: 8px 0;
+}
+#race .race-card[data-result='true'] .result-summary {
+  font-size: 13px;
+  margin: 8px 0 12px;
+}
+#race .race-card[data-result='true'] .finish-time {
+  font-size: 52px;
+  line-height: 1.1;
+  margin: 8px 0;
+}
+#race .race-card[data-result='true'] #practice-button {
+  padding: 10px 0;
+  margin-top: 8px;
+}
+#race .race-card[data-result='true'] .challenge-heading {
+  font-size: 11px;
+}
+#race .race-card[data-result='true'] .leaderboard {
+  margin-top: 12px;
+}
+
+/* Short landscape uses the space beside the HUD, not a clipped strip below it. */
+@media (max-height: 480px) and (min-width: 481px) {
+  #race .race-card[data-result='true'] {
+    left: 148px;
+    bottom: 14px;
+    width: min(360px, calc(100% - 164px));
+    max-height: calc(100% - 28px);
+    padding: 12px;
+  }
+  #race .race-card[data-result='true'] .finish-time {
+    font-size: 40px;
+    margin: 4px 0;
+  }
+}

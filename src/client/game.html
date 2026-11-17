@@ -109,12 +109,12 @@
           <button id="start-button" type="button" disabled>
             <span id="start-label">Start</span><span aria-hidden="true">↗</span>
           </button>
-          <button id="tutorial-open" type="button">New? Learn to play</button>
+          <button id="retry-button" type="button" hidden>
+            <span id="retry-label">Try again</span
+            ><span aria-hidden="true">↗</span>
+          </button>
+          <button id="tutorial-open" type="button">Learn to drive</button>
         </div>
-        <button id="retry-button" type="button" hidden>
-          <span id="retry-label">Try again</span
-          ><span aria-hidden="true">↗</span>
-        </button>
         <p id="track-note" class="card-note"></p>
         <section id="today-race" class="today-race" data-state="idle" hidden>
           <p id="today-race-status" role="status"></p>
@@ -289,41 +289,20 @@
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>
       </dialog>
-      <dialog
-        id="tutorial-dialog"
-        aria-labelledby="tutorial-title"
-        aria-describedby="tutorial-description"
-      >
-        <p class="eyebrow">PRACTICE</p>
-        <h2 id="tutorial-title">Learn the controls</h2>
-        <p id="tutorial-description">
-          The car steers itself. Hold the race screen or Space to accelerate.
-          Release to brake before corners.
-        </p>
-        <p
-          id="tutorial-progress"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        ></p>
-        <div class="tutorial-road" aria-hidden="true">
-          <span id="tutorial-car">➜</span>
+      <section id="tutorial-overlay" aria-label="Driving lesson" hidden>
+        <div class="tutorial-heading">
+          <span>Driving lesson · unranked</span
+          ><button id="tutorial-close" type="button">Exit</button>
         </div>
-        <button
-          id="tutorial-pad"
-          type="button"
-          aria-describedby="tutorial-progress"
-        >
-          Hold here or hold Space
+        <p id="tutorial-progress" role="status" aria-live="polite">
+          Hold to accelerate
+        </p>
+        <p id="tutorial-hint">Touch the course or hold Space</p>
+        <button id="tutorial-resume" type="button" hidden>Resume lesson</button>
+        <button id="tutorial-finish" type="button" hidden>
+          Back to race ↗
         </button>
-        <p class="tutorial-tip">
-          In a race, hold the track. Menus won’t accelerate.
-        </p>
-        <div class="tutorial-actions">
-          <button id="tutorial-replay" type="button" hidden>Try again</button>
-          <button id="tutorial-close" type="button">Skip for now</button>
-        </div>
-      </dialog>
+      </section>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary aria-label="Settings" title="Settings">

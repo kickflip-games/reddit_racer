@@ -1,0 +1,22 @@
+.drift-cue {
+  position: absolute;
+  bottom: 22%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  padding: 5px 10px;
+  color: #9bf3ff;
+  background: #10252ee8;
+  border-bottom: 3px solid currentColor;
+  font:
+    800 12px/1.2 system-ui,
+    sans-serif;
+  letter-spacing: 0.12em;
+  z-index: 3;
+}
+.drift-cue[data-stage='release'] {
+  color: #ffbc70;
+}
+.drift-cue[hidden] {
+  display: none;
+}

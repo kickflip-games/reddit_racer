@@ -149,6 +149,9 @@ export const appRouter = t.router({
       try {
         return await ctx.submitRun(input);
       } catch (error) {
+        // Category only: never log account/session IDs, tokens, replay or raw errors.
+        if (error instanceof RankedRaceError)
+          console.warn('RANKED_SUBMISSION_REJECTED', error.kind);
         throw publicRaceError(error);
       }
     }),

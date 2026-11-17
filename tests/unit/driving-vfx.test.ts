@@ -301,8 +301,8 @@ void test('20 retries reuse every GPU resource and teardown disposes each resour
       if (material instanceof THREE.PointsMaterial && material.map)
         textures.add(material.map);
     }
-  assert.equal(geometries.size, 4);
-  assert.equal(materials.size, 4);
+  assert.equal(geometries.size, 5);
+  assert.equal(materials.size, 5);
   assert.equal(textures.size, 1);
   for (let retry = 0; retry < 20; retry++) {
     emit(vfx, 0, 60, { deltaSeconds: 0 });
@@ -325,8 +325,8 @@ void test('20 retries reuse every GPU resource and teardown disposes each resour
     texture.addEventListener('dispose', () => textureDisposals++);
   vfx.dispose();
   vfx.dispose();
-  assert.equal(geometryDisposals, 4);
-  assert.equal(materialDisposals, 4);
+  assert.equal(geometryDisposals, 5);
+  assert.equal(materialDisposals, 5);
   assert.equal(textureDisposals, 1);
   assert.equal(vfx.object.children.length, 0);
 });
@@ -537,8 +537,8 @@ void test('births, visible point sizing, fading and the final clear report chang
     const position = node.geometry.getAttribute('position');
     const color = node.geometry.getAttribute('color');
     assert.ok(position instanceof THREE.BufferAttribute);
-    assert.ok(color instanceof THREE.BufferAttribute);
-    return [position.version, color.version];
+    assert.ok(color === undefined || color instanceof THREE.BufferAttribute);
+    return [position.version, color?.version];
   });
   for (let idle = 0; idle < 120; idle++)
     assert.equal(vfx.update({ ...finish, deltaSeconds: 0.05 }), false);
@@ -546,8 +546,8 @@ void test('births, visible point sizing, fading and the final clear report chang
     const position = node.geometry.getAttribute('position');
     const color = node.geometry.getAttribute('color');
     assert.ok(position instanceof THREE.BufferAttribute);
-    assert.ok(color instanceof THREE.BufferAttribute);
-    assert.deepEqual([position.version, color.version], versions[index]);
+    assert.ok(color === undefined || color instanceof THREE.BufferAttribute);
+    assert.deepEqual([position.version, color?.version], versions[index]);
   });
   vfx.dispose();
 });

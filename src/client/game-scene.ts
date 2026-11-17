@@ -1,3 +1,5 @@
+import { driftStage } from './drift-feedback';
+import './drift-feedback.css';
 import { initializeDrivingHint } from './driving-hint';
 import {
   createGhostStore,
@@ -112,6 +114,10 @@ export function initializeGame(
   const cardCopy = element('card-copy');
   const viewportMessage = element('viewport-message');
   const inputLabel = element('status');
+  const driftCue = document.createElement('div');
+  driftCue.className = 'drift-cue';
+  driftCue.hidden = true;
+  raceRoot.append(driftCue);
   const start = element('start-button');
   const retry = element('retry-button');
   const restart = element('restart-button');
@@ -665,6 +671,13 @@ export function initializeGame(
             ? 'sliding'
             : 'gripping';
     raceRoot.dataset.drifting = String(practiceDriver?.drifting ?? false);
+    const driftFeedback =
+      race.phase === 'racing'
+        ? driftStage(practiceDriver?.activeDriftSeconds)
+        : 'off';
+    driftCue.hidden = driftFeedback === 'off';
+    driftCue.dataset.stage = driftFeedback;
+    driftCue.textContent = driftFeedback === 'release' ? 'RELEASE' : 'DRIFT';
     const driveLabel = practiceDriver?.drifting
       ? 'DRIFTING'
       : held()
@@ -862,6 +875,7 @@ export function initializeGame(
     const verticalSpan = camera.top - camera.bottom;
     if (!current.vertical && practiceDriver?.airborne) drivingVfx.reset();
     const effectsChanged = drivingVfx.update({
+      practiceDriftSeconds: practiceDriver?.activeDriftSeconds,
       state: current,
       phase: !current.vertical && practiceDriver?.airborne ? 'ready' : phase,
       held: throttle,
@@ -906,7 +920,7 @@ export function initializeGame(
       cardTitle.textContent = `${formatTime(result.finishTicks / SIMULATION_HZ)} seconds`;
       element('card-kicker').textContent = 'Verified';
     } else {
-      element('card-kicker').textContent = 'Unverified';
+      element('card-kicker').textContent = 'Not confirmed';
     }
     options.onResults?.({ attemptId: id, mode: attemptMode });
   }
@@ -1409,6 +1423,7 @@ export function initializeGame(
     ghostVisual.dispose();
     scene.remove(ghostVisual.object);
     drivingVfx.dispose();
+    driftCue.remove();
     carVisual.dispose();
     scenery.dispose();
     vegetation.dispose();

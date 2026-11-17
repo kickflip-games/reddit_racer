@@ -448,6 +448,8 @@ test('signed-out practice can finish without submitting a score', async ({
 
 for (const failure of [
   'expired-receipt',
+  'BAD_REQUEST',
+  'UNAUTHORIZED',
   'SERVICE_UNAVAILABLE',
   'TOO_MANY_REQUESTS',
 ]) {
@@ -479,9 +481,15 @@ for (const failure of [
     await driveFast(page);
     await expect(page.locator('#verification-status')).toHaveAttribute(
       'data-state',
-      failure === 'expired-receipt' ? 'rejected' : 'unavailable'
+      ['expired-receipt', 'BAD_REQUEST', 'UNAUTHORIZED'].includes(failure)
+        ? 'rejected'
+        : 'unavailable'
     );
-    await expect(page.locator('#card-kicker')).toHaveText('Unverified');
+    await expect(page.locator('#card-kicker')).toHaveText('Not confirmed');
+    if (failure === 'BAD_REQUEST')
+      await expect(page.locator('#card-copy')).toContainText('replay');
+    if (failure === 'UNAUTHORIZED')
+      await expect(page.locator('#card-copy')).toContainText('Sign in again');
     await expect(page.locator('#retry-button')).toBeEnabled();
   });
 }

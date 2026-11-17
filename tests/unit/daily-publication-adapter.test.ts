@@ -3,11 +3,13 @@ import { test } from 'node:test';
 import { DailyPublicationError } from '../../src/server/core/daily-publication.ts';
 import {
   PRIVATE_RACE_APP,
+  PUBLIC_RACE_COMMUNITY,
+  PUBLIC_RACE_SUBREDDIT_ID,
   PRIVATE_RACE_COMMUNITY,
   PRIVATE_RACE_SUBREDDIT_ID,
-  requirePrivatePublicationScope,
+  requirePublicationScope,
 } from '../../src/server/devvit-daily-publication.ts';
-import type { PrivatePublicationScopeInput } from '../../src/server/devvit-daily-publication.ts';
+import type { PublicationScopeInput } from '../../src/server/devvit-daily-publication.ts';
 
 const privateScope = {
   appSlug: 'full-throttle-dev',
@@ -28,19 +30,19 @@ void test('publication guard requires the registered app, exact private communit
   assert.equal(PRIVATE_RACE_COMMUNITY, privateScope.subredditName);
   assert.equal(PRIVATE_RACE_SUBREDDIT_ID, privateScope.subredditId);
   const lookedUp: string[] = [];
-  const input: PrivatePublicationScopeInput = {
+  const input: PublicationScopeInput = {
     ...privateScope,
     getSubreddit: async (id) => {
       lookedUp.push(id);
       return privateMetadata;
     },
   };
-  assert.deepEqual(await requirePrivatePublicationScope(input), privateScope);
+  assert.deepEqual(await requirePublicationScope(input), privateScope);
   assert.deepEqual(lookedUp, ['t5_kv7foq']);
 
   // Reddit community names are case-insensitive; returned scope stays canonical.
   assert.deepEqual(
-    await requirePrivatePublicationScope({
+    await requirePublicationScope({
       ...input,
       subredditName: 'Full_Throttle_Dev_Dev',
       getSubreddit: async () => ({
@@ -53,7 +55,7 @@ void test('publication guard requires the registered app, exact private communit
 });
 
 void test('missing, non-string and wrong request-local app/community fields fail before any SDK read', async () => {
-  const invalid: Partial<PrivatePublicationScopeInput>[] = [
+  const invalid: Partial<PublicationScopeInput>[] = [
     { appSlug: undefined },
     { appSlug: null },
     { appSlug: 1 },
@@ -74,7 +76,7 @@ void test('missing, non-string and wrong request-local app/community fields fail
   for (const changed of invalid) {
     let reads = 0;
     await assert.rejects(
-      requirePrivatePublicationScope({
+      requirePublicationScope({
         ...privateScope,
         ...changed,
         getSubreddit: async () => {
@@ -102,12 +104,12 @@ void test('caller body, post data and claimed SDK metadata cannot replace the gu
       return privateMetadata;
     },
   };
-  await assert.rejects(requirePrivatePublicationScope(spoofed), unavailable);
+  await assert.rejects(requirePublicationScope(spoofed), unavailable);
   assert.equal(reads, 0);
 
   // Even matching request fields cannot bypass contradictory SDK metadata.
   await assert.rejects(
-    requirePrivatePublicationScope({
+    requirePublicationScope({
       ...spoofed,
       ...privateScope,
       getSubreddit: async () => ({ ...privateMetadata, type: 'public' }),
@@ -127,7 +129,7 @@ void test('actual public, restricted or mismatched SDK community metadata reject
   ]) {
     const lookedUp: string[] = [];
     await assert.rejects(
-      requirePrivatePublicationScope({
+      requirePublicationScope({
         ...privateScope,
         getSubreddit: async (id) => {
           lookedUp.push(id);
@@ -143,7 +145,7 @@ void test('actual public, restricted or mismatched SDK community metadata reject
 void test('an unavailable SDK community read cannot grant publication permission', async () => {
   let reads = 0;
   await assert.rejects(
-    requirePrivatePublicationScope({
+    requirePublicationScope({
       ...privateScope,
       getSubreddit: async (id) => {
         reads++;
@@ -153,4 +155,80 @@ void test('an unavailable SDK community read cannot grant publication permission
     })
   );
   assert.equal(reads, 1);
+});
+
+const publicScope = {
+  appSlug: 'full-throttle-dev',
+  subredditId: 't5_kyc33w',
+  subredditName: 'theDailyLap',
+};
+const publicMetadata = {
+  id: publicScope.subredditId,
+  name: publicScope.subredditName,
+  type: 'public',
+};
+void test('the authorized public community returns its own canonical scope', async () => {
+  assert.equal(PUBLIC_RACE_SUBREDDIT_ID, publicScope.subredditId);
+  assert.equal(PUBLIC_RACE_COMMUNITY, publicScope.subredditName);
+  for (const name of ['theDailyLap', 'THEDAILYLAP']) {
+    const reads: string[] = [];
+    const result = await requirePublicationScope({
+      ...publicScope,
+      subredditName: name,
+      getSubreddit: async (id) => {
+        reads.push(id);
+        return { ...publicMetadata, name: 'thedailylap' };
+      },
+    });
+    assert.deepEqual(result, publicScope);
+    assert.deepEqual(reads, [publicScope.subredditId]);
+  }
+});
+void test('crossed scope IDs/names and arbitrary public communities fail before lookup', async () => {
+  for (const input of [
+    { ...publicScope, subredditId: privateScope.subredditId },
+    { ...privateScope, subredditId: publicScope.subredditId },
+    { ...publicScope, subredditId: 't5_elsewhere' },
+    { ...publicScope, subredditName: 'another_public_community' },
+    { ...publicScope, appSlug: 'another-app' },
+  ]) {
+    let reads = 0;
+    await assert.rejects(
+      requirePublicationScope({
+        ...input,
+        getSubreddit: async () => {
+          reads++;
+          return publicMetadata;
+        },
+      }),
+      unavailable
+    );
+    assert.equal(reads, 0);
+  }
+});
+void test('public scope requires its own trusted ID/name and public visibility', async () => {
+  for (const metadata of [
+    undefined,
+    { ...publicMetadata, id: privateScope.subredditId },
+    { ...publicMetadata, name: privateScope.subredditName },
+    { ...publicMetadata, type: 'private' },
+    { ...publicMetadata, type: 'restricted' },
+    { ...publicMetadata, type: '' },
+  ]) {
+    await assert.rejects(
+      requirePublicationScope({
+        ...publicScope,
+        getSubreddit: async () => metadata,
+      }),
+      unavailable
+    );
+  }
+  await assert.rejects(
+    requirePublicationScope({
+      ...publicScope,
+      getSubreddit: async () => {
+        throw new Error('SDK unavailable');
+      },
+    })
+  );
 });

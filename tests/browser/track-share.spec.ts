@@ -71,9 +71,14 @@ test('share sheet emits versioned exact-course data, not a claim of delivery', a
   await expect(page.locator('#share-track-seed')).toHaveText(
     'Current seed: banana'
   );
-  await page.getByRole('button', { name: 'Share track', exact: true }).click();
+  await expect(page.locator('#share-track-help')).toContainText(
+    'depends on your device'
+  );
+  await page
+    .getByRole('button', { name: 'Try Reddit sharing', exact: true })
+    .click();
   await expect(page.locator('#share-track-status')).toContainText(
-    'Choose where to share'
+    'Reddit sharing requested'
   );
   const payload = JSON.parse(
     (await page.locator('html').getAttribute('data-shared'))!
@@ -170,7 +175,12 @@ test('unavailable share has honest copy seed fallback with clipboard success and
   await expect(page.locator('#share-track-seed')).toHaveText(
     'Current seed: banana'
   );
-  await page.getByRole('button', { name: 'Share track', exact: true }).click();
+  await expect(page.locator('#share-track-help')).toContainText(
+    'depends on your device'
+  );
+  await page
+    .getByRole('button', { name: 'Try Reddit sharing', exact: true })
+    .click();
   await expect(page.locator('#share-track-status')).toContainText(
     'Sharing is unavailable'
   );

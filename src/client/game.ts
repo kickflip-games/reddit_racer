@@ -1,3 +1,6 @@
+import { readIncomingShare } from './share-handoff';
+import { initializeTrackSharing } from './track-sharing';
+import { parseTrackShare, verifySharedTrack } from '../shared/track-share';
 import { courseWord } from '../shared/word-seed';
 import type { Track } from '../shared/track';
 import { initializeGame, type GameSceneController } from './game-scene';
@@ -182,6 +185,7 @@ function showDailyCourse(view: DailyChallengeView): () => void {
   };
 }
 
+const trackSharing = initializeTrackSharing();
 type PlayMode = 'daily' | 'practice';
 let scene: GameSceneController | undefined;
 let cleanupDaily: (() => void) | undefined;
@@ -190,6 +194,7 @@ let courseGeneration = 0;
 let lastPracticeTrackHash: string | undefined;
 
 function prepareCourse(mode: PlayMode): void {
+  trackSharing.clear();
   scene?.dispose();
   scene = undefined;
   cleanupDaily?.();
@@ -262,13 +267,17 @@ function prepareCourse(mode: PlayMode): void {
 async function boot(
   mode: PlayMode,
   seed?: string,
-  wordRequest?: { input: string }
+  wordRequest?: { input: string },
+  shareRaw?: string
 ): Promise<void> {
   const focusWhenReady = courseGeneration > 0;
   const version = ++courseGeneration;
   prepareCourse(mode);
   try {
     if (mode !== 'daily') {
+      const shared =
+        shareRaw === undefined ? undefined : parseTrackShare(shareRaw);
+      if (shared) wordRequest = { input: shared.seed };
       const course = wordRequest
         ? await generateWordPracticeCourse(wordRequest.input)
         : seed === undefined
@@ -278,6 +287,8 @@ async function boot(
                 await import('./legacy-practice-fixture')
               ).generateLegacyPracticeFixture(seed)
             : await generateWordPracticeCourse(seed);
+      if (version !== courseGeneration) return;
+      if (shared) await verifySharedTrack(shared, course.track);
       if (version !== courseGeneration) return;
       lastPracticeTrackHash = course.trackHash;
       scene = initializeGame(course.track, {
@@ -290,6 +301,7 @@ async function boot(
       element('start-label').textContent = 'Start';
       element('retry-label').textContent = 'Resume';
       const selectedWord = course.wordCourse ?? null;
+      if (selectedWord) trackSharing.set(selectedWord.code, course.track);
       const practiceSeed = element('practice-seed');
       practiceSeed.dataset.seed = course.seed;
       practiceSeed.textContent = 'Unranked';
@@ -298,8 +310,8 @@ async function boot(
         wordInput.value = selectedWord ? selectedWord.code : '';
       race.dataset.wordCode = selectedWord ? selectedWord.code : '';
       element('word-course-message').textContent = selectedWord
-        ? 'Share this word to race the same track.'
-        : 'Word tracks are unranked.';
+        ? 'Seeds recreate tracks in this game version.'
+        : 'Seed tracks are unranked.';
       source.dataset.state = 'ready';
       source.dataset.fallback = String(course.fallbackUsed);
       source.dataset.seed = course.seed;
@@ -390,11 +402,16 @@ async function boot(
     source.dataset.state = 'rejected';
     source.hidden = false;
     source.textContent = 'CIRCUIT UNAVAILABLE';
-    title.textContent = 'Circuit unavailable.';
+    title.textContent =
+      shareRaw === undefined
+        ? 'Circuit unavailable.'
+        : 'Shared track unavailable.';
     copy.textContent =
-      mode !== 'daily'
-        ? 'Try New track in Settings, or return to the daily race.'
-        : 'The race could not start. Please reload and try again.';
+      shareRaw !== undefined
+        ? 'Ask for a new share, or choose another seed.'
+        : mode !== 'daily'
+          ? 'Try Random track in Settings, or return to the daily race.'
+          : 'The race could not start. Please reload and try again.';
     element('status').textContent = 'CIRCUIT UNAVAILABLE';
     const notice = element('error');
     notice.textContent =
@@ -447,7 +464,7 @@ element('word-course-form').addEventListener('submit', (event) => {
     });
   } catch (error) {
     element('word-course-message').textContent =
-      error instanceof Error ? error.message : 'Invalid course word.';
+      error instanceof Error ? error.message : 'Invalid seed.';
     input.focus();
   }
 });
@@ -463,14 +480,18 @@ window.addEventListener('pagehide', (event) => {
   if (!event.persisted) dailyHistory.dispose();
 });
 const query = new URLSearchParams(window.location.search);
-void boot(
-  query?.get('practice') === '1' ? 'practice' : 'daily',
-  import.meta.env.DEV && query.get('practice') === '1'
-    ? (query.get('seed') ?? undefined)
-    : undefined,
-  query.get('practice') === '1' && query.has('word')
-    ? {
-        input: query.get('word') ?? '',
-      }
-    : undefined
-);
+const incomingShare = readIncomingShare();
+if (incomingShare !== undefined) {
+  void boot('practice', undefined, undefined, incomingShare);
+} else {
+  void boot(
+    query.get('practice') === '1' ? 'practice' : 'daily',
+    import.meta.env.DEV && query.get('practice') === '1'
+      ? (query.get('seed') ?? undefined)
+      : undefined,
+    query.get('practice') === '1' &&
+      (query.has('word') || query.has('courseSeed'))
+      ? { input: query.get('courseSeed') ?? query.get('word') ?? '' }
+      : undefined
+  );
+}

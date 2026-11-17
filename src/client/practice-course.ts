@@ -139,7 +139,7 @@ export async function generateWordPracticeCourse(
   const wordCourse = courseWord(input);
   const result = generateBrakingCircuit(wordCourse.seed);
   if (!result.quality.valid)
-    throw new Error('This word course did not pass the driving checks.');
+    throw new Error('This seed course did not pass the driving checks.');
   let trackHash: string;
   try {
     trackHash = await hashTrack(result.track);
@@ -197,6 +197,6 @@ export async function generateRandomWordPracticeCourse(
     if (result.trackHash !== avoidTrackHash) return result;
   }
   throw new Error(
-    'A different word course could not be created. Try another word.'
+    'A different seed course could not be created. Try another seed.'
   );
 }

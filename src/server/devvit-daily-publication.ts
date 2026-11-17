@@ -167,7 +167,7 @@ export function createDevvitDailyPublicationService(): {
         async submit(input) {
           const post = await reddit.submitCustomPost({
             subredditName: scope.subredditName,
-            title: 'Reddit Racer · Daily time attack',
+            title: 'The Daily Lap · Daily time attack',
             entry: 'default',
             runAs: 'APP',
             postData: {

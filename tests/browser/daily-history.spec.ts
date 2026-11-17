@@ -100,24 +100,19 @@ for (const viewport of [
     await expect(page.locator('#daily-history-more')).toBeHidden();
     await page.locator('#daily-history-back').click();
     await expect(page.locator('#daily-history-rows tr')).toHaveCount(20);
-    await page.locator('#daily-history-previous').click();
+    await page.locator('#daily-history-date').fill('2026-11-14');
     await expect(page.locator('#daily-history-status')).toContainText(
       '2026-11-14 UTC'
     );
     await expect(page.locator('#daily-history-provisional')).toBeVisible();
-    await page.locator('#daily-history-next').click();
-    await expect(page.locator('#daily-history-next')).toBeDisabled();
+    await page.locator('#daily-history-date').fill('2026-11-15');
+    await expect(page.locator('#daily-history-date')).toHaveValue('2026-11-15');
     const bounds = await dialog.boundingBox();
     if (!bounds) throw new Error('Dialog missing');
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
-    for (const id of [
-      'daily-history-close',
-      'daily-history-previous',
-      'daily-history-next',
-      'daily-history-go',
-    ]) {
+    for (const id of ['daily-history-close']) {
       const box = await page.locator('#' + id).boundingBox();
       expect(box?.width).toBeGreaterThanOrEqual(44);
       expect(box?.height).toBeGreaterThanOrEqual(44);
@@ -163,11 +158,11 @@ test('archive distinguishes missing and empty and recovers from unavailable', as
     'temporarily unavailable'
   );
   await expect(page.locator('#daily-history-retry')).toBeVisible();
-  await page.locator('#daily-history-previous').click();
+  await page.locator('#daily-history-date').fill('2026-11-14');
   await expect(page.locator('#daily-history-status')).toContainText(
     'no verified finishes'
   );
-  await page.locator('#daily-history-previous').click();
+  await page.locator('#daily-history-date').fill('2026-11-13');
   await expect(page.locator('#daily-history-status')).toContainText(
     'no saved daily race'
   );
@@ -184,7 +179,7 @@ test('archive handles request errors and retention rollover honestly', async ({
   );
   await page.unroute('**/api/trpc/dailyStandings*');
   await page.route('**/api/trpc/dailyStandings*', (route) => route.abort());
-  await page.locator('#daily-history-previous').click();
+  await page.locator('#daily-history-date').fill('2026-11-14');
   await expect(page.locator('#daily-history-status')).toContainText(
     'temporarily unavailable'
   );
@@ -216,22 +211,21 @@ test('archive handles request errors and retention rollover honestly', async ({
     await route.fulfill({ json: { result: { data } } });
   });
   await page.locator('#daily-history-date').fill('2026-08-17');
-  await page.locator('#daily-history-go').click();
   await expect(page.locator('#daily-history-status')).toContainText(
     'no longer retained'
   );
-  await expect(page.locator('#daily-history-previous')).toBeDisabled();
+  await expect(page.locator('#daily-history-previous')).toHaveCount(0);
   await expect(page.locator('#daily-history-date')).toHaveAttribute(
     'min',
     '2026-08-18'
   );
-  await page.locator('#daily-history-next').click();
+  await page.locator('#daily-history-date').fill('2026-08-18');
   await expect(page.locator('#daily-history-status')).toContainText(
     '2026-08-18 UTC'
   );
 });
 
-test('leaderboard opens today and swipes or keys through previous UTC days', async ({
+test('leaderboard supports swipes, dates and keyboard navigation without extra buttons', async ({
   page,
   isMobile,
 }) => {
@@ -267,4 +261,37 @@ test('leaderboard opens today and swipes or keys through previous UTC days', asy
   await expect(status).toContainText('2026-11-13 UTC');
   await page.keyboard.press('ArrowRight');
   await expect(status).toContainText('2026-11-14 UTC');
+});
+
+test('date selection loads times directly without redundant actions', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const queries = await boot(page);
+  await page.locator('#daily-history-open').click();
+  await expect(page.locator('#daily-history-rows tr')).toHaveCount(20);
+  await expect(page.locator('#daily-history-go')).toHaveCount(0);
+  await expect(page.locator('#daily-history-previous')).toHaveCount(0);
+  await expect(page.locator('#daily-history-next')).toHaveCount(0);
+  await expect(page.locator('#daily-history-post')).toHaveCount(0);
+  await expect(page.locator('#daily-history-dialog')).not.toContainText(
+    'swipe'
+  );
+  await page.locator('#daily-history-date').fill('2026-11-12');
+  await expect(page.locator('#daily-history-status')).toContainText(
+    '2026-11-12 UTC'
+  );
+  expect(queries.at(-1)).toEqual({ day: '2026-11-12', offset: 0 });
+  await expect(page.locator('#daily-history-rows tr').first()).toContainText(
+    '30.000s'
+  );
+  const date = await page.locator('#daily-history-date').boundingBox();
+  const times = await page.locator('#daily-history-podium').boundingBox();
+  const note = await page.locator('#daily-history-ties').boundingBox();
+  expect(times!.y).toBeGreaterThan(date!.y + date!.height);
+  expect(times!.y).toBeLessThan(note!.y);
+  await page.locator('#daily-history-close').click();
+  await page.locator('#daily-history-open').click();
+  await expect(page.locator('#daily-history-date')).toHaveValue('2026-11-15');
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
 });

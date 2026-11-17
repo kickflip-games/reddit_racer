@@ -20,3 +20,12 @@ position change was 0. Projection smoothing remained below 1e-5 matrix units.
 The test also confirms stationary initial pose, acceleration after stopping,
 and exact initial facing/position after Retry. Screenshots, not recordings,
 are captured. Physical-phone testing was not performed.
+
+## Restart smoothing
+
+The retained stopped pose exposed a second transition: resuming after a slide
+snapped back toward the new velocity direction. A mobile Chromium regression
+measured a 31.43° jump in a single 16 ms sample. Visual facing now follows the
+shortest angle with an 80 ms response and a 4 rad/s rate limit. Explicit Retry
+still resets immediately. Authoritative position, speed, inputs and replay
+versions remain unchanged. The regression now samples restart frames too.

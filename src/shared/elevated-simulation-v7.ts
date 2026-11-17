@@ -52,7 +52,8 @@ export function stepElevatedSimulationV7(
   const offDeck = Math.abs(state.lateralOffset) > frame.halfWidth;
   const grounded = !vertical.airborne;
   // Unranked prototype only. A short drift raises the cornering envelope; holding
-  // past one second overheats the tyres and progressively loses grip.
+  // past 0.65 seconds overheats the tyres and progressively loses grip.
+  // Practice-only corner assistance: never add acceleration or a release boost.
   const drifting =
     practiceDriftSeconds !== undefined &&
     held &&
@@ -60,7 +61,7 @@ export function stepElevatedSimulationV7(
     state.speed > 5 &&
     !offDeck;
   const driftHeat = Math.max(0, (practiceDriftSeconds ?? 0) - 0.65);
-  const gripScale = drifting ? Math.max(0.55, 1.45 - driftHeat * 0.65) : 1;
+  const gripScale = drifting ? Math.max(0.55, 1.6 - driftHeat * 0.65) : 1;
   const runoff = Math.max(0, Math.abs(state.lateralOffset) - frame.halfWidth);
   // Blend the first metre of shoulder: no discontinuous penalty at the paint.
   const grass = Math.min(1, runoff);

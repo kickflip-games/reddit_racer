@@ -86,7 +86,25 @@ test('stopped car and camera settle without repeated pose jitter', async ({
   );
   // Existing controls still accelerate after the stop; no simulation clamp added.
   await page.keyboard.down('Space');
-  await page.clock.runFor(500);
+  const restartingHeadings: number[] = [poses.at(-1)!.heading];
+  for (let n = 0; n < 32; n++) {
+    await page.clock.runFor(16);
+    restartingHeadings.push(
+      JSON.parse(
+        (await page.locator('#race').getAttribute('data-test-pose')) ?? '{}'
+      ).heading
+    );
+  }
+  const restartSteps = restartingHeadings.slice(1).map((heading, index) => {
+    const delta = heading - restartingHeadings[index]!;
+    return Math.abs(Math.atan2(Math.sin(delta), Math.cos(delta)));
+  });
+  console.log(
+    JSON.stringify({
+      maximumRestartYawDegrees: (Math.max(...restartSteps) * 180) / Math.PI,
+    })
+  );
+  expect(Math.max(...restartSteps)).toBeLessThan(0.08);
   expect(
     JSON.parse(
       (await page.locator('#race').getAttribute('data-test-pose')) ?? '{}'

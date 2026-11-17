@@ -17,6 +17,7 @@ import {
   dailyChallengeView,
 } from '../../src/shared/daily-challenge.ts';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality.ts';
+import { generateCurrentDailyCircuit } from '../../src/shared/braking-course-generator.ts';
 import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
 import type { DailyChallengeRecord } from '../../src/shared/daily-challenge.ts';
 import { FALLBACK_CIRCUIT_SEED } from '../../src/shared/circuit-generator.ts';
@@ -331,42 +332,52 @@ void test('malformed JSON, forged start parameters, method changes and batching 
   assert.equal(api.calls().verifyBudgetCalls, 0);
 });
 
-void test('HTTP elevated sessions verify jumps with stored rules and reject a legacy replay without consuming the session', async () => {
-  const generated = generateElevatedCircuit('flow-probe-21');
-  const next = createDailyChallengeRecord({
-    subredditId: 't5_home',
-    day: '2026-11-12',
-    createdAtMs: initialNow,
-    requestedSeed: 'flow-probe-21',
-    generated,
-  });
-  const approved = generated.quality.fastReplay;
-  assert.ok(approved);
-  const api = setup(next);
-  const session = await api.client.startRankedRace.mutate();
-  assert.equal(session.simulationVersion, 'fixed-step-v5');
-  assert.equal(session.handlingVersion, 'progressive-slip-v1');
-  await assert.rejects(
-    api.client.submitRun.mutate({
-      sessionId: session.sessionId,
-      replay: {
-        ...approved,
-        simulationVersion: 'fixed-step-v2',
-        handlingVersion: 'arcade-v1',
-      },
-    })
-  );
-  const verified = await api.client.submitRun.mutate({
-    sessionId: session.sessionId,
-    replay: approved,
-  });
-  assert.equal(verified.finishTicks, approved.endTick);
-  assert.deepEqual(
-    await api.client.submitRun.mutate({
+for (const modern of [false, true]) {
+  void test(`HTTP ${modern ? 'current v7' : 'retained v5'} sessions verify supported replays and reject mismatched rules`, async () => {
+    const generated = modern
+      ? generateCurrentDailyCircuit('daily-lap-api-regression')
+      : generateElevatedCircuit('flow-probe-21');
+    const next = createDailyChallengeRecord({
+      subredditId: 't5_home',
+      day: '2026-11-12',
+      createdAtMs: initialNow,
+      requestedSeed: 'flow-probe-21',
+      generated,
+    });
+    const approved = generated.quality.fastReplay;
+    assert.ok(approved);
+    const api = setup(next);
+    const session = await api.client.startRankedRace.mutate();
+    assert.equal(
+      session.simulationVersion,
+      modern ? 'fixed-step-v7' : 'fixed-step-v5'
+    );
+    assert.equal(
+      session.handlingVersion,
+      modern ? 'road-finish-v1' : 'progressive-slip-v1'
+    );
+    await assert.rejects(
+      api.client.submitRun.mutate({
+        sessionId: session.sessionId,
+        replay: {
+          ...approved,
+          simulationVersion: 'fixed-step-v2',
+          handlingVersion: 'arcade-v1',
+        },
+      })
+    );
+    const verified = await api.client.submitRun.mutate({
       sessionId: session.sessionId,
       replay: approved,
-    }),
-    verified
-  );
-  assert.equal(verified.challengeHash, (await next).challengeHash);
-});
+    });
+    assert.equal(verified.finishTicks, approved.endTick);
+    assert.deepEqual(
+      await api.client.submitRun.mutate({
+        sessionId: session.sessionId,
+        replay: approved,
+      }),
+      verified
+    );
+    assert.equal(verified.challengeHash, (await next).challengeHash);
+  });
+}

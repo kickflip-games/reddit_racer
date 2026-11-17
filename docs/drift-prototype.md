@@ -6,15 +6,16 @@ without braking; lift all fingers to brake. Desktop: Space + Shift. Focus loss,
 pointer cancellation, retries and course changes release controls.
 
 This uses actual fixed-step lateral physics, not a cosmetic yaw animation. The
-first 0.65 seconds offers 45% more corner grip, with modest extra drag; sustained
+first 0.65 seconds offers 60% more corner grip, with modest extra drag; sustained
 holding progressively reduces grip to 55% and increases drag. Slip drives the
-existing visual/audio feedback. No benefit on straights; no airborne drift.
+existing visual/audio feedback. No benefit on straights; no airborne drift. Throttle acceleration and top speed
+are unchanged: drifting adds drag, never a speed or release boost.
 Tuning is experimental and should be play-tested on phones.
 
 Daily ranked races deliberately retain their immutable one-bit replay contract
 and existing physics. Supporting ranked drift later requires new versioned
 handling, replay inputs and server verification, not silently changing existing
-daily records. Practice drift best laps and ghosts use a separate drift-v1 key.
+daily records. Practice drift best laps and ghosts use a separate drift-v2 key (the sharper-turn tuning does not reuse prior practice bests).
 
 Practice selects the same frozen physics identity as its course: linked-circuits-v2
 uses fixed-step-v7, including road-only finishes and grass resistance even during

@@ -658,7 +658,7 @@ void test('landing particles are bounded, impact-sensitive and never fabricated 
   }
 });
 
-void test('speed ribbons grow smoothly, taper, stay pixel-readable and travel with distance', () => {
+void test('two solid tyre ribbons grow smoothly, share one plane and follow their contact roots', () => {
   const vfx = createDrivingVfx(track);
   const ribbons = vfx.object.getObjectByName('car-speed-streaks');
   assert.ok(ribbons instanceof THREE.Mesh);
@@ -702,7 +702,25 @@ void test('speed ribbons grow smoothly, taper, stay pixel-readable and travel wi
       speed: 32,
     },
   });
-  assert.notDeepEqual(Array.from(positions.array), before);
+  assert.deepEqual(
+    Array.from(positions.array),
+    before,
+    'distance does not animate disconnected dashes'
+  );
+  const height = positions.getY(0);
+  for (let i = 0; i < positions.count; i++)
+    assert.equal(positions.getY(i), height);
+  for (const [i, root] of [
+    [0, sample.rearLeft],
+    [4, sample.rearRight],
+  ] as const) {
+    assert.ok(
+      Math.abs((positions.getX(i) + positions.getX(i + 1)) / 2 - root.x) < 1e-5
+    );
+    assert.ok(
+      Math.abs((positions.getZ(i) + positions.getZ(i + 1)) / 2 - root.z) < 1e-5
+    );
+  }
   vfx.dispose();
 });
 

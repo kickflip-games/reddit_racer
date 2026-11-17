@@ -21,7 +21,7 @@ for (const [width, height] of [
       page.getByRole('button', { name: 'Learn to drive' })
     ).toHaveCount(0);
     await page.locator('#start-button').click();
-    await expect(hint).toHaveText('Hold to accelerate · Lift to brake');
+    await expect(hint).toContainText('Hold to accelerate · Lift to brake');
     await expect(hint).toBeInViewport();
     const bounds = (await hint.boundingBox())!;
     expect(bounds.height).toBeLessThan(60);
@@ -32,7 +32,15 @@ for (const [width, height] of [
     await page.screenshot({
       path: test.info().outputPath('on-course-hint.png'),
     });
-    await page.clock.runFor(5100);
+    await page.clock.runFor(3200);
+    await expect(hint).toBeVisible();
+    await expect(page.locator('#circuit-minimap')).toBeVisible();
+    const hintBounds = (await hint.boundingBox())!;
+    const mapBounds = (await page.locator('#circuit-minimap').boundingBox())!;
+    expect(hintBounds.y + hintBounds.height).toBeLessThanOrEqual(
+      mapBounds.y - 8
+    );
+    await page.clock.runFor(1900);
     await expect(hint).toBeHidden();
     await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));

@@ -94,7 +94,8 @@ void test('new acceptance policy rejects the passive rectangle and flattened ele
   });
   assert.ok(flat.codes.includes('missing-elevation'));
   assert.equal(flat.work.controllerRuns, 0);
-  assert.deepEqual(runtimeForTrack(linked), runtimeForTrack(old));
+  assert.equal(runtimeForTrack(linked).simulationVersion, 'fixed-step-v7');
+  assert.equal(runtimeForTrack(old).simulationVersion, 'fixed-step-v6');
 });
 
 void test('candidate budgets are finite and seed reproduction is independent of other requests', () => {

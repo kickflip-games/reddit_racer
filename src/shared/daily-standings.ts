@@ -1,9 +1,4 @@
-import {
-  DAY_MILLISECONDS,
-  RANKED_ROLLOVER_GRACE,
-  utcDay,
-  utcDayWindow,
-} from './daily-challenge';
+import { RANKED_ROLLOVER_GRACE, utcDay, utcDayWindow } from './daily-challenge';
 import {
   competitionTicks,
   competitionUsername,
@@ -74,7 +69,7 @@ export function archiveDayBounds(now: number): {
   const today = utcDayWindow(utcDay(now)).startsAtMs;
   return {
     minDay: utcDay(today - RESULTS_RETENTION_MS),
-    maxDay: utcDay(today - DAY_MILLISECONDS),
+    maxDay: utcDay(today),
   };
 }
 export function parseDailyStandingsView(value: unknown): DailyStandingsView {

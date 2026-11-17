@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { ghostPosition, type GhostLap } from './best-ghost';
 import { CAR_VISUAL_GROUND_Y, CAR_VISUAL_LENGTH } from './car-visual';
-/** Transparent copy of the loaded car plus its bounded one-second trail. */
+/** Transparent copy of the loaded car, without a trailing line. */
 export function createGhostVisual() {
   const object = new THREE.Group();
   const car = new THREE.Group();
@@ -10,20 +10,7 @@ export function createGhostVisual() {
   let ready = false;
   let disposed = false;
   const materials = new Map<THREE.Material, THREE.MeshBasicMaterial>();
-  const positions = new Float32Array(13 * 3);
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const line = new THREE.Line(
-    geometry,
-    new THREE.LineBasicMaterial({
-      color: '#d8ffff',
-      transparent: true,
-      opacity: 0.65,
-      depthWrite: false,
-    })
-  );
-  line.frustumCulled = false;
-  object.add(car, line);
+  object.add(car);
   object.visible = false;
   return {
     object,
@@ -99,19 +86,9 @@ export function createGhostVisual() {
         car.rotation.y = Math.atan2(dx, dz);
         car.rotation.x = -Math.atan2(after[1] - before[1], Math.hypot(dx, dz));
       }
-      let count = 0;
-      for (let i = 12; i >= 0; i--) {
-        const q = ghostPosition(lap, Math.max(0, ticks - i * 10));
-        if (!q) continue;
-        positions.set([q[0], q[1] + 0.35, q[2]], count++ * 3);
-      }
-      geometry.setDrawRange(0, count);
-      geometry.attributes.position!.needsUpdate = true;
     },
     dispose() {
       if (disposed) return;
-      geometry.dispose();
-      line.material.dispose();
       disposed = true;
       for (const material of materials.values()) material.dispose();
       materials.clear();

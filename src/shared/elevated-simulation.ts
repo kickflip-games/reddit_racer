@@ -12,7 +12,8 @@ const q = (value: number): number => Math.round(value * 1_000_000) / 1_000_000;
 export function stepElevatedSimulation(
   track: Track,
   state: SimulationState,
-  held: boolean
+  held: boolean,
+  practiceDriftSeconds?: number
 ): SimulationState {
   const vertical = state.vertical;
   if (!vertical)
@@ -50,6 +51,16 @@ export function stepElevatedSimulation(
   }
   const offDeck = Math.abs(state.lateralOffset) > frame.halfWidth;
   const grounded = !vertical.airborne;
+  // Unranked prototype only. A short drift raises the cornering envelope; holding
+  // past one second overheats the tyres and progressively loses grip.
+  const drifting =
+    practiceDriftSeconds !== undefined &&
+    held &&
+    grounded &&
+    state.speed > 5 &&
+    !offDeck;
+  const driftHeat = Math.max(0, (practiceDriftSeconds ?? 0) - 0.65);
+  const gripScale = drifting ? Math.max(0.55, 1.45 - driftHeat * 0.65) : 1;
   const runoff = Math.max(0, Math.abs(state.lateralOffset) - frame.halfWidth);
   // Blend the first metre of shoulder: no discontinuous penalty at the paint.
   const grass = Math.min(1, runoff);
@@ -60,7 +71,8 @@ export function stepElevatedSimulation(
     : 0;
   const drag = grounded
     ? handling.rollingDrag * state.speed * state.speed +
-      grass * handling.offRoadDrag * state.speed
+      grass * handling.offRoadDrag * state.speed +
+      (drifting ? 1.8 + driftHeat * 2 : 0)
     : state.speed * 0.035;
   const speed = q(
     Math.max(
@@ -76,7 +88,8 @@ export function stepElevatedSimulation(
     )
   );
   const demand =
-    (Math.abs(frame.curvature) * speed * speed) / handling.lateralGrip;
+    (Math.abs(frame.curvature) * speed * speed) /
+    (handling.lateralGrip * gripScale);
   const excess = Math.max(0, demand - 1) * handling.lateralGrip;
   const mobility = Math.min(1, speed / 3);
   const sideways = grounded
@@ -207,7 +220,7 @@ export function stepElevatedSimulation(
       ? q(
           Math.max(
             (state.slip ?? 0) * 0.96,
-            Math.min(1, Math.max(0, demand - 0.8))
+            Math.min(1, Math.max(drifting ? 0.45 : 0, demand - 0.8))
           )
         )
       : 0,

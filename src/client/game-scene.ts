@@ -132,7 +132,9 @@ export function initializeGame(
     /* Session bests remain available. */
   }
   const localBests = createPracticeBestStore(storage);
-  const localBestKey = practiceBestKey(track, options);
+  const localBestKey =
+    practiceBestKey(track, options) +
+    (options.continuousPractice ? ':drift-v1' : '');
   const ghostStore = createGhostStore(storage);
   let ghostLap = ghostStore.get(localBestKey);
   // Old best times have no trajectory. Do not mislabel a slower new lap as best.
@@ -380,7 +382,8 @@ export function initializeGame(
   const verification = element('verification-status');
   let pointerHeld = false;
   let keyHeld = false;
-  let activePointer: number | undefined;
+  const activePointers = new Set<number>();
+  let driftKeyHeld = false;
   const rankedDriver = createSimulationDriver(track);
   const practiceDriver = options.continuousPractice
     ? createPracticeDriver(track)
@@ -661,7 +664,12 @@ export function initializeGame(
           : state.slip > 0.05
             ? 'sliding'
             : 'gripping';
-    const driveLabel = held() ? 'ACCELERATING' : 'RELEASED · BRAKING';
+    raceRoot.dataset.drifting = String(practiceDriver?.drifting ?? false);
+    const driveLabel = practiceDriver?.drifting
+      ? 'DRIFTING'
+      : held()
+        ? 'ACCELERATING'
+        : 'RELEASED · BRAKING';
     const surfaceLabel = practiceDriver?.airborne
       ? 'AIRBORNE'
       : state.recovering
@@ -685,19 +693,23 @@ export function initializeGame(
           ? 'RACE INTERRUPTED · TRY AGAIN'
           : state.status === 'finished'
             ? 'LAP COMPLETE'
-            : 'SPACE OR TOUCH THE TRACK';
+            : practiceDriver
+              ? 'TWO FINGERS OR SPACE + SHIFT TO DRIFT'
+              : 'SPACE OR TOUCH THE TRACK';
   }
   function clearPointer(): void {
-    const pointer = activePointer;
-    // Clear ownership before capture release can dispatch lostpointercapture.
-    activePointer = undefined;
+    const pointers = [...activePointers];
+    activePointers.clear();
     pointerHeld = false;
-    if (pointer !== undefined && canvas.hasPointerCapture(pointer)) {
-      canvas.releasePointerCapture(pointer);
+    for (const pointer of pointers) {
+      if (canvas.hasPointerCapture(pointer))
+        canvas.releasePointerCapture(pointer);
     }
   }
   function release(): void {
     keyHeld = false;
+    driftKeyHeld = false;
+    practiceDriver?.setDrift(false, performance.now());
     clearPointer();
     feedback();
   }
@@ -917,16 +929,7 @@ export function initializeGame(
         'Attempt interrupted. This run will not be submitted.'
       );
       cardTitle.textContent = 'Race interrupted.';
-      cardCopy.textContent =
-        driver.interruptionReason === 'focus'
-          ? 'The game lost focus. Try again when you are ready.'
-          : driver.interruptionReason === 'time-limit'
-            ? 'Run timed out. Try another run.'
-            : driver.interruptionReason === 'invalid-progress'
-              ? 'This lap missed a gate. Try another run.'
-              : driver.interruptionReason === 'frame-gap'
-                ? 'The game paused too long to verify this time. Try another run.'
-                : 'Too many input changes to verify this run. Try again.';
+      cardCopy.textContent = '';
       element('card-kicker').textContent = '';
     } else {
       audio.finish(attemptId);
@@ -996,6 +999,9 @@ export function initializeGame(
     racingViewport = undefined;
     driver.start(timestamp);
     drivingHint.show();
+    if (practiceDriver)
+      element('driving-hint').textContent =
+        'Hold to accelerate · Lift to brake · Two fingers to drift';
     seenPracticeLaps = 0;
     ghostPoints = [];
     ghostOverflow = false;
@@ -1094,7 +1100,13 @@ export function initializeGame(
       });
   }
   function updateInput(timestamp: number): void {
-    if (racing) driver.setInput(pointerHeld || keyHeld, timestamp);
+    if (racing) {
+      driver.setInput(pointerHeld || keyHeld, timestamp);
+      practiceDriver?.setDrift(
+        activePointers.size >= 2 || driftKeyHeld,
+        timestamp
+      );
+    }
     showOutcome();
     feedback();
   }
@@ -1118,12 +1130,12 @@ export function initializeGame(
     (event) => {
       if (
         (!racing && !preparing) ||
-        activePointer !== undefined ||
+        activePointers.has(event.pointerId) ||
         event.button !== 0
       )
         return;
       event.preventDefault();
-      activePointer = event.pointerId;
+      activePointers.add(event.pointerId);
       pointerHeld = true;
       canvas.setPointerCapture(event.pointerId);
       updateInput(performance.now());
@@ -1138,8 +1150,10 @@ export function initializeGame(
     eventOptions
   );
   function releasePointer(event: PointerEvent): void {
-    if (event.pointerId !== activePointer) return;
-    clearPointer();
+    if (!activePointers.delete(event.pointerId)) return;
+    pointerHeld = activePointers.size > 0;
+    if (canvas.hasPointerCapture(event.pointerId))
+      canvas.releasePointerCapture(event.pointerId);
     updateInput(performance.now());
   }
   canvas.addEventListener('pointerup', releasePointer, eventOptions);
@@ -1149,7 +1163,7 @@ export function initializeGame(
     'keydown',
     (event) => {
       if (
-        event.code !== 'Space' ||
+        !['Space', 'ShiftLeft', 'ShiftRight'].includes(event.code) ||
         (!racing && !preparing) ||
         settingsDialog.open
       )
@@ -1162,7 +1176,8 @@ export function initializeGame(
       )
         return;
       event.preventDefault();
-      keyHeld = true;
+      if (event.code === 'Space') keyHeld = true;
+      else driftKeyHeld = true;
       updateInput(performance.now());
     },
     eventOptions
@@ -1170,8 +1185,9 @@ export function initializeGame(
   window.addEventListener(
     'keyup',
     (event) => {
-      if (event.code !== 'Space') return;
-      keyHeld = false;
+      if (!['Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) return;
+      if (event.code === 'Space') keyHeld = false;
+      else driftKeyHeld = false;
       updateInput(performance.now());
     },
     eventOptions

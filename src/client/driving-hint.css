@@ -11,7 +11,9 @@
   z-index: 6;
   left: 14px;
   right: 14px;
-  bottom: calc(max(14px, env(safe-area-inset-bottom)) + 56px);
+  bottom: calc(
+    max(14px, env(safe-area-inset-bottom)) + clamp(100px, 29vw, 120px) + 12px
+  );
   width: fit-content;
   max-width: calc(100% - 28px);
   margin: 0 auto;
@@ -37,14 +39,22 @@
     opacity: 0;
   }
 }
-#race[data-driving-hint='true'] .circuit-minimap {
-  visibility: hidden;
-}
 #race[data-settings-open='true'] #driving-hint {
   visibility: hidden;
 }
 @media (prefers-reduced-motion: reduce) {
   #driving-hint {
     animation: none;
+  }
+}
+
+@media (min-width: 701px) {
+  #driving-hint {
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 152px);
+  }
+}
+@media (max-height: 480px) {
+  #driving-hint {
+    bottom: calc(max(14px, env(safe-area-inset-bottom)) + 100px);
   }
 }

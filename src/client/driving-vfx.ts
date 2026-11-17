@@ -4,7 +4,7 @@ import type { RacePhase } from '../shared/race-rules';
 import type { Track } from '../shared/track';
 
 export const DRIVING_VFX_LIMITS = Object.freeze({
-  speedStreaks: 8,
+  speedStreaks: 2,
   smokeParticles: 48,
   dustParticles: 48,
   skidQuads: 384,
@@ -346,7 +346,7 @@ function createParticlePool(
   };
 }
 
-/** Eight small world-space ribbons alongside the car, never a full-screen overlay. */
+/** Two continuous tyre afterimages in a single contact-height plane. */
 function createSpeedStreaks() {
   const count = DRIVING_VFX_LIMITS.speedStreaks;
   const positions = new Float32Array(count * 12);
@@ -433,8 +433,8 @@ function createSpeedStreaks() {
       const cx = (frame.rearLeft.x + frame.rearRight.x) / 2;
       const cy = (frame.rearLeft.y + frame.rearRight.y) / 2;
       const cz = (frame.rearLeft.z + frame.rearRight.z) / 2;
-      // Smooth onset avoids a hard switch at cruising speed. Travel, not wall time,
-      // moves the ribbons: lifting slows their flow naturally with the car.
+      // Smooth onset avoids a hard switch at cruising speed. Ribbons stay rooted
+      // to the tyres; speed controls length and opacity, never a blinking phase.
       const speedRatio = THREE.MathUtils.clamp((state.speed - 18) / 14, 0, 1);
       const strength = speedRatio * speedRatio * (3 - 2 * speedRatio);
       const drive = THREE.MathUtils.clamp(frame.acceleration / 8, 0, 1);
@@ -444,19 +444,19 @@ function createSpeedStreaks() {
         0.14
       );
       for (let i = 0; i < count; i++) {
-        const phase = (((state.distance / 9 + i * 0.618) % 1) + 1) % 1;
-        const side = (i % 2 ? -1 : 1) * (width / 2 + 0.35 + (i % 3) * 0.3);
-        const back = -0.7 + phase * 4.2;
-        const length = 0.8 + strength * (2.6 + drive * 0.5);
-        const fade = Math.sin(phase * Math.PI) ** 2 * strength * 0.7;
+        // Root each solid ribbon at a rear tyre, not scattered around the car.
+        // Both sit at the same height: no stacked/vertical speed-line planes.
+        const side = ((i === 0 ? 1 : -1) * width) / 2;
+        const length = 1.5 + strength * (4.5 + drive * 0.5);
+        const fade = strength * 0.65;
         for (let corner = 0; corner < 4; corner++) {
-          const along = -back - (corner < 2 ? 0 : length);
-          // A tapered tail, rather than eight flat bars, keeps the road readable.
+          const along = -(corner < 2 ? 0 : length);
+          // A transparent tapered tail reads as a short, solid afterimage.
           const across =
             side + (corner % 2 ? 1 : -1) * halfWidth * (corner < 2 ? 1 : 0.15);
           const offset = i * 12 + corner * 3;
           positions[offset] = cx + forwardX * along + sideX * across;
-          positions[offset + 1] = cy + 0.32 + (i % 3) * 0.18;
+          positions[offset + 1] = cy + 0.025;
           positions[offset + 2] = cz + forwardZ * along + sideZ * across;
           colors[i * 16 + corner * 4 + 3] = corner < 2 ? fade : 0;
         }

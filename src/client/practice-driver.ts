@@ -1,3 +1,5 @@
+import { stepElevatedSimulationV7 } from '../shared/elevated-simulation-v7.ts';
+import { stepElevatedSimulation } from '../shared/elevated-simulation.ts';
 import {
   stepSlotSimulation,
   slotGripTelemetry,
@@ -9,7 +11,7 @@ import {
   createFlight,
   stepStuntSimulation,
 } from '../shared/stunt-simulation.ts';
-import { handlingForTrack } from '../shared/scored-runtime.ts';
+import { handlingForTrack, runtimeForTrack } from '../shared/scored-runtime.ts';
 import type { GapJump } from '../shared/stunt-course.ts';
 import { sampleTrack, type Track } from '../shared/track.ts';
 import {
@@ -79,6 +81,18 @@ export class PracticeDriver {
   private lastTimestamp: number | undefined;
   private accumulatedMilliseconds = 0;
   private inputHeld = false;
+  private driftHeld = false;
+  private driftSeconds = 0;
+  get drifting(): boolean {
+    return (
+      this.driftHeld &&
+      this.inputHeld &&
+      this.state.speed > 5 &&
+      !this.airborne &&
+      !this.state.offRoad &&
+      !this.state.recovering
+    );
+  }
   private completedLapCount = 0;
   private currentLapTicks = 0;
   private lastCompletedLapTicks: number | null = null;
@@ -166,6 +180,8 @@ export class PracticeDriver {
     this.lastTimestamp = timestampMilliseconds;
     this.accumulatedMilliseconds = 0;
     this.inputHeld = false;
+    this.driftHeld = false;
+    this.driftSeconds = 0;
     this.completedLapCount = 0;
     this.currentLapTicks = 0;
     this.lastCompletedLapTicks = null;
@@ -178,6 +194,9 @@ export class PracticeDriver {
       return;
     }
 
+    this.driftSeconds = this.drifting
+      ? this.driftSeconds + 1 / SIMULATION_HZ
+      : 0;
     const result = this.jumps.length
       ? stepStuntSimulation(
           this.track,
@@ -190,7 +209,14 @@ export class PracticeDriver {
       : null;
     const next =
       result?.simulation ??
-      this.stepGrounded(this.track, this.physics, this.inputHeld);
+      (this.drifting && this.track.schemaVersion === 2
+        ? stepPracticeDrift(
+            this.track,
+            this.physics,
+            this.inputHeld,
+            this.driftSeconds
+          )
+        : this.stepGrounded(this.track, this.physics, this.inputHeld));
     if (result) this.flight = result.flight;
     this.currentLapTicks++;
     let nextCheckpointIndex = this.race.nextCheckpointIndex;
@@ -306,10 +332,17 @@ export class PracticeDriver {
     this.inputHeld = held;
   }
 
+  setDrift(held: boolean, timestampMilliseconds: number): void {
+    this.advance(timestampMilliseconds);
+    if (this.active) this.driftHeld = held;
+  }
+
   abandon(reason: RaceAbandonReason = 'focus'): void {
     if (!this.active) return;
     this.race = abandonRace(this.race, reason);
     this.inputHeld = false;
+    this.driftHeld = false;
+    this.driftSeconds = 0;
     this.accumulatedMilliseconds = 0;
   }
 }
@@ -320,4 +353,16 @@ export function createPracticeDriver(
   handling: { dynamicGrip?: boolean; zones?: readonly GripZone[] } = {}
 ): PracticeDriver {
   return new PracticeDriver(track, jumps, handling);
+}
+
+/** Select drift physics by the same frozen runtime identity as ordinary laps. */
+export function stepPracticeDrift(
+  track: Track,
+  state: SimulationState,
+  held: boolean,
+  driftSeconds: number
+): SimulationState {
+  return runtimeForTrack(track).simulationVersion === 'fixed-step-v7'
+    ? stepElevatedSimulationV7(track, state, held, driftSeconds)
+    : stepElevatedSimulation(track, state, held, driftSeconds);
 }

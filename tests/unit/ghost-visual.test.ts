@@ -6,6 +6,10 @@ import type { GhostLap } from '../../src/client/best-ghost.ts';
 import { CAR_VISUAL_LENGTH } from '../../src/client/car-visual.ts';
 void test('ghost uses translucent shared car geometry, correct heading and isolated materials', () => {
   const ghost = createGhostVisual();
+  assert.equal(ghost.object.children.length, 1);
+  assert.ok(
+    ghost.object.children.every((child) => !(child instanceof THREE.Line))
+  );
   const lap: GhostLap = {
     ticks: 120,
     points: [

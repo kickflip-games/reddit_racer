@@ -1,4 +1,4 @@
-# Reddit Racer
+# The Daily Lap
 
 A bite-sized daily arcade racer for Reddit, built from the official Devvit Web / Three.js starter. Hold to accelerate, release to slow, and learn the fastest line around a shared daily circuit. The registered Devvit app remains `full-throttle-dev`.
 

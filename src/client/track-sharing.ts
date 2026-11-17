@@ -23,7 +23,7 @@ export function initializeTrackSharing() {
       if (version !== generation) return;
       await showShareSheet({
         title: 'Race this track',
-        text: `Try seed ${selected.seed} in Reddit Racer.`,
+        text: `Try seed ${selected.seed} in The Daily Lap.`,
         data: JSON.stringify(payload),
       });
       if (version === generation)

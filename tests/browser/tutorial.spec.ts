@@ -5,6 +5,8 @@ test.beforeEach(async ({ page }) => {
   await page.clock.install();
   await page.goto('/game.html?practice=1&seed=practice-1');
   await waitForSceneAssets(page);
+  // Keep wall-clock rendering from racing manual frame advances between inputs.
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
 });
 
 test('lesson uses the real course and responds to actual driving, then returns safely', async ({

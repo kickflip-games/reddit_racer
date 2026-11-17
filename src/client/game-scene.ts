@@ -1,3 +1,4 @@
+import { smoothCarHeading } from './car-heading';
 import { driftStage } from './drift-feedback';
 import './drift-feedback.css';
 import { initializeDrivingHint } from './driving-hint';
@@ -758,7 +759,12 @@ export function initializeGame(
     // A stopped/sliding car has no new travel direction. Keep its last facing
     // instead of snapping it back to the road tangent when speed crosses 0.1.
     // Retry explicitly resets the pose; scored motion and steering are untouched.
-    const heading = trajectoryHeading;
+    const heading = smoothCarHeading(
+      carVisual.object.rotation.y,
+      trajectoryHeading,
+      deltaSeconds,
+      needsCameraReset
+    );
     const phase = driver.raceState.phase;
     const scored = phase === 'racing';
     const acceleration = scored

@@ -1131,6 +1131,7 @@ export function initializeGame(
       if (
         (!racing && !preparing) ||
         activePointers.has(event.pointerId) ||
+        (!practiceDriver && activePointers.size > 0) ||
         event.button !== 0
       )
         return;
@@ -1157,8 +1158,15 @@ export function initializeGame(
     updateInput(performance.now());
   }
   canvas.addEventListener('pointerup', releasePointer, eventOptions);
-  canvas.addEventListener('pointercancel', releasePointer, eventOptions);
-  canvas.addEventListener('lostpointercapture', releasePointer, eventOptions);
+  function cancelPointer(event: PointerEvent): void {
+    // Normal pointerup deletes its ID before releasing capture. Any remaining
+    // active capture loss/cancel is an interruption, not a drift finger handoff.
+    if (!activePointers.has(event.pointerId)) return;
+    release();
+    updateInput(performance.now());
+  }
+  canvas.addEventListener('pointercancel', cancelPointer, eventOptions);
+  canvas.addEventListener('lostpointercapture', cancelPointer, eventOptions);
   window.addEventListener(
     'keydown',
     (event) => {

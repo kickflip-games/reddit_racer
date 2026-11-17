@@ -27,3 +27,11 @@ remain unchanged. Stored records and scores are not deleted.
 The practice-only drift hook is supported in v7. Integration must route
 PracticeDriver to this function for linked-circuits-v2, not the retained v6
 function, or drifting would bypass the finish gate.
+
+### Bounded generation budget
+
+V2 permits up to 32 geometric candidates and 12 quality assessments (previously 24
+and 8), with all acceptance thresholds unchanged. The daily seed
+`daily:t5_rhythm:2027-03-30` exhausts the old budget and passes at candidate 29,
+the tenth quality assessment. Earlier accepted candidates and frozen daily
+records are unchanged; worst-case generation work can increase.

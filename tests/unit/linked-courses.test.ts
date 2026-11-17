@@ -107,5 +107,20 @@ void test('candidate budgets are finite and seed reproduction is independent of 
     serializeTrack(generateLinkedCourseCandidate('word-v2:banana').track!)
   );
   assert.throws(() => generateLinkedCourseCandidate('', 1));
-  assert.throws(() => generateLinkedCourseCandidate('x', 25));
+  assert.throws(() =>
+    generateLinkedCourseCandidate('x', MAX_BRAKING_CANDIDATES + 1)
+  );
+});
+
+void test('v7 daily seed searches beyond the old budget without relaxing quality', () => {
+  const seed = 'daily:t5_rhythm:2027-03-30';
+  const exhausted = generateBrakingCircuit(seed, 24);
+  assert.equal(exhausted.quality.valid, false);
+  assert.equal(exhausted.diagnostics.acceptedAttempt, null);
+  const result = generateBrakingCircuit(seed);
+  assert.equal(result.quality.valid, true);
+  assert.deepEqual(result.quality.codes, []);
+  assert.equal(result.diagnostics.acceptedAttempt, 29);
+  assert.equal(result.diagnostics.qualityAttempts, 10);
+  assert.equal(result.diagnostics.fallbackUsed, false);
 });

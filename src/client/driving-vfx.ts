@@ -39,7 +39,14 @@ export type DrivingVfx = {
 type ParticlePool = {
   object: THREE.Points;
   update(deltaSeconds: number): void;
-  emit(x: number, y: number, z: number, driftX: number, driftZ: number): void;
+  emit(
+    x: number,
+    y: number,
+    z: number,
+    driftX: number,
+    driftZ: number,
+    strength?: number
+  ): void;
   flush(): boolean;
   reset(): void;
   dispose(): void;
@@ -238,7 +245,8 @@ function createParticlePool(
   const positions = new Float32Array(capacity * 3),
     colors = new Float32Array(capacity * 4);
   const velocities = new Float32Array(capacity * 3),
-    remaining = new Float32Array(capacity);
+    remaining = new Float32Array(capacity),
+    peakOpacity = new Float32Array(capacity);
   const tint = new THREE.Color(color);
   for (let i = 0; i < capacity; i++) {
     colors[i * 4] = tint.r;
@@ -285,6 +293,7 @@ function createParticlePool(
             velocities[i * 3 + axis] = velocities[count * 3 + axis] ?? 0;
           }
           remaining[i] = remaining[count] ?? 0;
+          peakOpacity[i] = peakOpacity[count] ?? 0;
           colors[i * 4 + 3] = colors[count * 4 + 3] ?? 0;
           colors[count * 4 + 3] = 0;
           continue;
@@ -298,12 +307,12 @@ function createParticlePool(
           if (positions[index] !== before) dirty = true;
         }
         const beforeAlpha = colors[i * 4 + 3];
-        colors[i * 4 + 3] = opacity * (life / lifetime) ** 2;
+        colors[i * 4 + 3] = (peakOpacity[i] ?? 0) * (life / lifetime) ** 2;
         if (colors[i * 4 + 3] !== beforeAlpha) dirty = true;
         i++;
       }
     },
-    emit(x, y, z, driftX, driftZ) {
+    emit(x, y, z, driftX, driftZ, strength = 1) {
       const slot = count < capacity ? count++ : overwrite++ % capacity;
       positions[slot * 3] = x;
       positions[slot * 3 + 1] = y + 0.03;
@@ -312,7 +321,8 @@ function createParticlePool(
       velocities[slot * 3 + 1] = 0.3 + random() * 0.7;
       velocities[slot * 3 + 2] = driftZ + (random() - 0.5) * 0.8;
       remaining[slot] = lifetime;
-      colors[slot * 4 + 3] = opacity;
+      peakOpacity[slot] = Math.min(1, opacity * strength);
+      colors[slot * 4 + 3] = peakOpacity[slot] ?? 0;
       dirty = true;
     },
     flush() {
@@ -642,8 +652,10 @@ export function createDrivingVfx(
   }
   let lastLandings: number | undefined;
   let braking = false;
+  let burnoutBudget = 0;
   function reset(): void {
     lastLandings = undefined;
+    burnoutBudget = 0;
     if (disposed) return;
     pendingChanged = true;
     speedStreaks.reset();
@@ -794,10 +806,11 @@ export function createDrivingVfx(
       }
       for (const [pool, scale, minimum, maximum] of particleSizes) {
         const material = pool.object.material;
+        const burnoutSmoke = pool === smoke && frame.phase === 'countdown';
         const size = THREE.MathUtils.clamp(
-          frame.cssPixelsPerMetre * scale,
-          minimum,
-          maximum
+          frame.cssPixelsPerMetre * scale * (burnoutSmoke ? 1.6 : 1),
+          burnoutSmoke ? 5 : minimum,
+          burnoutSmoke ? 18 : maximum
         );
         if (
           material instanceof THREE.PointsMaterial &&
@@ -807,6 +820,20 @@ export function createDrivingVfx(
           if (pool.object.geometry.drawRange.count > 0) pendingChanged = true;
         }
       }
+      // Countdown is stationary/unscored: visual births use render time, never
+      // simulation ticks, and create no skid history or physical momentum.
+      if (frame.phase === 'countdown' && frame.held && state.speed === 0) {
+        burnoutBudget = Math.min(
+          DRIVING_VFX_LIMITS.particleBirthsPerUpdate,
+          burnoutBudget + delta * 20
+        );
+        while (burnoutBudget >= 1) {
+          const contact =
+            nextWheel++ % 2 === 0 ? frame.rearLeft : frame.rearRight;
+          smoke.emit(contact.x, contact.y, contact.z, 0, 0, 1.8);
+          burnoutBudget--;
+        }
+      } else burnoutBudget = 0;
       if (
         frame.phase !== 'racing' ||
         state.vertical?.airborne === true ||

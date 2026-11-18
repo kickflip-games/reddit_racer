@@ -24,6 +24,7 @@ export type CarVisualFrame = {
   slip: number;
   held: boolean;
   racing: boolean;
+  countdownBurnout?: boolean;
   reducedMotion: boolean;
   deltaSeconds: number;
 };
@@ -68,6 +69,7 @@ export function createCarVisual(): CarVisual {
   let pitch = 0;
   let roll = 0;
   let braking = false;
+  let burnoutAngle = 0;
   let pendingChanged = true;
   const fallbackGeometries = new Set<THREE.BufferGeometry>();
   const fallbackMaterials = new Set<THREE.Material>();
@@ -246,6 +248,7 @@ export function createCarVisual(): CarVisual {
     if (disposed) return;
     pendingChanged = true;
     braking = false;
+    burnoutAngle = 0;
     pitch = 0;
     roll = 0;
     rig.body.rotation.set(0, 0, 0);
@@ -373,10 +376,19 @@ export function createCarVisual(): CarVisual {
         rig.body.rotation.set(pitch, 0, roll);
         changed = true;
       }
+      // Decorative rear-wheel rotation only. Never feeds distance or simulation.
+      if (frame.countdownBurnout && frame.held && !frame.reducedMotion) {
+        const delta = Number.isFinite(frame.deltaSeconds)
+          ? clamp(frame.deltaSeconds, 0, 0.05)
+          : 0;
+        burnoutAngle = (burnoutAngle + delta * 24) % (Math.PI * 2);
+      }
       for (const wheel of rig.wheels) {
         spin.setFromAxisAngle(
           axle,
-          (frame.distance / wheel.radius) % (Math.PI * 2)
+          (frame.distance / wheel.radius +
+            (wheel.node.name.startsWith('wheel-back-') ? burnoutAngle : 0)) %
+            (Math.PI * 2)
         );
         spin.premultiply(wheel.quaternion);
         if (!wheel.node.quaternion.equals(spin)) {

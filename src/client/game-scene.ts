@@ -864,6 +864,7 @@ export function initializeGame(
       slip: THREE.MathUtils.lerp(previous.slip, current.slip, alpha),
       held: throttle,
       racing: scored,
+      countdownBurnout: phase === 'countdown',
       reducedMotion,
       deltaSeconds,
     });

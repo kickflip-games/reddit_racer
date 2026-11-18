@@ -713,3 +713,38 @@ void test('explicit car retry replaces a failed request and retains the successf
   assert.equal(calls, 2);
   cache.dispose();
 });
+
+void test('countdown spins only rear tyres without moving the car or giving launch momentum', () => {
+  const car = createCarVisual();
+  const idle: CarVisualFrame = {
+    ...frame,
+    speed: 0,
+    distance: 0,
+    acceleration: 0,
+    lateralAcceleration: 0,
+    racing: false,
+    countdownBurnout: true,
+    held: true,
+  };
+  car.update({ ...idle, deltaSeconds: 0 });
+  const rear = car.object.getObjectByName('wheel-back-left')!;
+  const front = car.object.getObjectByName('wheel-front-left')!;
+  const rearBefore = rear.quaternion.clone();
+  const frontBefore = front.quaternion.clone();
+  const position = car.object.position.clone();
+  car.update(idle);
+  assert.ok(rear.quaternion.angleTo(rearBefore) > 0.1);
+  assert.equal(front.quaternion.angleTo(frontBefore), 0);
+  assert.ok(car.object.position.equals(position));
+  const spinning = rear.quaternion.clone();
+  car.update({ ...idle, held: false });
+  assert.equal(rear.quaternion.angleTo(spinning), 0);
+  car.update({ ...idle, reducedMotion: true });
+  assert.equal(rear.quaternion.angleTo(spinning), 0);
+  car.update({ ...idle, racing: true, countdownBurnout: false });
+  assert.equal(rear.quaternion.angleTo(spinning), 0);
+  car.reset();
+  car.update({ ...idle, held: false });
+  assert.equal(rear.quaternion.angleTo(rearBefore), 0);
+  car.dispose();
+});

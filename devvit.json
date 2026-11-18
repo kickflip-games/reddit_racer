@@ -1,6 +1,6 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "full-throttle-dev",
+  "name": "the-daily-lap",
   "permissions": {
     "redis": true
   },

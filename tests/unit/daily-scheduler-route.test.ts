@@ -252,7 +252,7 @@ void test('the registered task keeps the existing app identity and resolves to t
     readFileSync(new URL('../../devvit.json', import.meta.url), 'utf8')
   );
   assert.ok(record(config));
-  assert.equal(config.name, 'full-throttle-dev');
+  assert.equal(config.name, 'the-daily-lap');
   assert.ok(record(config.dev));
   assert.equal(config.dev.subreddit, 'full_throttle_dev_dev');
   assert.ok(record(config.scheduler));

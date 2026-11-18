@@ -12,7 +12,7 @@ import {
 import type { PublicationScopeInput } from '../../src/server/devvit-daily-publication.ts';
 
 const privateScope = {
-  appSlug: 'full-throttle-dev',
+  appSlug: 'the-daily-lap',
   subredditId: 't5_kv7foq',
   subredditName: 'full_throttle_dev_dev',
 };
@@ -61,6 +61,7 @@ void test('missing, non-string and wrong request-local app/community fields fail
     { appSlug: 1 },
     { appSlug: '' },
     { appSlug: 'other-racer' },
+    { appSlug: 'full-throttle-dev' },
     { subredditId: undefined },
     { subredditId: null },
     { subredditId: 1 },
@@ -158,7 +159,7 @@ void test('an unavailable SDK community read cannot grant publication permission
 });
 
 const publicScope = {
-  appSlug: 'full-throttle-dev',
+  appSlug: 'the-daily-lap',
   subredditId: 't5_kyc33w',
   subredditName: 'theDailyLap',
 };

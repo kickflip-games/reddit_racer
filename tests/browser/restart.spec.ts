@@ -20,12 +20,14 @@ test('compact restart resets a moving practice lap without changing course @smok
     exact: true,
   });
   await expect(page.locator('#mode-label')).toBeHidden();
+  await expect(restart).toBeHidden();
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await page.locator('#start-button').click();
+  await page.clock.runFor(20);
   await expect(restart).toBeVisible();
   const box = await restart.boundingBox();
   expect(box?.width).toBeGreaterThanOrEqual(44);
   expect(box?.height).toBeGreaterThanOrEqual(44);
-  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
-  await page.locator('#start-button').click();
   await page.clock.runFor(3200);
   await expect(race).toHaveAttribute('data-phase', 'racing');
   await page.keyboard.down('Space');

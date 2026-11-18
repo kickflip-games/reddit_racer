@@ -32,7 +32,9 @@ for (const [width, height] of [
         await page
           .locator(id)
           .evaluate((e) => getComputedStyle(e).backgroundColor)
-      ).toBe('rgb(199, 68, 37)');
+      ).toBe(
+        id === '#start-button' ? 'rgb(199, 68, 37)' : 'rgb(238, 228, 207)'
+      );
     }
     await expect(card.locator('svg')).toHaveCount(0);
     expect(await card.innerText()).not.toMatch(/[↗←→]/);

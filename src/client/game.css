@@ -878,7 +878,7 @@ select:focus-visible {
   pointer-events: auto;
   touch-action: manipulation;
 }
-#race[data-phase='loading'] #restart-button {
+#race:is([data-phase='loading'], [data-phase='ready']) #restart-button {
   visibility: hidden;
 }
 
@@ -1687,4 +1687,15 @@ select:focus-visible {
 }
 .daily-history-dialog {
   touch-action: pan-y;
+}
+
+/* Keep Start/Retry dominant without removing secondary destinations. */
+#race .race-card .secondary-button {
+  background: var(--paper-soft);
+  color: var(--ink);
+  box-shadow: none;
+  border: 1px solid #173d3326;
+}
+#race .race-card .secondary-button:hover:not(:disabled) {
+  background: #e0d5bd;
 }

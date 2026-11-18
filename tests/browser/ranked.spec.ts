@@ -312,6 +312,7 @@ test(
       'data-state',
       'pending'
     );
+    await expect(page.locator('#card-copy')).toHaveText('Saving your time…');
     await expect(page.locator('#mode-label')).toHaveText('Daily');
     await expect(page.locator('#daily-reset')).toContainText(
       'Current race keeps'
@@ -326,6 +327,7 @@ test(
       'data-state',
       'verified'
     );
+    await expect(page.locator('#card-kicker')).toHaveText('Time saved');
     await expect(page.locator('#card-title')).toHaveText(
       `${(replay.endTick / 120).toFixed(3)} seconds`
     );
@@ -428,7 +430,9 @@ test('signed-out practice can finish without submitting a score', async ({
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText('unranked');
+  await expect(page.locator('#verification-status')).toContainText(
+    'practice only'
+  );
   await driveFast(page);
   await expect(page.locator('#card-kicker')).toHaveText('');
   await page.reload();
@@ -481,13 +485,17 @@ for (const failure of [
     await driveFast(page);
     await expect(page.locator('#verification-status')).toHaveAttribute(
       'data-state',
-      ['expired-receipt', 'BAD_REQUEST', 'UNAUTHORIZED'].includes(failure)
+      ['BAD_REQUEST', 'UNAUTHORIZED'].includes(failure)
         ? 'rejected'
         : 'unavailable'
     );
-    await expect(page.locator('#card-kicker')).toHaveText('Not confirmed');
+    await expect(page.locator('#card-kicker')).toHaveText(
+      ['BAD_REQUEST', 'UNAUTHORIZED'].includes(failure)
+        ? 'Time not saved'
+        : 'Save not confirmed'
+    );
     if (failure === 'BAD_REQUEST')
-      await expect(page.locator('#card-copy')).toContainText('replay');
+      await expect(page.locator('#card-copy')).toContainText('race checks');
     if (failure === 'UNAUTHORIZED')
       await expect(page.locator('#card-copy')).toContainText('Sign in again');
     await expect(page.locator('#retry-button')).toBeEnabled();

@@ -135,10 +135,10 @@ export function createLeaderboardController(
 
   function unrankedExplanation(): string {
     return receipt
-      ? 'Time verified · daily position unavailable.'
+      ? 'Time saved · daily position unavailable.'
       : resultMode === 'practice'
         ? 'Local time · not ranked.'
-        : 'Time unverified · not ranked.';
+        : 'This result is not confirmed on the daily standings.';
   }
 
   function render(view: LeaderboardView): void {
@@ -151,8 +151,8 @@ export function createLeaderboardController(
     }
     panel.dataset.state = view.top.length ? 'ready' : 'empty';
     status.textContent = view.top.length
-      ? 'Fastest verified times for this circuit.'
-      : 'No verified times yet for this circuit.';
+      ? 'Fastest saved times for this circuit.'
+      : 'No saved times yet for this circuit.';
     fillRows(top, view.top);
     top.hidden = !view.top.length;
     if (view.viewer === 'signed-out') {
@@ -178,12 +178,14 @@ export function createLeaderboardController(
         target.hidden = false;
       }
     } else {
-      me.textContent = 'You have no verified daily time yet.';
+      me.textContent = receipt
+        ? 'Time saved · your daily position is not available yet.'
+        : 'You have no saved daily time yet.';
     }
     if (receipt && view.outcome) {
       card.dataset.best = String(view.outcome.isPersonalBest);
       const kicker = document.getElementById('card-kicker');
-      if (kicker) kicker.textContent = 'Verified';
+      if (kicker) kicker.textContent = 'Time saved';
     }
     const leaderLabel = verifiedLeaderLabel(view, receipt);
     if (leaderLabel) {
@@ -212,7 +214,7 @@ export function createLeaderboardController(
     refresh.disabled = true;
     clearRows();
     me.textContent = receipt
-      ? 'Time verified · loading your daily position…'
+      ? 'Time saved · loading your daily position…'
       : unrankedExplanation();
     try {
       const value = await withRequestDeadline(

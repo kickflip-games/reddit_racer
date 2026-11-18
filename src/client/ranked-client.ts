@@ -68,12 +68,12 @@ export function createRankedRaceHooks(
         const code = errorCode(error);
         const message =
           code === 'UNAUTHORIZED'
-            ? 'Sign in to verify daily runs. This attempt is unranked.'
+            ? 'Sign in to save daily times. This race is practice only.'
             : code === 'PRECONDITION_FAILED'
               ? 'Ranked racing is unavailable for this course. This attempt is unranked.'
               : code === 'TOO_MANY_REQUESTS'
-                ? 'Verification is busy. This attempt is unranked.'
-                : 'Verification is unavailable. This attempt is unranked.';
+                ? 'Saving is busy. This race is practice only.'
+                : 'Daily saving is unavailable. This race is practice only.';
         return { kind: 'practice', message };
       }
       if (signal.aborted || attemptId !== currentAttempt)
@@ -101,7 +101,7 @@ export function createRankedRaceHooks(
       present('ranked');
       return {
         kind: 'ranked',
-        message: 'Daily race ready. Your time is checked after finishing.',
+        message: 'Daily race ready. Finish to save a time.',
       };
     },
     async onFinish({
@@ -128,9 +128,9 @@ export function createRankedRaceHooks(
         } catch {
           if (attemptId === currentAttempt) present('practice');
           return {
-            status: 'rejected',
+            status: 'unavailable',
             message:
-              'The verification response could not be checked. This time remains unverified.',
+              'Could not confirm your time was saved. Check the daily standings before trying another race.',
           };
         }
         if (
@@ -144,15 +144,15 @@ export function createRankedRaceHooks(
         ) {
           if (attemptId === currentAttempt) present('practice');
           return {
-            status: 'rejected',
+            status: 'unavailable',
             message:
-              'The verification result does not match this attempt. This time remains unverified.',
+              'Could not match the saved result to this race. Check the daily standings before trying another race.',
           };
         }
         if (attemptId === currentAttempt) onVerified?.(attemptId, receipt);
         return {
           status: 'verified',
-          message: 'Time verified.',
+          message: 'Time saved.',
           finishTicks: receipt.finishTicks,
         };
       } catch (error) {
@@ -175,7 +175,7 @@ export function createRankedRaceHooks(
         return {
           status: 'unavailable',
           message:
-            'Could not confirm this time with the server. Check your connection and try again.',
+            'Could not confirm your time was saved. Check your connection and the daily standings before trying another race.',
         };
       } finally {
         sessions.delete(attemptId);

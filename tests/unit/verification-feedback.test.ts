@@ -3,7 +3,10 @@ import { test } from 'node:test';
 import { submissionFailureMessage } from '../../src/client/verification-feedback';
 
 test('verification failures distinguish replay, authentication and session problems', () => {
-  assert.match(submissionFailureMessage('BAD_REQUEST'), /replay.*not saved/);
+  assert.match(
+    submissionFailureMessage('BAD_REQUEST'),
+    /could not be saved.*race checks/
+  );
   assert.match(submissionFailureMessage('UNAUTHORIZED'), /Sign in again/);
   assert.match(submissionFailureMessage('FORBIDDEN'), /account or race/);
   assert.match(submissionFailureMessage('CONFLICT'), /different result/);

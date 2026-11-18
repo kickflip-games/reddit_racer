@@ -227,7 +227,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
     'data-state',
     'ready'
   );
-  await expect(page.locator('#card-kicker')).toHaveText('Verified');
+  await expect(page.locator('#card-kicker')).toHaveText('Time saved');
   await expect(page.locator('#card-title')).toBeFocused();
   await page.keyboard.press('Space');
   expect(starts).toBe(1);
@@ -260,6 +260,9 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
     'verified'
   );
   await expect(page.locator('#leaderboard-outcome')).toBeHidden();
+  await expect(page.locator('#leaderboard-me')).toHaveText(
+    'Time saved · daily position unavailable.'
+  );
   await page.locator('#leaderboard-refresh').click();
   await expect.poll(() => boardCalls).toBe(3);
   await expect(page.locator('#leaderboard')).toHaveAttribute(
@@ -333,7 +336,7 @@ test('presentation fixture keeps responsive results and native standings accessi
       retry.hidden = false;
       title.textContent = `${(finishTicks / 120).toFixed(3)} seconds`;
       kicker.textContent = 'PRESENTATION FIXTURE';
-      copy.textContent = 'Time verified.';
+      copy.textContent = 'Time saved.';
       mode.textContent = 'UI FIXTURE · MOCKED';
       controller.onAttemptStart({ attemptId: 1 });
       controller.recordVerified(1, {
@@ -538,7 +541,7 @@ test('the standalone results controller honestly renders empty, signed-out, expi
     'empty'
   );
   await expect(page.locator('#leaderboard-status')).toContainText(
-    'No verified times yet'
+    'No saved times yet'
   );
   await expect(page.locator('#leaderboard-me')).toContainText('Sign in');
   await expect(page.locator('#leaderboard-outcome')).toBeHidden();
@@ -547,7 +550,7 @@ test('the standalone results controller honestly renders empty, signed-out, expi
   expect(calls).toBe(1);
   await page.locator('#leaderboard-refresh').click();
   await expect(page.locator('#leaderboard-me')).toHaveText(
-    'You have no verified daily time yet.'
+    'You have no saved daily time yet.'
   );
   await page.locator('#leaderboard-refresh').click();
   await expect(page.locator('#leaderboard')).toHaveAttribute(
@@ -704,4 +707,46 @@ test('server-confirmed joint daily lead celebrates once and clears on retry', as
   });
   await page.locator('#retry-button').click();
   await expect(page.locator('#verified-leader')).toBeHidden();
+});
+
+test('saved receipt stays saved when the standings have not caught up', async ({
+  page,
+}) => {
+  const record = await dailyRecord();
+  const value = board(record);
+  value.top = [];
+  value.nearby = [];
+  value.me = null;
+  value.outcome = null;
+  await page.route('**/api/trpc/getLeaderboard*', (route) =>
+    route.fulfill({ json: { result: { data: value } } })
+  );
+  await page.goto('/game.html');
+  await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+  await page.evaluate(
+    async ({ challenge, receipt }) => {
+      const moduleUrl = '/leaderboard-client.ts';
+      const { createLeaderboardController } = await import(moduleUrl);
+      const controller = createLeaderboardController(challenge);
+      controller.onAttemptStart({ attemptId: 1 });
+      controller.recordVerified(1, receipt);
+      controller.onResults({ attemptId: 1, mode: 'ranked' });
+    },
+    {
+      challenge: toPublicDailyChallenge(record),
+      receipt: {
+        sessionId,
+        challengeId: record.id,
+        challengeHash: record.challengeHash,
+        finishTicks: replay.endTick,
+        simulationHz: 120,
+        finishTimeMs: (replay.endTick * 1000) / 120,
+        verifiedAtMs: value.serverNowMs,
+      },
+    }
+  );
+  await expect(page.locator('#leaderboard-me')).toHaveText(
+    'Time saved · your daily position is not available yet.'
+  );
+  await expect(page.locator('#leaderboard-me')).not.toContainText('no saved');
 });

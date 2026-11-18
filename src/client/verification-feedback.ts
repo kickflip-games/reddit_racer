@@ -11,7 +11,7 @@ export function submissionFailureMessage(code: string): string {
     case 'PRECONDITION_FAILED':
       return 'This attempt is no longer valid. Reopen the race and try again.';
     case 'BAD_REQUEST':
-      return 'The server could not verify this race replay, so this time was not saved. Please retry.';
+      return 'This race could not be saved because its result did not pass the race checks. Please try another race.';
     default:
       return 'The server did not accept this time. Please start a new attempt.';
   }

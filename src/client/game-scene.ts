@@ -924,9 +924,12 @@ export function initializeGame(
     if (result.status === 'verified' && result.finishTicks !== undefined) {
       showFinishTime(result.finishTicks);
       cardTitle.textContent = `${formatTime(result.finishTicks / SIMULATION_HZ)} seconds`;
-      element('card-kicker').textContent = 'Verified';
+      element('card-kicker').textContent = 'Time saved';
     } else {
-      element('card-kicker').textContent = 'Not confirmed';
+      element('card-kicker').textContent =
+        result.status === 'unavailable'
+          ? 'Save not confirmed'
+          : 'Time not saved';
     }
     options.onResults?.({ attemptId: id, mode: attemptMode });
   }
@@ -972,8 +975,8 @@ export function initializeGame(
       element('card-kicker').textContent = '';
       if (attemptMode === 'ranked' && options.onFinish) {
         const id = attemptId;
-        verificationStatus('pending', 'Checking your time…');
-        cardCopy.textContent = 'Checking your time…';
+        verificationStatus('pending', 'Saving your time…');
+        cardCopy.textContent = 'Saving your time…';
         element('card-kicker').textContent = '';
         const result = {
           attemptId: id,
@@ -987,7 +990,7 @@ export function initializeGame(
             applyVerification(id, {
               status: 'unavailable',
               message:
-                'Verification is unavailable. This time remains unverified.',
+                'Could not confirm your time was saved. Check the daily standings before trying another race.',
             });
           });
       } else {

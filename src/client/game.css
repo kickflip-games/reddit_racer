@@ -1412,6 +1412,8 @@ select:focus-visible {
   padding-bottom: 0;
 }
 .settings-panel {
+  background: #fff7e8f5;
+  color: #173d33;
   width: min(360px, calc(100% - 24px));
   padding: 16px;
 }
@@ -1575,7 +1577,8 @@ select:focus-visible {
   width: min(360px, calc(100% - 28px));
   max-height: calc(100% - 220px);
 }
-#race .race-card button {
+#race .race-card button,
+#race #settings-dialog button {
   width: 100%;
   padding: 12px;
   margin-top: 8px;
@@ -1612,20 +1615,16 @@ select:focus-visible {
   font-weight: 800;
   border-radius: 4px;
 }
-#race #settings-close {
-  background: #173d33;
-  color: #fff7e8;
+#race #settings-dialog #settings-close {
+  width: auto;
+  margin: 0;
 }
 #ghost-toggle::after,
 #sound-toggle::after {
   display: none;
 }
-#race #ghost-toggle,
-#race .feedback-controls button {
-  padding: 12px;
-  background: #173d33;
-  color: #fff7e8;
-  border: 0;
+#race #settings-dialog .feedback-controls button {
+  margin-top: 0;
 }
 .daily-history-navigation {
   grid-template-columns: auto minmax(0, 1fr) auto;

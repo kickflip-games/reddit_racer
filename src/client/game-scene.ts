@@ -1,3 +1,4 @@
+import { drivingCue } from './driving-cue';
 import { smoothCarHeading } from './car-heading';
 import { driftStage } from './drift-feedback';
 import './drift-feedback.css';
@@ -552,6 +553,7 @@ export function initializeGame(
     const race = driver.raceState;
     if (race.phase !== 'countdown' && race.phase !== 'racing')
       drivingHint.hide();
+    else if (race.phase === 'racing') drivingHint.beginDriving();
     timer.textContent = formatTime(
       (practiceDriver
         ? practiceDriver.lapTicks
@@ -672,6 +674,15 @@ export function initializeGame(
             ? 'sliding'
             : 'gripping';
     raceRoot.dataset.drifting = String(practiceDriver?.drifting ?? false);
+    const cue = element('driving-cue');
+    const cueText = drivingCue(
+      state,
+      held(),
+      race.phase === 'racing',
+      practiceDriver?.drifting ?? false
+    );
+    cue.textContent = cueText;
+    cue.hidden = !cueText || !element('driving-hint').hidden;
     const driftFeedback =
       race.phase === 'racing'
         ? driftStage(practiceDriver?.activeDriftSeconds)
@@ -1021,10 +1032,10 @@ export function initializeGame(
     if (carLoadState !== 'ready') return;
     racingViewport = undefined;
     driver.start(timestamp);
-    drivingHint.show();
-    if (practiceDriver)
-      element('driving-hint').textContent =
-        'Hold to accelerate · Lift to brake · Two fingers to drift';
+    drivingHint.show(
+      Boolean(practiceDriver),
+      matchMedia('(pointer: coarse)').matches
+    );
     seenPracticeLaps = 0;
     ghostPoints = [];
     ghostOverflow = false;

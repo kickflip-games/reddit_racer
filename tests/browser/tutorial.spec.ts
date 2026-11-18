@@ -21,10 +21,10 @@ for (const [width, height] of [
       page.getByRole('button', { name: 'Learn to drive' })
     ).toHaveCount(0);
     await page.locator('#start-button').click();
-    await expect(hint).toContainText('Hold to accelerate · Lift to brake');
+    await expect(hint).toContainText('Automatic steering');
     await expect(hint).toBeInViewport();
     const bounds = (await hint.boundingBox())!;
-    expect(bounds.height).toBeLessThan(60);
+    expect(bounds.height).toBeLessThan(80);
     expect(bounds.y).toBeGreaterThan(height! / 2);
     expect(
       await hint.evaluate((el) => getComputedStyle(el).pointerEvents)
@@ -41,6 +41,8 @@ for (const [width, height] of [
       mapBounds.y - 8
     );
     await page.clock.runFor(1900);
+    await expect(hint).toBeVisible();
+    await page.clock.runFor(3100);
     await expect(hint).toBeHidden();
     await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));
@@ -113,10 +115,42 @@ test('word course keeps selected course and respects reduced motion', async ({
   expect(await hint.evaluate((el) => getComputedStyle(el).animationName)).toBe(
     'none'
   );
-  await page.clock.runFor(5100);
+  await page.clock.runFor(8100);
   await expect(hint).toBeHidden();
   await expect(page.locator('#practice-seed')).toHaveAttribute(
     'data-seed',
     seed!
   );
+});
+
+test('feedback stays quiet until needed and follows real braking input', async ({
+  page,
+  isMobile,
+}) => {
+  await page.clock.install();
+  await page.goto('/game.html?practice=1&seed=banana');
+  await waitForSceneAssets(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await page.locator('#start-button').click();
+  const hint = page.locator('#driving-hint');
+  await expect(hint).toContainText(isMobile ? 'two fingers' : 'hold Shift');
+  await expect(page.locator('#driving-cue')).toBeHidden();
+  await page.clock.runFor(8100);
+  await expect(hint).toBeHidden();
+  await page.keyboard.down('Space');
+  await page.clock.runFor(1300);
+  await expect(page.locator('#driving-cue')).toBeHidden();
+  await page.keyboard.up('Space');
+  await page.clock.runFor(100);
+  const cue = page.locator('#driving-cue');
+  await expect(cue).toHaveText('Braking');
+  await expect(cue).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath('braking-cue.png') });
+  expect(await cue.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe(
+    'none'
+  );
+  await page.clock.runFor(1500);
+  await expect(cue).toBeHidden();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(cue).toBeHidden();
 });

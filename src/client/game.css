@@ -1699,3 +1699,24 @@ select:focus-visible {
 #race .race-card .secondary-button:hover:not(:disabled) {
   background: #e0d5bd;
 }
+
+.race-countdown[data-kind='go'] {
+  color: #247340;
+}
+.race-countdown[data-kind='boost'] {
+  top: 25%;
+  width: auto;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 22px;
+  white-space: nowrap;
+  color: #247340;
+}
+
+.race-countdown[data-kind='countdown'][data-boost-enabled='true']::after {
+  content: 'Tap on GO for boost';
+  display: block;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.3;
+}

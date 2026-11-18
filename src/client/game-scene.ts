@@ -18,6 +18,10 @@ import {
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
 import {
+  START_BOOST_WINDOW_TICKS,
+  supportsStartBoost,
+} from '../shared/start-boost';
+import {
   createSimulationDriver,
   type InterruptionReason,
 } from './simulation-driver';
@@ -637,12 +641,37 @@ export function initializeGame(
           : 0
       );
     }
-    countdown.hidden = race.phase !== 'countdown';
-    if (race.phase === 'countdown') {
-      const value = String(
-        Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ)
-      );
+    const boostEnabled = supportsStartBoost(track);
+    const boostAwarded = state.startBoostTick != null;
+    const launchCue =
+      boostEnabled &&
+      race.phase === 'racing' &&
+      state.tick <= START_BOOST_WINDOW_TICKS;
+    const boostNotice =
+      boostEnabled &&
+      race.phase === 'racing' &&
+      boostAwarded &&
+      state.tick - state.startBoostTick! < SIMULATION_HZ;
+    countdown.hidden = race.phase !== 'countdown' && !launchCue && !boostNotice;
+    countdown.dataset.kind = boostNotice
+      ? 'boost'
+      : launchCue
+        ? 'go'
+        : 'countdown';
+    countdown.dataset.boostEnabled = String(boostEnabled);
+    if (!countdown.hidden) {
+      const value = boostNotice
+        ? 'Perfect start!'
+        : launchCue
+          ? 'GO!'
+          : String(Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ));
       if (countdown.textContent !== value) countdown.textContent = value;
+      countdown.setAttribute(
+        'aria-label',
+        race.phase === 'countdown' && boostEnabled
+          ? `${value}. Tap on GO for boost`
+          : value
+      );
     }
     const lapDistance = practiceDriver
       ? Math.max(
@@ -864,6 +893,7 @@ export function initializeGame(
       slip: THREE.MathUtils.lerp(previous.slip, current.slip, alpha),
       held: throttle,
       racing: scored,
+      countdownBurnout: phase === 'countdown',
       reducedMotion,
       deltaSeconds,
     });

@@ -754,3 +754,27 @@ void test('decisive lift emits one bounded tyre puff, not constant braking smoke
   assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
   vfx.dispose();
 });
+
+void test('held countdown emits bounded smoke without simulation or skid changes', () => {
+  const vfx = createDrivingVfx(track);
+  const frame = frameAt(0, {
+    phase: 'countdown',
+    state: { speed: 0, distance: 0 },
+  });
+  const before = JSON.stringify(frame.state);
+  for (let i = 0; i < 180; i++) vfx.update(frame);
+  assert.equal(JSON.stringify(frame.state), before);
+  assert.ok(particles(vfx, 'tyre-smoke').geometry.drawRange.count > 0);
+  assert.ok(
+    particles(vfx, 'tyre-smoke').geometry.drawRange.count <=
+      DRIVING_VFX_LIMITS.smokeParticles
+  );
+  assert.equal(particles(vfx, 'offroad-dust').geometry.drawRange.count, 0);
+  assert.equal(liveSkids(vfx), 0);
+  vfx.reset();
+  for (let i = 0; i < 60; i++) vfx.update({ ...frame, held: false });
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
+  for (let i = 0; i < 60; i++) vfx.update({ ...frame, reducedMotion: true });
+  assert.equal(particles(vfx, 'tyre-smoke').geometry.drawRange.count, 0);
+  vfx.dispose();
+});

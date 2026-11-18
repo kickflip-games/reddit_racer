@@ -33,7 +33,8 @@ import {
 export const QUALITY_VERSION = 'quality-v1';
 export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
-  track.generatorVersion === LINKED_COURSE_VERSION
+  track.generatorVersion === LINKED_COURSE_VERSION ||
+  track.generatorVersion === 'linked-circuits-v2'
     ? LINKED_QUALITY_VERSION
     : track.generatorVersion === 'linked-circuits-v1'
       ? 'linked-quality-v1'
@@ -229,7 +230,10 @@ export function assessTrackQuality(
     codes.push('start-straight');
   if (structure.metrics.directionChanges < thresholds.minDirectionChanges)
     codes.push('corner-diversity');
-  if (track.generatorVersion === LINKED_COURSE_VERSION) {
+  if (
+    track.generatorVersion === LINKED_COURSE_VERSION ||
+    track.generatorVersion === 'linked-circuits-v2'
+  ) {
     if (
       structure.metrics.longestStraight > LINKED_RHYTHM_LIMITS.longestStraight
     )
@@ -313,7 +317,8 @@ export function assessTrackQuality(
   }
   result.fastReplay = fast.finished ? search.fast.replay : null;
   if (
-    track.generatorVersion === LINKED_COURSE_VERSION &&
+    (track.generatorVersion === LINKED_COURSE_VERSION ||
+      track.generatorVersion === 'linked-circuits-v2') &&
     longestThrottleTicks(search.fast.replay, thresholds.minLiftTicks) >
       LINKED_RHYTHM_LIMITS.longestThrottleTicks
   )

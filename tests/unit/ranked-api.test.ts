@@ -1,3 +1,4 @@
+import { createRacingState, stepRace } from '../../src/shared/race-rules.ts';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createTRPCClient, httpLink } from '@trpc/client';
@@ -333,7 +334,7 @@ void test('malformed JSON, forged start parameters, method changes and batching 
 });
 
 for (const modern of [false, true]) {
-  void test(`HTTP ${modern ? 'current v7' : 'retained v5'} sessions verify supported replays and reject mismatched rules`, async () => {
+  void test(`HTTP ${modern ? 'current v8' : 'retained v5'} sessions verify supported replays and reject mismatched rules`, async () => {
     const generated = modern
       ? generateCurrentDailyCircuit('daily-lap-api-regression')
       : generateElevatedCircuit('flow-probe-21');
@@ -344,17 +345,31 @@ for (const modern of [false, true]) {
       requestedSeed: 'flow-probe-21',
       generated,
     });
-    const approved = generated.quality.fastReplay;
+    let approved = generated.quality.fastReplay;
     assert.ok(approved);
+    if (modern) {
+      // Exercise an actually awarded launch through the complete HTTP parser,
+      // persisted session, verifier, receipt and idempotent retry path.
+      let race = createRacingState(generated.track);
+      while (race.phase === 'racing')
+        race = stepRace(generated.track, race, race.simulation.tick >= 12);
+      assert.equal(race.phase, 'finished');
+      assert.equal(race.simulation.startBoostTick, 12);
+      approved = {
+        ...approved,
+        transitions: [{ tick: 12, held: true }],
+        endTick: race.simulation.tick,
+      };
+    }
     const api = setup(next);
     const session = await api.client.startRankedRace.mutate();
     assert.equal(
       session.simulationVersion,
-      modern ? 'fixed-step-v7' : 'fixed-step-v5'
+      modern ? 'fixed-step-v8' : 'fixed-step-v5'
     );
     assert.equal(
       session.handlingVersion,
-      modern ? 'road-finish-v1' : 'progressive-slip-v1'
+      modern ? 'timed-start-v1' : 'progressive-slip-v1'
     );
     await assert.rejects(
       api.client.submitRun.mutate({

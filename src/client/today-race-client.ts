@@ -91,7 +91,8 @@ export function createTodayRaceController(day: string): {
         target = view.post.url;
         readyExpiresAt = performance.now() + remainingMs;
         panel.dataset.state = 'ready';
-        status.textContent = `Today’s ${view.currentDay} UTC race is ready. This post keeps its original course.`;
+        // The action already explains the ready state; reserve status for problems.
+        status.textContent = '';
         open.hidden = false;
       } else {
         panel.dataset.state = 'not-ready';

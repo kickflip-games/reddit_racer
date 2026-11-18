@@ -108,7 +108,9 @@ test('a preparation deadline starts labelled practice on the saved track and a f
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText('unranked');
+  await expect(page.locator('#verification-status')).toContainText(
+    'practice only'
+  );
   await expect(page.locator('#race')).toHaveAttribute(
     'data-track-hash',
     record.trackHash
@@ -289,6 +291,8 @@ test('an archived course offers explicit current-post navigation and expires its
   );
   await page.locator('#today-race-refresh').click();
   await expect(page.locator('#today-race-button')).toBeVisible();
+  await expect(page.locator('#today-race-status')).toHaveText('');
+  await expect(page.locator('#today-race-status')).toBeHidden();
   expect(calls).toBe(2);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
   await expect(page.locator('#today-race')).toHaveAttribute(
@@ -299,9 +303,12 @@ test('an archived course offers explicit current-post navigation and expires its
   await page.clock.fastForward(2100);
   await expect(page.locator('#today-race-button')).toBeHidden();
   await expect(page.locator('#today-race-status')).toContainText('new UTC day');
+  await expect(page.locator('#today-race-status')).toBeVisible();
   expect(calls).toBe(2);
   await page.locator('#today-race-refresh').click();
   await expect(page.locator('#today-race-button')).toBeVisible();
+  await expect(page.locator('#today-race-status')).toHaveText('');
+  await expect(page.locator('#today-race-status')).toBeHidden();
   const navigation = page.evaluate(
     () =>
       new Promise<string>((resolve) => {

@@ -158,7 +158,13 @@ test('interrupted cards stay readable and clear of settings in compact viewports
     expect(settings).not.toBeNull();
     if (!card || !settings) throw new Error('Missing card or settings');
     expect(card.y).toBeGreaterThanOrEqual(0);
-    expect(card.y + card.height).toBeLessThanOrEqual(settings.y - 8);
+    expect(card.y + card.height).toBeLessThanOrEqual(viewport.height);
+    // Landscape places Settings beside the card, not necessarily below it.
+    const clearOfSettings =
+      card.y + card.height <= settings.y - 8 ||
+      card.x >= settings.x + settings.width + 8 ||
+      card.x + card.width <= settings.x - 8;
+    expect(clearOfSettings).toBe(true);
     await expect(page.locator('#card')).toHaveCSS(
       'background-color',
       'rgb(255, 247, 232)'

@@ -108,7 +108,9 @@ test('a preparation deadline starts labelled practice on the saved track and a f
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#verification-status')).toContainText('unranked');
+  await expect(page.locator('#verification-status')).toContainText(
+    'practice only'
+  );
   await expect(page.locator('#race')).toHaveAttribute(
     'data-track-hash',
     record.trackHash

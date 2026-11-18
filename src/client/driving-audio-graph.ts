@@ -75,13 +75,16 @@ export function calculateDrivingAudioTargets(
     !frame.state.recovering;
   return {
     engineHz: bounded(
-      65 +
+      // Lower the whole rev range, retaining gear dips and throttle response.
+      (65 +
         Math.min(speed / 2, 1) * (75 + gear * 20 + revs * 135) +
-        acceleration * 1.1,
-      50,
-      340
+        acceleration * 1.1) *
+        0.68,
+      40,
+      232
     ),
-    engineFilterHz: 700 + speed * 45,
+    // Soften sawtooth buzz without removing the harmonics phone speakers need.
+    engineFilterHz: 450 + speed * 25,
     engineGain: active ? (frame.held ? 0.045 : 0.025) + speed * 0.001 : 0,
     squealHz: 1400 + slip * 1300,
     squealGain: active && speed > 3 ? Math.max(0, slip - 0.08) * 0.07 : 0,
@@ -133,10 +136,10 @@ export function createDrivingAudioGraph(
   const sources: AudioScheduledSourceNode[] = [engine, harmonic, noise, result];
   engine.type = 'sawtooth';
   harmonic.type = 'triangle';
-  engine.frequency.value = 65;
-  harmonic.frequency.value = 32.5;
+  engine.frequency.value = 44.2;
+  harmonic.frequency.value = 22.1;
   engineFilter.type = 'lowpass';
-  engineFilter.frequency.value = 700;
+  engineFilter.frequency.value = 450;
   engineFilter.Q.value = 0.6;
   squealFilter.type = 'bandpass';
   squealFilter.frequency.value = 1400;
@@ -204,11 +207,11 @@ export function createDrivingAudioGraph(
     apply(targets, atSeconds = context.currentTime) {
       if (disposed) return;
       const time = atTime(atSeconds);
-      ramp(engine.frequency, bounded(targets.engineHz, 50, 340), time);
-      ramp(harmonic.frequency, bounded(targets.engineHz, 50, 340) / 2, time);
+      ramp(engine.frequency, bounded(targets.engineHz, 40, 232), time);
+      ramp(harmonic.frequency, bounded(targets.engineHz, 40, 232) / 2, time);
       ramp(
         engineFilter.frequency,
-        bounded(targets.engineFilterHz, 700, 1690),
+        bounded(targets.engineFilterHz, 450, 1000),
         time
       );
       ramp(engineGain.gain, bounded(targets.engineGain, 0, 0.07), time);

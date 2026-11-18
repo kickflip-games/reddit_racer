@@ -196,6 +196,8 @@ test('OFFLINE AUDIO FIXTURE renders the production graph with rising engine pitc
     expect(signal.buffers).toBe(signals.expectedBuffers);
     expect(signal.active.rms).toBeGreaterThan(0.000_01);
     expect(signal.active.peak).toBeLessThan(0.8);
+    expect(signal.targets.engineHz).toBeLessThanOrEqual(232);
+    expect(signal.targets.engineFilterHz).toBeLessThanOrEqual(1000);
     expect(signal.tail.peak).toBeLessThan(0.8);
   }
   expect(signals.high.targets.engineHz).toBeGreaterThan(

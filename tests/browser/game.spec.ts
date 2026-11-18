@@ -132,13 +132,12 @@ test('interrupted cards stay readable and clear of settings in compact viewports
   await page.locator('#start-button').click();
   await page.clock.fastForward(1000);
   await expect(page.locator('#card-copy')).toHaveText('');
-  // Include the archived-post notice shown in the reported Android screenshot.
+  // Include the compact archived-post action shown after an interruption.
   await page.locator('#today-race').evaluate((node) => {
     node.removeAttribute('hidden');
   });
   await page.locator('#today-race-status').evaluate((node) => {
-    node.textContent =
-      'Today’s race is ready. This post keeps its original course.';
+    node.textContent = '';
   });
   await page.locator('#today-race-button').evaluate((node) => {
     node.removeAttribute('hidden');

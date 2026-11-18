@@ -20,7 +20,7 @@ import { stepElevatedSimulationV7 } from '../../src/shared/elevated-simulation-v
 function fixture() {
   const track = generateLinkedCourseCandidate('grass-regression', 1).track;
   assert.ok(track);
-  return track;
+  return { ...track, generatorVersion: 'linked-circuits-v2' };
 }
 const track = fixture();
 function crossing(offset: number) {

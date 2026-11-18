@@ -1,3 +1,4 @@
+import { stepStartBoostSimulation, supportsStartBoost } from './start-boost.ts';
 import { stepElevatedSimulationV7 } from './elevated-simulation-v7.ts';
 import { stepElevatedSimulationV5 } from './elevated-simulation-v5.ts';
 import { LEGACY_HANDLING } from './scored-runtime.ts';
@@ -17,6 +18,9 @@ export const HANDLING = LEGACY_HANDLING;
 export type SimulationState = {
   /** Tick counts completed fixed updates. An input at tick 0 affects update 0→1. */
   tick: number;
+  /** V8-only launch history, reconstructed solely from scored input ticks. */
+  firstThrottleTick?: number | null;
+  startBoostTick?: number | null;
   distance: number;
   speed: number;
   lateralOffset: number;
@@ -84,6 +88,8 @@ export function stepSimulation(
   if (state.status === 'finished') return state;
   if (state.tick >= MAX_SIMULATION_TICKS)
     throw new Error('Simulation duration limit exceeded');
+  if (supportsStartBoost(track))
+    return stepStartBoostSimulation(track, state, held);
   if (
     track.schemaVersion === 2 &&
     track.generatorVersion === 'linked-circuits-v2'

@@ -94,7 +94,7 @@ void test('new acceptance policy rejects the passive rectangle and flattened ele
   });
   assert.ok(flat.codes.includes('missing-elevation'));
   assert.equal(flat.work.controllerRuns, 0);
-  assert.equal(runtimeForTrack(linked).simulationVersion, 'fixed-step-v7');
+  assert.equal(runtimeForTrack(linked).simulationVersion, 'fixed-step-v8');
   assert.equal(runtimeForTrack(old).simulationVersion, 'fixed-step-v6');
 });
 
@@ -112,15 +112,15 @@ void test('candidate budgets are finite and seed reproduction is independent of 
   );
 });
 
-void test('v7 daily seed searches beyond the old budget without relaxing quality', () => {
+void test('v8 daily selection stays bounded and meets unchanged quality limits', () => {
   const seed = 'daily:t5_rhythm:2027-03-30';
   const exhausted = generateBrakingCircuit(seed, 24);
-  assert.equal(exhausted.quality.valid, false);
-  assert.equal(exhausted.diagnostics.acceptedAttempt, null);
+  assert.equal(exhausted.quality.valid, true);
+  assert.equal(exhausted.diagnostics.acceptedAttempt, 3);
   const result = generateBrakingCircuit(seed);
   assert.equal(result.quality.valid, true);
   assert.deepEqual(result.quality.codes, []);
-  assert.equal(result.diagnostics.acceptedAttempt, 29);
-  assert.equal(result.diagnostics.qualityAttempts, 10);
+  assert.equal(result.diagnostics.acceptedAttempt, 3);
+  assert.equal(result.diagnostics.qualityAttempts, 2);
   assert.equal(result.diagnostics.fallbackUsed, false);
 });

@@ -1,3 +1,4 @@
+import { stepStartBoostSimulation } from '../shared/start-boost.ts';
 import { stepElevatedSimulationV7 } from '../shared/elevated-simulation-v7.ts';
 import { stepElevatedSimulation } from '../shared/elevated-simulation.ts';
 import {
@@ -367,6 +368,8 @@ export function stepPracticeDrift(
   held: boolean,
   driftSeconds: number
 ): SimulationState {
+  if (runtimeForTrack(track).simulationVersion === 'fixed-step-v8')
+    return stepStartBoostSimulation(track, state, held, driftSeconds);
   return runtimeForTrack(track).simulationVersion === 'fixed-step-v7'
     ? stepElevatedSimulationV7(track, state, held, driftSeconds)
     : stepElevatedSimulation(track, state, held, driftSeconds);

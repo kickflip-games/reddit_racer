@@ -659,6 +659,7 @@ void test('submission parser accepts every retained runtime pair including live 
     ['fixed-step-v5', 'progressive-slip-v1'],
     ['fixed-step-v6', 'progressive-slip-v1'],
     ['fixed-step-v7', 'road-finish-v1'],
+    ['fixed-step-v8', 'timed-start-v1'],
   ]) {
     const payload = {
       sessionId: uuid(1),

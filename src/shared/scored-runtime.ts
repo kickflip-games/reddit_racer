@@ -80,12 +80,18 @@ const roadFinishRuntime = Object.freeze({
   handlingVersion: 'road-finish-v1',
   handling: ROAD_FINISH_HANDLING,
 });
+const startBoostRuntime = Object.freeze({
+  ...roadFinishRuntime,
+  simulationVersion: 'fixed-step-v8',
+  handlingVersion: 'timed-start-v1',
+});
 export type ScoredRuntime =
   | typeof flatRuntime
   | typeof elevatedRuntime
   | typeof centrelineRuntime
   | typeof priorElevatedRuntime
-  | typeof roadFinishRuntime;
+  | typeof roadFinishRuntime
+  | typeof startBoostRuntime;
 
 export function scoredRuntime(
   simulationVersion: unknown,
@@ -118,9 +124,19 @@ export function scoredRuntime(
     handlingVersion === roadFinishRuntime.handlingVersion
   )
     return roadFinishRuntime;
+  if (
+    simulationVersion === startBoostRuntime.simulationVersion &&
+    handlingVersion === startBoostRuntime.handlingVersion
+  )
+    return startBoostRuntime;
   throw new Error('Unsupported scored runtime');
 }
 export function runtimeForTrack(track: Track): ScoredRuntime {
+  if (
+    track.schemaVersion === 2 &&
+    track.generatorVersion === 'linked-circuits-v3'
+  )
+    return startBoostRuntime;
   if (
     track.schemaVersion === 2 &&
     track.generatorVersion === 'linked-circuits-v2'

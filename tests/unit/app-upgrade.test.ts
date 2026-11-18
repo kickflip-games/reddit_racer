@@ -206,7 +206,7 @@ void test('the registered upgrade bootstrap keeps the app identity and uses the 
     readFileSync(new URL('../../devvit.json', import.meta.url), 'utf8')
   );
   assert.ok(record(config));
-  assert.equal(config.name, 'full-throttle-dev');
+  assert.equal(config.name, 'the-daily-lap');
   assert.ok(record(config.triggers));
   assert.equal(config.triggers.onAppUpgrade, path);
   const endpoint = config.triggers.onAppUpgrade;

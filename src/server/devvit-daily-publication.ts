@@ -14,7 +14,7 @@ import {
   readTrustedRacePost,
 } from './devvit-today-race-posts';
 
-export const PRIVATE_RACE_APP = 'full-throttle-dev';
+export const PRIVATE_RACE_APP = 'the-daily-lap';
 export const PRIVATE_RACE_COMMUNITY = 'full_throttle_dev_dev';
 export const PRIVATE_RACE_SUBREDDIT_ID = 't5_kv7foq';
 export const PUBLIC_RACE_COMMUNITY = 'theDailyLap';

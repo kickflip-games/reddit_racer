@@ -1,6 +1,6 @@
 # The Daily Lap
 
-A bite-sized daily arcade racer for Reddit, built from the official Devvit Web / Three.js starter. Hold to accelerate, release to slow, and learn the fastest line around a shared daily circuit. The registered Devvit app remains `full-throttle-dev`.
+A bite-sized daily arcade racer for Reddit, built from the official Devvit Web / Three.js starter. Hold to accelerate, release to slow, and learn the fastest line around a shared daily circuit. This branch prepares a new app identifier, `the-daily-lap`; it is not registered or deployed yet. The existing `full-throttle-dev` app remains live and unchanged. See the [migration checklist](docs/app-identity-migration.md) before any upload or install.
 
 Practice tracks now generate varied elevated circuits, including a speed-dependent jump and rolling hills, with faster arcade handling. Practice laps continue automatically. Existing daily courses keep their original rules and records; newly created UTC days use the new generator. See [elevated circuits](docs/elevated-circuits.md) for local previews, validation and compatibility details.
 
@@ -26,6 +26,10 @@ npm run tracks:check # 200 fixed-seed geometry + driving quality checks
 npm run balance:check # explicit frozen 22-course controller/replay evaluation
 npm run check        # formatting, types, lint, units, 200-track quality, build
 ```
+
+## Legacy app operations (historical, not migration commands)
+
+The following hosted commands and observations describe `full-throttle-dev`. Do not execute them from this new-app branch. Follow the migration checklist above instead.
 
 For Reddit playtesting, run `npm run login` once if credentials are unavailable, then `npm run dev`. This starts the Devvit watch session: saved changes are built and installed as development versions, and logs stream in the terminal. Stopping the watcher leaves its last test version installed; it does not restore a previously installed build.
 

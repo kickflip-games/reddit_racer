@@ -152,7 +152,7 @@ void test('targets are finite/bounded and expose real held/slip/off-road/recover
       true
     );
     assert.ok(Object.values(targets).every(Number.isFinite));
-    assert.ok(targets.engineHz >= 50 && targets.engineHz <= 340);
+    assert.ok(targets.engineHz >= 40 && targets.engineHz <= 232);
     assert.ok(targets.engineGain >= 0 && targets.engineGain <= 0.07);
     assert.ok(targets.squealGain >= 0 && targets.squealGain <= 0.07);
   }
@@ -878,8 +878,8 @@ void test('virtual gears lift revs within a gear and dip on an upshift without c
   const low = calculateDrivingAudioTargets(atSpeed(3), true, 0);
   const revved = calculateDrivingAudioTargets(atSpeed(7.4), true, 0);
   const shifted = calculateDrivingAudioTargets(atSpeed(7.4), true, 1);
-  assert.ok(revved.engineHz > low.engineHz + 50);
-  assert.ok(shifted.engineHz < revved.engineHz - 70);
+  assert.ok(revved.engineHz > low.engineHz + 35);
+  assert.ok(shifted.engineHz < revved.engineHz - 50);
   assert.equal(shifted.engineGain, revved.engineGain);
 });
 
@@ -949,4 +949,36 @@ void test('gear shifts have hysteresis, dwell, no initial cue, and no muted or a
     'retry/flying initial snapshot does not replay gears'
   );
   await audio.dispose();
+});
+
+void test('engine is deeper and less bright across every gear without raising the mix', () => {
+  for (let speed = 0; speed <= 22; speed += 0.5) {
+    for (const acceleration of [-10, 0, 7]) {
+      const input = {
+        ...frame(),
+        acceleration,
+        state: { ...frame().state, speed },
+      };
+      const targets = calculateDrivingAudioTargets(input, true);
+      assert.ok(targets.engineHz <= 232);
+      assert.ok(
+        targets.engineFilterHz >= 450 && targets.engineFilterHz <= 1000
+      );
+      assert.equal(
+        targets.engineGain,
+        (input.held ? 0.045 : 0.025) + speed * 0.001
+      );
+      assert.equal(calculateDrivingAudioTargets(input, false).engineGain, 0);
+    }
+  }
+  const idle = calculateDrivingAudioTargets(
+    { ...frame(), acceleration: 0, state: { ...frame().state, speed: 0 } },
+    true
+  );
+  const top = calculateDrivingAudioTargets(
+    { ...frame(), acceleration: 0, state: { ...frame().state, speed: 22 } },
+    true
+  );
+  assert.equal(idle.engineHz, 44.2);
+  assert.ok(Math.abs(top.engineHz - 227.8) < 0.001);
 });

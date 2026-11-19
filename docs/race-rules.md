@@ -15,7 +15,7 @@
 
 `createRaceState()` begins in loading. `prepareRace()` only accepts loading; `startRace()` only accepts ready. Both construct fresh timing, simulation and checkpoint state. The last countdown update changes phase to racing without executing physics. The following update is scored tick `0 → 1`.
 
-The accelerator may be held during countdown, but nothing moves. The browser driver records the input sampled by the first scored update as a transition at tick zero. Inputs changed and released entirely during countdown have no replay effect. All racers begin with the same stationary canonical start conditions.
+The accelerator may be held during countdown, but nothing moves. Retained schema-1 runtimes record only scored input, beginning at tick zero. V9/schema 2 also samples countdown inputs at ticks -360 through -1 so a fresh late press held through green can earn one small launch boost. See [countdown launch](countdown-launch.md). All racers begin stationary; countdown is excluded from score.
 
 `abandonRace()` is idempotent. Finished and abandoned states remain terminal under further steps or interruption events. Retry builds a new prepared race and a fresh driver clock/input tape, while reusing loaded visual resources and existing listeners.
 
@@ -46,7 +46,7 @@ The existing handling rules remain unchanged: ordinary off-road excursions lose 
 
 Focus loss, hidden/background state, a frame gap of at least 250 ms, input overflow and the race duration limit abandon the client attempt and release its latched input. The UI shows an interrupted result and Retry. There is no pause/resume path that preserves a ranked-eligible attempt.
 
-`runReplay()` parses only a bounded, versioned Boolean transition tape, creates fresh racing state with `createRacingState(track)`, then executes `stepRace()` until the submitted tape ends or a terminal phase occurs. The fresh racing helper omits the UI countdown computationally but uses exactly the same scored starting conditions. Only `phase === finished` with the authoritative finish tick and a completely consumed tape is accepted.
+`runReplay()` parses only a bounded, versioned Boolean transition tape. Schema 1 creates fresh racing state with `createRacingState(track)`; schema 2 reconstructs the stationary countdown with `startRace(prepareRace(track))`. Both execute `stepRace()` until the submitted tape ends or a terminal phase occurs. Only `phase === finished` with the authoritative finish tick and a completely consumed tape is accepted.
 
 Pure replay cannot prove whether a modified client ignored a focus event or used assisted input. Authenticated session expiry, server-side duration/rate limits and immutable challenge binding are additional controls in issues #9–11. No claim of human play or deployed ranked integration follows from these local rules.
 

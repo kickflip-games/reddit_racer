@@ -1,4 +1,8 @@
 import { stepStartBoostSimulation, supportsStartBoost } from './start-boost.ts';
+import {
+  stepCountdownLaunchSimulation,
+  supportsCountdownLaunch,
+} from './countdown-launch.ts';
 import { stepElevatedSimulationV7 } from './elevated-simulation-v7.ts';
 import { stepElevatedSimulationV5 } from './elevated-simulation-v5.ts';
 import { LEGACY_HANDLING } from './scored-runtime.ts';
@@ -18,7 +22,9 @@ export const HANDLING = LEGACY_HANDLING;
 export type SimulationState = {
   /** Tick counts completed fixed updates. An input at tick 0 affects update 0→1. */
   tick: number;
-  /** V8-only launch history, reconstructed solely from scored input ticks. */
+  /** V9-only eligibility, reconstructed from sampled countdown input. Consumed at green. */
+  launchArmed?: boolean;
+  /** Versioned launch history; never supplied by the client as replay metadata. */
   firstThrottleTick?: number | null;
   startBoostTick?: number | null;
   distance: number;
@@ -88,6 +94,8 @@ export function stepSimulation(
   if (state.status === 'finished') return state;
   if (state.tick >= MAX_SIMULATION_TICKS)
     throw new Error('Simulation duration limit exceeded');
+  if (supportsCountdownLaunch(track))
+    return stepCountdownLaunchSimulation(track, state, held);
   if (supportsStartBoost(track))
     return stepStartBoostSimulation(track, state, held);
   if (

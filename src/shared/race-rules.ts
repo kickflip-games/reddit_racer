@@ -1,5 +1,11 @@
 import { handlingForTrack } from './scored-runtime.ts';
 import {
+  countdownLaunchArmed,
+  sampleCountdownLaunch,
+  supportsCountdownLaunch,
+  type CountdownLaunchInput,
+} from './countdown-launch.ts';
+import {
   createSimulationState,
   createVerticalState,
   MAX_SIMULATION_TICKS,
@@ -30,7 +36,14 @@ export type RaceState = LapProgress & {
   simulation: SimulationState;
   countdownTicksRemaining: number;
   abandonReason: RaceAbandonReason | null;
+  countdownLaunchInput?: CountdownLaunchInput;
 };
+
+/** Schema-2 input tapes include stationary countdown ticks -360 through -1. */
+export const raceInputTick = (state: Readonly<RaceState>): number =>
+  state.phase === 'countdown'
+    ? -state.countdownTicksRemaining
+    : state.simulation.tick;
 
 const progressTolerance = 0.000000001;
 
@@ -302,8 +315,27 @@ export function stepRace(
     )
       return abandonRace(state, 'invalid-progress');
     const countdownTicksRemaining = state.countdownTicksRemaining - 1;
+    const launchInput = supportsCountdownLaunch(track)
+      ? sampleCountdownLaunch(
+          state.countdownLaunchInput,
+          held,
+          raceInputTick(state)
+        )
+      : undefined;
     return {
       ...state,
+      ...(launchInput
+        ? {
+            countdownLaunchInput: launchInput,
+            simulation:
+              countdownTicksRemaining === 0
+                ? {
+                    ...state.simulation,
+                    launchArmed: countdownLaunchArmed(launchInput),
+                  }
+                : state.simulation,
+          }
+        : {}),
       countdownTicksRemaining,
       phase: countdownTicksRemaining === 0 ? 'racing' : 'countdown',
     };

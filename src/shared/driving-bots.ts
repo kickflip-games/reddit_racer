@@ -2,7 +2,7 @@ import { handlingForTrack, runtimeForTrack } from './scored-runtime.ts';
 import { abandonRace, createRacingState, stepRace } from './race-rules.ts';
 import { MAX_SIMULATION_TICKS, SIMULATION_HZ } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
-import { MAX_REPLAY_TRANSITIONS } from './replay.ts';
+import { MAX_REPLAY_TRANSITIONS, replaySchemaForTrack } from './replay.ts';
 import type { Replay, ReplayTransition } from './replay.ts';
 import { sampleTrack } from './track.ts';
 import type { Track } from './track.ts';
@@ -127,7 +127,7 @@ function drive(
         : {}),
     },
     replay: {
-      schemaVersion: 1,
+      schemaVersion: replaySchemaForTrack(track),
       simulationVersion: runtimeForTrack(track).simulationVersion,
       handlingVersion: runtimeForTrack(track).handlingVersion,
       transitions,

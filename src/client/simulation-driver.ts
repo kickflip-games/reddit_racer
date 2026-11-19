@@ -5,10 +5,15 @@ import {
   SIMULATION_HZ,
   type SimulationState,
 } from '../shared/simulation.ts';
-import { MAX_REPLAY_TRANSITIONS, type Replay } from '../shared/replay.ts';
+import {
+  MAX_REPLAY_TRANSITIONS,
+  replaySchemaForTrack,
+  type Replay,
+} from '../shared/replay.ts';
 import {
   abandonRace,
   prepareRace,
+  raceInputTick,
   startRace,
   stepRace,
   type RaceAbandonReason,
@@ -70,7 +75,7 @@ export class SimulationDriver {
 
   get replay(): Replay {
     return {
-      schemaVersion: 1,
+      schemaVersion: replaySchemaForTrack(this.track),
       simulationVersion: runtimeForTrack(this.track).simulationVersion,
       handlingVersion: runtimeForTrack(this.track).handlingVersion,
       transitions: this.transitions
@@ -111,16 +116,21 @@ export class SimulationDriver {
         this.abandon('time-limit');
         return;
       }
-      // Countdown inputs are latched only. Record the value that actually reaches a scored tick.
+      // V9 records sampled countdown edges so the verifier reconstructs the launch.
+      // Older runtimes retain their original scored-only tapes.
       if (
-        this.race.phase === 'racing' &&
+        (this.race.phase === 'racing' ||
+          replaySchemaForTrack(this.track) === 2) &&
         this.inputHeld !== (this.transitions.at(-1)?.held ?? false)
       ) {
         if (this.transitions.length >= MAX_REPLAY_TRANSITIONS) {
           this.abandon('input-limit');
           return;
         }
-        this.transitions.push({ tick: this.state.tick, held: this.inputHeld });
+        this.transitions.push({
+          tick: raceInputTick(this.race),
+          held: this.inputHeld,
+        });
       }
       this.previous = this.race.simulation;
       this.race = stepRace(this.track, this.race, this.inputHeld);

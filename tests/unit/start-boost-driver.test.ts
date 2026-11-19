@@ -8,7 +8,10 @@ import { SIMULATION_HZ } from '../../src/shared/simulation.ts';
 import { runReplay } from '../../src/shared/replay.ts';
 
 const dt = 1000 / SIMULATION_HZ;
-const track = generateBrakingCircuit('practice-1').track;
+const track = {
+  ...generateBrakingCircuit('practice-1').track,
+  generatorVersion: 'linked-circuits-v3',
+};
 
 for (const pressTick of [0, 1, 12, 36, 37]) {
   void test(`ranked and practice launch agree at tick ${pressTick}, and restart clears bonus`, () => {

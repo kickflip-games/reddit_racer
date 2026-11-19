@@ -5,7 +5,7 @@ import { hashTrack, type Track } from './track';
 export type TrackShare = {
   type: 'racer-track';
   version: 1;
-  generator: typeof LINKED_COURSE_VERSION;
+  generator: typeof LINKED_COURSE_VERSION | 'linked-circuits-v3';
   seed: string;
   trackHash: string;
 };
@@ -26,7 +26,8 @@ export function parseTrackShare(raw: string): TrackShare {
     !('version' in value) ||
     value.version !== 1 ||
     !('generator' in value) ||
-    value.generator !== LINKED_COURSE_VERSION
+    (value.generator !== LINKED_COURSE_VERSION &&
+      value.generator !== 'linked-circuits-v3')
   )
     throw new Error(
       'This shared track version is not supported. Ask for a new share.'
@@ -44,7 +45,7 @@ export function parseTrackShare(raw: string): TrackShare {
   return {
     type: 'racer-track',
     version: 1,
-    generator: LINKED_COURSE_VERSION,
+    generator: value.generator,
     seed: value.seed,
     trackHash: value.trackHash,
   };
@@ -54,7 +55,8 @@ export async function createTrackShare(
   track: Track
 ): Promise<TrackShare> {
   if (
-    track.generatorVersion !== LINKED_COURSE_VERSION ||
+    (track.generatorVersion !== LINKED_COURSE_VERSION &&
+      track.generatorVersion !== 'linked-circuits-v3') ||
     normalizeCourseWord(seed) !== seed
   )
     throw new Error('This track cannot be shared with this version.');
@@ -62,7 +64,7 @@ export async function createTrackShare(
   return {
     type: 'racer-track',
     version: 1,
-    generator: LINKED_COURSE_VERSION,
+    generator: track.generatorVersion,
     seed,
     trackHash: await hashTrack(track),
   };

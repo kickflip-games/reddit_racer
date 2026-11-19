@@ -1,8 +1,4 @@
-import { drivingCue } from './driving-cue';
 import { smoothCarHeading } from './car-heading';
-import { driftStage } from './drift-feedback';
-import './drift-feedback.css';
-import { initializeDrivingHint } from './driving-hint';
 import {
   createGhostStore,
   MAX_GHOST_POINTS,
@@ -17,10 +13,6 @@ import {
 } from './practice-best';
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
-import {
-  START_BOOST_WINDOW_TICKS,
-  supportsStartBoost,
-} from '../shared/start-boost';
 import {
   createSimulationDriver,
   type InterruptionReason,
@@ -93,7 +85,6 @@ export function initializeGame(
   options: GameSceneOptions
 ): GameSceneController {
   const lifetime = new AbortController();
-  const drivingHint = initializeDrivingHint();
   const eventOptions = { signal: lifetime.signal };
   const sceneAssets = createSceneAssetCache();
   function element(id: string): HTMLElement {
@@ -120,10 +111,9 @@ export function initializeGame(
   const cardCopy = element('card-copy');
   const viewportMessage = element('viewport-message');
   const inputLabel = element('status');
-  const driftCue = document.createElement('div');
-  driftCue.className = 'drift-cue';
-  driftCue.hidden = true;
-  raceRoot.append(driftCue);
+  element('race-controls').textContent = options.continuousPractice
+    ? 'Automatic steering. Hold Space or touch the track to accelerate; release to brake. Hold Shift or use two fingers to drift.'
+    : 'Automatic steering. Hold Space or touch the track to accelerate; release to brake.';
   const start = element('start-button');
   const retry = element('retry-button');
   const restart = element('restart-button');
@@ -555,9 +545,6 @@ export function initializeGame(
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
-    if (race.phase !== 'countdown' && race.phase !== 'racing')
-      drivingHint.hide();
-    else if (race.phase === 'racing') drivingHint.beginDriving();
     timer.textContent = formatTime(
       (practiceDriver
         ? practiceDriver.lapTicks
@@ -641,37 +628,16 @@ export function initializeGame(
           : 0
       );
     }
-    const boostEnabled = supportsStartBoost(track);
-    const boostAwarded = state.startBoostTick != null;
     const launchCue =
-      boostEnabled &&
-      race.phase === 'racing' &&
-      state.tick <= START_BOOST_WINDOW_TICKS;
-    const boostNotice =
-      boostEnabled &&
-      race.phase === 'racing' &&
-      boostAwarded &&
-      state.tick - state.startBoostTick! < SIMULATION_HZ;
-    countdown.hidden = race.phase !== 'countdown' && !launchCue && !boostNotice;
-    countdown.dataset.kind = boostNotice
-      ? 'boost'
-      : launchCue
-        ? 'go'
-        : 'countdown';
-    countdown.dataset.boostEnabled = String(boostEnabled);
+      race.phase === 'racing' && state.tick < SIMULATION_HZ * 0.6;
+    countdown.hidden = race.phase !== 'countdown' && !launchCue;
+    countdown.dataset.kind = launchCue ? 'go' : 'countdown';
     if (!countdown.hidden) {
-      const value = boostNotice
-        ? 'Perfect start!'
-        : launchCue
-          ? 'GO!'
-          : String(Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ));
+      const value = launchCue
+        ? 'GO!'
+        : String(Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ));
       if (countdown.textContent !== value) countdown.textContent = value;
-      countdown.setAttribute(
-        'aria-label',
-        race.phase === 'countdown' && boostEnabled
-          ? `${value}. Tap on GO for boost`
-          : value
-      );
+      countdown.setAttribute('aria-label', value);
     }
     const lapDistance = practiceDriver
       ? Math.max(
@@ -703,53 +669,17 @@ export function initializeGame(
             ? 'sliding'
             : 'gripping';
     raceRoot.dataset.drifting = String(practiceDriver?.drifting ?? false);
-    const cue = element('driving-cue');
-    const cueText = drivingCue(
-      state,
-      held(),
-      race.phase === 'racing',
-      practiceDriver?.drifting ?? false
-    );
-    cue.textContent = cueText;
-    cue.hidden = !cueText || !element('driving-hint').hidden;
-    const driftFeedback =
-      race.phase === 'racing'
-        ? driftStage(practiceDriver?.activeDriftSeconds)
-        : 'off';
-    driftCue.hidden = driftFeedback === 'off';
-    driftCue.dataset.stage = driftFeedback;
-    driftCue.textContent = driftFeedback === 'release' ? 'RELEASE' : 'DRIFT';
-    const driveLabel = practiceDriver?.drifting
-      ? 'DRIFTING'
-      : held()
-        ? 'ACCELERATING'
-        : 'RELEASED · BRAKING';
-    const surfaceLabel = practiceDriver?.airborne
-      ? 'AIRBORNE'
-      : state.recovering
-        ? 'RECOVERING'
-        : state.offRoad
-          ? 'OFF ROAD'
-          : state.slip > 0.05
-            ? 'SLIDING'
-            : '';
     inputLabel.textContent = preparing
-      ? held()
-        ? 'HOLDING · GETTING READY'
-        : 'GETTING READY'
+      ? 'Getting ready'
       : racing
         ? race.phase === 'countdown'
-          ? held()
-            ? 'HOLDING · READY TO GO'
-            : 'GET READY · HOLD TO GO'
-          : `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
+          ? 'Countdown'
+          : 'Racing'
         : driver.interrupted
-          ? 'RACE INTERRUPTED · TRY AGAIN'
+          ? 'Race interrupted'
           : state.status === 'finished'
-            ? 'LAP COMPLETE'
-            : practiceDriver
-              ? 'TWO FINGERS OR SPACE + SHIFT TO DRIFT'
-              : 'SPACE OR TOUCH THE TRACK';
+            ? 'Lap complete'
+            : 'Ready';
   }
   function clearPointer(): void {
     const pointers = [...activePointers];
@@ -1062,10 +992,6 @@ export function initializeGame(
     if (carLoadState !== 'ready') return;
     racingViewport = undefined;
     driver.start(timestamp);
-    drivingHint.show(
-      Boolean(practiceDriver),
-      matchMedia('(pointer: coarse)').matches
-    );
     seenPracticeLaps = 0;
     ghostPoints = [];
     ghostOverflow = false;
@@ -1248,6 +1174,7 @@ export function initializeGame(
       )
         return;
       event.preventDefault();
+      if (event.repeat) return;
       if (event.code === 'Space') keyHeld = true;
       else driftKeyHeld = true;
       updateInput(performance.now());
@@ -1454,7 +1381,6 @@ export function initializeGame(
   frameHandle = requestAnimationFrame(animate);
 
   function dispose(): void {
-    drivingHint.hide();
     if (destroyed) return;
     closeSettings();
     interruptRace();
@@ -1473,7 +1399,6 @@ export function initializeGame(
     ghostVisual.dispose();
     scene.remove(ghostVisual.object);
     drivingVfx.dispose();
-    driftCue.remove();
     carVisual.dispose();
     scenery.dispose();
     vegetation.dispose();

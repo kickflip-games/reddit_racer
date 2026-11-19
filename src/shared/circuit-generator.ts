@@ -369,7 +369,12 @@ function generateMotifCandidate(
     shoulder: config.shoulder,
   });
   const version = linked ? LINKED_COURSE_VERSION : GENERATOR_VERSION;
-  const random = randomFor(`${version}|${candidateSeed}|${fingerprint}`);
+  // V4 versions the launch rule only. Keep V3's seed geometry and candidate
+  // selection stable so existing seed shares still reconstruct their exact hash.
+  const geometryVersion = linked ? 'linked-circuits-v3' : version;
+  const random = randomFor(
+    `${geometryVersion}|${candidateSeed}|${fingerprint}`
+  );
   const { controls, motifs } = controlsFor(random, linked);
   const rotation = random() * Math.PI * 2,
     cosine = Math.cos(rotation),

@@ -5,14 +5,22 @@ import {
 } from './scored-runtime.ts';
 import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
-import { createRacingState, stepRace } from './race-rules.ts';
+import {
+  COUNTDOWN_TICKS,
+  createRacingState,
+  prepareRace,
+  raceInputTick,
+  startRace,
+  stepRace,
+} from './race-rules.ts';
 import type { Track } from './track.ts';
 
 export const MAX_REPLAY_TRANSITIONS = 2400;
 
 export type ReplayTransition = { tick: number; held: boolean };
 export type Replay = {
-  schemaVersion: 1;
+  /** V2 includes negative countdown ticks; V1 remains unchanged for saved runs. */
+  schemaVersion: 1 | 2;
   simulationVersion: ScoredRuntime['simulationVersion'];
   handlingVersion: ScoredRuntime['handlingVersion'];
   transitions: ReplayTransition[];
@@ -20,6 +28,9 @@ export type Replay = {
   endTick: number;
 };
 export type ReplayResult = { state: SimulationState; finishTicks: number };
+
+export const replaySchemaForTrack = (track: Track): Replay['schemaVersion'] =>
+  runtimeForTrack(track).simulationVersion === 'fixed-step-v9' ? 2 : 1;
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -45,8 +56,13 @@ export function validateReplay(value: unknown): Replay {
   ) {
     throw new Error('Replay has missing or unknown fields');
   }
-  if (value.schemaVersion !== 1) throw new Error('Replay version mismatch');
   const runtime = scoredRuntime(value.simulationVersion, value.handlingVersion);
+  const expectedSchema = runtime.simulationVersion === 'fixed-step-v9' ? 2 : 1;
+  if (
+    (value.schemaVersion !== 1 && value.schemaVersion !== 2) ||
+    value.schemaVersion !== expectedSchema
+  )
+    throw new Error('Replay version mismatch');
   const endTick = value.endTick;
   if (
     typeof endTick !== 'number' ||
@@ -62,7 +78,8 @@ export function validateReplay(value: unknown): Replay {
   ) {
     throw new Error('Replay transition limit exceeded');
   }
-  let previousTick = -1;
+  const firstTick = value.schemaVersion === 2 ? -COUNTDOWN_TICKS : 0;
+  let previousTick = firstTick - 1;
   let previousHeld = false;
   const transitions = value.transitions.map(
     (transition: unknown): ReplayTransition => {
@@ -73,7 +90,7 @@ export function validateReplay(value: unknown): Replay {
       if (
         typeof tick !== 'number' ||
         !Number.isInteger(tick) ||
-        tick < 0 ||
+        tick < firstTick ||
         tick <= previousTick ||
         tick >= endTick ||
         typeof held !== 'boolean'
@@ -90,7 +107,7 @@ export function validateReplay(value: unknown): Replay {
     }
   );
   return {
-    schemaVersion: 1,
+    schemaVersion: value.schemaVersion,
     simulationVersion: runtime.simulationVersion,
     handlingVersion: runtime.handlingVersion,
     transitions,
@@ -107,12 +124,18 @@ export function runReplay(track: Track, value: unknown): ReplayResult {
     replay.handlingVersion !== expected.handlingVersion
   )
     throw new Error('Replay does not match the track runtime');
-  let race = createRacingState(track);
+  let race =
+    replay.schemaVersion === 2
+      ? startRace(prepareRace(track))
+      : createRacingState(track);
   let held = false;
   let transitionIndex = 0;
-  while (race.simulation.tick < replay.endTick && race.phase === 'racing') {
+  while (
+    race.simulation.tick < replay.endTick &&
+    (race.phase === 'countdown' || race.phase === 'racing')
+  ) {
     const next = replay.transitions[transitionIndex];
-    if (next && next.tick === race.simulation.tick) {
+    if (next && next.tick === raceInputTick(race)) {
       held = next.held;
       transitionIndex++;
     }

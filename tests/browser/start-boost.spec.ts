@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { START_BOOST_SPEED } from '../../src/shared/start-boost';
+import { COUNTDOWN_LAUNCH_SPEED } from '../../src/shared/countdown-launch';
 import { waitForSceneAssets } from './scene-ready';
 
 type Launch = {
@@ -66,23 +66,20 @@ for (const entry of ['/game.html', '/game.html?practice=1']) {
       if (reduced) await page.emulateMedia({ reducedMotion: 'reduce' });
       await boot(page, entry);
       const input = await controls(page, isMobile);
-      await page.clock.runFor(3100);
-      await expect(page.locator('#race-countdown')).toHaveText('GO!');
+      await page.clock.runFor(2600);
+      await expect(page.locator('#race-countdown')).toHaveText('1');
       const waiting = await state(page);
-      expect(waiting.tick).toBeGreaterThan(0);
-      expect(waiting.tick).toBeLessThanOrEqual(36);
+      expect(waiting.tick).toBe(0);
       expect(waiting.speed).toBe(0);
       expect(waiting.distance).toBe(0);
       await input.down();
-      await page.clock.runFor(50);
+      await page.clock.runFor(550);
       const launched = await state(page);
       expect(launched.awarded).toBe(true);
-      expect(launched.speed).toBeGreaterThan(START_BOOST_SPEED);
-      expect(launched.speed).toBeLessThan(START_BOOST_SPEED + 2);
-      await expect(page.locator('#race-countdown')).toHaveText(
-        'Perfect start!'
-      );
-      await page.screenshot({ path: info.outputPath('perfect-start.png') });
+      expect(launched.speed).toBeGreaterThan(COUNTDOWN_LAUNCH_SPEED);
+      expect(launched.speed).toBeLessThan(COUNTDOWN_LAUNCH_SPEED + 2);
+      await expect(page.locator('#race-countdown')).toHaveText('GO!');
+      await page.screenshot({ path: info.outputPath('timed-launch.png') });
       await input.up();
       await page
         .getByRole('button', { name: 'Restart race', exact: true })
@@ -130,4 +127,79 @@ test('early held and late starts accelerate normally without a bonus or penalty'
     'Perfect start!'
   );
   await input.up();
+});
+
+test('fresh release/repress qualifies; repeated early input and a new press at GO do not', async ({
+  page,
+  isMobile,
+}) => {
+  await boot(page);
+  const input = await controls(page, isMobile);
+  await input.down();
+  await page.clock.runFor(2300);
+  if (!isMobile) await page.keyboard.down('Space');
+  await page.clock.runFor(850);
+  expect((await state(page)).awarded).toBe(false);
+  await input.up();
+  await page.getByRole('button', { name: 'Restart race', exact: true }).click();
+  await input.down();
+  await page.clock.runFor(2200);
+  await input.up();
+  await page.clock.runFor(100);
+  await input.down();
+  await page.clock.runFor(850);
+  expect((await state(page)).awarded).toBe(true);
+  await input.up();
+  await page.getByRole('button', { name: 'Restart race', exact: true }).click();
+  await page.clock.runFor(3050);
+  await input.down();
+  await page.clock.runFor(100);
+  expect((await state(page)).awarded).toBe(false);
+  expect((await state(page)).speed).toBeGreaterThan(0);
+  await input.up();
+});
+
+test('a repeated key or added held touch cannot turn an early hold into a fresh launch press', async ({
+  page,
+  isMobile,
+}) => {
+  await boot(page, '/game.html?practice=1');
+  if (isMobile) {
+    const session = await page.context().newCDPSession(page);
+    const box = (await page.locator('#race-canvas').boundingBox())!;
+    const first = {
+      id: 1,
+      x: box.x + box.width * 0.3,
+      y: box.y + box.height * 0.6,
+    };
+    const second = {
+      id: 2,
+      x: box.x + box.width * 0.6,
+      y: box.y + box.height * 0.6,
+    };
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [first],
+    });
+    await page.clock.runFor(2200);
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [first, second],
+    });
+    await page.clock.runFor(950);
+    expect((await state(page)).awarded).toBe(false);
+    expect((await state(page)).speed).toBeGreaterThan(0);
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+  } else {
+    await page.keyboard.down('Space');
+    await page.clock.runFor(2200);
+    await page.keyboard.down('Space');
+    await page.clock.runFor(950);
+    expect((await state(page)).awarded).toBe(false);
+    expect((await state(page)).speed).toBeGreaterThan(0);
+    await page.keyboard.up('Space');
+  }
 });

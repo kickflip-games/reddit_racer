@@ -9,7 +9,6 @@
     <meta name="theme-color" content="#183b35" />
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
-    <link rel="stylesheet" href="driving-hint.css" />
     <title>The Daily Lap</title>
   </head>
   <body>
@@ -18,6 +17,7 @@
         id="race-canvas"
         tabindex="0"
         aria-label="Race circuit. Hold Space or touch to accelerate; release to brake."
+        aria-describedby="race-controls"
       ></canvas>
       <div id="race-hud" class="race-hud">
         <header class="hud">
@@ -255,10 +255,10 @@
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>
       </dialog>
-      <p id="driving-hint" role="status" hidden>
-        Automatic steering · Hold to go · Release before tight turns
+      <p id="race-controls" class="visually-hidden">
+        Automatic steering. Hold Space or touch the track to accelerate; release
+        to brake.
       </p>
-      <p id="driving-cue" aria-live="off" hidden></p>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
           <summary aria-label="Settings" title="Settings">Settings</summary>

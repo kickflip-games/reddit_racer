@@ -279,7 +279,7 @@ async function boot(
         shareRaw === undefined ? undefined : parseTrackShare(shareRaw);
       if (shared) wordRequest = { input: shared.seed };
       const course = wordRequest
-        ? await generateWordPracticeCourse(wordRequest.input)
+        ? await generateWordPracticeCourse(wordRequest.input, shared?.generator)
         : seed === undefined
           ? await generateRandomWordPracticeCourse(lastPracticeTrackHash)
           : import.meta.env.DEV

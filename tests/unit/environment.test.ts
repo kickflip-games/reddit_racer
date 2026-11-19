@@ -18,6 +18,22 @@ void test('terrain and contact shadows use bounded buffers and preserve road/run
   assert.equal(ground.material.transparent, false);
   assert.equal(ground.material.lights, false);
   assert.match(ground.material.fragmentShader, /float band/);
+  assert.ok(Number.isFinite(ground.material.uniforms.uSeedPhase?.value));
+  const lightLayout = generateSceneryLayout(track, { quality: 'light' });
+  const lightGround = createEnvironment(
+    track,
+    lightLayout.props,
+    lightLayout
+  ).getObjectByName('diorama-terrain');
+  assert.ok(lightGround instanceof THREE.Mesh);
+  assert.deepEqual(
+    lightGround.geometry.getAttribute('color').array,
+    ground.geometry.getAttribute('color').array
+  );
+  assert.deepEqual(
+    lightGround.geometry.getAttribute('position').array,
+    ground.geometry.getAttribute('position').array
+  );
   assert.equal(generateSceneryLayout(track).options.lighting, 'toon');
   const position = ground.geometry.getAttribute('position');
   assert.ok(position.count <= 65 * 65);

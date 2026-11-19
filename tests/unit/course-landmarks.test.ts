@@ -15,6 +15,20 @@ test('consecutive course seeds retain four scenic pockets within bounded safe sc
     const before = await hashTrack(track);
     const layout = generateSceneryLayout(track);
     const field = createRoadField(track);
+    assert.ok(layout.props.length <= 8, `${seed}: sparse Kenney tree budget`);
+    const treesPerSector = [0, 0, 0, 0];
+    for (const p of layout.props) {
+      const sector = Math.min(
+        3,
+        Math.floor((field.sample(p.x, p.z).s / track.totalLength) * 4)
+      );
+      treesPerSector[sector] = (treesPerSector[sector] ?? 0) + 1;
+      assert.ok(sceneryClearance(track, p.x, p.z, p.radius, field));
+      assert.ok(
+        layout.allPlants.some((plant) => plant.x === p.x && plant.z === p.z)
+      );
+    }
+    assert.ok(treesPerSector.every((count) => count <= 2));
     assert.ok(
       layout.props.every((p) => p.kind === 'treeSmall'),
       `${seed}: no artificial meadow clutter`

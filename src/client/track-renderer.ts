@@ -251,22 +251,22 @@ export function createTrackRenderer(
       track,
       { side: -1, offset: 0 },
       { side: 1, offset: 0 },
-      '#293c50',
+      '#363b40',
       0.03,
       jumps
     ),
     roadStrip(
       track,
-      { side: -1, offset: 0.18 },
-      { side: -1, offset: 0.32 },
+      { side: -1, offset: 0.16 },
+      { side: -1, offset: 0.38 },
       '#f6eed6',
       0.04,
       jumps
     ),
     roadStrip(
       track,
-      { side: 1, offset: -0.32 },
-      { side: 1, offset: -0.18 },
+      { side: 1, offset: -0.38 },
+      { side: 1, offset: -0.16 },
       '#f6eed6',
       0.04,
       jumps

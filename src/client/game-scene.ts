@@ -296,14 +296,12 @@ export function initializeGame(
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
   const scene = new THREE.Scene();
-  // The uniformly lit field receives no shadows; match it with the clear color
-  // to avoid a redundant full-screen ground draw on every racing frame.
-  scene.background = new THREE.Color('#62ab73');
   const jumps = track.jumps ?? [];
   const countryside = generateSceneryLayout(track, {
     ...readSceneryOptions(),
     jumps,
   });
+  scene.background = new THREE.Color(countryside.composition.palette.base);
   scene.add(createEnvironment(track, countryside.props, countryside));
   const vegetation = createVegetation(countryside);
   scene.add(vegetation.object);

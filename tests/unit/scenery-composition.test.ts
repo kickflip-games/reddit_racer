@@ -8,13 +8,16 @@ import { sampleTrack } from '../../src/shared/track.ts';
 
 void test('canonical seeds choose all three green compositions reproducibly', () => {
   const names = new Set<string>();
+  const palettes = new Set<string>();
   for (let i = 0; i < 30; i++) {
     const seed = `green-${i}`;
     const profile = courseComposition(seed);
     assert.deepEqual(courseComposition(seed), profile);
     names.add(profile.name);
+    palettes.add(JSON.stringify(profile.palette));
   }
   assert.equal(names.size, 3);
+  assert.equal(palettes.size, 3);
 });
 void test('quality changes only thin detail, preserving clustered landmarks and seeded terrain', () => {
   const track = generateElevatedCircuit('green-2').track;

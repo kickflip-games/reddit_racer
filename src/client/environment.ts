@@ -35,10 +35,11 @@ export function createEnvironment(
     colors: number[] = [];
   const field = createRoadField(track),
     phase = (sceneryHash(layout.seed) / 4294967296) * Math.PI * 2;
-  const base = new THREE.Color('#4eaa65'),
-    light = new THREE.Color('#91c976'),
-    dark = new THREE.Color('#2d7863'),
-    soil = new THREE.Color('#c7ae79');
+  const palette = layout.composition.palette;
+  const base = new THREE.Color(palette.base),
+    light = new THREE.Color(palette.light),
+    dark = new THREE.Color(palette.shade),
+    soil = new THREE.Color(palette.soil);
   for (let i = 0; i < position.count; i++) {
     const x = position.getX(i),
       z = position.getZ(i);
@@ -66,17 +67,18 @@ export function createEnvironment(
   const ground = new THREE.Mesh(
     geometry,
     new THREE.ShaderMaterial({
+      uniforms: { uSeedPhase: { value: phase } },
       vertexColors: true,
       vertexShader: `varying vec3 vTint; varying vec3 vNormal; varying vec2 vWorld;
       void main() {
         vTint = color; vNormal = normal; vWorld = position.xz;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }`,
-      fragmentShader: `varying vec3 vTint; varying vec3 vNormal; varying vec2 vWorld;
+      fragmentShader: `uniform float uSeedPhase; varying vec3 vTint; varying vec3 vNormal; varying vec2 vWorld;
       void main() {
         float light = dot(normalize(vNormal), normalize(vec3(-30.0,80.0,30.0)));
         float band = light < 0.45 ? 0.66 : (light < 0.8 ? 0.84 : 1.0);
-        float field = sin(vWorld.x * 0.028 + sin(vWorld.y * 0.019)) * cos(vWorld.y * 0.031);
+        float field = sin(vWorld.x * 0.028 + sin(vWorld.y * 0.019 + uSeedPhase) + uSeedPhase) * cos(vWorld.y * 0.031 - uSeedPhase);
         float patchMask = smoothstep(-0.1, 0.04, field);
         vec3 tint = mix(vTint * vec3(0.83,0.94,1.02), vTint * vec3(1.04,1.04,0.91), patchMask);
         gl_FragColor = vec4(tint * band, 1.0);

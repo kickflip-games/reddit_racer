@@ -961,6 +961,7 @@ export function initializeGame(
   function applyVerification(id: number, result: VerificationOutcome): void {
     if (destroyed || id !== attemptId) return;
     verificationStatus(result.status, result.message);
+    card.dataset.outcome = result.status;
     cardCopy.textContent = result.status === 'verified' ? '' : result.message;
     if (result.status === 'verified' && result.finishTicks !== undefined) {
       showFinishTime(result.finishTicks);
@@ -980,6 +981,7 @@ export function initializeGame(
     release();
     const state = driver.state;
     card.dataset.result = 'false';
+    card.dataset.outcome = '';
     element('finish-time').hidden = true;
     element('practice-result').hidden = true;
     if (driver.interrupted) {
@@ -995,6 +997,7 @@ export function initializeGame(
       cardTitle.textContent = 'Race interrupted.';
       cardCopy.textContent = '';
       element('card-kicker').textContent = '';
+      card.dataset.outcome = 'interrupted';
     } else {
       audio.finish(attemptId);
       const finishTicks = state.finishedTick ?? state.tick;
@@ -1017,8 +1020,9 @@ export function initializeGame(
       if (attemptMode === 'ranked' && options.onFinish) {
         const id = attemptId;
         verificationStatus('pending', 'Saving your time…');
+        card.dataset.outcome = 'pending';
         cardCopy.textContent = 'Saving your time…';
-        element('card-kicker').textContent = '';
+        element('card-kicker').textContent = 'Verifying lap';
         const result = {
           attemptId: id,
           replay: rankedDriver.replay,
@@ -1042,7 +1046,8 @@ export function initializeGame(
           finishTicks
         );
         card.dataset.best = String(result.isNewBest);
-        element('card-kicker').textContent = '';
+        element('card-kicker').textContent = 'Practice lap';
+        card.dataset.outcome = 'practice';
         options.onResults?.({ attemptId, mode: attemptMode });
       }
     }
@@ -1068,6 +1073,7 @@ export function initializeGame(
     ghostVisual.object.visible = false;
     lapNoticeUntil = 0;
     card.dataset.result = 'false';
+    card.dataset.outcome = '';
     card.dataset.best = 'false';
     element('finish-time').hidden = true;
     element('practice-result').hidden = true;

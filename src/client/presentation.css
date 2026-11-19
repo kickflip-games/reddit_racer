@@ -1,0 +1,200 @@
+/* Expanded home and results share one flat racing placard. Race HUD/camera stay unchanged. */
+#race .race-card,
+#race .race-card:has(#start-button:not([hidden])),
+#race .race-card[data-result='true'] {
+  inset: auto auto var(--footer-clearance) 16px;
+  transform: none;
+  width: min(360px, calc(100% - 32px));
+  max-height: calc(
+    100% - var(--hud-bottom, 64px) - var(--footer-clearance) - 14px
+  );
+  padding: var(--panel-space);
+  background: var(--paper);
+  color: var(--ink);
+  border: 0;
+  border-top: 3px solid var(--accent);
+  border-radius: 0;
+  box-shadow: none;
+}
+#race:has(.race-card:not([hidden]))::after {
+  background: none;
+}
+#race[data-phase='ready'] #race-hud .timing,
+#race[data-phase='ready']:has(#start-button:not([hidden])) .race-brand {
+  display: none;
+}
+#race .race-card .start-identity {
+  margin: 0 0 10px;
+}
+#home-mode {
+  color: var(--accent);
+  font-family: var(--display-font);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1.25;
+  text-transform: uppercase;
+  margin: 0 0 8px;
+}
+#race .start-wordmark {
+  margin: 0;
+  font-family: var(--display-font);
+  font-size: 44px;
+  font-weight: 900;
+  font-style: normal;
+  line-height: 0.95;
+  letter-spacing: -1.8px;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+#race .start-wordmark > span {
+  display: block;
+  padding: 0;
+}
+#race .start-wordmark i {
+  color: var(--accent);
+}
+#race .race-card .challenge-heading {
+  margin: 0 0 10px;
+  font-family: var(--time-font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+#race .race-card #card-copy {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+#race .race-card .start-actions button {
+  min-height: 52px;
+  margin: 0;
+  background: var(--accent);
+  color: var(--paper);
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--display-font);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+#race .race-card .start-actions button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.home-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: 0 24px;
+  margin-top: 6px;
+}
+#race .race-card .home-secondary button.secondary-button {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 8px 0;
+  background: none;
+  color: var(--ink);
+  border: 0;
+  border-radius: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+#race .race-card .home-secondary button:hover {
+  color: var(--accent);
+}
+#race .race-card .daily-history-preview {
+  margin: 0;
+  padding: 0;
+}
+#race .race-card[data-result='true'] {
+  animation: finish-reveal 160ms ease-out;
+}
+#race .race-card[data-result='true'] .finish-time {
+  font-family: var(--time-font);
+  font-size: clamp(48px, 14.8vw, 76px);
+  font-weight: 800;
+  letter-spacing: normal;
+  line-height: 1.05;
+  white-space: nowrap;
+  margin: 8px 0 12px;
+  gap: 8px;
+}
+#race .race-card[data-result='true'] .finish-time small {
+  font-size: 18px;
+}
+#race .race-card[data-result='true'] .eyebrow {
+  font-family: var(--display-font);
+  font-size: 13px;
+  font-weight: 900;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px;
+}
+#race .race-card[data-result='true'] .result-summary {
+  font-size: 13px;
+  margin: 8px 0 14px;
+}
+#race .race-card[data-result='true'] .leaderboard {
+  background: none;
+  border: 0;
+  border-top: 1px solid #292d3226;
+  border-radius: 0;
+  margin: 12px 0 0;
+}
+#race .race-card[data-result='true'] .practice-result {
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+@keyframes finish-reveal {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+#race[data-reduced-motion='true'] .race-card {
+  animation: none;
+}
+@media (max-width: 360px), (max-height: 650px) {
+  #race .race-card,
+  #race .race-card:has(#start-button:not([hidden])),
+  #race .race-card[data-result='true'] {
+    --panel-space: 14px;
+  }
+  #race .start-wordmark {
+    font-size: 30px;
+    letter-spacing: -1px;
+  }
+  #race .start-wordmark > span {
+    display: inline;
+  }
+  #race .race-card .start-identity {
+    margin-bottom: 8px;
+  }
+}
+@media (max-height: 480px) and (min-width: 481px) {
+  #race .race-card,
+  #race .race-card:has(#start-button:not([hidden])),
+  #race .race-card[data-result='true'] {
+    width: 300px;
+    max-height: calc(100% - var(--footer-clearance) - 14px);
+  }
+  #race .race-card[data-result='true'] .finish-time {
+    font-size: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #race .race-card {
+    animation: none !important;
+  }
+}

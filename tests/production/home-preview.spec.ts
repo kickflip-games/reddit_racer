@@ -62,6 +62,13 @@ for (const [name, generated] of [
     const audio = await race.getAttribute('data-audio-state');
     await page.clock.runFor(1600);
     const moved = await read();
+    const card = await page.locator('#card').boundingBox();
+    if (!card) throw new Error('Missing home placard');
+    expect(moved.screenX).toBeGreaterThan(10);
+    expect(moved.screenY).toBeGreaterThan(10);
+    expect(
+      moved.screenX > card.x + card.width + 8 || moved.screenY < card.y - 8
+    ).toBe(true);
     expect(moved.distance).toBeGreaterThan(initial.distance + 15);
     const actual = sampleTrack(
       record.track,

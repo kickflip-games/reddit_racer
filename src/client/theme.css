@@ -8,6 +8,10 @@
   --asphalt: #363b40;
   --radius: 4px;
   --shadow: 0 16px 40px #292d322b;
+  --display-font:
+    'Avenir Next Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --time-font: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  --panel-space: 20px;
   font-family:
     'Avenir Next',
     'Trebuchet MS',

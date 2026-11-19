@@ -327,7 +327,7 @@ test('New track changes unranked geometry and returning Daily restores the immut
     record.trackHash
   );
   await openPracticeModes(page);
-  await expect(page.locator('#practice-button')).toHaveText('Other tracks');
+  await expect(page.locator('#practice-button')).toHaveText('Practice tracks');
   await page.locator('#practice-button').click();
   await ready(page);
   const practiceHash = await page

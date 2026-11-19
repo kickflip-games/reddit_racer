@@ -434,7 +434,7 @@ test('signed-out practice can finish without submitting a score', async ({
     'practice only'
   );
   await driveFast(page);
-  await expect(page.locator('#card-kicker')).toHaveText('');
+  await expect(page.locator('#card-kicker')).toHaveText('Practice lap');
   await page.reload();
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(

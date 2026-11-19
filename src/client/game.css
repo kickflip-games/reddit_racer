@@ -1142,22 +1142,19 @@ select:focus-visible {
 }
 
 #verified-leader:not([hidden]) {
-  display: inline-block;
-  padding: 6px 12px;
-  border: 2px solid #d49d38;
-  border-radius: 16px;
-  background: #fff0b8;
-  color: #493914;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--display-font);
+  font-style: normal;
+  font-size: 16px;
   font-weight: 900;
-  animation: leader-bloom 450ms ease-out;
-}
-@keyframes leader-bloom {
-  from {
-    transform: scale(0.94);
-  }
-  to {
-    transform: scale(1);
-  }
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: none;
 }
 #race[data-reduced-motion='true'] #verified-leader {
   animation: none;

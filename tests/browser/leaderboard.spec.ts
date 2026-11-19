@@ -206,7 +206,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#start-label')).toHaveText('Race');
+  await expect(page.locator('#start-label')).toHaveText("Today's race");
   await waitForSceneAssets(page);
   await page.clock.pauseAt(new Date('2031-01-01T00:01:00Z'));
   expect(boardCalls).toBe(0);
@@ -227,7 +227,7 @@ test('a real verified lap displays server PB and tied ranks, survives a board fa
     'data-state',
     'ready'
   );
-  await expect(page.locator('#card-kicker')).toHaveText('Time saved');
+  await expect(page.locator('#card-kicker')).toHaveText('Personal best');
   await expect(page.locator('#card-title')).toBeFocused();
   await page.keyboard.press('Space');
   expect(starts).toBe(1);
@@ -310,7 +310,7 @@ test('presentation fixture keeps responsive results and native standings accessi
   await page.clock.install({ time: new Date('2031-01-01T00:00:00Z') });
   await page.goto('/game.html?daily=1');
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
-  await expect(page.locator('#start-label')).toHaveText('Race');
+  await expect(page.locator('#start-label')).toHaveText("Today's race");
   await page.screenshot({
     path: `test-results/quick-start-mock-${test.info().project.name}.png`,
   });
@@ -630,84 +630,125 @@ test('a stored slower-run outcome never claims a new best from a newer current P
   );
 });
 
-test('server-confirmed joint daily lead celebrates once and clears on retry', async ({
-  page,
-}) => {
-  const record = await dailyRecord();
-  const view = personalBestBoard(record);
-  const self = {
-    username: 'DailyDriver',
-    isSelf: true,
-    rank: 1,
-    finishTicks: replay.endTick,
-  };
-  view.me = self;
-  view.top = [self, { ...self, username: 'Other', isSelf: false }];
-  view.nearby = view.top;
-  await page.route('**/api/trpc/dailyChallenge*', (route) =>
-    route.fulfill({
-      json: { result: { data: dailyChallengeView(record, view.serverNowMs) } },
-    })
-  );
-  await page.route('**/api/trpc/getLeaderboard*', (route) =>
-    route.fulfill({ json: { result: { data: view } } })
-  );
-  await page.goto('/game.html?daily=1');
-  await waitForSceneAssets(page);
-  await page.evaluate(
-    async ({ challenge, finishTicks, sessionId, serverNowMs }) => {
-      const url = '/leaderboard-client.ts';
-      const { createLeaderboardController } = await import(url);
-      const controller = createLeaderboardController(challenge, () => {
-        const root = document.documentElement;
-        root.dataset.celebrations = String(
-          Number(root.dataset.celebrations ?? 0) + 1
-        );
-      });
-      controller.onAttemptStart({ attemptId: 1 });
-      controller.recordVerified(1, {
-        sessionId,
-        challengeId: challenge.id,
-        challengeHash: challenge.challengeHash,
-        finishTicks,
-        simulationHz: 120,
-        finishTimeMs: (finishTicks * 1000) / 120,
-        verifiedAtMs: serverNowMs,
-      });
-      controller.onResults({ attemptId: 1, mode: 'ranked' });
-      document
-        .getElementById('retry-button')
-        ?.addEventListener('click', () =>
-          controller.onAttemptStart({ attemptId: 2 })
-        );
-      const retry = document.getElementById('retry-button');
-      if (retry) retry.hidden = false;
-    },
-    {
-      challenge: toPublicDailyChallenge(record),
+for (const joint of [false, true]) {
+  test(`server-confirmed ${joint ? 'joint' : 'solo'} daily lead uses flat typography, celebrates once and clears on retry`, async ({
+    page,
+  }) => {
+    const record = await dailyRecord();
+    const view = personalBestBoard(record);
+    const self = {
+      username: 'DailyDriver',
+      isSelf: true,
+      rank: 1,
       finishTicks: replay.endTick,
-      sessionId,
-      serverNowMs: view.serverNowMs,
-    }
-  );
-  await expect(page.locator('#verified-leader')).toHaveText(
-    'Joint daily leader!'
-  );
-  await expect(page.locator('#verified-leader')).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('data-celebrations', '1');
-  await page.locator('#leaderboard-title').click();
-  await page.locator('#leaderboard-refresh').click();
-  await expect(page.locator('#leaderboard')).toHaveAttribute(
-    'data-state',
-    'ready'
-  );
-  await expect(page.locator('html')).toHaveAttribute('data-celebrations', '1');
-  await page.screenshot({
-    path: `/tmp/racer-readable-evidence/verified-leader-${test.info().project.name}.png`,
+    };
+    view.me = self;
+    view.top = joint
+      ? [self, { ...self, username: 'Other', isSelf: false }]
+      : [self];
+    view.nearby = view.top;
+    await page.route('**/api/trpc/dailyChallenge*', (route) =>
+      route.fulfill({
+        json: {
+          result: { data: dailyChallengeView(record, view.serverNowMs) },
+        },
+      })
+    );
+    await page.route('**/api/trpc/getLeaderboard*', (route) =>
+      route.fulfill({ json: { result: { data: view } } })
+    );
+    await page.goto('/game.html?daily=1');
+    await waitForSceneAssets(page);
+    await page.evaluate(
+      async ({ challenge, finishTicks, sessionId, serverNowMs }) => {
+        const url = '/leaderboard-client.ts';
+        const { createLeaderboardController } = await import(url);
+        const controller = createLeaderboardController(challenge, () => {
+          const root = document.documentElement;
+          root.dataset.celebrations = String(
+            Number(root.dataset.celebrations ?? 0) + 1
+          );
+        });
+        controller.onAttemptStart({ attemptId: 1 });
+        controller.recordVerified(1, {
+          sessionId,
+          challengeId: challenge.id,
+          challengeHash: challenge.challengeHash,
+          finishTicks,
+          simulationHz: 120,
+          finishTimeMs: (finishTicks * 1000) / 120,
+          verifiedAtMs: serverNowMs,
+        });
+        controller.onResults({ attemptId: 1, mode: 'ranked' });
+        document
+          .getElementById('retry-button')
+          ?.addEventListener('click', () =>
+            controller.onAttemptStart({ attemptId: 2 })
+          );
+        const retry = document.getElementById('retry-button');
+        if (retry) retry.hidden = false;
+        const start = document.getElementById('start-button');
+        if (start) start.hidden = true;
+        const card = document.getElementById('card');
+        if (card) {
+          card.dataset.result = 'true';
+          card.dataset.outcome = 'verified';
+        }
+        const time = document.getElementById('finish-time');
+        if (time) time.hidden = false;
+        const value = document.getElementById('finish-value');
+        if (value) value.textContent = (finishTicks / 120).toFixed(3);
+      },
+      {
+        challenge: toPublicDailyChallenge(record),
+        finishTicks: replay.endTick,
+        sessionId,
+        serverNowMs: view.serverNowMs,
+      }
+    );
+    await expect(page.locator('#verified-leader')).toHaveText(
+      joint ? 'Joint daily leader!' : 'Daily leader!'
+    );
+    await expect(page.locator('#verified-leader')).toBeVisible();
+    await expect(page.locator('#verified-leader')).toHaveCSS(
+      'border-radius',
+      '0px'
+    );
+    await expect(page.locator('#verified-leader')).toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0)'
+    );
+    await expect(page.locator('#verified-leader')).toHaveCSS(
+      'animation-name',
+      'none'
+    );
+    await expect(page.locator('#verified-leader')).toHaveCSS(
+      'font-style',
+      'normal'
+    );
+    await expect(page.locator('html')).toHaveAttribute(
+      'data-celebrations',
+      '1'
+    );
+    await page.locator('#leaderboard-title').click();
+    await page.locator('#leaderboard-refresh').click();
+    await expect(page.locator('#leaderboard')).toHaveAttribute(
+      'data-state',
+      'ready'
+    );
+    await expect(page.locator('html')).toHaveAttribute(
+      'data-celebrations',
+      '1'
+    );
+    await page.screenshot({
+      path: test
+        .info()
+        .outputPath(`verified-${joint ? 'joint' : 'solo'}-leader.png`),
+    });
+    await page.locator('#retry-button').click();
+    await expect(page.locator('#verified-leader')).toBeHidden();
   });
-  await page.locator('#retry-button').click();
-  await expect(page.locator('#verified-leader')).toBeHidden();
-});
+}
 
 test('saved receipt stays saved when the standings have not caught up', async ({
   page,

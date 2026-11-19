@@ -23,6 +23,7 @@ import { createRaceCamera } from './race-camera';
 import { createCircuitMinimap } from './circuit-minimap';
 import { createCarVisual } from './car-visual';
 import { createLandingFeedback } from './landing-feedback';
+import { createHomePreview } from './home-preview';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
@@ -345,6 +346,8 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
+  const homePreview = createHomePreview(track);
+  const previewScreenPoint = new THREE.Vector3();
   const landingFeedback = createLandingFeedback();
   // The intended Kenney model is required. Never race with placeholder art.
   carVisual.object.visible = false;
@@ -434,6 +437,8 @@ export function initializeGame(
     raceRoot.dataset.reducedMotion = String(snapshot.reducedMotion);
     raceRoot.dataset.motionPreference = snapshot.motion;
     if (snapshot.reducedMotion) drivingVfx.reset();
+    if (snapshot.reducedMotion && driver.raceState.phase === 'ready')
+      needsCameraReset = true;
     viewportDirty = true;
     if (sceneReady) {
       sceneDirty = true;
@@ -699,6 +704,70 @@ export function initializeGame(
     feedback();
   }
   function positionCar(deltaSeconds = 0): void {
+    // The same model/renderer provides the home demo. Never advance or feed
+    // preview input into either authoritative driver, audio, replay or effects.
+    if (
+      driver.raceState.phase === 'ready' &&
+      !preparing &&
+      !start.hidden &&
+      carLoadState === 'ready'
+    ) {
+      const mode = preferences.snapshot.reducedMotion
+        ? 'static'
+        : document.hidden ||
+            !viewportUsable ||
+            document.querySelector('dialog[open]')
+          ? 'paused'
+          : 'playing';
+      const pose = homePreview.update(deltaSeconds, mode);
+      const changed = carVisual.update({
+        x: pose.x,
+        z: pose.z,
+        elevation: pose.elevation,
+        surfaceHeight: pose.elevation,
+        heading: pose.heading,
+        jumpPitch: -Math.atan(pose.grade),
+        distance: pose.distance,
+        speed: pose.speed,
+        acceleration: 0,
+        lateralAcceleration: 0,
+        curvature: 0,
+        slip: 0,
+        held: false,
+        racing: false,
+        reducedMotion: preferences.snapshot.reducedMotion,
+        deltaSeconds,
+      });
+      if (viewportDirty) refreshCameraViewport();
+      const cameraChanged = raceCamera.update(
+        {
+          distance: pose.distance,
+          lateralOffset: 0,
+          heading: pose.heading,
+          speed: pose.speed,
+          elevation: pose.elevation,
+        },
+        {
+          mode: 'overview',
+          deltaSeconds,
+          reset: needsCameraReset,
+          reducedMotion: preferences.snapshot.reducedMotion,
+        }
+      );
+      needsCameraReset = false;
+      previewScreenPoint
+        .set(pose.x, pose.elevation + 0.6, pose.z)
+        .project(camera);
+      raceRoot.dataset.preview = mode;
+      raceRoot.dataset.previewPose = JSON.stringify({
+        ...pose,
+        screenX: ((previewScreenPoint.x + 1) * canvas.clientWidth) / 2,
+        screenY: ((1 - previewScreenPoint.y) * canvas.clientHeight) / 2,
+      });
+      sceneDirty = sceneDirty || changed || cameraChanged;
+      return;
+    }
+    raceRoot.dataset.preview = 'off';
     const current = driver.state;
     const previous = driver.previousState;
     const alpha = driver.alpha;
@@ -1003,6 +1072,7 @@ export function initializeGame(
     element('finish-time').hidden = true;
     element('practice-result').hidden = true;
     carVisual.reset();
+    homePreview.reset();
     drivingVfx.reset();
     needsCameraReset = true;
     racing = true;
@@ -1224,6 +1294,7 @@ export function initializeGame(
   document.addEventListener(
     'visibilitychange',
     () => {
+      previousFrameTime = undefined;
       if (document.hidden) interruptRace();
       else {
         audio.setForeground(true);

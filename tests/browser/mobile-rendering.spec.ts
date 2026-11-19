@@ -245,7 +245,7 @@ test('emulated DPR1/2/3 cap correctly and same-CSS raw DPR changes redraw a paus
   });
 });
 
-test('settled ready scenes stop native drawing while countdown and short real driving keep every animation frame visible', async ({
+test('home preview draws while moving, reduced-motion home settles, and real driving retains every frame', async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -261,17 +261,22 @@ test('settled ready scenes stop native drawing while countdown and short real dr
   await setRaceSettingsOpen(page, false);
   const before = await counters(page);
   await page.clock.runFor(300);
-  const idle = await counters(page);
-  expect(idle.frames - before.frames).toBeGreaterThanOrEqual(10);
-  expect(idle.clears).toBe(before.clears);
-  expect(idle.draws).toBe(before.draws);
+  const moving = await counters(page);
+  expect(moving.frames - before.frames).toBeGreaterThanOrEqual(10);
+  expect(moving.draws).toBeGreaterThan(before.draws);
   await setRaceSettingsOpen(page, true);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect
     .poll(async () => (await counters(page)).clears)
-    .toBeGreaterThan(idle.clears);
+    .toBeGreaterThan(moving.clears);
   const preference = await counters(page);
   await setRaceSettingsOpen(page, false);
+  await page.clock.runFor(300);
+  const settled = await counters(page);
+  await page.clock.runFor(300);
+  const idle = await counters(page);
+  expect(idle.clears).toBe(settled.clears);
+  expect(idle.draws).toBe(settled.draws);
   await page.setViewportSize({ width: 381, height: 700 });
   await expect
     .poll(async () => (await counters(page)).clears)

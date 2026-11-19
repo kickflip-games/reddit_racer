@@ -118,11 +118,12 @@ async function serviceError(route: Route): Promise<void> {
 }
 
 async function driveFast(page: Page): Promise<void> {
+  // The clock is paused: anchor the tape to the native countdown start, then
+  // allow the next RAF to cross green. A held-key repeat must not flush input.
+  const epoch = (await page.evaluate(() => performance.now())) + 3000;
   await page.keyboard.down('Space');
-  await page.clock.runFor(3000);
-  await page.keyboard.down('Space');
+  await page.clock.runFor(3020);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
-  const epoch = await page.evaluate(() => performance.now());
   for (const transition of replay.transitions.slice(1)) {
     const now = await page.evaluate(() => performance.now());
     await page.clock.runFor(

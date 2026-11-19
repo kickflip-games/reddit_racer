@@ -151,7 +151,7 @@ void test('ordinary jump roads use one asphalt material, level cross-sections an
     road instanceof THREE.Mesh &&
       road.material instanceof THREE.MeshToonMaterial
   );
-  assert.equal(road.material.color.getHexString(), '293c50');
+  assert.equal(road.material.color.getHexString(), '363b40');
   assert.equal(road.geometry.getAttribute('color'), undefined);
   assert.equal(road.material.vertexColors, false);
 });

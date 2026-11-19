@@ -23,6 +23,9 @@ for (const [width, height] of [
       await heading.evaluate((el) => getComputedStyle(el).fontFamily)
     ).toContain('system-ui');
     await expect(heading).toBeInViewport();
+    await expect(page.locator('#card-copy')).toHaveText(
+      'Hold to accelerate. Release to brake.'
+    );
     await page.screenshot({
       path: info.outputPath('ready-straight-heading.png'),
     });

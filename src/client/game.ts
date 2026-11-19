@@ -261,7 +261,7 @@ function prepareCourse(mode: PlayMode): void {
   element('retry-label').textContent = mode !== 'daily' ? 'Resume' : 'Retry';
   title.textContent =
     mode !== 'daily' ? 'Preparing another track…' : 'Preparing circuit…';
-  copy.textContent = 'Hold to go. Release to slow.';
+  copy.textContent = 'Hold to accelerate. Release to brake.';
 }
 
 async function boot(
@@ -319,7 +319,7 @@ async function boot(
       source.hidden = !course.fallbackUsed;
       element('track-note').textContent = '';
       title.textContent = '';
-      copy.textContent = 'Hold to go. Release to brake.';
+      copy.textContent = 'Hold to accelerate. Release to brake.';
       start.disabled = false;
       if (focusWhenReady)
         (title.textContent ? title : start).focus({ preventScroll: true });
@@ -388,9 +388,7 @@ async function boot(
     }
     element('track-note').textContent = '';
     title.textContent = course.dailyUnavailable ? 'Daily unavailable' : '';
-    copy.textContent = course.dailyUnavailable
-      ? 'Unranked racing is available.'
-      : 'Hold to go. Release to brake.';
+    copy.textContent = 'Hold to accelerate. Release to brake.';
     start.disabled = false;
     if (focusWhenReady)
       (title.textContent ? title : start).focus({ preventScroll: true });

@@ -292,9 +292,3 @@
   text-decoration: underline;
   text-underline-offset: 4px;
 }
-#settings-dialog #next-practice-button {
-  order: -2;
-}
-#settings-dialog #daily-mode-button {
-  order: -1;
-}

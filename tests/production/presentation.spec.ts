@@ -60,6 +60,16 @@ for (const { width, height } of [
     await page.screenshot({ path: info.outputPath('home-presentation.png') });
     await page.locator('#race-settings > summary').click();
     await expect(page.locator('#settings-dialog')).toBeVisible();
+    expect(
+      await page
+        .locator('.track-secondary button')
+        .evaluateAll((nodes) => nodes.map((node) => node.id))
+    ).toEqual([
+      'next-practice-button',
+      'daily-mode-button',
+      'share-track-button',
+      'copy-seed-button',
+    ]);
     await page.screenshot({
       path: info.outputPath('settings-presentation.png'),
     });

@@ -60,6 +60,20 @@ for (const { width, height } of [
     await page.screenshot({ path: info.outputPath('home-presentation.png') });
     await page.locator('#race-settings > summary').click();
     await expect(page.locator('#settings-dialog')).toBeVisible();
+    await page.screenshot({
+      path: info.outputPath('settings-presentation.png'),
+    });
+    await page.locator('#sound-toggle').click();
+    await expect(page.locator('#sound-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    await page.locator('#ghost-toggle').click();
+    await expect(page.locator('#ghost-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
     await page.clock.runFor(100);
     await expect(page.locator('#race')).toHaveAttribute(
       'data-preview',
@@ -67,5 +81,28 @@ for (const { width, height } of [
     );
     await page.locator('#settings-close').click();
     await expect(page.locator('#race-settings > summary')).toBeFocused();
+    await page.locator('#word-course-open').click();
+    await expect(page.locator('#course-word')).toBeFocused();
+    await page.locator('#course-word').fill('tui');
+    await page.locator('#word-course-submit').click();
+    await expect(page.locator('#settings-dialog')).toBeHidden();
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-word-code',
+      'tui'
+    );
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-car-load',
+      'ready'
+    );
+    await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
+    await expect(page.locator('#home-mode')).toHaveText('Practice');
+    await expect(page.locator('#sound-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    await expect(page.locator('#ghost-toggle')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
   });
 }

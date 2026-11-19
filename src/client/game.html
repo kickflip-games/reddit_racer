@@ -327,9 +327,10 @@
             <p id="sound-feedback" class="sound-feedback" role="status"></p>
             <div class="course-info">
               <div id="practice-settings" hidden>
+                <h3 class="track-settings-title">Practice tracks</h3>
                 <p id="practice-seed"></p>
                 <form id="word-course-form">
-                  <label for="course-word">Seed</label>
+                  <label for="course-word">Track seed</label>
                   <input
                     id="course-word"
                     name="word"
@@ -347,17 +348,21 @@
                   </button>
                   <p id="word-course-message" role="status"></p>
                 </form>
-                <button id="share-track-button" type="button" hidden>
-                  Share track
-                </button>
-                <button id="copy-seed-button" type="button" hidden>
-                  Copy seed
-                </button>
+                <div class="track-secondary">
+                  <button id="share-track-button" type="button" hidden>
+                    Share track
+                  </button>
+                  <button id="copy-seed-button" type="button" hidden>
+                    Copy seed
+                  </button>
+                  <button id="next-practice-button" type="button">
+                    Random track
+                  </button>
+                  <button id="daily-mode-button" type="button">
+                    Daily race
+                  </button>
+                </div>
                 <p id="share-track-status" role="status"></p>
-                <button id="next-practice-button" type="button">
-                  Random track
-                </button>
-                <button id="daily-mode-button" type="button">Daily race</button>
               </div>
               <p id="track-source" data-state="loading" hidden></p>
               <div id="daily-details" class="daily-details" hidden>

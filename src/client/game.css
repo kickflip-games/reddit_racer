@@ -821,8 +821,8 @@ select:focus-visible {
 .circuit-minimap {
   position: absolute;
   right: max(14px, env(safe-area-inset-right));
-  bottom: max(14px, env(safe-area-inset-bottom));
-  width: clamp(100px, 29vw, 120px);
+  top: calc(max(14px, env(safe-area-inset-top)) + 56px);
+  width: clamp(88px, 29%, 140px);
   pointer-events: none;
 }
 .circuit-minimap * {
@@ -864,11 +864,6 @@ select:focus-visible {
 }
 #race[data-settings-open='true'] .circuit-minimap {
   visibility: hidden;
-}
-@media (min-width: 701px) {
-  .circuit-minimap {
-    width: 140px;
-  }
 }
 @media (max-height: 480px) {
   .circuit-minimap {
@@ -1629,6 +1624,24 @@ select:focus-visible {
   font-size: 13px;
   font-weight: 800;
   border-radius: 4px;
+}
+#race #restart-button,
+#race .race-settings > summary {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.race-control-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
 }
 #race #settings-dialog #settings-close {
   width: auto;

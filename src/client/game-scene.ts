@@ -363,6 +363,7 @@ export function initializeGame(
   const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: true,
+    groundHeightAt: (x, z) => groundHeightAt(countryside.surface, x, z),
   });
   const ghostVisual = createGhostVisual();
   scene.add(ghostVisual.object);

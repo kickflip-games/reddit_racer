@@ -127,8 +127,10 @@ test(
       await expect(map).toBeVisible();
       const b = await map.boundingBox(),
         settings = await page.locator('#race-settings > summary').boundingBox(),
-        hud = await page.locator('#race-hud').boundingBox();
-      if (!b || !settings || !hud) throw new Error('Missing visible HUD');
+        timer = await page.locator('.timing').boundingBox(),
+        restart = await page.locator('#restart-button').boundingBox();
+      if (!b || !settings || !timer || !restart)
+        throw new Error('Missing visible HUD');
       expect(b.x + b.width).toBeLessThanOrEqual(width - 13);
       expect(b.y + b.height).toBeLessThanOrEqual(height - 13);
       // Settings now lives bottom-left; require geometric separation, not old top-right placement.
@@ -137,9 +139,12 @@ test(
           b.y > settings.y + settings.height ||
           b.y + b.height < settings.y
       ).toBe(true);
-      expect(b.y).toBeGreaterThan(hud.y + hud.height);
-      expect(b.width).toBeGreaterThanOrEqual(height <= 480 ? 87 : 99);
-      expect(b.width).toBeLessThanOrEqual(width > 700 ? 141 : 121);
+      // The map shares the top area with the HUD but clears each actual control.
+      expect(b.y).toBeGreaterThanOrEqual(restart.y + restart.height + 8);
+      expect(b.y).toBeLessThan(height / 2);
+      expect(b.x).toBeGreaterThan(timer.x + timer.width + 8);
+      expect(b.width).toBeGreaterThanOrEqual(87);
+      expect(b.width).toBeLessThanOrEqual(141);
       await expect(page.locator('#minimap-course')).toHaveAttribute(
         'd',
         path ?? ''
@@ -193,12 +198,12 @@ test(
     await page.addStyleTag({
       content: (await stylesheet.text())
         .replaceAll('env(safe-area-inset-right)', '34px')
-        .replaceAll('env(safe-area-inset-bottom)', '30px'),
+        .replaceAll('env(safe-area-inset-top)', '30px'),
     });
     const safe = await map.boundingBox();
     if (!safe) throw new Error('Missing safe-area map');
     expect(safe.x + safe.width).toBeCloseTo(412 - 34, 0);
-    expect(safe.y + safe.height).toBeCloseTo(839 - 30, 0);
+    expect(safe.y).toBeCloseTo(30 + 56, 0);
     await page.evaluate(() => window.dispatchEvent(new Event('blur')));
     await expect(page.locator('#race')).toHaveAttribute(
       'data-phase',

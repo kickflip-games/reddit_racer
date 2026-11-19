@@ -52,7 +52,7 @@ type ParticlePool = {
   dispose(): void;
 };
 const skidHeight = 0.043;
-const skidHalfWidth = 0.09;
+const skidHalfWidth = 0.14;
 const roadMargin = 0.06;
 const epsilon = 1e-9;
 
@@ -109,12 +109,17 @@ function intersect(
 }
 
 /** Exact canonical cross-sections, including the closing segment. No visual mesh queries. */
-function createRoadContainment(track: Track): (quad: Float64Array) => boolean {
+function createRoadContainment(
+  track: Track,
+  outside = false
+): (quad: Float64Array) => boolean {
   const sections = track.samples.map((sample, index) => {
     const next = track.samples[(index + 1) % track.samples.length];
     if (!next) throw new Error('Cannot create effects for an empty track');
-    const halfA = Math.max(0, sample.width / 2 - roadMargin);
-    const halfB = Math.max(0, next.width / 2 - roadMargin);
+    // Mud begins beyond the rendered 0.8m shoulder, never on kerbs/asphalt.
+    const margin = outside ? -0.8 - roadMargin : roadMargin;
+    const halfA = Math.max(0, sample.width / 2 - margin);
+    const halfB = Math.max(0, next.width / 2 - margin);
     const ax = sample.x + sample.tz * halfA,
       az = sample.z - sample.tx * halfA;
     const bx = sample.x - sample.tz * halfA,
@@ -170,11 +175,11 @@ function createRoadContainment(track: Track): (quad: Float64Array) => boolean {
     )
       return false;
     if (
-      !contains(ax, az) ||
-      !contains(bx, bz) ||
-      !contains(cx, cz) ||
-      !contains(dx, dz) ||
-      !contains((ax + bx + cx + dx) / 4, (az + bz + cz + dz) / 4)
+      contains(ax, az) === outside ||
+      contains(bx, bz) === outside ||
+      contains(cx, cz) === outside ||
+      contains(dx, dz) === outside ||
+      contains((ax + bx + cx + dx) / 4, (az + bz + cz + dz) / 4) === outside
     )
       return false;
     const minX = Math.min(ax, bx, cx, dx),
@@ -492,7 +497,11 @@ function createSpeedStreaks() {
 
 export function createDrivingVfx(
   track: Track,
-  options: { noiseSeed?: number; followContactHeight?: boolean } = {}
+  options: {
+    noiseSeed?: number;
+    followContactHeight?: boolean;
+    groundHeightAt?: (x: number, z: number) => number;
+  } = {}
 ): DrivingVfx {
   if (track.samples.length < 8 || track.samples.length > 16_384)
     throw new Error('Effects require a bounded canonical track');
@@ -537,8 +546,10 @@ export function createDrivingVfx(
   const positions = new Float32Array(DRIVING_VFX_LIMITS.skidQuads * 12),
     colors = new Float32Array(DRIVING_VFX_LIMITS.skidQuads * 16);
   const indices = new Uint16Array(DRIVING_VFX_LIMITS.skidQuads * 6),
-    lives = new Float32Array(DRIVING_VFX_LIMITS.skidQuads);
-  const tint = new THREE.Color('#20362c');
+    lives = new Float32Array(DRIVING_VFX_LIMITS.skidQuads),
+    peakOpacities = new Float32Array(DRIVING_VFX_LIMITS.skidQuads);
+  const roadTint = new THREE.Color('#071016'),
+    mudTint = new THREE.Color('#704523');
   for (let slot = 0; slot < DRIVING_VFX_LIMITS.skidQuads; slot++) {
     const vertex = slot * 4,
       index = slot * 6;
@@ -546,11 +557,6 @@ export function createDrivingVfx(
       [vertex, vertex + 1, vertex + 2, vertex + 1, vertex + 3, vertex + 2],
       index
     );
-    for (let corner = 0; corner < 4; corner++) {
-      colors[slot * 16 + corner * 4] = tint.r;
-      colors[slot * 16 + corner * 4 + 1] = tint.g;
-      colors[slot * 16 + corner * 4 + 2] = tint.b;
-    }
   }
   const geometry = new THREE.BufferGeometry();
   const positionAttribute = new THREE.BufferAttribute(positions, 3).setUsage(
@@ -584,7 +590,10 @@ export function createDrivingVfx(
     driftSparks.object
   );
   const onRoad = createRoadContainment(track),
-    quad = new Float64Array(8);
+    onGrass = createRoadContainment(track, true),
+    groundHeight = options.groundHeightAt ?? (() => 0),
+    quad = new Float64Array(8),
+    heights = new Float64Array(4);
   const previous = new Float64Array(6),
     trail = new Float64Array(6);
   const trailValid = [false, false];
@@ -681,7 +690,11 @@ export function createDrivingVfx(
     colorDirty = false;
     breakHistory();
   }
-  function addSkid(wheel: number, point: ContactPoint): void {
+  function addSkid(
+    wheel: number,
+    point: ContactPoint,
+    slipping: boolean
+  ): void {
     const offset = wheel * 3,
       ay = trail[offset + 1] ?? point.y,
       ax = trail[offset] ?? point.x,
@@ -710,23 +723,45 @@ export function createDrivingVfx(
     trail[offset] = point.x;
     trail[offset + 1] = point.y;
     trail[offset + 2] = point.z;
-    if (!onRoad(quad)) {
+    const road = onRoad(quad);
+    if ((road && !slipping) || (!road && !onGrass(quad))) {
       trailValid[wheel] = false;
       return;
+    }
+    for (let corner = 0; corner < 4; corner++) {
+      const x = quad[corner * 2] ?? 0,
+        z = quad[corner * 2 + 1] ?? 0;
+      const contactY = corner < 2 ? ay : point.y;
+      const groundY = road ? contactY : groundHeight(x, z);
+      // Never stamp an elevated/airborne tyre's footprint onto grass below it.
+      if (
+        !Number.isFinite(groundY) ||
+        (!road && Math.abs(contactY - groundY) > 0.35)
+      ) {
+        trailValid[wheel] = false;
+        return;
+      }
+      heights[corner] = road
+        ? options.followContactHeight || track.schemaVersion === 2
+          ? contactY - 0.002
+          : skidHeight
+        : groundY + 0.012;
     }
     const slot = cursor;
     cursor = (cursor + 1) % DRIVING_VFX_LIMITS.skidQuads;
     if ((lives[slot] ?? 0) <= 0) liveSkids++;
     lives[slot] = DRIVING_VFX_LIMITS.skidLifetimeSeconds;
+    peakOpacities[slot] = road ? 0.9 : 0.86;
+    const tint = road ? roadTint : mudTint;
     written = Math.max(written, slot + 1);
     for (let corner = 0; corner < 4; corner++) {
       positions[slot * 12 + corner * 3] = quad[corner * 2] ?? 0;
-      positions[slot * 12 + corner * 3 + 1] =
-        options.followContactHeight || track.schemaVersion === 2
-          ? (corner < 2 ? ay : point.y) - 0.002
-          : skidHeight;
+      positions[slot * 12 + corner * 3 + 1] = heights[corner] ?? 0;
       positions[slot * 12 + corner * 3 + 2] = quad[corner * 2 + 1] ?? 0;
-      colors[slot * 16 + corner * 4 + 3] = 0.52;
+      colors[slot * 16 + corner * 4] = tint.r;
+      colors[slot * 16 + corner * 4 + 1] = tint.g;
+      colors[slot * 16 + corner * 4 + 2] = tint.b;
+      colors[slot * 16 + corner * 4 + 3] = peakOpacities[slot] ?? 0;
     }
     positionDirty = true;
     colorDirty = true;
@@ -760,7 +795,7 @@ export function createDrivingVfx(
           if ((lives[slot] ?? 0) === 0) liveSkids--;
           for (let corner = 0; corner < 4; corner++)
             colors[slot * 16 + corner * 4 + 3] =
-              (0.52 * (lives[slot] ?? 0)) /
+              ((peakOpacities[slot] ?? 0) * (lives[slot] ?? 0)) /
               DRIVING_VFX_LIMITS.skidLifetimeSeconds;
           colorDirty = true;
         }
@@ -937,12 +972,14 @@ export function createDrivingVfx(
           );
         }
       } else birthCredit = 0;
-      if (moving && !state.offRoad && state.slip > 0.18 && state.speed > 4) {
+      // Each wheel's canonical footprint chooses asphalt or grass independently
+      // of the car-centre surface flag. Grass leaves tracks even without slip.
+      if (moving && state.speed > 4) {
         skidCredit += ticks * DRIVING_VFX_LIMITS.skidSamplesPerSecondPerWheel;
         if (skidCredit >= SIMULATION_HZ) {
           skidCredit %= SIMULATION_HZ;
-          addSkid(0, frame.rearLeft);
-          addSkid(1, frame.rearRight);
+          addSkid(0, frame.rearLeft, state.slip > 0.18);
+          addSkid(1, frame.rearRight, state.slip > 0.18);
         }
       } else {
         skidCredit = 0;

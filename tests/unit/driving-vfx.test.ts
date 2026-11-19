@@ -220,24 +220,29 @@ void test('recovery, teleport, backward progress, phases and excessive gaps neve
   }
 });
 
-void test('off-road dust makes no grass marks and canonical edge-crossing quads are rejected', () => {
+void test('actual grass footprints leave brown tracks independently of the car-centre surface flag', () => {
   const vfx = createDrivingVfx(track);
   emit(vfx, 0, 120, {
     state: { offRoad: true, lateralOffset: 5 },
     deltaSeconds: 0,
   });
   assert.ok(particles(vfx, 'offroad-dust').geometry.drawRange.count > 0);
-  assert.equal(liveSkids(vfx), 0);
+  assert.ok(liveSkids(vfx) > 0);
+  const mud = skids(vfx).geometry.getAttribute('color');
+  assert.ok(mud.getX(0) > mud.getY(0) && mud.getY(0) > mud.getZ(0));
   vfx.reset();
-  // Lie about the surface flag: containment must still reject tyre contacts beyond the road.
+  // The canonical footprint, not a stale centre flag, still chooses brown mud.
   emit(vfx, 0, 120, {
     state: { offRoad: false, lateralOffset: 5 },
     deltaSeconds: 0,
   });
-  assert.equal(liveSkids(vfx), 0);
+  assert.ok(liveSkids(vfx) > 0);
+  assert.ok(mud.getX(0) > mud.getY(0));
   vfx.reset();
   emit(vfx, 0, 120, { deltaSeconds: 0 });
   assert.ok(liveSkids(vfx) > 0);
+  assert.ok(mud.getX(0) < mud.getY(0));
+  assert.ok(mud.getW(0) > 0.85, 'road skids retain a strong initial contrast');
   const positions = skids(vfx).geometry.getAttribute('position');
   for (
     let index = 0;
@@ -247,6 +252,60 @@ void test('off-road dust makes no grass marks and canonical edge-crossing quads 
     assert.ok(Number.isFinite(positions.getX(index) + positions.getZ(index)));
     assert.ok(Math.abs(positions.getY(index) - 0.043) < 1e-6);
   }
+  vfx.dispose();
+});
+
+void test('twin grass tracks follow every ground corner on slopes, without slip or floating contacts', () => {
+  const ground = (x: number, z: number): number => 0.01 * x + 0.02 * z;
+  const vfx = createDrivingVfx(track, { groundHeightAt: ground });
+  for (let tick = 0; tick <= 120; tick += 4) {
+    const frame = frameAt(tick, {
+      state: { offRoad: true, lateralOffset: 7, slip: 0 },
+      deltaSeconds: 0,
+    });
+    vfx.update({
+      ...frame,
+      rearLeft: {
+        ...frame.rearLeft,
+        y: ground(frame.rearLeft.x, frame.rearLeft.z) + 0.045,
+      },
+      rearRight: {
+        ...frame.rearRight,
+        y: ground(frame.rearRight.x, frame.rearRight.z) + 0.045,
+      },
+    });
+  }
+  assert.equal(liveSkids(vfx), 58, 'both rear tyres leave continuous tracks');
+  const geometry = skids(vfx).geometry,
+    position = geometry.getAttribute('position');
+  for (let i = 0; i < (geometry.drawRange.count / 6) * 4; i++)
+    assert.ok(
+      Math.abs(
+        position.getY(i) - ground(position.getX(i), position.getZ(i)) - 0.012
+      ) < 1e-6
+    );
+  vfx.reset();
+  for (let tick = 0; tick <= 120; tick += 4) {
+    const frame = frameAt(tick, {
+      state: { offRoad: true, lateralOffset: 7, slip: 0 },
+    });
+    vfx.update({
+      ...frame,
+      rearLeft: {
+        ...frame.rearLeft,
+        y: ground(frame.rearLeft.x, frame.rearLeft.z) + 3,
+      },
+      rearRight: {
+        ...frame.rearRight,
+        y: ground(frame.rearRight.x, frame.rearRight.z) + 3,
+      },
+    });
+  }
+  assert.equal(
+    liveSkids(vfx),
+    0,
+    'suspended contacts cannot stamp the ground below'
+  );
   vfx.dispose();
 });
 
@@ -407,7 +466,7 @@ void test('canonical variable-width boundaries reject an inside tyre centre whos
     position = geometry.getAttribute('position');
   // Only the safe right tyre may leave a mark; the other centre is still on asphalt.
   for (let vertex = 0; vertex < (geometry.drawRange.count / 6) * 4; vertex++) {
-    assert.ok(position.getZ(vertex) >= -0.6 && position.getZ(vertex) <= -0.4);
+    assert.ok(position.getZ(vertex) >= -0.65 && position.getZ(vertex) <= -0.35);
   }
   vfx.dispose();
 });

@@ -1716,5 +1716,10 @@ select:focus-visible {
 }
 
 .race-countdown[data-kind='go'] {
+  /* GO is wider than a numeral: keep the glyphs and their padding in the box. */
+  width: max-content;
+  max-width: calc(100% - 32px);
+  white-space: nowrap;
+  letter-spacing: 0;
   color: #247340;
 }

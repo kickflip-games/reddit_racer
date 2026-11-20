@@ -102,7 +102,11 @@ test(
         (await page.locator('#race').getAttribute('data-phase')) === 'finished',
       45000
     );
-    await expect(page.locator('#card-kicker')).toHaveText('');
+    await expect(page.locator('#card-kicker')).toHaveText('Practice lap');
+    await expect(page.locator('#race')).toHaveAttribute(
+      'data-attempt-mode',
+      'practice'
+    );
     await expect(page.locator('#status')).toHaveAttribute('data-held', 'false');
     const lastPointer = Number(await canvas.getAttribute('data-test-primary'));
     expect(

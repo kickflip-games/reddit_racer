@@ -11,6 +11,7 @@ import {
   prepareRace,
   raceInputTick,
   startRace,
+  stepCourseQualityRace,
   stepRace,
 } from './race-rules.ts';
 import type { Track } from './track.ts';
@@ -117,6 +118,22 @@ export function validateReplay(value: unknown): Replay {
 
 /** The shared simulator, never the client endTick, calculates the ranked result. */
 export function runReplay(track: Track, value: unknown): ReplayResult {
+  return runReplayWithStep(track, value, stepRace);
+}
+
+/** Recheck generation bots under the same frozen candidate-selection rules. */
+export function runCourseQualityReplay(
+  track: Track,
+  value: unknown
+): ReplayResult {
+  return runReplayWithStep(track, value, stepCourseQualityRace);
+}
+
+function runReplayWithStep(
+  track: Track,
+  value: unknown,
+  step: typeof stepRace
+): ReplayResult {
   const replay = validateReplay(value);
   const expected = runtimeForTrack(track);
   if (
@@ -139,7 +156,7 @@ export function runReplay(track: Track, value: unknown): ReplayResult {
       held = next.held;
       transitionIndex++;
     }
-    race = stepRace(track, race, held);
+    race = step(track, race, held);
   }
   if (race.phase === 'abandoned')
     throw new Error('Replay violated race progress rules');

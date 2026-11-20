@@ -163,7 +163,8 @@ export function advanceLapProgress(
   track: Track,
   progress: LapProgress,
   previous: SimulationState,
-  next: SimulationState
+  next: SimulationState,
+  allowRoadFinishRecovery = true
 ): LapProgress {
   const HANDLING = handlingForTrack(track);
   validateSimulationFields(track, previous);
@@ -226,6 +227,7 @@ export function advanceLapProgress(
   // Road-finish runtimes keep an off-road or airborne car just short of the
   // line so it can rejoin the road and finish without losing the attempt.
   const cappedRoadFinish =
+    allowRoadFinishRecovery &&
     !stationaryRecovery &&
     HANDLING === ROAD_FINISH_HANDLING &&
     expectedDistance === track.totalLength &&
@@ -309,6 +311,24 @@ export function stepRace(
   state: RaceState,
   held: boolean
 ): RaceState {
+  return stepRaceWithProgressRules(track, state, held, true);
+}
+
+/** Preserve first-finisher candidate selection for every authored course version. */
+export function stepCourseQualityRace(
+  track: Track,
+  state: RaceState,
+  held: boolean
+): RaceState {
+  return stepRaceWithProgressRules(track, state, held, false);
+}
+
+function stepRaceWithProgressRules(
+  track: Track,
+  state: RaceState,
+  held: boolean,
+  allowRoadFinishRecovery: boolean
+): RaceState {
   if (typeof held !== 'boolean')
     throw new Error('Accelerator input must be Boolean');
   if (
@@ -359,7 +379,13 @@ export function stepRace(
   let progress: LapProgress;
   try {
     simulation = stepSimulation(track, state.simulation, held);
-    progress = advanceLapProgress(track, state, state.simulation, simulation);
+    progress = advanceLapProgress(
+      track,
+      state,
+      state.simulation,
+      simulation,
+      allowRoadFinishRecovery
+    );
   } catch {
     return abandonRace(state, 'invalid-progress');
   }

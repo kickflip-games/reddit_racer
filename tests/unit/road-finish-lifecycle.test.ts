@@ -3,9 +3,15 @@ import { test } from 'node:test';
 import {
   advanceLapProgress,
   createRacingState,
+  stepCourseQualityRace,
   stepRace,
   type RaceState,
 } from '../../src/shared/race-rules';
+import {
+  runCourseQualityReplay,
+  runReplay,
+  type Replay,
+} from '../../src/shared/replay';
 import {
   stepSimulation,
   type SimulationState,
@@ -81,6 +87,10 @@ for (const version of [2, 3, 4, 5]) {
   ] as const) {
     void test(`linked v${version} ${condition} race can finish`, () => {
       const before = approachFinish(course, state);
+      const qualityRun = stepCourseQualityRace(course, before, true);
+      assert.equal(qualityRun.phase, 'abandoned');
+      assert.equal(qualityRun.abandonReason, 'invalid-progress');
+
       let race = stepRace(course, before, true);
 
       assert.equal(race.phase, 'racing', race.abandonReason ?? undefined);
@@ -133,5 +143,32 @@ void test('arbitrary stalls and on-road finish caps remain invalid', () => {
         status: 'running',
       }),
     /authoritative forward movement/
+  );
+});
+
+void test('ranked replay verifies a complete lap after recovering at the finish', () => {
+  const course = {
+    ...track,
+    samples: track.samples.map((sample) => {
+      const closingBend = sample.s > track.totalLength - 6;
+      return {
+        ...sample,
+        curvature: closingBend ? 0.025 : sample.curvature,
+        width: closingBend || sample.s === 0 ? 3 : sample.width,
+      };
+    }),
+  };
+  const replay: Replay = {
+    schemaVersion: 1,
+    simulationVersion: 'fixed-step-v7',
+    handlingVersion: 'road-finish-v1',
+    transitions: [{ tick: 0, held: true }],
+    endTick: 1983,
+  };
+
+  assert.equal(runReplay(course, replay).finishTicks, 1983);
+  assert.throws(
+    () => runCourseQualityReplay(course, replay),
+    /violated race progress rules/
   );
 });

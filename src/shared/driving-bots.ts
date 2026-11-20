@@ -1,5 +1,9 @@
 import { handlingForTrack, runtimeForTrack } from './scored-runtime.ts';
-import { abandonRace, createRacingState, stepRace } from './race-rules.ts';
+import {
+  abandonRace,
+  createRacingState,
+  stepCourseQualityRace,
+} from './race-rules.ts';
 import { MAX_SIMULATION_TICKS, SIMULATION_HZ } from './simulation.ts';
 import type { SimulationState } from './simulation.ts';
 import { MAX_REPLAY_TRANSITIONS, replaySchemaForTrack } from './replay.ts';
@@ -59,7 +63,7 @@ export function countInputLifts(
   return { lifts, meaningfulLifts };
 }
 
-/** Control policy only: every state update is the production stepRace implementation. */
+/** Keep quality-search outcomes stable under the original progress rules. */
 function drive(
   track: Track,
   controller: Controller,
@@ -87,7 +91,7 @@ function drive(
       transitions.push({ tick: race.simulation.tick, held });
     }
     const previous = race.simulation;
-    race = stepRace(track, race, held);
+    race = stepCourseQualityRace(track, race, held);
     if (race.simulation.vertical?.airborne) {
       airborneTicks++;
       const frame = sampleTrack(track, race.simulation.distance);

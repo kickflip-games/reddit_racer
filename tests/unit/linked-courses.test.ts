@@ -94,7 +94,7 @@ void test('new acceptance policy rejects the passive rectangle and flattened ele
   });
   assert.ok(flat.codes.includes('missing-elevation'));
   assert.equal(flat.work.controllerRuns, 0);
-  assert.equal(runtimeForTrack(linked).simulationVersion, 'fixed-step-v8');
+  assert.equal(runtimeForTrack(linked).simulationVersion, 'fixed-step-v9');
   assert.equal(runtimeForTrack(old).simulationVersion, 'fixed-step-v6');
 });
 

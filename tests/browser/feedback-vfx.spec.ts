@@ -4,7 +4,7 @@ import type { DrivingVfxFrame } from '../../src/client/driving-vfx.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { sampleTrack } from '../../src/shared/track.ts';
 
-test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-road dust, then clears reduced motion', async ({
+test('VFX FIXTURE renders tyre-aligned smoke, road skids, grass tracks and dust, then clears reduced motion', async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -212,11 +212,21 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
         effects.update(last);
       }
       const dustCount = dust.geometry.drawRange.count;
+      const markColors = skids.geometry.getAttribute('color');
+      let mudQuads = 0;
+      for (let slot = 0; slot < skids.geometry.drawRange.count / 6; slot++)
+        if (
+          markColors.getW(slot * 4) > 0 &&
+          markColors.getX(slot * 4) > markColors.getY(slot * 4)
+        )
+          mudQuads++;
       dust.visible = false;
       const withoutDust = pixels();
       dust.visible = true;
       const withDust = pixels();
-      snapshot('synthetic off-road dust beside the canonical road');
+      snapshot(
+        'synthetic off-road dust and twin muddy tracks beside the canonical road'
+      );
       if (!last) throw new Error('Missing final presentation frame');
       for (let update = 0; update < 130; update += 1)
         effects.update({ ...last, phase: 'finished', deltaSeconds: 0.05 });
@@ -260,6 +270,7 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
         smokeCount,
         dustCount,
         skidCount,
+        mudQuads,
         alphaItemSize: alpha.itemSize,
         alphaValues,
         smokeTransparent: smoke.material.transparent,
@@ -300,6 +311,7 @@ test('VFX FIXTURE renders tyre-aligned translucent smoke, road skids and off-roa
   expect(metrics.smokeCount).toBeGreaterThan(0);
   expect(metrics.dustCount).toBeGreaterThan(0);
   expect(metrics.skidCount).toBeGreaterThan(0);
+  expect(metrics.mudQuads).toBeGreaterThan(0);
   expect(metrics.alphaItemSize).toBe(4);
   expect(metrics.alphaValues.every((alpha) => alpha > 0 && alpha < 1)).toBe(
     true

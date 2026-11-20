@@ -13,6 +13,12 @@ const profiles = [
     treeDensity: 0.45,
     outcrops: 3,
     hillScale: 0.7,
+    palette: {
+      base: '#6f995f',
+      light: '#adc181',
+      shade: '#456b58',
+      soil: '#b7a27b',
+    },
     regions: [
       'meadow',
       'meadow',
@@ -28,6 +34,12 @@ const profiles = [
     treeDensity: 1.25,
     outcrops: 3,
     hillScale: 1,
+    palette: {
+      base: '#5d8d65',
+      light: '#8eb480',
+      shade: '#365f55',
+      soil: '#b89d77',
+    },
     regions: ['woodland', 'woodland', 'grove', 'meadow', 'clearing', 'hedge'],
   },
   {
@@ -35,6 +47,12 @@ const profiles = [
     treeDensity: 0.7,
     outcrops: 8,
     hillScale: 1.35,
+    palette: {
+      base: '#7c9a6b',
+      light: '#b1bb8c',
+      shade: '#536c5c',
+      soil: '#b5a58e',
+    },
     regions: [
       'grassland',
       'grassland',

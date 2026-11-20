@@ -567,8 +567,9 @@ export async function createDailyChallengeRecord(
     await import('./circuit-quality.ts');
   const { normalizeGeneratorConfig } = await import('./circuit-generator.ts');
   const normalize =
+    track.generatorVersion === 'linked-circuits-v4' ||
     track.generatorVersion ===
-    (await import('./course-rhythm.ts')).LINKED_COURSE_VERSION
+      (await import('./course-rhythm.ts')).LINKED_COURSE_VERSION
       ? (await import('./braking-course-generator.ts'))
           .normalizeCurrentCourseConfig
       : track.schemaVersion === 2

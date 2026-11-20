@@ -22,7 +22,7 @@ import { qualityVersionForTrack } from '../../src/shared/circuit-quality';
 
 const generated = generateLinkedCourseCandidate('grass-regression', 1).track;
 assert.ok(generated);
-const track = generated;
+const track = { ...generated, generatorVersion: 'linked-circuits-v3' };
 const old = { ...track, generatorVersion: 'linked-circuits-v2' };
 function atPress(tick: number) {
   let race = createRacingState(track);

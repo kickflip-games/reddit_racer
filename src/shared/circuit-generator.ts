@@ -369,7 +369,12 @@ function generateMotifCandidate(
     shoulder: config.shoulder,
   });
   const version = linked ? LINKED_COURSE_VERSION : GENERATOR_VERSION;
-  const random = randomFor(`${version}|${candidateSeed}|${fingerprint}`);
+  // Keep the horizontal motif recipe frozen. Elevation and retained share
+  // selection are versioned by the linked-course layer.
+  const geometryVersion = linked ? 'linked-circuits-v3' : version;
+  const random = randomFor(
+    `${geometryVersion}|${candidateSeed}|${fingerprint}`
+  );
   const { controls, motifs } = controlsFor(random, linked);
   const rotation = random() * Math.PI * 2,
     cosine = Math.cos(rotation),

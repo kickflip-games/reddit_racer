@@ -65,6 +65,17 @@ select {
   letter-spacing: -1px;
   font-weight: 900;
 }
+.race-brand h1,
+.start-wordmark,
+h2 {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-style: normal;
+}
 .title-dot {
   color: var(--accent);
 }
@@ -810,8 +821,8 @@ select:focus-visible {
 .circuit-minimap {
   position: absolute;
   right: max(14px, env(safe-area-inset-right));
-  bottom: max(14px, env(safe-area-inset-bottom));
-  width: clamp(100px, 29vw, 120px);
+  top: calc(max(14px, env(safe-area-inset-top)) + 56px);
+  width: clamp(88px, 29%, 140px);
   pointer-events: none;
 }
 .circuit-minimap * {
@@ -853,11 +864,6 @@ select:focus-visible {
 }
 #race[data-settings-open='true'] .circuit-minimap {
   visibility: hidden;
-}
-@media (min-width: 701px) {
-  .circuit-minimap {
-    width: 140px;
-  }
 }
 @media (max-height: 480px) {
   .circuit-minimap {
@@ -927,8 +933,8 @@ select:focus-visible {
 .start-wordmark {
   margin: 10px 0 14px;
   font-size: clamp(42px, 8vw, 58px);
-  font-weight: 950;
-  font-style: italic;
+  font-weight: 800;
+  font-style: normal;
   letter-spacing: -3px;
   line-height: 0.85;
   color: #174d3f;
@@ -939,6 +945,7 @@ select:focus-visible {
 }
 .start-wordmark i {
   color: #d34e28;
+  font-style: normal;
 }
 .race-card:has(#start-button:not([hidden])) #card-title {
   font-size: 21px;
@@ -1135,22 +1142,19 @@ select:focus-visible {
 }
 
 #verified-leader:not([hidden]) {
-  display: inline-block;
-  padding: 6px 12px;
-  border: 2px solid #d49d38;
-  border-radius: 16px;
-  background: #fff0b8;
-  color: #493914;
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--display-font);
+  font-style: normal;
+  font-size: 16px;
   font-weight: 900;
-  animation: leader-bloom 450ms ease-out;
-}
-@keyframes leader-bloom {
-  from {
-    transform: scale(0.94);
-  }
-  to {
-    transform: scale(1);
-  }
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: none;
 }
 #race[data-reduced-motion='true'] #verified-leader {
   animation: none;
@@ -1390,7 +1394,7 @@ select:focus-visible {
 }
 .start-wordmark {
   font-size: 34px;
-  letter-spacing: -1.8px;
+  letter-spacing: -0.8px;
   margin: 0;
   line-height: 1;
 }
@@ -1618,6 +1622,24 @@ select:focus-visible {
   font-weight: 800;
   border-radius: 4px;
 }
+#race #restart-button,
+#race .race-settings > summary {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.race-control-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
 #race #settings-dialog #settings-close {
   width: auto;
   margin: 0;
@@ -1704,22 +1726,10 @@ select:focus-visible {
 }
 
 .race-countdown[data-kind='go'] {
-  color: #247340;
-}
-.race-countdown[data-kind='boost'] {
-  top: 25%;
-  width: auto;
-  padding: 12px 18px;
-  border-radius: 16px;
-  font-size: 22px;
+  /* GO is wider than a numeral: keep the glyphs and their padding in the box. */
+  width: max-content;
+  max-width: calc(100% - 32px);
   white-space: nowrap;
+  letter-spacing: 0;
   color: #247340;
-}
-
-.race-countdown[data-kind='countdown'][data-boost-enabled='true']::after {
-  content: 'Tap on GO for boost';
-  display: block;
-  margin-top: 10px;
-  font-size: 14px;
-  line-height: 1.3;
 }

@@ -1,6 +1,8 @@
 import { generateBrakingCircuit } from '../shared/braking-course-generator';
 import { courseWord, type CourseWord } from '../shared/word-seed';
 import { hashTrack, serializeTrack, type Track } from '../shared/track';
+import { LINKED_COURSE_VERSION } from '../shared/course-rhythm';
+import type { TrackShare } from '../shared/track-share';
 
 export type PracticeCourse = {
   wordCourse?: CourseWord;
@@ -134,20 +136,27 @@ export async function generatePracticeCourse(
 
 /** Every course word selects the current checked generator. */
 export async function generateWordPracticeCourse(
-  input: string
+  input: string,
+  generator: TrackShare['generator'] = LINKED_COURSE_VERSION
 ): Promise<PracticeCourse & { wordCourse: CourseWord }> {
   const wordCourse = courseWord(input);
-  const result = generateBrakingCircuit(wordCourse.seed);
+  const result = generateBrakingCircuit(
+    wordCourse.seed,
+    undefined,
+    generator === 'linked-circuits-v3' ? 'linked-circuits-v4' : generator
+  );
   if (!result.quality.valid)
     throw new Error('This seed course did not pass the driving checks.');
+  // Saved V3/V4 shares use their frozen recipe, including quality selection.
+  const track = { ...result.track, generatorVersion: generator };
   let trackHash: string;
   try {
-    trackHash = await hashTrack(result.track);
+    trackHash = await hashTrack(track);
   } catch {
-    trackHash = practiceTrackFingerprint(result.track);
+    trackHash = practiceTrackFingerprint(track);
   }
   return {
-    track: result.track,
+    track,
     seed: wordCourse.seed,
     fallbackUsed: result.diagnostics.fallbackUsed,
     trackHash,

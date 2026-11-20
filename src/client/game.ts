@@ -148,14 +148,15 @@ function renderDailyMode(): void {
     attemptPresentation === 'preparing'
       ? 'Preparing…'
       : dailyArchived
-        ? 'Start'
-        : 'Race';
+        ? 'Start practice'
+        : attemptPresentation === 'practice'
+          ? 'Start practice'
+          : "Today's race";
   element('retry-label').textContent =
-    attemptPresentation === 'preparing'
-      ? 'Preparing…'
-      : dailyArchived
-        ? 'Retry'
-        : 'Retry';
+    attemptPresentation === 'preparing' ? 'Preparing…' : 'Try again';
+  element('home-mode').textContent = dailyArchived
+    ? 'Archive practice'
+    : "Today's race";
   element('track-note').textContent = '';
 }
 function showDailyCourse(view: DailyChallengeView): () => void {
@@ -230,6 +231,8 @@ function prepareCourse(mode: PlayMode): void {
   element('card-kicker').textContent = '';
   element('card').dataset.best = 'false';
   element('card').dataset.result = 'false';
+  element('card').dataset.outcome = '';
+  element('home-mode').textContent = 'Loading circuit';
   element('finish-time').hidden = true;
   element('practice-result').hidden = true;
   element('card').hidden = false;
@@ -257,11 +260,11 @@ function prepareCourse(mode: PlayMode): void {
       : import.meta.env.DEV
         ? 'Unranked'
         : 'Daily';
-  element('start-label').textContent = 'Start';
+  element('start-label').textContent = 'Start practice';
   element('retry-label').textContent = mode !== 'daily' ? 'Resume' : 'Retry';
   title.textContent =
     mode !== 'daily' ? 'Preparing another track…' : 'Preparing circuit…';
-  copy.textContent = 'Hold to go. Release to slow.';
+  copy.textContent = 'Hold to accelerate. Release to brake.';
 }
 
 async function boot(
@@ -279,7 +282,7 @@ async function boot(
         shareRaw === undefined ? undefined : parseTrackShare(shareRaw);
       if (shared) wordRequest = { input: shared.seed };
       const course = wordRequest
-        ? await generateWordPracticeCourse(wordRequest.input)
+        ? await generateWordPracticeCourse(wordRequest.input, shared?.generator)
         : seed === undefined
           ? await generateRandomWordPracticeCourse(lastPracticeTrackHash)
           : import.meta.env.DEV
@@ -298,7 +301,8 @@ async function boot(
       race.dataset.trackHash = course.trackHash;
       race.dataset.practiceLaps = '0';
       element('mode-label').textContent = 'Lap 1';
-      element('start-label').textContent = 'Start';
+      element('start-label').textContent = 'Start practice';
+      element('home-mode').textContent = 'Practice';
       element('retry-label').textContent = 'Resume';
       const selectedWord = course.wordCourse ?? null;
       if (selectedWord) trackSharing.set(selectedWord.code, course.track);
@@ -319,7 +323,7 @@ async function boot(
       source.hidden = !course.fallbackUsed;
       element('track-note').textContent = '';
       title.textContent = '';
-      copy.textContent = 'Hold to go. Release to brake.';
+      copy.textContent = 'Hold to accelerate. Release to brake.';
       start.disabled = false;
       if (focusWhenReady)
         (title.textContent ? title : start).focus({ preventScroll: true });
@@ -365,6 +369,8 @@ async function boot(
     if (course.daily) {
       cleanupDaily = showDailyCourse(course.daily);
     } else if (course.dailyUnavailable) {
+      element('start-label').textContent = 'Start practice';
+      element('home-mode').textContent = 'Practice · daily unavailable';
       element('mode-label').textContent = 'Unranked';
       source.hidden = false;
       source.textContent = 'DAILY SERVICE UNAVAILABLE';
@@ -374,6 +380,8 @@ async function boot(
       element('track-note').textContent =
         'Unranked reference course. Reload to try loading this post’s daily circuit.';
     } else if (course.generated) {
+      element('start-label').textContent = 'Start practice';
+      element('home-mode').textContent = 'Practice';
       source.hidden = false;
       source.dataset.seed = course.seed;
       source.textContent = course.fallbackUsed
@@ -388,9 +396,7 @@ async function boot(
     }
     element('track-note').textContent = '';
     title.textContent = course.dailyUnavailable ? 'Daily unavailable' : '';
-    copy.textContent = course.dailyUnavailable
-      ? 'Unranked racing is available.'
-      : 'Hold to go. Release to brake.';
+    copy.textContent = 'Hold to accelerate. Release to brake.';
     start.disabled = false;
     if (focusWhenReady)
       (title.textContent ? title : start).focus({ preventScroll: true });

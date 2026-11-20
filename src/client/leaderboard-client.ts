@@ -185,7 +185,10 @@ export function createLeaderboardController(
     if (receipt && view.outcome) {
       card.dataset.best = String(view.outcome.isPersonalBest);
       const kicker = document.getElementById('card-kicker');
-      if (kicker) kicker.textContent = 'Time saved';
+      if (kicker)
+        kicker.textContent = view.outcome.isPersonalBest
+          ? 'Personal best'
+          : 'Time saved';
     }
     const leaderLabel = verifiedLeaderLabel(view, receipt);
     if (leaderLabel) {

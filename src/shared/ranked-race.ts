@@ -107,7 +107,8 @@ export function parseRankedSubmission(value: unknown): RankedSubmission {
     // silently rejected the supported v6/v7 tracks at the RPC input boundary.
     if (
       typeof value.replay.schemaVersion === 'number' &&
-      value.replay.schemaVersion !== 1
+      value.replay.schemaVersion !== 1 &&
+      value.replay.schemaVersion !== 2
     )
       throw new RankedRaceError(
         'unsupported',

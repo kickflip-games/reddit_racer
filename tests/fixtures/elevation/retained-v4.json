@@ -1,0 +1,355 @@
+[
+  {
+    "seed": "word-v2:banana",
+    "hash": "aa69ded0080ef74a2ca439da61473d74fcec4b093c6d75f906046351096dd09a",
+    "maxGrade": 0.064704,
+    "maxHeight": 1.109609,
+    "maxVerticalCurvature": 0.007667,
+    "acceptedAttempt": 2,
+    "fastTicks": 3007,
+    "fastReplay": {
+      "schemaVersion": 2,
+      "simulationVersion": "fixed-step-v9",
+      "handlingVersion": "countdown-start-v1",
+      "transitions": [
+        {
+          "tick": 0,
+          "held": true
+        },
+        {
+          "tick": 546,
+          "held": false
+        },
+        {
+          "tick": 665,
+          "held": true
+        },
+        {
+          "tick": 990,
+          "held": false
+        },
+        {
+          "tick": 1029,
+          "held": true
+        },
+        {
+          "tick": 1190,
+          "held": false
+        },
+        {
+          "tick": 1245,
+          "held": true
+        },
+        {
+          "tick": 1334,
+          "held": false
+        },
+        {
+          "tick": 1359,
+          "held": true
+        },
+        {
+          "tick": 1539,
+          "held": false
+        },
+        {
+          "tick": 1656,
+          "held": true
+        },
+        {
+          "tick": 2009,
+          "held": false
+        },
+        {
+          "tick": 2090,
+          "held": true
+        },
+        {
+          "tick": 2625,
+          "held": false
+        },
+        {
+          "tick": 2707,
+          "held": true
+        }
+      ],
+      "endTick": 3007
+    }
+  },
+  {
+    "seed": "word-v2:tui",
+    "hash": "5dece843fd092b24da155d8282505b1b460f22adda87c2712c656035db4538dc",
+    "maxGrade": 0.106542,
+    "maxHeight": 3.006663,
+    "maxVerticalCurvature": 0.007675,
+    "acceptedAttempt": 6,
+    "fastTicks": 3045,
+    "fastReplay": {
+      "schemaVersion": 2,
+      "simulationVersion": "fixed-step-v9",
+      "handlingVersion": "countdown-start-v1",
+      "transitions": [
+        {
+          "tick": 0,
+          "held": true
+        },
+        {
+          "tick": 665,
+          "held": false
+        },
+        {
+          "tick": 747,
+          "held": true
+        },
+        {
+          "tick": 1047,
+          "held": false
+        },
+        {
+          "tick": 1129,
+          "held": true
+        },
+        {
+          "tick": 1423,
+          "held": false
+        },
+        {
+          "tick": 1533,
+          "held": true
+        },
+        {
+          "tick": 1645,
+          "held": false
+        },
+        {
+          "tick": 1710,
+          "held": true
+        },
+        {
+          "tick": 1930,
+          "held": false
+        },
+        {
+          "tick": 2023,
+          "held": true
+        },
+        {
+          "tick": 2110,
+          "held": false
+        },
+        {
+          "tick": 2140,
+          "held": true
+        },
+        {
+          "tick": 2406,
+          "held": false
+        },
+        {
+          "tick": 2488,
+          "held": true
+        }
+      ],
+      "endTick": 3045
+    }
+  },
+  {
+    "seed": "word-v2:river",
+    "hash": "9d4b97b69da39f074bbaf61df33ee8db956da621b0b8d4c89ad9125b92423858",
+    "maxGrade": 0.072506,
+    "maxHeight": 1.393612,
+    "maxVerticalCurvature": 0.00768,
+    "acceptedAttempt": 27,
+    "fastTicks": 3146,
+    "fastReplay": {
+      "schemaVersion": 2,
+      "simulationVersion": "fixed-step-v9",
+      "handlingVersion": "countdown-start-v1",
+      "transitions": [
+        {
+          "tick": 0,
+          "held": true
+        },
+        {
+          "tick": 529,
+          "held": false
+        },
+        {
+          "tick": 610,
+          "held": true
+        },
+        {
+          "tick": 870,
+          "held": false
+        },
+        {
+          "tick": 951,
+          "held": true
+        },
+        {
+          "tick": 1247,
+          "held": false
+        },
+        {
+          "tick": 1369,
+          "held": true
+        },
+        {
+          "tick": 1481,
+          "held": false
+        },
+        {
+          "tick": 1509,
+          "held": true
+        },
+        {
+          "tick": 1701,
+          "held": false
+        },
+        {
+          "tick": 1812,
+          "held": true
+        },
+        {
+          "tick": 2286,
+          "held": false
+        },
+        {
+          "tick": 2398,
+          "held": true
+        }
+      ],
+      "endTick": 3146
+    }
+  },
+  {
+    "seed": "daily:t5_kv7foq:2026-11-21",
+    "hash": "921e9ef3f987d3286f947669f5ac68d5cb1468ca1a5fac166a916271dc63bb95",
+    "maxGrade": 0.082355,
+    "maxHeight": 1.796916,
+    "maxVerticalCurvature": 0.00768,
+    "acceptedAttempt": 5,
+    "fastTicks": 3105,
+    "fastReplay": {
+      "schemaVersion": 2,
+      "simulationVersion": "fixed-step-v9",
+      "handlingVersion": "countdown-start-v1",
+      "transitions": [
+        {
+          "tick": 0,
+          "held": true
+        },
+        {
+          "tick": 351,
+          "held": false
+        },
+        {
+          "tick": 445,
+          "held": true
+        },
+        {
+          "tick": 1116,
+          "held": false
+        },
+        {
+          "tick": 1183,
+          "held": true
+        },
+        {
+          "tick": 1525,
+          "held": false
+        },
+        {
+          "tick": 1652,
+          "held": true
+        },
+        {
+          "tick": 1973,
+          "held": false
+        },
+        {
+          "tick": 2037,
+          "held": true
+        },
+        {
+          "tick": 2656,
+          "held": false
+        },
+        {
+          "tick": 2737,
+          "held": true
+        }
+      ],
+      "endTick": 3105
+    }
+  },
+  {
+    "seed": "word-v2:evaluation-29",
+    "hash": "4d462d083bc308902f3c98e0b98da6d5ba6048ddf16e0ce091cfe16a15fde608",
+    "maxGrade": 0.106415,
+    "maxHeight": 2.999472,
+    "maxVerticalCurvature": 0.007675,
+    "acceptedAttempt": 2,
+    "fastTicks": 2987,
+    "fastReplay": {
+      "schemaVersion": 2,
+      "simulationVersion": "fixed-step-v9",
+      "handlingVersion": "countdown-start-v1",
+      "transitions": [
+        {
+          "tick": 0,
+          "held": true
+        },
+        {
+          "tick": 617,
+          "held": false
+        },
+        {
+          "tick": 706,
+          "held": true
+        },
+        {
+          "tick": 1350,
+          "held": false
+        },
+        {
+          "tick": 1430,
+          "held": true
+        },
+        {
+          "tick": 1721,
+          "held": false
+        },
+        {
+          "tick": 1857,
+          "held": true
+        },
+        {
+          "tick": 2248,
+          "held": false
+        },
+        {
+          "tick": 2355,
+          "held": true
+        },
+        {
+          "tick": 2622,
+          "held": false
+        },
+        {
+          "tick": 2713,
+          "held": true
+        },
+        {
+          "tick": 2749,
+          "held": false
+        },
+        {
+          "tick": 2799,
+          "held": true
+        }
+      ],
+      "endTick": 2987
+    }
+  }
+]

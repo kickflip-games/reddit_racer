@@ -1,4 +1,10 @@
-import { handlingForTrack } from './scored-runtime.ts';
+import { handlingForTrack, ROAD_FINISH_HANDLING } from './scored-runtime.ts';
+import {
+  countdownLaunchArmed,
+  sampleCountdownLaunch,
+  supportsCountdownLaunch,
+  type CountdownLaunchInput,
+} from './countdown-launch.ts';
 import {
   createSimulationState,
   createVerticalState,
@@ -30,7 +36,14 @@ export type RaceState = LapProgress & {
   simulation: SimulationState;
   countdownTicksRemaining: number;
   abandonReason: RaceAbandonReason | null;
+  countdownLaunchInput?: CountdownLaunchInput;
 };
+
+/** Schema-2 input tapes include stationary countdown ticks -360 through -1. */
+export const raceInputTick = (state: Readonly<RaceState>): number =>
+  state.phase === 'countdown'
+    ? -state.countdownTicksRemaining
+    : state.simulation.tick;
 
 const progressTolerance = 0.000000001;
 
@@ -150,7 +163,8 @@ export function advanceLapProgress(
   track: Track,
   progress: LapProgress,
   previous: SimulationState,
-  next: SimulationState
+  next: SimulationState,
+  allowRoadFinishRecovery = true
 ): LapProgress {
   const HANDLING = handlingForTrack(track);
   validateSimulationFields(track, previous);
@@ -210,7 +224,21 @@ export function advanceLapProgress(
           track.totalLength,
           quantizeSimulation(previous.distance + next.speed / SIMULATION_HZ)
         );
-  if (Math.abs(next.distance - expectedDistance) > progressTolerance) {
+  // Road-finish runtimes keep an off-road or airborne car just short of the
+  // line so it can rejoin the road and finish without losing the attempt.
+  const cappedRoadFinish =
+    allowRoadFinishRecovery &&
+    !stationaryRecovery &&
+    HANDLING === ROAD_FINISH_HANDLING &&
+    expectedDistance === track.totalLength &&
+    next.distance === track.totalLength - 0.000001 &&
+    (next.offRoad || next.vertical?.airborne === true) &&
+    next.status === 'running' &&
+    next.finishedTick === null;
+  if (
+    !cappedRoadFinish &&
+    Math.abs(next.distance - expectedDistance) > progressTolerance
+  ) {
     throw new Error(
       'Race progress does not match authoritative forward movement'
     );
@@ -283,6 +311,24 @@ export function stepRace(
   state: RaceState,
   held: boolean
 ): RaceState {
+  return stepRaceWithProgressRules(track, state, held, true);
+}
+
+/** Preserve first-finisher candidate selection for every authored course version. */
+export function stepCourseQualityRace(
+  track: Track,
+  state: RaceState,
+  held: boolean
+): RaceState {
+  return stepRaceWithProgressRules(track, state, held, false);
+}
+
+function stepRaceWithProgressRules(
+  track: Track,
+  state: RaceState,
+  held: boolean,
+  allowRoadFinishRecovery: boolean
+): RaceState {
   if (typeof held !== 'boolean')
     throw new Error('Accelerator input must be Boolean');
   if (
@@ -302,8 +348,27 @@ export function stepRace(
     )
       return abandonRace(state, 'invalid-progress');
     const countdownTicksRemaining = state.countdownTicksRemaining - 1;
+    const launchInput = supportsCountdownLaunch(track)
+      ? sampleCountdownLaunch(
+          state.countdownLaunchInput,
+          held,
+          raceInputTick(state)
+        )
+      : undefined;
     return {
       ...state,
+      ...(launchInput
+        ? {
+            countdownLaunchInput: launchInput,
+            simulation:
+              countdownTicksRemaining === 0
+                ? {
+                    ...state.simulation,
+                    launchArmed: countdownLaunchArmed(launchInput),
+                  }
+                : state.simulation,
+          }
+        : {}),
       countdownTicksRemaining,
       phase: countdownTicksRemaining === 0 ? 'racing' : 'countdown',
     };
@@ -314,7 +379,13 @@ export function stepRace(
   let progress: LapProgress;
   try {
     simulation = stepSimulation(track, state.simulation, held);
-    progress = advanceLapProgress(track, state, state.simulation, simulation);
+    progress = advanceLapProgress(
+      track,
+      state,
+      state.simulation,
+      simulation,
+      allowRoadFinishRecovery
+    );
   } catch {
     return abandonRace(state, 'invalid-progress');
   }

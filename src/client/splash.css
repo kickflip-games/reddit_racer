@@ -214,3 +214,37 @@ button {
     margin: 12px 0;
   }
 }
+
+/* Match the expanded racing typography; the feed entry remains CSS-only. */
+.splash {
+  background: var(--paper);
+}
+h1 {
+  font-family: var(--display-font);
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+  color: var(--ink);
+}
+h1 .title-line {
+  color: inherit;
+  padding-left: 0;
+}
+h1 i {
+  color: var(--accent);
+  font-style: normal;
+}
+.description {
+  color: var(--muted);
+}
+button {
+  font-family: var(--display-font);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 0;
+  box-shadow: none;
+}
+.track-art {
+  border-color: var(--asphalt);
+  background: #b5c496;
+}

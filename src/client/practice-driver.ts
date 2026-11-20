@@ -1,4 +1,5 @@
 import { stepStartBoostSimulation } from '../shared/start-boost.ts';
+import { stepCountdownLaunchSimulation } from '../shared/countdown-launch.ts';
 import { stepElevatedSimulationV7 } from '../shared/elevated-simulation-v7.ts';
 import { stepElevatedSimulation } from '../shared/elevated-simulation.ts';
 import {
@@ -197,6 +198,7 @@ export class PracticeDriver {
     this.previous = this.race.simulation;
     if (this.race.phase === 'countdown') {
       this.race = stepRace(this.track, this.race, this.inputHeld);
+      this.physics = this.race.simulation;
       return;
     }
 
@@ -368,6 +370,8 @@ export function stepPracticeDrift(
   held: boolean,
   driftSeconds: number
 ): SimulationState {
+  if (runtimeForTrack(track).simulationVersion === 'fixed-step-v9')
+    return stepCountdownLaunchSimulation(track, state, held, driftSeconds);
   if (runtimeForTrack(track).simulationVersion === 'fixed-step-v8')
     return stepStartBoostSimulation(track, state, held, driftSeconds);
   return runtimeForTrack(track).simulationVersion === 'fixed-step-v7'

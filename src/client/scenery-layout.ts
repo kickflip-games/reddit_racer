@@ -628,12 +628,18 @@ export function generateSceneryLayout(
       );
     }
   }
-  // Reuse selected Kenney conifers within the natural region layout.
-  for (const p of plants
-    .filter(
-      (p) => p.kind === 'tree' || (p.kind === 'blossom' && p.detail < 0.25)
-    )
-    .slice(0, 32))
+  // Two existing Kenney trees per route quarter: retain purposeful groves
+  // without piling a second model over every procedural tree or adding props.
+  const treesPerSector = [0, 0, 0, 0];
+  for (const p of plants.filter(
+    (p) => p.kind === 'tree' || (p.kind === 'blossom' && p.detail < 0.25)
+  )) {
+    const sector = Math.min(
+      3,
+      Math.floor((field.sample(p.x, p.z).s / track.totalLength) * 4)
+    );
+    if ((treesPerSector[sector] ?? 0) >= 2) continue;
+    treesPerSector[sector] = (treesPerSector[sector] ?? 0) + 1;
     props.push({
       kind: 'treeSmall',
       x: p.x,
@@ -642,6 +648,7 @@ export function generateSceneryLayout(
       radius: p.radius,
       scale: Math.min(1, p.scale),
     });
+  }
   // Start/finish is marked on the road; no decorative racing props in grass.
 
   return {

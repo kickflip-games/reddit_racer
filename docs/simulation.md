@@ -67,7 +67,7 @@ Replay verification prevents arbitrary impossible lap times. It does not prove h
 
 `src/client/simulation-driver.ts` separates the fixed updates from animation frames. It retains a double-precision elapsed-time accumulator, with a small comparison tolerance; it never rounds each frame's duration. An ordinary 30/60/120-FPS schedule therefore produces the same fixed updates for the same tick inputs. `previousState`, current `state` and `alpha` support cosmetic interpolation.
 
-A 360-tick (three-second) countdown is stationary and excluded from score. Input handlers latch the current Boolean input; the driver emits a transition only when a scored physics tick actually samples a changed input. Holding through GO therefore emits a tick-zero hold, while countdown-only changes do not enter the tape. A frame gap of at least 250 ms abandons the attempt explicitly, rather than dropping elapsed time and silently changing the race. Focus loss, input overflow and the 120-second limit similarly interrupt the attempt. Retry resets clock, input tape and state together.
+A 360-tick (three-second) countdown is stationary and excluded from score. Input handlers latch Boolean input, and the driver records changes when a fixed tick samples them. Retained schema-1 tapes contain scored ticks only. V9/schema 2 also records negative countdown ticks for the [countdown launch](countdown-launch.md) rule. A frame gap of at least 250 ms abandons the attempt explicitly, rather than dropping elapsed time and silently changing the race. Focus loss, input overflow and the 120-second limit similarly interrupt the attempt. Retry resets clock, input tape and state together.
 
 ## Frozen reference fixtures
 

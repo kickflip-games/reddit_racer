@@ -49,3 +49,15 @@ test('canonical share hash roundtrips exact seed and rejects different geometry'
   );
   await assert.rejects(createTrackShare(' BANANA ', a.track));
 });
+test('saved v3 shares retain their original geometry, hash and runtime', async () => {
+  const old = await generateWordPracticeCourse('banana', 'linked-circuits-v3');
+  const share = await createTrackShare('banana', old.track);
+  assert.equal(share.generator, 'linked-circuits-v3');
+  const parsed = parseTrackShare(JSON.stringify(share));
+  const loaded = await generateWordPracticeCourse(
+    parsed.seed,
+    parsed.generator
+  );
+  await verifySharedTrack(parsed, loaded.track);
+  assert.equal(loaded.trackHash, old.trackHash);
+});

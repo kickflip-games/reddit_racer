@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#183b35" />
     <link rel="stylesheet" href="theme.css" />
     <link rel="stylesheet" href="game.css" />
-    <link rel="stylesheet" href="driving-hint.css" />
+    <link rel="stylesheet" href="presentation.css" />
     <title>The Daily Lap</title>
   </head>
   <body>
@@ -18,6 +18,7 @@
         id="race-canvas"
         tabindex="0"
         aria-label="Race circuit. Hold Space or touch to accelerate; release to brake."
+        aria-describedby="race-controls"
       ></canvas>
       <div id="race-hud" class="race-hud">
         <header class="hud">
@@ -32,7 +33,14 @@
               aria-label="Restart race"
               title="Restart race"
             >
-              Restart
+              <svg
+                class="race-control-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="M3 10a9 9 0 1 1 1.8 7.4M3 4v6h6" />
+              </svg>
             </button>
           </div>
         </header>
@@ -70,10 +78,11 @@
         >3</output
       >
       <div id="card" class="race-card">
-        <div class="start-identity" aria-hidden="true">
-          <div class="start-wordmark">
+        <div class="start-identity">
+          <p id="home-mode" class="eyebrow">Loading circuit</p>
+          <h1 class="start-wordmark" aria-label="The Daily Lap">
             The Daily <span>Lap<i>.</i></span>
-          </div>
+          </h1>
         </div>
         <p id="card-kicker" class="eyebrow"></p>
         <p id="challenge-heading" class="challenge-heading" hidden></p>
@@ -166,30 +175,32 @@
             </div>
           </details>
         </section>
-        <button
-          id="word-course-open"
-          class="secondary-button"
-          type="button"
-          hidden
-        >
-          Choose a seed
-        </button>
-        <button id="practice-button" class="secondary-button" type="button">
-          Other tracks
-        </button>
-        <section
-          id="daily-history-preview"
-          class="daily-history-preview"
-          aria-label="Leaderboard"
-        >
+        <div class="home-secondary">
           <button
-            id="daily-history-open"
-            type="button"
+            id="word-course-open"
             class="secondary-button"
+            type="button"
+            hidden
           >
-            Leaderboard
+            Choose a seed
           </button>
-        </section>
+          <button id="practice-button" class="secondary-button" type="button">
+            Practice tracks
+          </button>
+          <section
+            id="daily-history-preview"
+            class="daily-history-preview"
+            aria-label="Leaderboard"
+          >
+            <button
+              id="daily-history-open"
+              type="button"
+              class="secondary-button"
+            >
+              Leaderboard
+            </button>
+          </section>
+        </div>
       </div>
       <dialog
         id="daily-history-dialog"
@@ -255,13 +266,25 @@
           <button id="daily-history-retry" type="button" hidden>Retry</button>
         </div>
       </dialog>
-      <p id="driving-hint" role="status" hidden>
-        Automatic steering · Hold to go · Release before tight turns
+      <p id="race-controls" class="visually-hidden">
+        Automatic steering. Hold Space or touch the track to accelerate; release
+        to brake.
       </p>
-      <p id="driving-cue" aria-live="off" hidden></p>
       <footer class="race-footer">
         <details id="race-settings" class="race-settings">
-          <summary aria-label="Settings" title="Settings">Settings</summary>
+          <summary aria-label="Settings" title="Settings">
+            <svg
+              class="race-control-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path
+                d="M10 2h4l.6 3.1 1.4.8 3-.9 2 3.4-2.4 2.1v1.7l2.4 2.1-2 3.4-3-.9-1.4.8L14 22h-4l-.6-3.1-1.4-.8-3 .9-2-3.4 2.4-2.1v-1.7L3 9.7l2-3.4 3 .9 1.4-.8Z"
+              />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </summary>
           <dialog
             id="settings-dialog"
             class="settings-panel"
@@ -304,9 +327,10 @@
             <p id="sound-feedback" class="sound-feedback" role="status"></p>
             <div class="course-info">
               <div id="practice-settings" hidden>
+                <h3 class="track-settings-title">Practice tracks</h3>
                 <p id="practice-seed"></p>
                 <form id="word-course-form">
-                  <label for="course-word">Seed</label>
+                  <label for="course-word">Track seed</label>
                   <input
                     id="course-word"
                     name="word"
@@ -324,17 +348,21 @@
                   </button>
                   <p id="word-course-message" role="status"></p>
                 </form>
-                <button id="share-track-button" type="button" hidden>
-                  Share track
-                </button>
-                <button id="copy-seed-button" type="button" hidden>
-                  Copy seed
-                </button>
+                <div class="track-secondary">
+                  <button id="next-practice-button" type="button">
+                    Random track
+                  </button>
+                  <button id="daily-mode-button" type="button">
+                    Daily race
+                  </button>
+                  <button id="share-track-button" type="button" hidden>
+                    Share track
+                  </button>
+                  <button id="copy-seed-button" type="button" hidden>
+                    Copy seed
+                  </button>
+                </div>
                 <p id="share-track-status" role="status"></p>
-                <button id="next-practice-button" type="button">
-                  Random track
-                </button>
-                <button id="daily-mode-button" type="button">Daily race</button>
               </div>
               <p id="track-source" data-state="loading" hidden></p>
               <div id="daily-details" class="daily-details" hidden>

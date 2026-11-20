@@ -48,10 +48,9 @@ for (const word of ['banana', 'tui', 'river']) {
       path: info.outputPath(`${word}-ready.png`),
     });
     await page.locator('#start-button').click();
+    const epoch = (await page.evaluate(() => performance.now())) + 3000;
     await page.keyboard.down('Space');
-    await page.clock.runFor((COUNTDOWN_TICKS * 1000) / SIMULATION_HZ);
-    await page.keyboard.down('Space');
-    const epoch = await page.evaluate(() => performance.now());
+    await page.clock.runFor((COUNTDOWN_TICKS * 1000) / SIMULATION_HZ + 20);
     const timeline = [
       ...new Set([
         ...replay.transitions.slice(1).map((t) => t.tick),

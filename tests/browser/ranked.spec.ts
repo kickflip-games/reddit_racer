@@ -125,12 +125,11 @@ async function openDaily(
   return record;
 }
 async function driveFast(page: Page): Promise<void> {
+  const epoch = (await page.evaluate(() => performance.now())) + 3000;
   await page.keyboard.down('Space');
-  await page.clock.runFor(3000);
-  await page.keyboard.down('Space');
+  await page.clock.runFor(3020);
   await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
   await expect(page.locator('#circuit-minimap')).toBeVisible();
-  const epoch = await page.evaluate(() => performance.now());
   for (const transition of replay.transitions.slice(1)) {
     const now = await page.evaluate(() => performance.now());
     await page.clock.runFor(
@@ -434,7 +433,7 @@ test('signed-out practice can finish without submitting a score', async ({
     'practice only'
   );
   await driveFast(page);
-  await expect(page.locator('#card-kicker')).toHaveText('');
+  await expect(page.locator('#card-kicker')).toHaveText('Practice lap');
   await page.reload();
   await waitForSceneAssets(page);
   await expect(page.locator('#race')).toHaveAttribute(

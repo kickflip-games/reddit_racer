@@ -29,6 +29,20 @@ for (const viewport of [
       const settings = page.locator('#race-settings > summary');
       await expect(settings).toHaveAttribute('aria-label', 'Settings');
       await expect(settings).toHaveText('');
+      await expect(restart).toBeHidden();
+      await settings.click();
+      await expect(
+        page.getByRole('dialog', { name: 'Settings' })
+      ).toBeVisible();
+      await expect(page.locator('#race')).toHaveAttribute(
+        'data-phase',
+        'ready'
+      );
+      await page.getByRole('button', { name: 'Close settings' }).click();
+      await expect(settings).toBeFocused();
+      await page.locator('#start-button').click();
+      await page.clock.runFor(20);
+      await expect(restart).toBeVisible();
       const boxes = await Promise.all([
         restart.boundingBox(),
         settings.boundingBox(),
@@ -47,18 +61,7 @@ for (const viewport of [
       expect(s.x).toBeLessThanOrEqual(16);
       expect(s.y + s.height).toBeLessThanOrEqual(viewport.height - 14);
       expect(s.y + s.height).toBeGreaterThanOrEqual(viewport.height - 16);
-      await settings.click();
-      await expect(
-        page.getByRole('dialog', { name: 'Settings' })
-      ).toBeVisible();
-      await expect(page.locator('#race')).toHaveAttribute(
-        'data-phase',
-        'ready'
-      );
-      await page.getByRole('button', { name: 'Close settings' }).click();
-      await expect(settings).toBeFocused();
-      await page.locator('#start-button').click();
-      await page.clock.runFor(3100);
+      await page.clock.runFor(3080);
       await expect(page.locator('#race')).toHaveAttribute(
         'data-phase',
         'racing'

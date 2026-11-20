@@ -1,8 +1,4 @@
-import { drivingCue } from './driving-cue';
 import { smoothCarHeading } from './car-heading';
-import { driftStage } from './drift-feedback';
-import './drift-feedback.css';
-import { initializeDrivingHint } from './driving-hint';
 import {
   createGhostStore,
   MAX_GHOST_POINTS,
@@ -18,10 +14,6 @@ import {
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
 import {
-  START_BOOST_WINDOW_TICKS,
-  supportsStartBoost,
-} from '../shared/start-boost';
-import {
   createSimulationDriver,
   type InterruptionReason,
 } from './simulation-driver';
@@ -31,6 +23,7 @@ import { createRaceCamera } from './race-camera';
 import { createCircuitMinimap } from './circuit-minimap';
 import { createCarVisual } from './car-visual';
 import { createLandingFeedback } from './landing-feedback';
+import { createHomePreview } from './home-preview';
 import { createScenery } from './scenery';
 import { generateSceneryLayout, groundHeightAt } from './scenery-layout';
 import { createVegetation } from './vegetation';
@@ -93,7 +86,6 @@ export function initializeGame(
   options: GameSceneOptions
 ): GameSceneController {
   const lifetime = new AbortController();
-  const drivingHint = initializeDrivingHint();
   const eventOptions = { signal: lifetime.signal };
   const sceneAssets = createSceneAssetCache();
   function element(id: string): HTMLElement {
@@ -120,10 +112,9 @@ export function initializeGame(
   const cardCopy = element('card-copy');
   const viewportMessage = element('viewport-message');
   const inputLabel = element('status');
-  const driftCue = document.createElement('div');
-  driftCue.className = 'drift-cue';
-  driftCue.hidden = true;
-  raceRoot.append(driftCue);
+  element('race-controls').textContent = options.continuousPractice
+    ? 'Automatic steering. Hold Space or touch the track to accelerate; release to brake. Hold Shift or use two fingers to drift.'
+    : 'Automatic steering. Hold Space or touch the track to accelerate; release to brake.';
   const start = element('start-button');
   const retry = element('retry-button');
   const restart = element('restart-button');
@@ -305,14 +296,12 @@ export function initializeGame(
 
   // Shared fixed-step state drives the car; rendering only interpolates snapshots.
   const scene = new THREE.Scene();
-  // The uniformly lit field receives no shadows; match it with the clear color
-  // to avoid a redundant full-screen ground draw on every racing frame.
-  scene.background = new THREE.Color('#62ab73');
   const jumps = track.jumps ?? [];
   const countryside = generateSceneryLayout(track, {
     ...readSceneryOptions(),
     jumps,
   });
+  scene.background = new THREE.Color(countryside.composition.palette.base);
   scene.add(createEnvironment(track, countryside.props, countryside));
   const vegetation = createVegetation(countryside);
   scene.add(vegetation.object);
@@ -355,6 +344,8 @@ export function initializeGame(
   }
 
   const carVisual = createCarVisual();
+  const homePreview = createHomePreview(track);
+  const previewScreenPoint = new THREE.Vector3();
   const landingFeedback = createLandingFeedback();
   // The intended Kenney model is required. Never race with placeholder art.
   carVisual.object.visible = false;
@@ -373,6 +364,7 @@ export function initializeGame(
   const scenery = createScenery(track, countryside);
   const drivingVfx = createDrivingVfx(track, {
     followContactHeight: true,
+    groundHeightAt: (x, z) => groundHeightAt(countryside.surface, x, z),
   });
   const ghostVisual = createGhostVisual();
   scene.add(ghostVisual.object);
@@ -443,6 +435,8 @@ export function initializeGame(
     raceRoot.dataset.reducedMotion = String(snapshot.reducedMotion);
     raceRoot.dataset.motionPreference = snapshot.motion;
     if (snapshot.reducedMotion) drivingVfx.reset();
+    if (snapshot.reducedMotion && driver.raceState.phase === 'ready')
+      needsCameraReset = true;
     viewportDirty = true;
     if (sceneReady) {
       sceneDirty = true;
@@ -555,9 +549,6 @@ export function initializeGame(
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
-    if (race.phase !== 'countdown' && race.phase !== 'racing')
-      drivingHint.hide();
-    else if (race.phase === 'racing') drivingHint.beginDriving();
     timer.textContent = formatTime(
       (practiceDriver
         ? practiceDriver.lapTicks
@@ -641,37 +632,16 @@ export function initializeGame(
           : 0
       );
     }
-    const boostEnabled = supportsStartBoost(track);
-    const boostAwarded = state.startBoostTick != null;
     const launchCue =
-      boostEnabled &&
-      race.phase === 'racing' &&
-      state.tick <= START_BOOST_WINDOW_TICKS;
-    const boostNotice =
-      boostEnabled &&
-      race.phase === 'racing' &&
-      boostAwarded &&
-      state.tick - state.startBoostTick! < SIMULATION_HZ;
-    countdown.hidden = race.phase !== 'countdown' && !launchCue && !boostNotice;
-    countdown.dataset.kind = boostNotice
-      ? 'boost'
-      : launchCue
-        ? 'go'
-        : 'countdown';
-    countdown.dataset.boostEnabled = String(boostEnabled);
+      race.phase === 'racing' && state.tick < SIMULATION_HZ * 0.6;
+    countdown.hidden = race.phase !== 'countdown' && !launchCue;
+    countdown.dataset.kind = launchCue ? 'go' : 'countdown';
     if (!countdown.hidden) {
-      const value = boostNotice
-        ? 'Perfect start!'
-        : launchCue
-          ? 'GO!'
-          : String(Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ));
+      const value = launchCue
+        ? 'GO!'
+        : String(Math.ceil(race.countdownTicksRemaining / SIMULATION_HZ));
       if (countdown.textContent !== value) countdown.textContent = value;
-      countdown.setAttribute(
-        'aria-label',
-        race.phase === 'countdown' && boostEnabled
-          ? `${value}. Tap on GO for boost`
-          : value
-      );
+      countdown.setAttribute('aria-label', value);
     }
     const lapDistance = practiceDriver
       ? Math.max(
@@ -703,53 +673,17 @@ export function initializeGame(
             ? 'sliding'
             : 'gripping';
     raceRoot.dataset.drifting = String(practiceDriver?.drifting ?? false);
-    const cue = element('driving-cue');
-    const cueText = drivingCue(
-      state,
-      held(),
-      race.phase === 'racing',
-      practiceDriver?.drifting ?? false
-    );
-    cue.textContent = cueText;
-    cue.hidden = !cueText || !element('driving-hint').hidden;
-    const driftFeedback =
-      race.phase === 'racing'
-        ? driftStage(practiceDriver?.activeDriftSeconds)
-        : 'off';
-    driftCue.hidden = driftFeedback === 'off';
-    driftCue.dataset.stage = driftFeedback;
-    driftCue.textContent = driftFeedback === 'release' ? 'RELEASE' : 'DRIFT';
-    const driveLabel = practiceDriver?.drifting
-      ? 'DRIFTING'
-      : held()
-        ? 'ACCELERATING'
-        : 'RELEASED · BRAKING';
-    const surfaceLabel = practiceDriver?.airborne
-      ? 'AIRBORNE'
-      : state.recovering
-        ? 'RECOVERING'
-        : state.offRoad
-          ? 'OFF ROAD'
-          : state.slip > 0.05
-            ? 'SLIDING'
-            : '';
     inputLabel.textContent = preparing
-      ? held()
-        ? 'HOLDING · GETTING READY'
-        : 'GETTING READY'
+      ? 'Getting ready'
       : racing
         ? race.phase === 'countdown'
-          ? held()
-            ? 'HOLDING · READY TO GO'
-            : 'GET READY · HOLD TO GO'
-          : `${driveLabel}${surfaceLabel ? ` · ${surfaceLabel}` : ''}`
+          ? 'Countdown'
+          : 'Racing'
         : driver.interrupted
-          ? 'RACE INTERRUPTED · TRY AGAIN'
+          ? 'Race interrupted'
           : state.status === 'finished'
-            ? 'LAP COMPLETE'
-            : practiceDriver
-              ? 'TWO FINGERS OR SPACE + SHIFT TO DRIFT'
-              : 'SPACE OR TOUCH THE TRACK';
+            ? 'Lap complete'
+            : 'Ready';
   }
   function clearPointer(): void {
     const pointers = [...activePointers];
@@ -768,6 +702,70 @@ export function initializeGame(
     feedback();
   }
   function positionCar(deltaSeconds = 0): void {
+    // The same model/renderer provides the home demo. Never advance or feed
+    // preview input into either authoritative driver, audio, replay or effects.
+    if (
+      driver.raceState.phase === 'ready' &&
+      !preparing &&
+      !start.hidden &&
+      carLoadState === 'ready'
+    ) {
+      const mode = preferences.snapshot.reducedMotion
+        ? 'static'
+        : document.hidden ||
+            !viewportUsable ||
+            document.querySelector('dialog[open]')
+          ? 'paused'
+          : 'playing';
+      const pose = homePreview.update(deltaSeconds, mode);
+      const changed = carVisual.update({
+        x: pose.x,
+        z: pose.z,
+        elevation: pose.elevation,
+        surfaceHeight: pose.elevation,
+        heading: pose.heading,
+        jumpPitch: -Math.atan(pose.grade),
+        distance: pose.distance,
+        speed: pose.speed,
+        acceleration: 0,
+        lateralAcceleration: 0,
+        curvature: 0,
+        slip: 0,
+        held: false,
+        racing: false,
+        reducedMotion: preferences.snapshot.reducedMotion,
+        deltaSeconds,
+      });
+      if (viewportDirty) refreshCameraViewport();
+      const cameraChanged = raceCamera.update(
+        {
+          distance: pose.distance,
+          lateralOffset: 0,
+          heading: pose.heading,
+          speed: pose.speed,
+          elevation: pose.elevation,
+        },
+        {
+          mode: 'overview',
+          deltaSeconds,
+          reset: needsCameraReset,
+          reducedMotion: preferences.snapshot.reducedMotion,
+        }
+      );
+      needsCameraReset = false;
+      previewScreenPoint
+        .set(pose.x, pose.elevation + 0.6, pose.z)
+        .project(camera);
+      raceRoot.dataset.preview = mode;
+      raceRoot.dataset.previewPose = JSON.stringify({
+        ...pose,
+        screenX: ((previewScreenPoint.x + 1) * canvas.clientWidth) / 2,
+        screenY: ((1 - previewScreenPoint.y) * canvas.clientHeight) / 2,
+      });
+      sceneDirty = sceneDirty || changed || cameraChanged;
+      return;
+    }
+    raceRoot.dataset.preview = 'off';
     const current = driver.state;
     const previous = driver.previousState;
     const alpha = driver.alpha;
@@ -961,6 +959,7 @@ export function initializeGame(
   function applyVerification(id: number, result: VerificationOutcome): void {
     if (destroyed || id !== attemptId) return;
     verificationStatus(result.status, result.message);
+    card.dataset.outcome = result.status;
     cardCopy.textContent = result.status === 'verified' ? '' : result.message;
     if (result.status === 'verified' && result.finishTicks !== undefined) {
       showFinishTime(result.finishTicks);
@@ -980,6 +979,7 @@ export function initializeGame(
     release();
     const state = driver.state;
     card.dataset.result = 'false';
+    card.dataset.outcome = '';
     element('finish-time').hidden = true;
     element('practice-result').hidden = true;
     if (driver.interrupted) {
@@ -995,6 +995,7 @@ export function initializeGame(
       cardTitle.textContent = 'Race interrupted.';
       cardCopy.textContent = '';
       element('card-kicker').textContent = '';
+      card.dataset.outcome = 'interrupted';
     } else {
       audio.finish(attemptId);
       const finishTicks = state.finishedTick ?? state.tick;
@@ -1017,8 +1018,9 @@ export function initializeGame(
       if (attemptMode === 'ranked' && options.onFinish) {
         const id = attemptId;
         verificationStatus('pending', 'Saving your time…');
+        card.dataset.outcome = 'pending';
         cardCopy.textContent = 'Saving your time…';
-        element('card-kicker').textContent = '';
+        element('card-kicker').textContent = 'Verifying lap';
         const result = {
           attemptId: id,
           replay: rankedDriver.replay,
@@ -1042,7 +1044,8 @@ export function initializeGame(
           finishTicks
         );
         card.dataset.best = String(result.isNewBest);
-        element('card-kicker').textContent = '';
+        element('card-kicker').textContent = 'Practice lap';
+        card.dataset.outcome = 'practice';
         options.onResults?.({ attemptId, mode: attemptMode });
       }
     }
@@ -1062,20 +1065,18 @@ export function initializeGame(
     if (carLoadState !== 'ready') return;
     racingViewport = undefined;
     driver.start(timestamp);
-    drivingHint.show(
-      Boolean(practiceDriver),
-      matchMedia('(pointer: coarse)').matches
-    );
     seenPracticeLaps = 0;
     ghostPoints = [];
     ghostOverflow = false;
     ghostVisual.object.visible = false;
     lapNoticeUntil = 0;
     card.dataset.result = 'false';
+    card.dataset.outcome = '';
     card.dataset.best = 'false';
     element('finish-time').hidden = true;
     element('practice-result').hidden = true;
     carVisual.reset();
+    homePreview.reset();
     drivingVfx.reset();
     needsCameraReset = true;
     racing = true;
@@ -1248,6 +1249,7 @@ export function initializeGame(
       )
         return;
       event.preventDefault();
+      if (event.repeat) return;
       if (event.code === 'Space') keyHeld = true;
       else driftKeyHeld = true;
       updateInput(performance.now());
@@ -1296,6 +1298,7 @@ export function initializeGame(
   document.addEventListener(
     'visibilitychange',
     () => {
+      previousFrameTime = undefined;
       if (document.hidden) interruptRace();
       else {
         audio.setForeground(true);
@@ -1454,7 +1457,6 @@ export function initializeGame(
   frameHandle = requestAnimationFrame(animate);
 
   function dispose(): void {
-    drivingHint.hide();
     if (destroyed) return;
     closeSettings();
     interruptRace();
@@ -1473,7 +1475,6 @@ export function initializeGame(
     ghostVisual.dispose();
     scene.remove(ghostVisual.object);
     drivingVfx.dispose();
-    driftCue.remove();
     carVisual.dispose();
     scenery.dispose();
     vegetation.dispose();

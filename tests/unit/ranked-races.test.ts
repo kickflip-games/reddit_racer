@@ -667,6 +667,17 @@ void test('submission parser accepts every retained runtime pair including live 
     };
     assert.deepEqual(parseRankedSubmission(payload), payload);
   }
+  const countdownPayload = {
+    sessionId: uuid(1),
+    replay: {
+      ...replay,
+      schemaVersion: 2,
+      simulationVersion: 'fixed-step-v9',
+      handlingVersion: 'countdown-start-v1',
+      transitions: [{ tick: -120, held: true }],
+    },
+  };
+  assert.deepEqual(parseRankedSubmission(countdownPayload), countdownPayload);
   for (const [simulationVersion, handlingVersion] of [
     ['fixed-step-v7', 'arcade-v1'],
     ['future-v8', 'road-finish-v1'],

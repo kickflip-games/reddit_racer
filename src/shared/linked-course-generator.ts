@@ -1,5 +1,9 @@
 import { generateLinkedFlatCandidate } from './circuit-generator';
-import { LINKED_COURSE_VERSION, LINKED_RHYTHM_LIMITS } from './course-rhythm';
+import {
+  LINKED_COURSE_VERSION,
+  LINKED_RHYTHM_LIMITS,
+  type LinkedCourseVersion,
+} from './course-rhythm';
 import { validateTrack, type Track } from './track';
 
 export type CourseHill = { from: number; span: number; height: number };
@@ -20,7 +24,10 @@ function hillAt(s: number, hill: CourseHill) {
   };
 }
 
-export function addLinkedCourseHills(flat: Track): {
+export function addLinkedCourseHills(
+  flat: Track,
+  version: LinkedCourseVersion = LINKED_COURSE_VERSION
+): {
   track: Track;
   hills: CourseHill[];
 } {
@@ -47,11 +54,16 @@ export function addLinkedCourseHills(flat: Track): {
     .slice(0, 2)
     .map((span) => ({
       ...span,
-      height: Math.min(5, span.span ** 2 * 0.00032),
+      // Retain V4 exactly for saved shares. V5 adds height, keeping the C2
+      // crest and a curvature cap below airborne contact at the 30m/s limit.
+      height:
+        version === 'linked-circuits-v4'
+          ? Math.min(5, span.span ** 2 * 0.00032)
+          : Math.min(6.5, span.span ** 2 * 0.00044),
     }));
   const track: Track = {
     ...flat,
-    generatorVersion: LINKED_COURSE_VERSION,
+    generatorVersion: version,
     schemaVersion: 2,
     samples: flat.samples.map((sample) => {
       const profile = hills.map((hill) => hillAt(sample.s, hill));
@@ -76,11 +88,15 @@ export function addLinkedCourseHills(flat: Track): {
  * No opposite-side padding or artificial closing straight. The earlier recipe
  * remains unchanged for its stored courses and golden hashes.
  */
-export function generateLinkedCourseCandidate(seed: string, attempt = 1) {
+export function generateLinkedCourseCandidate(
+  seed: string,
+  attempt = 1,
+  version: LinkedCourseVersion = LINKED_COURSE_VERSION
+) {
   const candidate = generateLinkedFlatCandidate(seed, attempt);
   if (!candidate.track || candidate.diagnostics.codes.length)
     return { ...candidate, hills: [] };
-  const elevated = addLinkedCourseHills(candidate.track);
+  const elevated = addLinkedCourseHills(candidate.track, version);
   const codes = [...candidate.diagnostics.codes];
   if (
     Math.max(...elevated.track.samples.map((p) => p.y ?? 0)) <

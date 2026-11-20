@@ -3,6 +3,8 @@ import {
   LINKED_QUALITY_VERSION,
   LINKED_CANDIDATE_BUDGET,
   LINKED_QUALITY_BUDGET,
+  LINKED_COURSE_VERSION,
+  type LinkedCourseVersion,
 } from './course-rhythm';
 import { assessTrackQuality, type QualityAssessment } from './circuit-quality';
 import type { GeneratorConfig } from './circuit-generator';
@@ -27,7 +29,8 @@ export function assessBrakingTrack(track: Track): QualityAssessment {
 /** Bounded, deterministic gate. An invalid last candidate is never a silent reserve. */
 export function generateBrakingCircuit(
   seed: string,
-  maxAttempts = MAX_BRAKING_CANDIDATES
+  maxAttempts = MAX_BRAKING_CANDIDATES,
+  version: LinkedCourseVersion = LINKED_COURSE_VERSION
 ) {
   if (
     !Number.isInteger(maxAttempts) ||
@@ -39,6 +42,8 @@ export function generateBrakingCircuit(
     );
   if (!seed || seed.length > 96)
     throw new Error('Braking course seeds must contain1–96 characters.');
+  if (version !== LINKED_COURSE_VERSION && version !== 'linked-circuits-v4')
+    throw new Error('Unsupported linked course recipe.');
   const rejections: { attempt: number; codes: string[] }[] = [];
   const qualityRejections: { attempt: number; codes: string[] }[] = [];
   let last: { track: Track; quality: QualityAssessment } | undefined;
@@ -53,7 +58,7 @@ export function generateBrakingCircuit(
     attempt++
   ) {
     attempts = attempt;
-    const candidate = generateLinkedCourseCandidate(seed, attempt);
+    const candidate = generateLinkedCourseCandidate(seed, attempt, version);
     if (!candidate.track || candidate.diagnostics.codes.length) {
       rejections.push({ attempt, codes: [...candidate.diagnostics.codes] });
       continue;
@@ -131,8 +136,11 @@ export function normalizeCurrentCourseConfig(
     );
   return c;
 }
-export function generateCurrentDailyCircuit(seed: string): ValidatedCircuit {
-  const result = generateBrakingCircuit(seed);
+function generateLinkedDailyCircuit(
+  seed: string,
+  version: LinkedCourseVersion
+): ValidatedCircuit {
+  const result = generateBrakingCircuit(seed, undefined, version);
   if (!result.quality.valid || result.diagnostics.acceptedAttempt === null)
     throw new Error('Current course failed bounded braking quality gates.');
   if (
@@ -173,4 +181,13 @@ export function generateCurrentDailyCircuit(seed: string): ValidatedCircuit {
       },
     },
   };
+}
+
+export function generateCurrentDailyCircuit(seed: string): ValidatedCircuit {
+  return generateLinkedDailyCircuit(seed, LINKED_COURSE_VERSION);
+}
+
+/** Exact reconstruction for retained shares and compatibility fixtures only. */
+export function generateRetainedV4DailyCircuit(seed: string): ValidatedCircuit {
+  return generateLinkedDailyCircuit(seed, 'linked-circuits-v4');
 }

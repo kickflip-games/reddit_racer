@@ -11,6 +11,8 @@ import { createStuntCourse } from '../../src/shared/stunt-course.ts';
 import { sampleTrack, type Track } from '../../src/shared/track.ts';
 import { createSimulationState } from '../../src/shared/simulation.ts';
 import { stepSlotSimulation } from '../../src/shared/slot-grip.ts';
+import { generateBrakingCircuit } from '../../src/shared/braking-course-generator.ts';
+import { createRacingState, stepRace } from '../../src/shared/race-rules.ts';
 const views: RaceCameraViewport[] = [
   {
     width: 320,
@@ -84,6 +86,47 @@ function assertCar(
         assert.ok(p.z >= -1 && p.z <= 1);
       }
 }
+void test('steeper hill replay keeps the complete car inside every supported camera viewport', () => {
+  const course = generateBrakingCircuit('word-v2:tui');
+  const replay = course.quality.fastReplay;
+  assert.ok(course.quality.valid && replay);
+  for (const view of views) {
+    const camera = createRaceCamera(course.track);
+    camera.resize(view);
+    let race = createRacingState(course.track),
+      held = false,
+      index = 0;
+    camera.update(pose(course.track, 0), {
+      mode: 'chase',
+      deltaSeconds: 0,
+      reset: true,
+    });
+    while (race.phase === 'racing') {
+      while (replay.transitions[index]?.tick === race.simulation.tick)
+        held = replay.transitions[index++]!.held;
+      race = stepRace(course.track, race, held);
+      const s = race.simulation,
+        elevation = s.vertical?.height ?? 0;
+      camera.update(
+        {
+          ...pose(course.track, s.distance, s.lateralOffset),
+          speed: s.speed,
+          elevation,
+        },
+        { mode: 'chase', deltaSeconds: 1 / 120 }
+      );
+      if (s.tick % 12 === 0)
+        assertCar(
+          course.track,
+          camera.camera,
+          view,
+          s.distance,
+          s.lateralOffset,
+          elevation
+        );
+    }
+  }
+});
 void test('hero preview keeps a readable car rather than fitting a wide circuit thumbnail', () => {
   for (const track of [createOvalTrack(), createStuntCourse().track])
     for (const view of views) {

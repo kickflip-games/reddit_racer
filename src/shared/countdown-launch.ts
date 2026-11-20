@@ -6,7 +6,9 @@ import type { Track } from './track.ts';
 export const COUNTDOWN_LAUNCH_WINDOW_TICKS = 144;
 export const COUNTDOWN_LAUNCH_SPEED = 4;
 export const supportsCountdownLaunch = (track: Track): boolean =>
-  track.schemaVersion === 2 && track.generatorVersion === 'linked-circuits-v4';
+  track.schemaVersion === 2 &&
+  (track.generatorVersion === 'linked-circuits-v4' ||
+    track.generatorVersion === 'linked-circuits-v5');
 
 export type CountdownLaunchInput = {
   held: boolean;

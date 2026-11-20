@@ -369,8 +369,8 @@ function generateMotifCandidate(
     shoulder: config.shoulder,
   });
   const version = linked ? LINKED_COURSE_VERSION : GENERATOR_VERSION;
-  // V4 versions the launch rule only. Keep V3's seed geometry and candidate
-  // selection stable so existing seed shares still reconstruct their exact hash.
+  // Keep the horizontal motif recipe frozen. Elevation and retained share
+  // selection are versioned by the linked-course layer.
   const geometryVersion = linked ? 'linked-circuits-v3' : version;
   const random = randomFor(
     `${geometryVersion}|${candidateSeed}|${fingerprint}`

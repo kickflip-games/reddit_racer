@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   generateCurrentDailyCircuit,
+  generateRetainedV4DailyCircuit,
   assessBrakingTrack,
 } from '../../src/shared/braking-course-generator';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality';
@@ -12,12 +13,13 @@ import {
 const instruction = 'Hold to accelerate. Release to brake.';
 const noon = Date.parse('2026-11-19T12:00:00Z');
 const current = generateCurrentDailyCircuit('word-v2:banana');
-const oldTrack = { ...current.track, generatorVersion: 'linked-circuits-v3' };
+const old = generateRetainedV4DailyCircuit('word-v2:banana');
+const oldTrack = { ...old.track, generatorVersion: 'linked-circuits-v3' };
 const retained = {
-  ...current,
+  ...old,
   track: oldTrack,
   quality: assessBrakingTrack(oldTrack),
-  diagnostics: { ...current.diagnostics, version: oldTrack.generatorVersion },
+  diagnostics: { ...old.diagnostics, version: oldTrack.generatorVersion },
 };
 
 test('built teaser has the exact short driving instruction', async ({
@@ -35,6 +37,7 @@ test('built teaser has the exact short driving instruction', async ({
 
 for (const [name, generated] of [
   ['current v9', current],
+  ['retained v4 v9', old],
   ['retained v8', retained],
   ['legacy flat', generateValidatedCircuit('showcase-3')],
 ] as const) {

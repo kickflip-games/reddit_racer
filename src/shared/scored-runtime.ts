@@ -145,7 +145,8 @@ export function scoredRuntime(
 export function runtimeForTrack(track: Track): ScoredRuntime {
   if (
     track.schemaVersion === 2 &&
-    track.generatorVersion === 'linked-circuits-v4'
+    (track.generatorVersion === 'linked-circuits-v4' ||
+      track.generatorVersion === 'linked-circuits-v5')
   )
     return countdownLaunchRuntime;
   if (

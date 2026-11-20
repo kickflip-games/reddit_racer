@@ -1,6 +1,6 @@
-# Local presentation review
+# Initial local presentation review
 
-This pass starts at private release source `72e96948c655bc09fa14a3df9b454f890af217b4` on the local branch `feature/daily-lap-presentation`. Nothing in this pass has been pushed, merged or uploaded. The private `the-daily-lap@0.0.4` installation is untouched.
+This pass starts at private release source `72e96948c655bc09fa14a3df9b454f890af217b4` on the local branch `feature/daily-lap-presentation`. At the initial November 19 capture, this work was local only and private `the-daily-lap@0.0.4` was unchanged. The presentation is now included in the versioned elevation integration; see [the elevation release notes](steeper-circuits.md) for compatibility and scope.
 
 The existing issues [#54](https://github.com/kickflip-games/reddit_racer/issues/54), [#55](https://github.com/kickflip-games/reddit_racer/issues/55) and [#57](https://github.com/kickflip-games/reddit_racer/issues/57) are completed historical references. The new work uses their acceptance criteria without creating duplicate issues. The existing screenshot review is [#51](https://github.com/kickflip-games/reddit_racer/issues/51).
 
@@ -37,4 +37,4 @@ The task workspace holds check logs and captures outside the checkout. Results a
 
 The legacy native-input replay helpers now let the next animation frame cross green rather than relying on a held-key repeat to flush input; their exact replay comparison is retained.
 
-Physical Android and a new hosted ranked-save check remain outside this local pass. No private install update is authorized in this turn.
+Physical Android and a new hosted ranked-save check remain outside this local pass. The initial capture was a local review; subsequent release status is separate from this evidence.

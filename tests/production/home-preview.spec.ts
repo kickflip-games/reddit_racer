@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
-import { generateCurrentDailyCircuit } from '../../src/shared/braking-course-generator';
+import {
+  generateCurrentDailyCircuit,
+  generateRetainedV4DailyCircuit,
+} from '../../src/shared/braking-course-generator';
 import { generateValidatedCircuit } from '../../src/shared/circuit-quality';
 import {
   createDailyChallengeRecord,
@@ -10,6 +13,7 @@ import { sampleTrack } from '../../src/shared/track';
 const noon = Date.parse('2026-11-19T12:00:00Z');
 for (const [name, generated] of [
   ['current daily', generateCurrentDailyCircuit('word-v2:banana')],
+  ['retained v4 daily', generateRetainedV4DailyCircuit('word-v2:banana')],
   ['legacy daily', generateValidatedCircuit('showcase-3')],
 ] as const) {
   test(`built ${name} preview laps the loaded circuit silently and leaves a fresh real countdown`, async ({

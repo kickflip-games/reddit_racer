@@ -140,10 +140,14 @@ export async function generateWordPracticeCourse(
   generator: TrackShare['generator'] = LINKED_COURSE_VERSION
 ): Promise<PracticeCourse & { wordCourse: CourseWord }> {
   const wordCourse = courseWord(input);
-  const result = generateBrakingCircuit(wordCourse.seed);
+  const result = generateBrakingCircuit(
+    wordCourse.seed,
+    undefined,
+    generator === 'linked-circuits-v3' ? 'linked-circuits-v4' : generator
+  );
   if (!result.quality.valid)
     throw new Error('This seed course did not pass the driving checks.');
-  // V4 changes only the launch runtime. Retain the exact V3 geometry/hash for saved shares.
+  // Saved V3/V4 shares use their frozen recipe, including quality selection.
   const track = { ...result.track, generatorVersion: generator };
   let trackHash: string;
   try {

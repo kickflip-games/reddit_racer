@@ -46,8 +46,14 @@ const countdownReplay = {
   transitions: [{ tick: -120, held: true }],
   endTick: launchRace.simulation.tick,
 };
+const retainedBase = generateLinkedCourseCandidate(
+  'grass-regression',
+  1,
+  'linked-circuits-v4'
+).track;
+if (!retainedBase) throw new Error('Missing retained launch fixture');
 const retainedTrack = {
-  ...launchTrack,
+  ...retainedBase,
   generatorVersion: 'linked-circuits-v3',
 };
 let retainedRace = createRacingState(retainedTrack);

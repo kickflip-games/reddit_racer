@@ -1,6 +1,8 @@
 import type { Replay } from './replay';
 
-export const LINKED_COURSE_VERSION = 'linked-circuits-v4';
+export const LINKED_COURSE_VERSION = 'linked-circuits-v5';
+export type LinkedCourseVersion =
+  typeof LINKED_COURSE_VERSION | 'linked-circuits-v4';
 export const LINKED_QUALITY_VERSION = 'linked-quality-v2';
 /** V2 searches more candidates without weakening any acceptance threshold. */
 export const LINKED_CANDIDATE_BUDGET = 32;

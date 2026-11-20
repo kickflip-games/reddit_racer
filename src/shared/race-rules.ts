@@ -1,4 +1,4 @@
-import { handlingForTrack } from './scored-runtime.ts';
+import { handlingForTrack, ROAD_FINISH_HANDLING } from './scored-runtime.ts';
 import {
   countdownLaunchArmed,
   sampleCountdownLaunch,
@@ -223,7 +223,20 @@ export function advanceLapProgress(
           track.totalLength,
           quantizeSimulation(previous.distance + next.speed / SIMULATION_HZ)
         );
-  if (Math.abs(next.distance - expectedDistance) > progressTolerance) {
+  // Road-finish runtimes keep an off-road or airborne car just short of the
+  // line so it can rejoin the road and finish without losing the attempt.
+  const cappedRoadFinish =
+    !stationaryRecovery &&
+    HANDLING === ROAD_FINISH_HANDLING &&
+    expectedDistance === track.totalLength &&
+    next.distance === track.totalLength - 0.000001 &&
+    (next.offRoad || next.vertical?.airborne === true) &&
+    next.status === 'running' &&
+    next.finishedTick === null;
+  if (
+    !cappedRoadFinish &&
+    Math.abs(next.distance - expectedDistance) > progressTolerance
+  ) {
     throw new Error(
       'Race progress does not match authoritative forward movement'
     );

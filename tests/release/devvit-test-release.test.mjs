@@ -289,7 +289,7 @@ test('an existing temporary config is not overwritten or deleted', (t) => {
   );
   assert.deepEqual(f.calls(), []);
 });
-test('workflow has only a guarded manual trigger, least privilege, one environment-scoped secret step, and exact-SHA checkout', () => {
+test('workflow has only a guarded manual trigger, least privilege, one release-only repository secret step, and exact-SHA checkout', () => {
   const raw = readFileSync(
     join(repo, '.github/workflows/devvit-test-release.yaml'),
     'utf8'
@@ -303,12 +303,10 @@ test('workflow has only a guarded manual trigger, least privilege, one environme
     false
   );
   assert.equal(workflow.jobs.release.needs, 'validate');
-  assert.equal(
-    workflow.jobs.release.environment.name,
-    'the-daily-lap-test-release'
-  );
+  assert(!Object.hasOwn(workflow.jobs.release, 'environment'));
   const secretSteps = [];
   for (const [name, job] of Object.entries(workflow.jobs)) {
+    assert(!Object.hasOwn(job, 'environment'));
     for (const guard of [
       "github.event_name == 'workflow_dispatch'",
       "github.repository == 'kickflip-games/reddit_racer'",
@@ -336,7 +334,7 @@ test('workflow has only a guarded manual trigger, least privilege, one environme
   assert.equal(secretSteps.length, 1);
   assert.equal(secretSteps[0][0], 'release');
   assert.deepEqual(secretSteps[0][1].env, {
-    DEVVIT_AUTH_TOKEN: '${{ secrets.THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN }}',
+    DEVVIT_AUTH_TOKEN: '${{ secrets.DEVVIT_AUTH_TOKEN }}',
   });
   assert.equal(
     secretSteps[0][1].run,

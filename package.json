@@ -12,7 +12,7 @@
     "login": "devvit login",
     "prettier": "prettier --write .",
     "test:types": "tsc --build",
-    "test:unit": "tsx --test \"src/**/*.test.ts\" \"tests/unit/**/*.test.ts\"",
+    "test:unit": "tsx --test \"src/**/*.test.ts\" \"tests/unit/**/*.test.ts\" && npm run test:release",
     "dev:local": "vite --config vite.local.config.ts",
     "type-check": "npm run test:types",
     "test": "tsx --test",
@@ -23,7 +23,8 @@
     "tracks:check": "tsx scripts/tracks-check.ts",
     "courses:check": "tsx scripts/course-rhythm-report.ts",
     "balance:check": "tsx scripts/balance-check.ts",
-    "test:production": "npm run build && playwright test -c playwright.production.config.ts"
+    "test:production": "npm run build && playwright test -c playwright.production.config.ts",
+    "test:release": "node --test tests/release/*.test.mjs"
   },
   "engines": {
     "node": "24.22.x"
@@ -45,6 +46,7 @@
     "@types/three": "^0.187.0",
     "eslint": "10.14.0",
     "globals": "17.14.0",
+    "js-yaml": "3.15.2",
     "prettier": "3.9.10",
     "tsx": "^4.23.15",
     "typescript": "6.0.3",

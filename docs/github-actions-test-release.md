@@ -88,7 +88,7 @@ serializes releases and does not automatically cancel an active release.
 
 ## Verified CLI authentication contract
 
-The repository pins both `devvit` and `@devvit/cli` to **0.15.3**. Inspection of the
+The repository pins both `devvit` and `@devvit/cli` to **0.15.4**. Inspection of the
 installed source, plus offline tests with dummy values, establishes:
 
 - `dist/lib/auth/AuthTokenStore.js` checks `DEVVIT_AUTH_TOKEN` before the token

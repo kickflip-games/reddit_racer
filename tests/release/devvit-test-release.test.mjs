@@ -64,10 +64,10 @@ function fixture(t) {
   put('package-lock.json', lock);
   put('node_modules/devvit/package.json', {
     type: 'module',
-    version: '0.15.3',
-    dependencies: { '@devvit/cli': '0.15.3' },
+    version: '0.15.4',
+    dependencies: { '@devvit/cli': '0.15.4' },
   });
-  put('node_modules/@devvit/cli/package.json', { version: '0.15.3' });
+  put('node_modules/@devvit/cli/package.json', { version: '0.15.4' });
   for (const path of [
     'dist/client/splash.html',
     'dist/client/game.html',
@@ -222,7 +222,7 @@ for (const change of [
         dev: { subreddit: 'somewhere_else' },
       });
     if (change === 'CLI bump')
-      f.put('node_modules/@devvit/cli/package.json', { version: '0.15.4' });
+      f.put('node_modules/@devvit/cli/package.json', { version: '0.15.5' });
     if (change === 'source mismatch') f.env.GITHUB_SHA = 'b'.repeat(40);
     if (change === 'missing build')
       rmSync(join(f.root, 'dist/server/index.cjs'));

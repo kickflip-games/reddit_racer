@@ -71,7 +71,7 @@ Installing `the-daily-lap` invokes the automatic daily-post bootstrap, and
 its scheduler checks every five minutes. Avoid overlapping publishers in
 the same target subreddit. Once the replacement has been tested and is
 eligible for public installation, uninstall the old app from that community
-*before* installing the new one there.
+_before_ installing the new one there.
 
 ## Cutover checklist
 

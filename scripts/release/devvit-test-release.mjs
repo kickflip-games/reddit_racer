@@ -13,7 +13,7 @@ import { pathToFileURL } from 'node:url';
 
 export const APP = 'the-daily-lap';
 export const SUBREDDIT = 'full_throttle_dev_dev';
-export const CLI_VERSION = '0.15.3';
+export const CLI_VERSION = '0.15.4';
 const repository = 'kickflip-games/reddit_racer';
 const readJSON = (file) => JSON.parse(readFileSync(file, 'utf8'));
 

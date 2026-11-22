@@ -20,6 +20,9 @@ updates:
         patterns:
           - 'devvit'
           - '@devvit/*'
+      trpc:
+        patterns:
+          - '@trpc/*'
       eslint:
         patterns:
           - 'eslint'

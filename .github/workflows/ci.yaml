@@ -22,22 +22,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci --no-fund
       - name: Select Devvit backend runtime
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22.23.5
       - name: Test shared and server rules on Node 22
         run: npm run test:unit
       - name: Restore pinned development runtime
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
       - run: npm run check
@@ -47,7 +47,7 @@ jobs:
         run: npm run tracks:check -- --elevated --prefix elevated-regression --report artifacts/elevated-quality.json
       - name: Validate linked daily courses and braking rhythm
         run: npm run courses:check -- artifacts/linked-courses
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: track-validation-attempt-${{ github.run_attempt }}
@@ -62,10 +62,10 @@ jobs:
     env:
       PLAYWRIGHT_JSON_OUTPUT_FILE: artifacts/browser-results.json
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -79,7 +79,7 @@ jobs:
       - name: Complete browser suite
         if: github.event_name == 'schedule' || inputs.full_browser_suite
         run: npm run test:e2e -- --workers=1 --reporter=line,json
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: browser-validation-attempt-${{ github.run_attempt }}
@@ -87,42 +87,3 @@ jobs:
             test-results
             artifacts/browser-results.json
           retention-days: 7
-  deploy-private:
-    name: Upload private Devvit version
-    needs: [check, browser]
-    if: >-
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
-      github.ref == 'refs/heads/main' &&
-      vars.DEVVIT_DEPLOY_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - name: Check out tested commit
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-        with:
-          persist-credentials: false
-      - name: Set up pinned Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --no-fund
-      - name: Verify intended new app
-        run: |
-          node -e "const fs=require('node:fs'); const a=JSON.parse(fs.readFileSync('devvit.json','utf8')); if (a.name !== 'the-daily-lap') { console.error('Unexpected Devvit app name'); process.exit(1); }"
-      - name: Authenticate Devvit CLI
-        env:
-          DEVVIT_AUTH_TOKEN: ${{ secrets.DEVVIT_AUTH_TOKEN }}
-        run: |
-          test -n "$DEVVIT_AUTH_TOKEN"
-          mkdir -p "$HOME/.devvit"
-          printf '%s' "$DEVVIT_AUTH_TOKEN" > "$HOME/.devvit/token"
-          chmod 600 "$HOME/.devvit/token"
-          npx devvit whoami
-      - name: Build production assets
-        run: npm run build
-      - name: Upload private version (not publish/install)
-        run: npx devvit upload

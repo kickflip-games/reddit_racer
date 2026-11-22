@@ -1,7 +1,7 @@
 # One current course generator for new daily races
 
 New server-side daily creation and free driving use the braking-course generator.
-The daily storage adapter calls the same bounded three-attempt quality gate.
+The daily storage adapter calls the same bounded 32-candidate, 12-quality-assessment gate.
 If primary generation fails, the service uses a fixed seed
 (`current-course-reserve`) through **that same generator and the same gates**.
 There is no older elevated-generator fallback or unsafe final-candidate bypass.
@@ -16,8 +16,8 @@ New future days receive the current generator. Historical format readers are
 data compatibility, not alternate selectable generation modes.
 
 The storage adapter declares the current geometry bounds (7 m width,
-500–2200 m length, 10 m minimum radius, 2 m clearance, 0.8 m shoulder,
-three attempts). It rejects modified audit settings. Record creation reruns
+540–900 m length, 10 m minimum radius, 2 m clearance, 0.8 m shoulder,
+32 candidates and 12 quality assessments). It rejects modified audit settings. Record creation reruns
 quality assessment against copied geometry using the exact saved thresholds,
 including 0.75 s minimum braking gain and at most 15% fast-policy off-road time.
 Audit work counters include actual accumulated candidate assessments and the
@@ -41,3 +41,7 @@ The primary in this probe **passed**; the sum is a deliberately measured
 primary-plus-reserve cost scenario, not a claim of an observed fallback.
 Record creation additionally performs an independent quality revalidation.
 These are local measurements, not Reddit server latency guarantees.
+
+The current candidate uses four course families, taller terrain and selected real
+gap jumps. See [Daily course families](daily-course-variety.md) for the versioned
+acceptance changes, loopback scope and reproduction commands.

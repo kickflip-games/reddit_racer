@@ -9,7 +9,8 @@ import { runReplay } from '../../src/shared/replay.ts';
 
 const dt = 1000 / SIMULATION_HZ;
 const track = {
-  ...generateBrakingCircuit('practice-1').track,
+  ...generateBrakingCircuit('practice-1', undefined, 'linked-circuits-v5')
+    .track,
   generatorVersion: 'linked-circuits-v3',
 };
 

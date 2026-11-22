@@ -572,7 +572,7 @@ void test('current generator creates future days without replacing an already-st
   });
   assert.equal(next.generatorVersion, LINKED_COURSE_VERSION);
   assert.equal(next.track.schemaVersion, 2);
-  assert.equal(next.generatorConfig.lengthMax, 600);
+  assert.equal(next.generatorConfig.lengthMax, 900);
   assert.equal(next.qualityThresholds.minGainTicks, 90);
   assert.equal(next.qualityThresholds.maxFastOffRoadFraction, 0.15);
   assert.equal(next.audit.generatorFallback, false);

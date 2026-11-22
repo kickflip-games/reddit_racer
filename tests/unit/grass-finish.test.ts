@@ -18,7 +18,11 @@ import { qualityVersionForTrack } from '../../src/shared/circuit-quality';
 import { stepElevatedSimulationV7 } from '../../src/shared/elevated-simulation-v7';
 
 function fixture() {
-  const track = generateLinkedCourseCandidate('grass-regression', 1).track;
+  const track = generateLinkedCourseCandidate(
+    'grass-regression',
+    1,
+    'linked-circuits-v5'
+  ).track;
   assert.ok(track);
   return { ...track, generatorVersion: 'linked-circuits-v2' };
 }

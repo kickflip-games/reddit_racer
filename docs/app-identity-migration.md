@@ -34,30 +34,18 @@ identifier is unavailable, choose a new identifier and align this repo's
 
 ## GitHub Actions
 
-The `main` branch has a `deploy-private` job in
-`.github/workflows/ci.yaml`. The owner added the `DEVVIT_AUTH_TOKEN`
-GitHub Actions secret on 22 November 2026.
+The guarded **Private test release** workflow is the supported release path.
+See [owner setup and exact-version dispatch](github-actions-test-release.md).
+It requires manual confirmation on protected `main`, a main-only deployment
+environment, and that environment's `THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN`.
+An owner must configure these controls before adding the environment secret.
 
-This job uploads only after `check` and `browser` both pass, and only on a
-push or manual run on `main` with the repository Actions variable
-`DEVVIT_DEPLOY_ENABLED=true`. With the variable unset, deployment is off.
-
-After app registration and access are confirmed, enable with:
-
-```sh
-gh variable set DEVVIT_DEPLOY_ENABLED --body true --repo kickflip-games/reddit_racer
-```
-
-To suspend private uploads:
-
-```sh
-gh variable set DEVVIT_DEPLOY_ENABLED --body false --repo kickflip-games/reddit_racer
-```
-
-The job verifies `devvit.json` targets `the-daily-lap`, authenticates
-from the GitHub secret, builds, and runs `npx devvit upload`. It does **not**
-publish, install, uninstall, or archive either app. Enabling it is not a
-workaround for Reddit's access restriction.
+The former optional `deploy-private` job in ordinary CI is removed. Pushes,
+PRs and scheduled CI runs only validate code and never consume the repository-wide
+`DEVVIT_AUTH_TOKEN`. Adding that broader secret does not enable the new workflow;
+this change neither reads it nor modifies it. No release or dispatch is performed
+by this setup. Reddit access and app ownership still require independent
+confirmation; the workflow is not a workaround for an access restriction.
 
 ## Data and cutover boundaries
 

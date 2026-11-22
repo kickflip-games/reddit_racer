@@ -396,3 +396,13 @@ test('CLI environment overrides cannot redirect app or subreddit', () => {
     /overrides/
   );
 });
+
+test('ordinary CI has no release job or repository-wide Devvit secret path', () => {
+  const raw = readFileSync(join(repo, '.github/workflows/ci.yaml'), 'utf8');
+  const workflow = yaml.safeLoad(raw);
+  assert.deepEqual(Object.keys(workflow.jobs).sort(), ['browser', 'check']);
+  assert(!raw.includes('secrets.'));
+  assert(!raw.includes('devvit upload'));
+  assert(!raw.includes('devvit install'));
+  assert(!raw.includes('devvit publish'));
+});

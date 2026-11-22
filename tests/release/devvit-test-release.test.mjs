@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -47,7 +48,9 @@ const context = {
 };
 const json = (file) => JSON.parse(readFileSync(file, 'utf8'));
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), 'daily-lap-release-test-'));
+  const root = realpathSync(
+    mkdtempSync(join(tmpdir(), 'daily-lap-release-test-'))
+  );
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const put = (path, value) => {
     mkdirSync(dirname(join(root, path)), { recursive: true });

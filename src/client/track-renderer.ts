@@ -1,6 +1,11 @@
 import { jumpRoadHeight, type GapJump } from '../shared/stunt-course';
 import * as THREE from 'three';
 import { roadPointAt, sampleTrack, type Track } from '../shared/track';
+import {
+  findTrackCrossings,
+  CROSSING_CLEAR_RADIUS,
+  BRIDGE_FASCIA_DEPTH,
+} from '../shared/track-crossings';
 
 export type StripEdge = { side: -1 | 1; offset: number };
 export type TrackBounds = {
@@ -423,13 +428,103 @@ export function createTrackRenderer(
   }
   addStartLine(group, track);
   if (track.schemaVersion === 2) group.add(createRoadStructure(track));
+  prepareBridgeCutaways(group, track);
   return group;
+}
+
+/** Split only the raised crossing span so a fixed-angle camera can see underneath.
+ * The opaque fascia/underside shows the bridge in the approach and on the top pass.
+ */
+function prepareBridgeCutaways(group: THREE.Group, track: Track) {
+  for (const [index, crossing] of findTrackCrossings(track).entries()) {
+    if (crossing.upperY - crossing.lowerY < 3.5) continue;
+    const cutaway = new THREE.Group();
+    cutaway.name = `bridge-cutaway-${index}`;
+    const meshes: THREE.Mesh[] = [];
+    group.traverse((object) => {
+      if (
+        object instanceof THREE.Mesh &&
+        !(object instanceof THREE.InstancedMesh)
+      )
+        meshes.push(object);
+    });
+    for (const mesh of meshes) {
+      const geometry = mesh.geometry,
+        vertices = geometry.getAttribute('position'),
+        original = geometry.getIndex();
+      if (!original || Array.isArray(mesh.material)) continue;
+      const rest: number[] = [],
+        span: number[] = [];
+      for (let i = 0; i < original.count; i += 3) {
+        const triangle = [
+          original.getX(i),
+          original.getX(i + 1),
+          original.getX(i + 2),
+        ];
+        const raised = triangle.every(
+          (v) =>
+            vertices.getY(v) > crossing.lowerY + 6 &&
+            Math.hypot(
+              vertices.getX(v) - crossing.x,
+              vertices.getZ(v) - crossing.z
+            ) < 52
+        );
+        (raised ? span : rest).push(...triangle);
+      }
+      if (!span.length) continue;
+      const split = geometry.clone();
+      split.setIndex(span);
+      geometry.setIndex(rest);
+      const material = mesh.material.clone();
+      material.transparent = true;
+      const part = new THREE.Mesh(split, material);
+      part.name = `cutaway-${mesh.name || 'surface'}`;
+      cutaway.add(part);
+    }
+    group.add(cutaway);
+  }
+}
+
+export function createBridgeVisibility(group: THREE.Group, track: Track) {
+  const bridges = findTrackCrossings(track).map((crossing, index) => {
+    const materials: THREE.Material[] = [];
+    group.getObjectByName(`bridge-cutaway-${index}`)?.traverse((object) => {
+      if (object instanceof THREE.Mesh && !Array.isArray(object.material))
+        materials.push(object.material);
+    });
+    return { crossing, materials, opacity: 1 };
+  });
+  return (distance: number) => {
+    const s =
+      ((distance % track.totalLength) + track.totalLength) % track.totalLength;
+    let deck = 'none',
+      changed = false;
+    for (const bridge of bridges) {
+      const lower = Math.abs(s - bridge.crossing.lowerS),
+        upper = Math.abs(s - bridge.crossing.upperS);
+      // Full cutaway while the car and its forward view can be covered. Fade at
+      // the ends; this is selected by route progress, not proximity in XZ.
+      const opacity = 0.14 + 0.86 * THREE.MathUtils.smoothstep(lower, 28, 48);
+      if (lower < 48) deck = 'lower';
+      else if (upper < 48) deck = 'upper';
+      if (opacity !== bridge.opacity) {
+        changed = true;
+        bridge.opacity = opacity;
+        for (const material of bridge.materials) {
+          material.opacity = opacity;
+          material.depthWrite = opacity > 0.99;
+        }
+      }
+    }
+    return { deck, changed };
+  };
 }
 
 /** Raised road fascia and pooled piers make the elevation readable without shadow maps. */
 function createRoadStructure(track: Track): THREE.Group {
   const group = new THREE.Group();
   group.name = 'raised-road-structure';
+  const crossings = findTrackCrossings(track);
   const positions: number[] = [],
     indices: number[] = [],
     colors: number[] = [];
@@ -467,7 +562,9 @@ function createRoadStructure(track: Track): THREE.Group {
           colors.push(color.r, color.g, color.b);
           positions.push(
             sample.x - sample.tz * lateral,
-            bottom && ramp ? -0.04 : Math.max(0, y - (bottom ? 0.55 : 0.02)),
+            bottom && ramp
+              ? -0.04
+              : Math.max(0, y - (bottom ? BRIDGE_FASCIA_DEPTH : 0.02)),
             sample.z + sample.tx * lateral
           );
         }
@@ -509,6 +606,9 @@ function createRoadStructure(track: Track): THREE.Group {
   group.add(sides);
   const safeFootings = footings.filter(
     (p) =>
+      !crossings.some(
+        (c) => Math.hypot(p.x - c.x, p.z - c.z) < CROSSING_CLEAR_RADIUS
+      ) &&
       !track.samples.some(
         (road) =>
           (road.y ?? 0) < p.y - 2 &&
@@ -530,6 +630,26 @@ function createRoadStructure(track: Track): THREE.Group {
     piers.setMatrixAt(i, dummy.matrix);
   });
   group.add(piers);
+  if (crossings.length) {
+    const underside = roadStrip(
+      track,
+      { side: -1, offset: -0.8 },
+      { side: 1, offset: 0.8 },
+      '#a9b5b1',
+      -BRIDGE_FASCIA_DEPTH
+    );
+    const indices = underside.geometry.getIndex(),
+      positions = underside.geometry.getAttribute('position'),
+      kept: number[] = [];
+    if (indices)
+      for (let i = 0; i < indices.count; i += 3) {
+        const tri = [indices.getX(i), indices.getX(i + 1), indices.getX(i + 2)];
+        if (tri.every((v) => positions.getY(v) > 0.2)) kept.push(...tri);
+      }
+    underside.geometry.setIndex(kept);
+    underside.name = 'bridge-underside';
+    group.add(underside);
+  }
   // Small ground strips under raised sections anchor them and leave the asphalt legible.
   const shadow = buildRoadStripVertices(
     track,

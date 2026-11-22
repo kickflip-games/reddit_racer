@@ -44,7 +44,7 @@ void test('linked courses distribute real braking decisions while retaining safe
     assert.equal(track.generatorVersion, LINKED_COURSE_VERSION);
     assert.equal(quality.version, LINKED_QUALITY_VERSION);
     assert.equal(track.schemaVersion, 2);
-    assert.ok(track.totalLength >= 540 && track.totalLength <= 600);
+    assert.ok(track.totalLength >= 540 && track.totalLength <= 900);
     assert.equal(diagnostics.fallbackUsed, false);
     assert.ok(diagnostics.attempts <= MAX_BRAKING_CANDIDATES);
     assert.ok(diagnostics.qualityAttempts <= MAX_BRAKING_QUALITY_ATTEMPTS);
@@ -78,7 +78,7 @@ void test('new acceptance policy rejects the passive rectangle and flattened ele
   const old = generateBrakeRhythmCandidate('word-v2:evaluation-0').track;
   const passive = assessBrakingTrack({
     ...old,
-    generatorVersion: LINKED_COURSE_VERSION,
+    generatorVersion: 'linked-circuits-v5',
   });
   assert.ok(passive.codes.includes('passive-straight'));
   assert.equal(passive.work.controllerRuns, 0);
@@ -114,10 +114,10 @@ void test('candidate budgets are finite and seed reproduction is independent of 
 
 void test('v8 daily selection stays bounded and meets unchanged quality limits', () => {
   const seed = 'daily:t5_rhythm:2027-03-30';
-  const exhausted = generateBrakingCircuit(seed, 24);
+  const exhausted = generateBrakingCircuit(seed, 24, 'linked-circuits-v5');
   assert.equal(exhausted.quality.valid, true);
   assert.equal(exhausted.diagnostics.acceptedAttempt, 3);
-  const result = generateBrakingCircuit(seed);
+  const result = generateBrakingCircuit(seed, undefined, 'linked-circuits-v5');
   assert.equal(result.quality.valid, true);
   assert.deepEqual(result.quality.codes, []);
   assert.equal(result.diagnostics.acceptedAttempt, 3);

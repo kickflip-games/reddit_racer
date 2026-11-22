@@ -42,7 +42,11 @@ export function generateBrakingCircuit(
     );
   if (!seed || seed.length > 96)
     throw new Error('Braking course seeds must contain1–96 characters.');
-  if (version !== LINKED_COURSE_VERSION && version !== 'linked-circuits-v4')
+  if (
+    version !== LINKED_COURSE_VERSION &&
+    version !== 'linked-circuits-v5' &&
+    version !== 'linked-circuits-v4'
+  )
     throw new Error('Unsupported linked course recipe.');
   const rejections: { attempt: number; codes: string[] }[] = [];
   const qualityRejections: { attempt: number; codes: string[] }[] = [];
@@ -77,7 +81,7 @@ export function generateBrakingCircuit(
           fallbackUsed: false,
           requestedSeed: seed,
           acceptedAttempt: attempt,
-          qualityVersion: BRAKING_QUALITY_VERSION,
+          qualityVersion: quality.version,
           attempts: attempt,
           qualityAttempts,
           rejections,
@@ -98,7 +102,7 @@ export function generateBrakingCircuit(
       fallbackUsed: false,
       requestedSeed: seed,
       acceptedAttempt: null,
-      qualityVersion: BRAKING_QUALITY_VERSION,
+      qualityVersion: last.quality.version,
       attempts,
       qualityAttempts,
       rejections,
@@ -114,7 +118,7 @@ export function generateBrakingCircuit(
 export const CURRENT_COURSE_CONFIG: Readonly<GeneratorConfig> = Object.freeze({
   width: 7,
   lengthMin: 540,
-  lengthMax: 600,
+  lengthMax: 900,
   minRadius: 10,
   clearance: 2,
   shoulder: 0.8,

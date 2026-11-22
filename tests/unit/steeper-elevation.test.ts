@@ -53,6 +53,7 @@ void test('retained V4 recipes and already-recorded replays keep pre-release has
       'linked-circuits-v4'
     );
     assert.equal(old.diagnostics.acceptedAttempt, fixture.attempt);
+    assert.equal(old.diagnostics.qualityVersion, old.quality.version);
     assert.equal(await hashTrack(old.track), fixture.hash);
     assert.equal(
       runReplay(old.track, fixture.replay).finishTicks,
@@ -71,7 +72,8 @@ void test('steeper C2 hills keep the horizontal course and flat grid with a safe
     ).track;
     const after = generateLinkedCourseCandidate(
       fixture.seed,
-      fixture.attempt
+      fixture.attempt,
+      'linked-circuits-v5'
     ).track;
     assert.ok(before && after);
     assert.deepEqual(
@@ -119,7 +121,7 @@ void test('new course generation is deterministic and its admitted replay uses t
   generateBrakingCircuit('word-v2:banana');
   const b = generateBrakingCircuit('word-v2:tui');
   assert.equal(serializeTrack(a.track), serializeTrack(b.track));
-  assert.equal(a.track.generatorVersion, 'linked-circuits-v5');
+  assert.equal(a.track.generatorVersion, 'linked-circuits-v6');
   assert.ok(a.quality.valid && a.quality.fastReplay && a.quality.metrics);
   assert.equal(a.quality.fastReplay.schemaVersion, 2);
   assert.equal(

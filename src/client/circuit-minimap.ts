@@ -1,5 +1,6 @@
 import type { Track } from '../shared/track';
 import type { RaceState } from '../shared/race-rules';
+import { findTrackCrossings } from '../shared/track-crossings';
 
 type MapPoint = { x: number; y: number; s: number; drawn: number };
 export type MinimapGeometry = {
@@ -7,6 +8,7 @@ export type MinimapGeometry = {
   points: readonly MapPoint[];
   totalLength: number;
   drawnLength: number;
+  bridges: { path: string; lowerS: number; upperS: number }[];
 };
 const size = 160;
 const padding = 12;
@@ -62,7 +64,24 @@ export function createMinimapGeometry(track: Track): MinimapGeometry {
       .map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(3)} ${p.y.toFixed(3)}`)
       .join('') + 'Z';
   points.push({ ...first, s: track.totalLength, drawn });
-  return { path, points, totalLength: track.totalLength, drawnLength: drawn };
+  const geometry = {
+    path,
+    points,
+    totalLength: track.totalLength,
+    drawnLength: drawn,
+    bridges: [],
+  };
+  const bridges = findTrackCrossings(track)
+    .filter((c) => c.upperY - c.lowerY >= 3.5)
+    .map((c) => ({
+      lowerS: c.lowerS,
+      upperS: c.upperS,
+      path: Array.from({ length: 25 }, (_, i) => {
+        const p = sampleMinimap(geometry, c.upperS - 12 + i);
+        return `${i ? 'L' : 'M'}${p.x.toFixed(3)} ${p.y.toFixed(3)}`;
+      }).join(''),
+    }));
+  return { ...geometry, bridges };
 }
 
 /** Use simulation distance and the authoritative practice lap count, never a clock. */
@@ -125,6 +144,27 @@ export function createCircuitMinimap(root: HTMLElement, track: Track) {
     progress = element('minimap-progress');
   const narration = element('minimap-narration');
   for (const p of [course, halo, completed]) p.setAttribute('d', geometry.path);
+  const bridgeNodes = geometry.bridges.map((bridge) => {
+    const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    group.setAttribute('class', 'minimap-bridge');
+    for (const [color, width] of [
+      ['#292d32', '6.5'],
+      ['#eee4cf', '2.5'],
+      ['var(--accent)', '2.5'],
+    ]) {
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', bridge.path);
+      p.setAttribute('stroke', color!);
+      p.setAttribute('stroke-width', width!);
+      group.append(p);
+    }
+    const highlight = group.lastElementChild!;
+    highlight.setAttribute('pathLength', '1');
+    highlight.setAttribute('stroke-dasharray', '1');
+    highlight.setAttribute('stroke-dashoffset', '1');
+    player.parentElement?.insertBefore(group, player);
+    return { group, highlight, upperS: bridge.upperS };
+  });
   const first = geometry.points[0];
   if (!first) throw new Error('Missing minimap start');
   const next = geometry.points.find(
@@ -178,7 +218,7 @@ export function createCircuitMinimap(root: HTMLElement, track: Track) {
         frame.completedLaps
       );
       root.hidden = false;
-      // Only three small SVG attributes can change per frame. The outline is
+      // Only small cached SVG attributes change per frame. The outline is
       // immutable; quantised, cached values avoid redundant DOM writes/layout reads.
       attribute(player, 'cx', position.x.toFixed(2));
       attribute(player, 'cy', position.y.toFixed(2));
@@ -189,12 +229,25 @@ export function createCircuitMinimap(root: HTMLElement, track: Track) {
       );
       const percent = Math.floor(position.completion * 100);
       const lap = frame.completedLaps + 1;
+      const s = position.completion * geometry.totalLength;
+      const deck = geometry.bridges.some((c) => Math.abs(s - c.lowerS) < 18)
+        ? 'underpass'
+        : geometry.bridges.some((c) => Math.abs(s - c.upperS) < 18)
+          ? 'bridge'
+          : '';
+      attribute(player, 'data-deck', deck);
+      for (const bridge of bridgeNodes)
+        attribute(
+          bridge.highlight,
+          'stroke-dashoffset',
+          String(1 - Math.max(0, Math.min(1, (s - bridge.upperS + 12) / 24)))
+        );
       if (percent !== lastPercent || lap !== lastLap) {
         attribute(progress, 'aria-valuenow', String(percent));
         attribute(
           progress,
           'aria-valuetext',
-          `Lap ${lap}, ${percent}% complete`
+          `Lap ${lap}, ${percent}% complete${deck ? `, ${deck}` : ''}`
         );
         lastPercent = percent;
         lastLap = lap;
@@ -209,6 +262,7 @@ export function createCircuitMinimap(root: HTMLElement, track: Track) {
     dispose() {
       if (disposed) return;
       reset();
+      bridgeNodes.forEach((node) => node.group.remove());
       disposed = true;
     },
   };

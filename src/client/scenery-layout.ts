@@ -1,4 +1,8 @@
 import { courseComposition, sceneryHash } from './scenery-profile';
+import {
+  findTrackCrossings,
+  CROSSING_CLEAR_RADIUS,
+} from '../shared/track-crossings';
 export { sceneryHash } from './scenery-profile';
 import type { Track } from '../shared/track';
 import { sampleTrack } from '../shared/track';
@@ -126,6 +130,7 @@ export function createRoadField(track: Track) {
   });
   let checks = 0;
   return {
+    crossings: findTrackCrossings(track),
     get checks() {
       return checks;
     },
@@ -170,6 +175,9 @@ export function sceneryClearance(
   return (
     Number.isFinite(x + z + radius) &&
     radius >= 0 &&
+    !field.crossings.some(
+      (c) => Math.hypot(x - c.x, z - c.z) < CROSSING_CLEAR_RADIUS + radius
+    ) &&
     field.sample(x, z).clearance >=
       handlingForTrack(track).recoveryDistanceBeyondEdge + 2.3 + radius + 0.35
   );
@@ -341,6 +349,12 @@ export function generateSceneryLayout(
     )
       return;
     const road = field.sample(x, z);
+    if (
+      field.crossings.some(
+        (c) => Math.hypot(x - c.x, z - c.z) < CROSSING_CLEAR_RADIUS + radius
+      )
+    )
+      return;
     const required =
       tall || kind === 'bush' || kind === 'rock' || kind === 'fence'
         ? handlingForTrack(track).recoveryDistanceBeyondEdge +

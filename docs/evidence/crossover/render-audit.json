@@ -1,0 +1,130 @@
+{
+  "viewport": {
+    "width": 393,
+    "height": 568
+  },
+  "rows": [
+    {
+      "day": "2026-11-27",
+      "crossings": [
+        {
+          "x": -102.04835032975882,
+          "z": 52.20316171266708,
+          "lowerS": 198.75631642375686,
+          "upperS": 352.1605041231311,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 0.8818327277764557
+        }
+      ],
+      "fullWidthHeadroom": 11.45,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3233,
+      "props": 8,
+      "clearRadius": 32
+    },
+    {
+      "day": "2026-12-01",
+      "crossings": [
+        {
+          "x": -98.1384188594367,
+          "z": 62.70427324625246,
+          "lowerS": 201.93338682895137,
+          "upperS": 351.1529655881202,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 0.9539839656230947
+        }
+      ],
+      "fullWidthHeadroom": 11.44939,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3813,
+      "props": 4,
+      "clearRadius": 32
+    },
+    {
+      "day": "2026-12-04",
+      "crossings": [
+        {
+          "x": -21.396881574008756,
+          "z": -111.1151721653329,
+          "lowerS": 194.76595615479434,
+          "upperS": 344.2601553750436,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 0.7806194401913744
+        }
+      ],
+      "fullWidthHeadroom": 11.44456,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3265,
+      "props": 8,
+      "clearRadius": 32
+    },
+    {
+      "day": "2026-12-13",
+      "crossings": [
+        {
+          "x": -106.06247682979097,
+          "z": -50.6107236526301,
+          "lowerS": 202.871412371511,
+          "upperS": 355.70700795565506,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 0.7576997365480805
+        }
+      ],
+      "fullWidthHeadroom": 11.449999,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3554,
+      "props": 8,
+      "clearRadius": 32
+    },
+    {
+      "day": "2026-12-19",
+      "crossings": [
+        {
+          "x": -112.38092344257903,
+          "z": 12.925963047836548,
+          "lowerS": 196.0557936427068,
+          "upperS": 347.51127223012065,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 1.026966480187238
+        }
+      ],
+      "fullWidthHeadroom": 11.45,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3642,
+      "props": 8,
+      "clearRadius": 32
+    },
+    {
+      "day": "2026-12-20",
+      "crossings": [
+        {
+          "x": 111.95289265367032,
+          "z": -15.332550984428584,
+          "lowerS": 195.27508993028187,
+          "upperS": 345.76550510885806,
+          "lowerY": 0,
+          "upperY": 12,
+          "angle": 0.9051468918345257
+        }
+      ],
+      "fullWidthHeadroom": 11.449796,
+      "carPositions": 78,
+      "opaqueCameraObstructions": 0,
+      "plants": 3298,
+      "props": 4,
+      "clearRadius": 32
+    }
+  ],
+  "crossingDays": 6,
+  "carPositions": 468
+}

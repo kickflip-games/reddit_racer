@@ -1,7 +1,7 @@
+import { generateVarietyCandidate } from './variety-course-generator';
 import { generateLinkedFlatCandidate } from './circuit-generator';
 import {
   LINKED_COURSE_VERSION,
-  LINKED_RHYTHM_LIMITS,
   type LinkedCourseVersion,
 } from './course-rhythm';
 import { validateTrack, type Track } from './track';
@@ -93,19 +93,24 @@ export function generateLinkedCourseCandidate(
   attempt = 1,
   version: LinkedCourseVersion = LINKED_COURSE_VERSION
 ) {
+  if (
+    !seed ||
+    seed.length > 96 ||
+    !Number.isInteger(attempt) ||
+    attempt < 1 ||
+    attempt > 32
+  )
+    throw new Error('Invalid linked course seed or attempt');
+  if (version === LINKED_COURSE_VERSION)
+    return generateVarietyCandidate(seed, attempt);
   const candidate = generateLinkedFlatCandidate(seed, attempt);
   if (!candidate.track || candidate.diagnostics.codes.length)
     return { ...candidate, hills: [] };
   const elevated = addLinkedCourseHills(candidate.track, version);
   const codes = [...candidate.diagnostics.codes];
-  if (
-    Math.max(...elevated.track.samples.map((p) => p.y ?? 0)) <
-    LINKED_RHYTHM_LIMITS.minElevation
-  )
+  if (Math.max(...elevated.track.samples.map((p) => p.y ?? 0)) < 1)
     codes.push('missing-elevation');
-  if (
-    candidate.diagnostics.longestStraight > LINKED_RHYTHM_LIMITS.longestStraight
-  )
+  if (candidate.diagnostics.longestStraight > 65)
     codes.push('passive-straight');
   return {
     ...candidate,

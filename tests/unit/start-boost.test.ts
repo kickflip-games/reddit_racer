@@ -20,7 +20,11 @@ import {
 import { runReplay } from '../../src/shared/replay';
 import { qualityVersionForTrack } from '../../src/shared/circuit-quality';
 
-const generated = generateLinkedCourseCandidate('grass-regression', 1).track;
+const generated = generateLinkedCourseCandidate(
+  'grass-regression',
+  1,
+  'linked-circuits-v5'
+).track;
 assert.ok(generated);
 const track = { ...generated, generatorVersion: 'linked-circuits-v3' };
 const old = { ...track, generatorVersion: 'linked-circuits-v2' };

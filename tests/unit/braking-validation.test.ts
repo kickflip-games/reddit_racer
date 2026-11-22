@@ -30,8 +30,14 @@ void test('tightening corner rewards a real brake input and early braking only c
   assert.ok(r.searched.offRoadTicks < r.fullHold.offRoadTicks);
 });
 void test('gate retains failures, respects bounded attempts and never substitutes an unvalidated reserve', async () => {
-  assert.throws(() => generateBrakingCircuit('word-v2:evaluation-0', 1));
-  const accepted = generateBrakingCircuit('word-v2:evaluation-0');
+  assert.throws(() =>
+    generateBrakingCircuit('word-v2:evaluation-0', 1, 'linked-circuits-v5')
+  );
+  const accepted = generateBrakingCircuit(
+    'word-v2:evaluation-0',
+    undefined,
+    'linked-circuits-v5'
+  );
   assert.equal(accepted.quality.valid, true);
   assert.equal(accepted.diagnostics.fallbackUsed, false);
   assert.ok(accepted.diagnostics.rejections.length);
@@ -41,7 +47,13 @@ void test('gate retains failures, respects bounded attempts and never substitute
   );
   assert.equal(
     await hashTrack(accepted.track),
-    await hashTrack(generateBrakingCircuit('word-v2:evaluation-0').track)
+    await hashTrack(
+      generateBrakingCircuit(
+        'word-v2:evaluation-0',
+        undefined,
+        'linked-circuits-v5'
+      ).track
+    )
   );
   assert.throws(() =>
     generateBrakingCircuit('banana', MAX_BRAKING_CANDIDATES + 1)

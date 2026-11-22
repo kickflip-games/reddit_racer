@@ -50,8 +50,6 @@ jobs:
       inputs.confirm_test_install == true
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    environment:
-      name: the-daily-lap-test-release
     env:
       RELEASE_VERSION: ${{ inputs.version }}
       RELEASE_CONFIRM: ${{ inputs.confirm_test_install }}
@@ -71,4 +69,4 @@ jobs:
       - name: Upload private version and install exact version on test subreddit
         run: node scripts/release/devvit-test-release.mjs release
         env:
-          DEVVIT_AUTH_TOKEN: ${{ secrets.THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN }}
+          DEVVIT_AUTH_TOKEN: ${{ secrets.DEVVIT_AUTH_TOKEN }}

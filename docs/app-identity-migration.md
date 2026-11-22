@@ -36,16 +36,16 @@ identifier is unavailable, choose a new identifier and align this repo's
 
 The guarded **Private test release** workflow is the supported release path.
 See [owner setup and exact-version dispatch](github-actions-test-release.md).
-It requires manual confirmation on protected `main`, a main-only deployment
-environment, and that environment's `THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN`.
-An owner must configure these controls before adding the environment secret.
+It requires manual confirmation on protected `main` and references the existing
+repository Actions secret `DEVVIT_AUTH_TOKEN` only in its release step. No separate
+GitHub Environment or additional environment secret is required. The secret's
+actual value is neither accessed nor changed by this setup.
 
 The former optional `deploy-private` job in ordinary CI is removed. Pushes,
-PRs and scheduled CI runs only validate code and never consume the repository-wide
-`DEVVIT_AUTH_TOKEN`. Adding that broader secret does not enable the new workflow;
-this change neither reads it nor modifies it. No release or dispatch is performed
-by this setup. Reddit access and app ownership still require independent
-confirmation; the workflow is not a workaround for an access restriction.
+PRs and scheduled CI runs only validate code and never receive the Devvit secret.
+No release or dispatch is performed by this setup. Reddit access and app
+ownership still require independent confirmation; the workflow is not a
+workaround for an access restriction.
 
 ## Data and cutover boundaries
 

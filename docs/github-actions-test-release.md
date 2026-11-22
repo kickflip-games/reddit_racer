@@ -8,40 +8,27 @@ not run a release or change the legacy app.
 
 ## Owner setup before first dispatch
 
-These are manual repository-owner tasks, not settings performed by this change.
+No separate GitHub Environment is required. The workflow references the owner's
+existing repository Actions secret **DEVVIT_AUTH_TOKEN**, only in the final
+release step. This change does not read, copy, modify or test its actual value.
 
 1. Protect `main` with the repository's reviewed-PR/status-check policy. The
    workflow and script both refuse an unprotected `main`.
-2. Under **Settings → Environments**, create **the-daily-lap-test-release**.
-   Set **Deployment branches and tags → Selected branches and tags** to the
-   **branch `main` only**. Add no tag rules. Keep main's branch protection in
-   place. Do not select an unrestricted environment policy. GitHub's “Protected
-   branches only” setting alone permits all branches if none is protected, so
-   the exact branch selection plus the workflow's protection guard are both
-   intentional.
-3. Configure required reviewers for this environment; prevent self-review and
-   administrator bypass when appropriate to the team's approval policy.
-4. In **that environment's Secrets**, independently provision
-   **THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN** using the complete serialized payload
-   from the authorized app owner's existing pinned-CLI login. Do not create a
-   repository/organization secret of the same name. Do not provide its value in
-   chat, source, dispatch inputs, logs, artifacts or PRs. This implementation
-   never reads a workstation's token file or asks for its contents.
-5. Confirm the new app already exists under that owner account, the developer
-   account is ready, and the account can install into the named test subreddit.
-   App initialization, account setup and subreddit creation are outside this
-   workflow. It provides no prompt answers or ownership overrides.
-6. Review and merge the workflow through normal repository review. No release
-   occurs on merge. A manual-dispatch workflow must exist on the default branch
-   before its Actions UI can be used.
+2. Keep the existing repository Actions secret **DEVVIT_AUTH_TOKEN**. The pinned
+   CLI expects the complete serialized login payload described below, not a plain
+   OAuth access token. Its value belongs only in GitHub's secret settings, never
+   in chat, source, dispatch inputs, logs, artifacts or PRs. These tests use dummy
+   values and never inspect a workstation's token file.
+3. Independently confirm the new app exists under its authorized owner, the
+   developer account is ready, and it can install into the named private Reddit
+   target. App initialization, account setup, subreddit creation and changes to
+   Reddit access restrictions are outside this workflow.
+4. Review and merge the workflow through normal repository review. No release
+   occurs on merge. The manual workflow must exist on the default branch before
+   its Actions UI can be used. Do not dispatch until owner setup is complete and
+   that specific release is authorized.
 
-Environment protections are GitHub settings, not declarable in this YAML.
-Referencing a new environment can create it without protections; configure the
-settings above **before adding its secret**. The code provides a separate
-manual-event/repository/protected-main guard, but does not claim to have created
-or audited GitHub's environment settings.
-
-GitHub documents [environment branch restrictions and secrets](https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments),
+GitHub documents [Actions secrets](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions),
 [the protected-ref context](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#github-context),
 and [manual dispatch](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatch).
 

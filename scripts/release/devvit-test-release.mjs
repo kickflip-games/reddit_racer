@@ -58,7 +58,7 @@ export function validateContext(env) {
 
 export function validateAuthPayload(raw) {
   if (!raw?.trim())
-    throw new Error('The environment-scoped Devvit credential is missing.');
+    throw new Error('The Devvit Actions credential is missing.');
   let encoded = raw.trim();
   try {
     if (encoded.startsWith('{')) encoded = JSON.parse(encoded).token;

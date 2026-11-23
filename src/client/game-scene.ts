@@ -880,6 +880,7 @@ export function initializeGame(
       )
     );
     const carChanged = carVisual.update({
+      recovery: { attemptId, phase, state: current },
       suspensionCompression: landing.compression,
       elevation,
       surfaceHeight,
@@ -1279,6 +1280,8 @@ export function initializeGame(
   );
   function interruptRace(): void {
     audio.silence('background');
+    carVisual.reset();
+    sceneDirty = true;
     drivingVfx.reset();
     if (preparing) {
       const id = attemptId;

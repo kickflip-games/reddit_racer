@@ -26,7 +26,7 @@ import type { Replay } from './replay.ts';
 import { MAX_SIMULATION_TICKS } from './simulation.ts';
 import type { Track } from './track.ts';
 import {
-  LINKED_COURSE_VERSION,
+  isVarietyCourseVersion,
   LINKED_QUALITY_VERSION,
   rhythmLimitsFor,
   longestThrottleTicks,
@@ -35,7 +35,7 @@ import {
 export const QUALITY_VERSION = 'quality-v1';
 export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
-  track.generatorVersion === LINKED_COURSE_VERSION
+  isVarietyCourseVersion(track.generatorVersion)
     ? LINKED_QUALITY_VERSION
     : track.generatorVersion === 'linked-circuits-v5' ||
         track.generatorVersion === 'linked-circuits-v4' ||
@@ -233,7 +233,7 @@ export function assessTrackQuality(
     search: { peaks: [], widths: [] },
   };
   if (!structure.valid) return result;
-  if (track.generatorVersion === LINKED_COURSE_VERSION) {
+  if (isVarietyCourseVersion(track.generatorVersion)) {
     const crossings = findTrackCrossings(track);
     if (
       crossings.length &&
@@ -256,7 +256,7 @@ export function assessTrackQuality(
   if (structure.metrics.directionChanges < thresholds.minDirectionChanges)
     codes.push('corner-diversity');
   if (
-    track.generatorVersion === LINKED_COURSE_VERSION ||
+    isVarietyCourseVersion(track.generatorVersion) ||
     track.generatorVersion === 'linked-circuits-v5' ||
     track.generatorVersion === 'linked-circuits-v4' ||
     track.generatorVersion === 'linked-circuits-v3' ||
@@ -295,7 +295,7 @@ export function assessTrackQuality(
     meaningfulLifts: fast.meaningfulLifts,
     ...smooth,
   };
-  if (track.generatorVersion === LINKED_COURSE_VERSION && track.jumps?.length) {
+  if (isVarietyCourseVersion(track.generatorVersion) && track.jumps?.length) {
     if (
       [fast, cautious].some(
         (run) =>
@@ -362,7 +362,7 @@ export function assessTrackQuality(
   }
   result.fastReplay = fast.finished ? search.fast.replay : null;
   if (
-    (track.generatorVersion === LINKED_COURSE_VERSION ||
+    (isVarietyCourseVersion(track.generatorVersion) ||
       track.generatorVersion === 'linked-circuits-v5' ||
       track.generatorVersion === 'linked-circuits-v4' ||
       track.generatorVersion === 'linked-circuits-v3' ||

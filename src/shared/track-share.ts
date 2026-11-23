@@ -7,6 +7,7 @@ export type TrackShare = {
   version: 1;
   generator:
     | typeof LINKED_COURSE_VERSION
+    | 'linked-circuits-v6'
     | 'linked-circuits-v5'
     | 'linked-circuits-v4'
     | 'linked-circuits-v3';
@@ -31,6 +32,7 @@ export function parseTrackShare(raw: string): TrackShare {
     value.version !== 1 ||
     !('generator' in value) ||
     (value.generator !== LINKED_COURSE_VERSION &&
+      value.generator !== 'linked-circuits-v6' &&
       value.generator !== 'linked-circuits-v5' &&
       value.generator !== 'linked-circuits-v4' &&
       value.generator !== 'linked-circuits-v3')
@@ -62,6 +64,7 @@ export async function createTrackShare(
 ): Promise<TrackShare> {
   if (
     (track.generatorVersion !== LINKED_COURSE_VERSION &&
+      track.generatorVersion !== 'linked-circuits-v6' &&
       track.generatorVersion !== 'linked-circuits-v5' &&
       track.generatorVersion !== 'linked-circuits-v4' &&
       track.generatorVersion !== 'linked-circuits-v3') ||

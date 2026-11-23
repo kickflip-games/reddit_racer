@@ -1,3 +1,4 @@
+import { LINKED_COURSE_VERSION } from '../../src/shared/course-rhythm';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
@@ -121,7 +122,7 @@ void test('new course generation is deterministic and its admitted replay uses t
   generateBrakingCircuit('word-v2:banana');
   const b = generateBrakingCircuit('word-v2:tui');
   assert.equal(serializeTrack(a.track), serializeTrack(b.track));
-  assert.equal(a.track.generatorVersion, 'linked-circuits-v6');
+  assert.equal(a.track.generatorVersion, LINKED_COURSE_VERSION);
   assert.ok(a.quality.valid && a.quality.fastReplay && a.quality.metrics);
   assert.equal(a.quality.fastReplay.schemaVersion, 2);
   assert.equal(

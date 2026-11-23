@@ -2,6 +2,7 @@ import { generateVarietyCandidate } from './variety-course-generator';
 import { generateLinkedFlatCandidate } from './circuit-generator';
 import {
   LINKED_COURSE_VERSION,
+  isVarietyCourseVersion,
   type LinkedCourseVersion,
 } from './course-rhythm';
 import { validateTrack, type Track } from './track';
@@ -101,8 +102,8 @@ export function generateLinkedCourseCandidate(
     attempt > 32
   )
     throw new Error('Invalid linked course seed or attempt');
-  if (version === LINKED_COURSE_VERSION)
-    return generateVarietyCandidate(seed, attempt);
+  if (isVarietyCourseVersion(version))
+    return generateVarietyCandidate(seed, attempt, version);
   const candidate = generateLinkedFlatCandidate(seed, attempt);
   if (!candidate.track || candidate.diagnostics.codes.length)
     return { ...candidate, hills: [] };

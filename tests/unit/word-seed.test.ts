@@ -1,3 +1,4 @@
+import { LINKED_COURSE_VERSION } from '../../src/shared/course-rhythm';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { courseWord, normalizeCourseWord } from '../../src/shared/word-seed.ts';
@@ -34,7 +35,7 @@ void test('word courses reproduce geometry and isolate actual track ghost identi
     c = await generateWordPracticeCourse('apple');
   assert.equal(a.trackHash, b.trackHash);
   assert.notEqual(a.trackHash, c.trackHash);
-  assert.equal(a.track.generatorVersion, 'linked-circuits-v6');
+  assert.equal(a.track.generatorVersion, LINKED_COURSE_VERSION);
   assert.equal(
     practiceBestKey(a.track, { continuousPractice: true }),
     practiceBestKey(b.track, { continuousPractice: true })

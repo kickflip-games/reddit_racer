@@ -1,3 +1,4 @@
+import { isVarietyCourseVersion } from './course-rhythm';
 import { stepElevatedSimulationV7 } from './elevated-simulation-v7.ts';
 import type { SimulationState } from './simulation.ts';
 import type { Track } from './track.ts';
@@ -9,7 +10,7 @@ export const supportsCountdownLaunch = (track: Track): boolean =>
   track.schemaVersion === 2 &&
   (track.generatorVersion === 'linked-circuits-v4' ||
     track.generatorVersion === 'linked-circuits-v5' ||
-    track.generatorVersion === 'linked-circuits-v6');
+    isVarietyCourseVersion(track.generatorVersion));
 
 export type CountdownLaunchInput = {
   held: boolean;

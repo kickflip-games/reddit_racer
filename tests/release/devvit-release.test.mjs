@@ -546,6 +546,7 @@ test('the real pinned project loader sees a public dev target, suppressing auto-
 test('one public workflow replaces private deploy defaults and ordinary CI stays secret-free', () => {
   assert.deepEqual(readdirSync(join(repo, '.github/workflows')).sort(), [
     'ci.yaml',
+    'devvit-private-upload.yaml',
     'devvit-release.yaml',
   ]);
   const config = json(join(repo, 'devvit.json'));

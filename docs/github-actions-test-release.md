@@ -5,3 +5,7 @@ from the maintained release path. Maintain `the-daily-lap` for public r/theDaily
 through the single guarded [Release The Daily Lap workflow](reddit-review-release.md).
 No private subreddit operation is needed for that path. Historical evidence does
 not authorize a new private installation or a live-service removal.
+
+A separately guarded [private upload-only action](private-upload.md) is now
+available for the same existing app. It does not restore the archived auto-install
+path or create a private app, community or test environment.

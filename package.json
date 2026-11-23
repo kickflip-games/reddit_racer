@@ -29,12 +29,12 @@
     "node": "24.22.x"
   },
   "dependencies": {
-    "@devvit/start": "0.15.4",
-    "@devvit/web": "0.15.4",
+    "@devvit/start": "0.15.6",
+    "@devvit/web": "0.15.6",
     "@hono/node-server": "2.1.11",
     "@trpc/client": "11.29.7",
     "@trpc/server": "11.29.7",
-    "devvit": "0.15.4",
+    "devvit": "0.15.6",
     "hono": "4.13.20",
     "three": "0.187.0"
   },

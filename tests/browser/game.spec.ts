@@ -31,7 +31,7 @@ test(
     );
     await page.keyboard.down('Space');
     await page.clock.runFor(1000);
-    await expect(page.locator('#timer')).toHaveText('00.000');
+    await expect(page.locator('#timer')).toHaveText('00.0');
     await expect(page.locator('#speed')).toHaveText('0');
     await expect(page.locator('#race-countdown')).toBeVisible();
     await page.screenshot({
@@ -39,6 +39,7 @@ test(
     });
     await page.clock.runFor(3100);
     await expect(page.locator('#race')).toHaveAttribute('data-phase', 'racing');
+    await expect(page.locator('#timer')).toHaveText(/^\d+\.\d$/);
     await expect(page.locator('#status')).toHaveAttribute('data-held', 'true');
     await expect(page.locator('#circuit-minimap')).toBeVisible();
     const acceleratingSpeed = Number(
@@ -66,6 +67,9 @@ test(
       'data-phase',
       'finished'
     );
+    const finalTime = await page.locator('#finish-value').textContent();
+    expect(finalTime).toMatch(/^\d+\.\d{3}$/);
+    await expect(page.locator('#timer')).toHaveText(finalTime!);
     await expect(page.locator('#lap-progress-label')).toContainText('100%');
     await expect(page.locator('#circuit-minimap')).toBeHidden();
     await expect(page.locator('#minimap-progress')).toHaveAttribute(

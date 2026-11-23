@@ -178,7 +178,7 @@ test('mocked daily details and later wrapping refit HUD, card and camera inset w
   expect(after.viewportHeight).toBe(before.viewportHeight);
   expect(after.resizeEvents).toBe('0');
   expect(after.phase).toBe('ready');
-  expect(after.time).toBe('00.000');
+  expect(after.time).toBe('00.0');
   expect(errors).toEqual([]);
   await page.screenshot({
     path: `test-results/hud-daily-layout-mock-${test.info().project.name}.png`,

@@ -1,0 +1,59 @@
+name: Upload The Daily Lap Privately
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Unused stable exact version newer than existing versions; shares the public app namespace
+        type: string
+        required: true
+      source_sha:
+        description: Full reviewed release/daily-lap commit SHA; must match the dispatched source
+        type: string
+        required: true
+      confirm_private_upload:
+        description: Upload a PRIVATE package to the existing app only; no publication, install or playtest
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+# Serialize with public submissions so the two paths cannot race version creation.
+concurrency:
+  group: the-daily-lap-release
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'kickflip-games/reddit_racer' &&
+      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
+      inputs.confirm_private_upload == true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      UPLOAD_VERSION: ${{ inputs.version }}
+      UPLOAD_SOURCE_SHA: ${{ inputs.source_sha }}
+      UPLOAD_CONFIRM: ${{ inputs.confirm_private_upload }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Verify protected, clean checkout matches reviewed source
+        run: node scripts/release/devvit-private-upload.mjs source
+      - run: npm ci --ignore-scripts --no-fund
+      - run: npm run build
+      - name: Check fixed app, CLI upload contract and prebuilt package without credentials
+        run: node scripts/release/devvit-private-upload.mjs preflight
+      - name: Verify owner and unused version, upload privately, verify exact private result
+        run: node scripts/release/devvit-private-upload.mjs upload
+        env:
+          DEVVIT_AUTH_TOKEN: ${{ secrets.DEVVIT_AUTH_TOKEN }}

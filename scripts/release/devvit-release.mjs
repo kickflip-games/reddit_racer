@@ -15,10 +15,45 @@ import {
   PUBLIC_SUBREDDIT,
   preflight,
   validateAuthPayload,
+  validateContext,
 } from './devvit-release-guards.mjs';
 
 const completionMessage =
   "You'll receive an email when your app has been approved.";
+
+/** No dependencies, SDK, credentials or network: safe before install and build. */
+export function reviewSourcePreflight(root, env) {
+  validateContext({
+    ...env,
+    RELEASE_CONFIRM: env.REVIEW_CONFIRM,
+    RELEASE_VERSION: env.REVIEW_VERSION,
+  });
+  if (
+    !/^[a-f0-9]{40}$/.test(env.REVIEW_SOURCE_SHA ?? '') ||
+    env.REVIEW_SOURCE_SHA !== env.GITHUB_SHA
+  )
+    throw new Error(
+      'Reviewed source SHA must exactly match the dispatched commit.'
+    );
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: root,
+    env,
+    encoding: 'utf8',
+  });
+  const dirty = spawnSync(
+    'git',
+    ['status', '--porcelain', '--untracked-files=no'],
+    {
+      cwd: root,
+      env,
+      encoding: 'utf8',
+    }
+  );
+  if (head.status !== 0 || head.stdout.trim() !== env.REVIEW_SOURCE_SHA)
+    throw new Error('Checkout does not match the reviewed source commit.');
+  if (dirty.status !== 0 || dirty.stdout.trim())
+    throw new Error('Reviewed source checkout has tracked changes.');
+}
 
 /** Exact repo/ref/SHA/CLI guards and explicit source/review consent. */
 export function reviewPreflight(root, env) {
@@ -26,6 +61,7 @@ export function reviewPreflight(root, env) {
     throw new Error(
       'Explicit consent to upload source and submit unlisted review is required.'
     );
+  reviewSourcePreflight(root, env);
   const checked = preflight(root, {
     ...env,
     RELEASE_CONFIRM: 'true',
@@ -139,11 +175,13 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   try {
-    if (process.argv[2] === 'preflight')
+    if (process.argv[2] === 'source')
+      reviewSourcePreflight(process.cwd(), process.env);
+    else if (process.argv[2] === 'preflight')
       reviewPreflight(process.cwd(), process.env);
     else if (process.argv[2] === 'submit')
       submitUnlistedReview(process.cwd(), process.env);
-    else throw new Error('Choose preflight or submit.');
+    else throw new Error('Choose source, preflight or submit.');
   } catch (error) {
     console.error(
       error instanceof Error ? error.message : 'Review submission failed.'

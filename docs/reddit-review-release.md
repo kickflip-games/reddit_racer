@@ -11,19 +11,24 @@ also distinguishes review from later installation.
 **Release The Daily Lap** (`devvit-release.yaml`) is manual.
 Keep its definition on main for dispatch availability and promote tested source
 through a PR into exact protected `release/daily-lap`. Its active rule requires
-PRs and strict `check`/`browser` from GitHub Actions app 15368, has no bypass actors,
-and blocks force pushes/deletion. Main remains unprotected. This workflow changes
-no branch/ruleset setting.
+PRs and strict `check` from GitHub Actions app 15368, has no bypass actors,
+and blocks force pushes/deletion. Main remains unprotected. The browser context is
+retired through the migration in [Local validation and short CI](local-validation.md).
 
 Do not dispatch until the release owner has reviewed scope, readiness and exact-source
-green CI. Inputs are an unused stable `version` (`major.minor.patch`) and
-`confirm_review_submission=true`, explicitly consenting to source upload and
+green CI. Inputs are an unused stable `version` (`major.minor.patch`), the full
+reviewed `source_sha` on `release/daily-lap`, and `confirm_review_submission=true`, explicitly consenting to source upload and
 unlisted review. That checkbox defaults to false. The older private upload/install
 workflow is removed; this is the one maintained
 release path.
 
-Both jobs check out the dispatched SHA. Dependencies, checks and the build run
-without the Devvit secret. Only the submission step references the existing
+The single submission job checks out the immutable dispatched SHA. Before installing
+dependencies, a dependency-free source guard requires the reviewed SHA to equal the
+dispatched SHA, verifies HEAD, and rejects tracked source changes. The same check is
+repeated immediately before submission alongside the existing app, capability, SDK
+pin, README and prebuilt-asset guards. Dependencies and build run without the
+Devvit secret; the release does not rerun the PR check or the offline suites.
+Only the submission step references the existing
 repository secret `DEVVIT_AUTH_TOKEN`; no GitHub Environment is used. Repository
 writers remain trusted with this repository-scoped secret. Setup/tests never
 access or test the actual credential.
@@ -58,7 +63,7 @@ installs or uninstalls an app.
 ## Readiness and public cutover remain separate
 
 The player/reviewer README describes controls, entry points, automatic posting,
-storage and migration. Local/hosted browser checks cover the launch screen and
+storage and migration. Local browser checks cover the launch screen and
 responsive game. They do not establish physical-phone behavior, multiple real
 account roles, new-app registration/ownership, accepted terms or review status.
 Record those outcomes and obtain the release owner's readiness decision before submission.

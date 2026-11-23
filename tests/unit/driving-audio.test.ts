@@ -17,6 +17,7 @@ import {
 import { createSimulationState } from '../../src/shared/simulation.ts';
 import { createOvalTrack } from '../../src/shared/track-authoring.ts';
 import { createRacingState, stepRace } from '../../src/shared/race-rules.ts';
+import { generateCurrentDailyCircuit } from '../../src/shared/braking-course-generator';
 import { LIFT_REPLAY } from '../../src/shared/fixtures/reference-replays.ts';
 import { runReplay } from '../../src/shared/replay.ts';
 
@@ -385,7 +386,13 @@ void test('recovery cues follow new authoritative count edges and never replay o
   audio.update(frame());
   const recovering = {
     ...frame(),
-    state: { ...frame().state, tick: 2, recovering: true, recoveryCount: 1 },
+    state: {
+      ...frame().state,
+      tick: 2,
+      recovering: true,
+      recoveryTicksRemaining: 119,
+      recoveryCount: 1,
+    },
   };
   audio.update(recovering);
   audio.update(recovering);
@@ -498,7 +505,13 @@ void test('backward tick frames cannot regress pitch or manufacture another reco
   await flush();
   const current = {
     ...frame(),
-    state: { ...frame().state, tick: 10, recoveryCount: 1 },
+    state: {
+      ...frame().state,
+      tick: 10,
+      recovering: true,
+      recoveryTicksRemaining: 119,
+      recoveryCount: 1,
+    },
   };
   audio.update(current);
   const writes = backend.targets.length;
@@ -981,4 +994,56 @@ void test('engine is deeper and less bright across every gear without raising th
   );
   assert.equal(idle.engineHz, 44.2);
   assert.ok(Math.abs(top.engineHz - 227.8) < 0.001);
+});
+
+void test('only actual reset lifecycle entries sound once, including repeated authoritative recoveries', async () => {
+  const backend = new Backend();
+  const audio = createDrivingAudio({
+    muted: false,
+    createBackend: () => backend,
+  });
+  audio.resetAttempt(1);
+  audio.unlockFromGesture();
+  await flush();
+  // Neither a historical count after recovery nor ordinary grass or jump frames is a new reset.
+  for (const state of [
+    { ...frame().state, tick: 2, offRoad: true },
+    {
+      ...frame().state,
+      tick: 3,
+      vertical: {
+        height: 3,
+        velocity: 1,
+        airborne: true,
+        landings: 0,
+        impact: 0,
+      },
+    },
+    { ...frame().state, tick: 4, recoveryCount: 1 },
+  ])
+    audio.update({ ...frame(), state });
+  assert.equal(backend.cues.filter((cue) => cue === 'recovery').length, 0);
+  audio.resetAttempt(2);
+  audio.unlockFromGesture();
+  await flush();
+  const track = generateCurrentDailyCircuit('daily:t5_kyc33w:2026-11-27').track;
+  let race = createRacingState(track);
+  while (race.phase === 'racing' && race.simulation.tick < 14400) {
+    race = stepRace(track, race, true);
+    const next = {
+      attemptId: 2,
+      phase: race.phase,
+      state: race.simulation,
+      held: true,
+      acceleration: 0,
+    };
+    audio.update(next);
+    audio.update(next); // Render/layout redraw must not duplicate it.
+  }
+  assert(race.simulation.recoveryCount >= 2);
+  assert.equal(
+    backend.cues.filter((cue) => cue === 'recovery').length,
+    race.simulation.recoveryCount
+  );
+  await audio.dispose();
 });

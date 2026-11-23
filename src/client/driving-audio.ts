@@ -350,6 +350,8 @@ export function createDrivingAudio(options: DrivingAudioOptions): DrivingAudio {
         frame.state.recovering !== lastFrame?.state.recovering;
       const recovery =
         scored &&
+        frame.state.recovering &&
+        frame.state.recoveryTicksRemaining > 0 &&
         frame.state.tick > lastTick &&
         frame.state.recoveryCount > lastRecoveryCount;
       const landingCount = frame.state.vertical?.landings ?? 0;

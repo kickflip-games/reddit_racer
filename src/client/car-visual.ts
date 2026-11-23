@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 import { softCarShadow, toonMaterial, toonGradient } from './toon-material';
+import {
+  createRecoveryFeedback,
+  type RecoveryVisualFrame,
+} from './recovery-feedback';
 
 export const CAR_VISUAL_LENGTH = 3.8;
 export const CAR_VISUAL_GROUND_Y = 0.045;
@@ -8,6 +12,7 @@ export const CAR_VISUAL_SETTLE_EPSILON = 0.00001;
 /** Conservative radius shared by both fallback and imported art placements. */
 export const CAR_VISUAL_FOOTPRINT = 2.3;
 export type CarVisualFrame = {
+  recovery?: Readonly<RecoveryVisualFrame>;
   suspensionCompression?: number;
   elevation?: number;
   surfaceHeight?: number;
@@ -77,6 +82,24 @@ export function createCarVisual(): CarVisual {
   const lampMaterial = new THREE.MeshBasicMaterial({ color: '#6f231c' });
   const shadowGeometry = new THREE.PlaneGeometry(2, 2);
   const shadowMaterial = softCarShadow();
+  const recovery = createRecoveryFeedback();
+  const recoveryGeometry = new THREE.RingGeometry(2.05, 2.18, 48);
+  const recoveryMaterial = new THREE.MeshBasicMaterial({
+    color: '#ffe09a',
+    transparent: true,
+    opacity: 0.8,
+    // Keep the reset marker legible while a fallen car returns through a deck.
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  const recoveryHalo = new THREE.Mesh(recoveryGeometry, recoveryMaterial);
+  recoveryHalo.name = 'car-recovery-halo';
+  recoveryHalo.rotation.x = -Math.PI / 2;
+  recoveryHalo.position.y = 0.025;
+  recoveryHalo.renderOrder = 5;
+  recoveryHalo.visible = false;
+  object.add(recoveryHalo);
   const importedMaterials = new Map<THREE.Material, THREE.Material>();
   const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
   shadow.name = 'car-contact-shadow';
@@ -247,6 +270,9 @@ export function createCarVisual(): CarVisual {
   function reset(): void {
     if (disposed) return;
     pendingChanged = true;
+    recovery.reset();
+    rig.object.visible = true;
+    recoveryHalo.visible = false;
     braking = false;
     burnoutAngle = 0;
     pitch = 0;
@@ -296,6 +322,17 @@ export function createCarVisual(): CarVisual {
       if (disposed) return false;
       let changed = pendingChanged;
       pendingChanged = false;
+      const recovering = recovery.update(frame.recovery, frame.reducedMotion);
+      if (
+        rig.object.visible !== recovering.visible ||
+        recoveryHalo.visible !== recovering.active
+      ) {
+        // Only this player's owned rig blinks. Materials and cached templates
+        // remain untouched, and reduced motion keeps a steady halo and car.
+        rig.object.visible = recovering.visible;
+        recoveryHalo.visible = recovering.active;
+        changed = true;
+      }
       if (
         object.position.x !== frame.x ||
         object.position.y !== CAR_VISUAL_GROUND_Y + (frame.elevation ?? 0) ||
@@ -412,6 +449,7 @@ export function createCarVisual(): CarVisual {
     },
     dispose() {
       if (disposed) return;
+      reset();
       disposed = true;
       object.removeFromParent();
       object.clear();
@@ -420,6 +458,8 @@ export function createCarVisual(): CarVisual {
       lampMaterial.dispose();
       shadowGeometry.dispose();
       shadowMaterial.dispose();
+      recoveryGeometry.dispose();
+      recoveryMaterial.dispose();
       for (const material of importedMaterials.values()) material.dispose();
       importedMaterials.clear();
     },

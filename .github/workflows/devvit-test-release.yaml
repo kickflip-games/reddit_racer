@@ -25,7 +25,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'kickflip-games/reddit_racer' &&
-      github.ref == 'refs/heads/main' && github.ref_protected == true &&
+      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
       inputs.confirm_test_install == true
     runs-on: ubuntu-24.04
     timeout-minutes: 25
@@ -46,7 +46,7 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'kickflip-games/reddit_racer' &&
-      github.ref == 'refs/heads/main' && github.ref_protected == true &&
+      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
       inputs.confirm_test_install == true
     runs-on: ubuntu-24.04
     timeout-minutes: 20

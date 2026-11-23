@@ -14,14 +14,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { load } from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { validateAuthPayload } from '../../scripts/release/devvit-release-guards.mjs';
 import {
   reviewPreflight,
+  reviewSourcePreflight,
   submitUnlistedReview,
 } from '../../scripts/release/devvit-release.mjs';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+// Release and main intentionally have different js-yaml major versions.
+const load = yaml.load ?? yaml.default?.load;
 const dummyToken = {
   accessToken: 'DUMMY_ACCESS_NOT_A_CREDENTIAL',
   refreshToken: 'DUMMY_REFRESH_NOT_A_CREDENTIAL',
@@ -104,9 +107,11 @@ function fixture(t) {
     '-m',
     'dummy release fixture'
   );
+  const sourceSha = git('rev-parse', 'HEAD');
   const env = {
     ...context,
-    GITHUB_SHA: git('rev-parse', 'HEAD'),
+    GITHUB_SHA: sourceSha,
+    REVIEW_SOURCE_SHA: sourceSha,
     DEVVIT_AUTH_TOKEN: auth,
     RUNNER_TEMP: runnerTemp,
     MOCK_LOG: join(root, 'mock-commands.jsonl'),
@@ -145,6 +150,7 @@ function fixture(t) {
     pkg,
     lock,
     put,
+    git,
     calls: () =>
       existsSync(env.MOCK_LOG)
         ? readFileSync(env.MOCK_LOG, 'utf8').trim().split('\n').map(JSON.parse)
@@ -177,6 +183,9 @@ for (const [name, changes] of [
   ['prerelease', { REVIEW_VERSION: '1.0.0-next' }],
   ['shell input', { REVIEW_VERSION: '1.0.0; echo bad' }],
   ['wrong SHA', { GITHUB_SHA: 'b'.repeat(40) }],
+  ['missing reviewed SHA', { REVIEW_SOURCE_SHA: undefined }],
+  ['short reviewed SHA', { REVIEW_SOURCE_SHA: 'abc123' }],
+  ['different reviewed SHA', { REVIEW_SOURCE_SHA: 'b'.repeat(40) }],
   ['legacy app override', { DEVVIT_APP_NAME: 'full-throttle-dev' }],
   ['wrong target override', { DEVVIT_SUBREDDIT: 'somewhere_else' }],
 ]) {
@@ -186,6 +195,41 @@ for (const [name, changes] of [
     assert.deepEqual(f.calls(), []);
   });
 }
+
+test('reviewed source is verified without dependencies, build artifacts, credentials or network', (t) => {
+  const f = fixture(t);
+  rmSync(join(f.root, 'node_modules'), { recursive: true });
+  rmSync(join(f.root, 'dist'), { recursive: true });
+  reviewSourcePreflight(f.root, { ...f.env, DEVVIT_AUTH_TOKEN: undefined });
+  assert.deepEqual(f.calls(), []);
+});
+
+test('review rejects tracked source changes after the reviewed commit', (t) => {
+  const f = fixture(t);
+  f.git('add', 'README.md');
+  f.git(
+    '-c',
+    'user.name=ReleaseTest',
+    '-c',
+    'user.email=release-test@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'track fixture README'
+  );
+  const sha = f.git('rev-parse', 'HEAD');
+  f.put('README.md', '# The Daily Lap\nUnreviewed edit.');
+  assert.throws(
+    () =>
+      reviewSourcePreflight(f.root, {
+        ...f.env,
+        GITHUB_SHA: sha,
+        REVIEW_SOURCE_SHA: sha,
+      }),
+    /tracked changes/
+  );
+  assert.deepEqual(f.calls(), []);
+});
 
 for (const version of [
   '@latest',
@@ -338,6 +382,7 @@ test('review workflow is manual, exact-ref/SHA guarded, pinned and has one scope
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
   assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs).sort(), [
     'confirm_review_submission',
+    'source_sha',
     'version',
   ]);
   assert.equal(
@@ -346,7 +391,25 @@ test('review workflow is manual, exact-ref/SHA guarded, pinned and has one scope
   );
   assert.deepEqual(workflow.permissions, { contents: 'read' });
   assert.equal(workflow.concurrency['cancel-in-progress'], false);
-  assert.equal(workflow.jobs.submit.needs, 'validate');
+  assert.deepEqual(Object.keys(workflow.jobs), ['submit']);
+  assert.equal(workflow.jobs.submit.needs, undefined);
+  assert.equal(workflow.on.workflow_dispatch.inputs.source_sha.required, true);
+  assert.equal(
+    workflow.jobs.submit.env.REVIEW_SOURCE_SHA,
+    '${{ inputs.source_sha }}'
+  );
+  assert.deepEqual(
+    workflow.jobs.submit.steps
+      .filter((step) => step.run)
+      .map((step) => step.run),
+    [
+      'node scripts/release/devvit-release.mjs source',
+      'npm ci --ignore-scripts --no-fund',
+      'npm run build',
+      'node scripts/release/devvit-release.mjs preflight',
+      'node scripts/release/devvit-release.mjs submit',
+    ]
+  );
   const secretSteps = [];
   for (const [name, job] of Object.entries(workflow.jobs)) {
     assert(!Object.hasOwn(job, 'environment'));
@@ -493,12 +556,31 @@ test('one public workflow replaces private deploy defaults and ordinary CI stays
   assert.equal(pkg.scripts.dev, 'npm run dev:local');
   const raw = readFileSync(join(repo, '.github/workflows/ci.yaml'), 'utf8');
   const workflow = load(raw);
-  assert.deepEqual(Object.keys(workflow.jobs).sort(), ['browser', 'check']);
+  assert.deepEqual(Object.keys(workflow.jobs), ['check']);
   assert.deepEqual(workflow.on.pull_request.branches, [
     'main',
     'release/daily-lap',
   ]);
-  assert.deepEqual(workflow.on.push.branches, ['main', 'release/daily-lap']);
+  assert.equal(workflow.on.push, undefined);
+  assert.deepEqual(workflow.on.schedule, [{ cron: '0 16 * * 0' }]);
+  assert.equal(workflow.on.workflow_dispatch, null);
+  assert.deepEqual(workflow.permissions, { contents: 'read' });
+  assert.deepEqual(
+    workflow.jobs.check.steps
+      .filter((step) => step.run)
+      .map((step) => step.run),
+    [
+      'npm ci --ignore-scripts --no-fund',
+      'npm run test:release',
+      'npm run type-check',
+      'npm run build',
+    ]
+  );
+  for (const step of workflow.jobs.check.steps) {
+    if (step.uses) assert(/@[0-9a-f]{40}$/.test(step.uses));
+    if (step.uses?.startsWith('actions/checkout@'))
+      assert.equal(step.with['persist-credentials'], false);
+  }
   for (const [id, job] of Object.entries(workflow.jobs))
     assert.equal(job.name ?? id, id);
   assert(!raw.includes('secrets.'));

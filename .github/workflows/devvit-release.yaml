@@ -7,6 +7,10 @@ on:
         description: Unused exact stable version to upload for review (major.minor.patch)
         type: string
         required: true
+      source_sha:
+        description: Full reviewed release/daily-lap commit SHA; must match the dispatched source
+        type: string
+        required: true
       confirm_review_submission:
         description: Upload source and submit the-daily-lap for unlisted Reddit review; no installation
         type: boolean
@@ -21,37 +25,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate:
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      github.repository == 'kickflip-games/reddit_racer' &&
-      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
-      inputs.confirm_review_submission == true
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci --ignore-scripts --no-fund
-      - run: npm run check
-
   submit:
-    needs: validate
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'kickflip-games/reddit_racer' &&
       github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
       inputs.confirm_review_submission == true
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 15
     env:
       REVIEW_VERSION: ${{ inputs.version }}
+      REVIEW_SOURCE_SHA: ${{ inputs.source_sha }}
       REVIEW_CONFIRM: ${{ inputs.confirm_review_submission }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,6 +46,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Verify protected, clean checkout matches the reviewed immutable source
+        run: node scripts/release/devvit-release.mjs source
       - run: npm ci --ignore-scripts --no-fund
       - run: npm run build
       - name: Guard app, source, pinned publish contract and launch README

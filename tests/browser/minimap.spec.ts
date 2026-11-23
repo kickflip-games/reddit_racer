@@ -1,5 +1,6 @@
 import { test, expect, devices } from '@playwright/test';
 import { generateElevatedCircuit } from '../../src/shared/elevated-generator.ts';
+import { generateBrakingCircuit } from '../../src/shared/braking-course-generator.ts';
 import {
   createMinimapGeometry,
   sampleMinimap,
@@ -99,6 +100,20 @@ test(
   async ({ page }, info) => {
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
+    // Always change from an outline without a bridge to one with an overpass.
+    const nextSeed = 'word-v2:silver-valley-02020202-1';
+    const nextGeometry = createMinimapGeometry(
+      generateBrakingCircuit(nextSeed).track
+    );
+    expect(nextGeometry.bridges).toHaveLength(1);
+    await page.addInitScript(() => {
+      const randomValues = crypto.getRandomValues.bind(crypto);
+      crypto.getRandomValues = (values) => {
+        const result = randomValues(values);
+        if (result instanceof Uint8Array && result.length === 4) result.fill(2);
+        return result;
+      };
+    });
     await page.clock.install({ time: new Date('2026-11-14T00:00:00Z') });
     await page.goto('/game.html?practice=1&seed=practice-1');
     await waitForSceneAssets(page);
@@ -107,7 +122,10 @@ test(
     await page.clock.runFor(3100);
     const map = page.locator('#circuit-minimap');
     const path = await page.locator('#minimap-course').getAttribute('d');
-    const nodes = await map.locator('*').count();
+    const permanentNodes = map.locator(
+      '*:not(.minimap-bridge, .minimap-bridge *)'
+    );
+    const nodes = await permanentNodes.count();
     await page.locator('#minimap-course').evaluate((node) => {
       document.documentElement.dataset.testOutlineWrites = '0';
       new MutationObserver((records) => {
@@ -226,10 +244,16 @@ test(
     await page.locator('#next-practice-button').click();
     await expect(page.locator('#race')).toHaveAttribute('data-phase', 'ready');
     await waitForSceneAssets(page);
-    await expect(map).toBeHidden();
-    expect(await page.locator('#minimap-course').getAttribute('d')).not.toBe(
-      path
+    await expect(page.locator('#track-source')).toHaveAttribute(
+      'data-seed',
+      nextSeed
     );
+    await expect(map).toBeHidden();
+    await expect(page.locator('#minimap-course')).toHaveAttribute(
+      'd',
+      nextGeometry.path
+    );
+    expect(nextGeometry.path).not.toBe(path);
     await page.locator('#start-button').click();
     await page.clock.runFor(3100);
     await expect(map).toBeVisible();
@@ -237,7 +261,25 @@ test(
       'aria-valuetext',
       'Lap 1, 0% complete'
     );
-    expect(await map.locator('*').count()).toBe(nodes);
+    expect(await permanentNodes.count()).toBe(nodes);
+    await expect(map.locator('.minimap-bridge')).toHaveCount(
+      nextGeometry.bridges.length
+    );
+    expect(
+      await map
+        .locator('.minimap-bridge path')
+        .evaluateAll((paths) => paths.map((node) => node.getAttribute('d')))
+    ).toEqual(
+      nextGeometry.bridges.flatMap((bridge) => [
+        bridge.path,
+        bridge.path,
+        bridge.path,
+      ])
+    );
+    // Each current bridge owns one group and its three painted path layers.
+    expect(await map.locator('*').count()).toBe(
+      nodes + nextGeometry.bridges.length * 4
+    );
     expect(await page.locator('canvas').count()).toBe(1);
     expect(errors).toEqual([]);
   }

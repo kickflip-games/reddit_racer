@@ -31,11 +31,11 @@
   "dependencies": {
     "@devvit/start": "0.15.4",
     "@devvit/web": "0.15.4",
-    "@hono/node-server": "2.1.8",
-    "@trpc/client": "11.28.3",
-    "@trpc/server": "11.28.3",
+    "@hono/node-server": "2.1.11",
+    "@trpc/client": "11.29.7",
+    "@trpc/server": "11.29.7",
     "devvit": "0.15.4",
-    "hono": "4.13.19",
+    "hono": "4.13.20",
     "three": "0.187.0"
   },
   "devDependencies": {
@@ -45,7 +45,7 @@
     "@types/three": "^0.187.0",
     "eslint": "10.15.0",
     "globals": "17.14.0",
-    "js-yaml": "3.15.2",
+    "js-yaml": "5.5.0",
     "prettier": "3.10.1",
     "tsx": "^4.23.15",
     "typescript": "6.0.3",

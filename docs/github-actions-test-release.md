@@ -3,8 +3,9 @@
 `.github/workflows/devvit-test-release.yaml` is the future release flow on
 GitHub-hosted Ubuntu runners. It uploads **the-daily-lap** privately and installs
 only into **r/full_throttle_dev_dev**. It has no push, pull-request, schedule,
-public-publish, arbitrary-command, app-name or subreddit input. This setup does
-not run a release or change the legacy app.
+public-publish, arbitrary-command, app-name or subreddit input. Deployment is a
+manual action from the exact protected `release/daily-lap` branch.
+This setup does not run a release or change the legacy app.
 
 ## Owner setup before first dispatch
 
@@ -12,29 +13,66 @@ No separate GitHub Environment is required. The workflow references the owner's
 existing repository Actions secret **DEVVIT_AUTH_TOKEN**, only in the final
 release step. This change does not read, copy, modify or test its actual value.
 
-1. Protect `main` with the repository's reviewed-PR/status-check policy. The
-   workflow and script both refuse an unprotected `main`.
-2. Keep the existing repository Actions secret **DEVVIT_AUTH_TOKEN**. The pinned
+1. Keep `main` as the unprotected default/development branch. Review and merge
+   this workflow patch into `main` first, keeping the dispatchable workflow at
+   its existing path on the default branch. The workflow must also be present
+   in the selected `release/daily-lap` revision.
+2. Only after owner confirmation, establish the exact branch `release/daily-lap` and an
+   active no-bypass ruleset for `refs/heads/release/daily-lap`, using the checks below.
+   Promote subsequent changes through PRs targeting `release/daily-lap`. Require PRs and
+   up-to-date checks, reject force pushes and deletion, and allow no bypass
+   actors, including admin-role bypasses. Approval-count policy remains an
+   owner decision. This patch changes no branch, ruleset or organization setting.
+   Both workflow jobs and the script reject `main`, lookalike refs and an
+   unprotected `release/daily-lap`.
+3. Keep the existing repository Actions secret **DEVVIT_AUTH_TOKEN**. The pinned
    CLI expects the complete serialized login payload described below, not a plain
    OAuth access token. Its value belongs only in GitHub's secret settings, never
    in chat, source, dispatch inputs, logs, artifacts or PRs. These tests use dummy
    values and never inspect a workstation's token file.
-3. Independently confirm the new app exists under its authorized owner, the
+4. Independently confirm the new app exists under its authorized owner, the
    developer account is ready, and it can install into the named private Reddit
    target. App initialization, account setup, subreddit creation and changes to
    Reddit access restrictions are outside this workflow.
-4. Review and merge the workflow through normal repository review. No release
-   occurs on merge. The manual workflow must exist on the default branch before
-   its Actions UI can be used. Do not dispatch until owner setup is complete and
-   that specific release is authorized.
+5. No release occurs on merge or promotion. Do not dispatch until the approved
+   branch setup is complete, the selected source is tested and that specific
+   private release is authorized.
 
 GitHub documents [Actions secrets](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions),
 [the protected-ref context](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#github-context),
 and [manual dispatch](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#onworkflow_dispatch).
 
+## Required checks for the proposed release ruleset
+
+CI runs for pushes to `main`/`release/daily-lap` and PRs targeting either branch. Both jobs
+run on promotion PRs; ordinary CI remains secret-free and cannot release.
+Use these exact check-run contexts, verified from the repository's
+[successful CI run for PR #108](https://github.com/kickflip-games/reddit_racer/actions/runs/45051994421)
+(not the UI's workflow/job breadcrumb):
+
+| Required context | Expected GitHub App | Ruleset integration ID |
+| ---------------- | ------------------- | ---------------------- |
+| `check`          | GitHub Actions      | `15368`                |
+| `browser`        | GitHub Actions      | `15368`                |
+
+For the proposed repository ruleset, target only `refs/heads/release/daily-lap`, leave
+`bypass_actors` empty, and enable strict/up-to-date required checks with those
+contexts and `integration_id` values. The manual workflow's `validate` and
+`release` jobs are not promotion-PR checks and must not be required by this rule.
+This is an un-applied proposal pending owner approval, not a claim that a
+protected branch or ruleset exists.
+
+## Trust model
+
+Repository writers are trusted with the repository-scoped Devvit secret: they
+can edit workflows that reference it. The protected release branch and manual
+guards govern promotion and dispatch. The workflow uses the existing
+`DEVVIT_AUTH_TOKEN` only in its final release step and uses no GitHub Environment.
+No actual token is accessed or tested by this patch or its offline tests.
+
 ## Dispatch and exact version
 
-In **Actions → Private test release → Run workflow**, select **main**, enter an
+In **Actions → Private test release → Run workflow**, select **release/daily-lap**, enter an
 **unused** exact version such as `0.0.123`, and enable the test-install
 confirmation. The example is illustrative, not the project's next release.
 Aliases (`latest`, `playtest`), prereleases, extra arguments and noncanonical

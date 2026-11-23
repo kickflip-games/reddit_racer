@@ -39,7 +39,7 @@ const context = {
   GITHUB_ACTIONS: 'true',
   GITHUB_EVENT_NAME: 'workflow_dispatch',
   GITHUB_REPOSITORY: 'kickflip-games/reddit_racer',
-  GITHUB_REF: 'refs/heads/main',
+  GITHUB_REF: 'refs/heads/release/daily-lap',
   GITHUB_REF_TYPE: 'branch',
   GITHUB_REF_PROTECTED: 'true',
   RELEASE_CONFIRM: 'true',
@@ -150,7 +150,17 @@ for (const [name, changes] of [
   ['PR', { GITHUB_EVENT_NAME: 'pull_request' }],
   ['push', { GITHUB_EVENT_NAME: 'push' }],
   ['feature branch', { GITHUB_REF: 'refs/heads/feature/x' }],
-  ['unprotected main', { GITHUB_REF_PROTECTED: 'false' }],
+  ['main branch even when protected', { GITHUB_REF: 'refs/heads/main' }],
+  ['bare release', { GITHUB_REF: 'refs/heads/release' }],
+  [
+    'legacy release branch',
+    { GITHUB_REF: 'refs/heads/release/legacy-publisher-pause' },
+  ],
+  ['release suffix', { GITHUB_REF: 'refs/heads/release/daily-lap-candidate' }],
+  ['release prefix', { GITHUB_REF: 'refs/heads/release/daily-lap/preview' }],
+  ['release case mismatch', { GITHUB_REF: 'refs/heads/release/Daily-Lap' }],
+  ['release tag', { GITHUB_REF: 'refs/tags/release/daily-lap' }],
+  ['unprotected release', { GITHUB_REF_PROTECTED: 'false' }],
   ['fork', { GITHUB_REPOSITORY: 'someone/reddit_racer' }],
   ['tag', { GITHUB_REF_TYPE: 'tag' }],
   ['unconfirmed', { RELEASE_CONFIRM: 'false' }],
@@ -310,7 +320,7 @@ test('workflow has only a guarded manual trigger, least privilege, one release-o
     for (const guard of [
       "github.event_name == 'workflow_dispatch'",
       "github.repository == 'kickflip-games/reddit_racer'",
-      "github.ref == 'refs/heads/main'",
+      "github.ref == 'refs/heads/release/daily-lap'",
       'github.ref_protected == true',
       'inputs.confirm_test_install == true',
     ])
@@ -399,6 +409,13 @@ test('ordinary CI has no release job or repository-wide Devvit secret path', () 
   const raw = readFileSync(join(repo, '.github/workflows/ci.yaml'), 'utf8');
   const workflow = yaml.safeLoad(raw);
   assert.deepEqual(Object.keys(workflow.jobs).sort(), ['browser', 'check']);
+  assert.deepEqual(workflow.on.pull_request.branches, [
+    'main',
+    'release/daily-lap',
+  ]);
+  assert.deepEqual(workflow.on.push.branches, ['main', 'release/daily-lap']);
+  for (const [id, job] of Object.entries(workflow.jobs))
+    assert.equal(job.name ?? id, id, 'required check contexts stay stable');
   assert(!raw.includes('secrets.'));
   assert(!raw.includes('devvit upload'));
   assert(!raw.includes('devvit install'));

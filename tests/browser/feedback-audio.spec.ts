@@ -232,6 +232,7 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
       'landing',
       'shift-up',
       'shift-down',
+      'recovery',
     ] as const) {
       const context = new OfflineAudioContext(1, 12000, 24000);
       const graph = createDrivingAudioGraph(context);
@@ -258,6 +259,7 @@ test('OFFLINE race cues have distinct countdown and GO pitch and a bounded two-n
     'landing',
     'shift-up',
     'shift-down',
+    'recovery',
   ]);
   for (const cue of cues) {
     expect(cue.peak).toBeGreaterThan(0.01);

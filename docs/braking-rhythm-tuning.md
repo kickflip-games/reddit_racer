@@ -50,7 +50,7 @@ The deterministic `linked-circuits-v7` recipe changes existing control points an
 - Ridge: tighter upper lobe, 650–720m rather than 740–810m.
 - Technical and crossover: original recipe. The bridge remains a local grade-separated fold.
 
-No control, traction, acceleration, braking, drift, launch or flight parameter changes. The existing height, grade and jump formulas stay in place. The measured set retains all five jump days and all six crossover days, with minimum crossing headroom **11.44m**. Existing structural, jump-flight, clean-replay and generation-budget gates are unchanged. Earlier prototypes that failed these gates were discarded.
+No control, traction, acceleration, braking, drift, launch or flight parameter changes. The existing height, grade and jump formulas stay in place. The measured set retains all five jump days and all six crossover days, with minimum crossing headroom **11.44m**. Structural, jump-flight and clean-replay thresholds are unchanged. Release integration found one additional seed that needs candidate 13; V7 can now assess all 32 existing candidate slots, while retained versions keep their original 12-assessment budget. All 60 measured track hashes remain unchanged. Earlier prototypes that failed the gates were discarded.
 
 Version routing explicitly retains V6's old generator, acceptance limits, countdown rules, storage normalization and share format. Four golden V6 daily courses assert exact hashes, candidate attempts and replay ticks across technical, jump, crossover and ridge routes. Old V6 shares still reconstruct their original track; new V7 shares have distinct identities. Existing V3/V4 compatibility tests also pass.
 
@@ -80,3 +80,5 @@ npm run format:check
 ```
 
 Generated evidence is excluded from formatting to preserve the report and compact raw data. The source and measured code digest are recorded in the JSON; `workingTreeDirty` honestly records the pre-commit campaign. There were no GitHub Actions dispatches, remote pushes, merges, app creations, hosted test environments or production releases. Today's live race was untouched.
+
+The subsequent combined release and exact 30-date map gallery are documented in [Combined update](daily-lap-combined-update.md). The preceding paragraph records the original local tuning campaign, before release authorization.

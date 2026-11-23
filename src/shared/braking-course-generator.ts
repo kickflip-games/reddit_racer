@@ -51,6 +51,9 @@ export function generateBrakingCircuit(
     throw new Error('Unsupported linked course recipe.');
   const rejections: { attempt: number; codes: string[] }[] = [];
   const qualityRejections: { attempt: number; codes: string[] }[] = [];
+  // Extending V7's search must not change retained recipes or replay hashes.
+  const qualityBudget =
+    version === 'linked-circuits-v7' ? MAX_BRAKING_QUALITY_ATTEMPTS : 12;
   let last: { track: Track; quality: QualityAssessment } | undefined;
   let simulatedTicks = 0,
     controllerRuns = 0,
@@ -59,7 +62,7 @@ export function generateBrakingCircuit(
     attempts = 0;
   for (
     let attempt = 1;
-    attempt <= maxAttempts && qualityAttempts < MAX_BRAKING_QUALITY_ATTEMPTS;
+    attempt <= maxAttempts && qualityAttempts < qualityBudget;
     attempt++
   ) {
     attempts = attempt;

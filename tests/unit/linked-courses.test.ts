@@ -112,6 +112,21 @@ void test('candidate budgets are finite and seed reproduction is independent of 
   );
 });
 
+void test('V7 searches past twelve rejected jump approaches without relaxing safety gates', () => {
+  const seed = 'daily:t5_rhythm:2027-02-14';
+  const exhausted = generateBrakingCircuit(seed, 12);
+  assert.equal(exhausted.quality.valid, false);
+  assert.equal(exhausted.diagnostics.acceptedAttempt, null);
+  const result = generateBrakingCircuit(seed);
+  assert.equal(result.diagnostics.acceptedAttempt, 13);
+  assert.equal(result.diagnostics.qualityAttempts, 13);
+  assert.equal(result.quality.valid, true);
+  assert.deepEqual(result.quality.codes, []);
+  assert.equal(result.quality.metrics?.fast.recoveryCount, 0);
+  assert.equal(result.quality.metrics?.fast.airborneCornerTicks, 0);
+  assert.equal(result.diagnostics.fallbackUsed, false);
+});
+
 void test('v8 daily selection stays bounded and meets unchanged quality limits', () => {
   const seed = 'daily:t5_rhythm:2027-03-30';
   const exhausted = generateBrakingCircuit(seed, 24, 'linked-circuits-v5');

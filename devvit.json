@@ -40,15 +40,14 @@
       "ensure-daily-race": {
         "endpoint": "/internal/scheduler/ensure-daily-race",
         "cron": "*/5 * * * *",
-        "data": { "schemaVersion": 1 }
+        "data": {
+          "schemaVersion": 1
+        }
       }
     }
   },
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
-  },
-  "dev": {
-    "subreddit": "full_throttle_dev_dev"
   }
 }

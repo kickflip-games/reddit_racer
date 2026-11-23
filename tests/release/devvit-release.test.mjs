@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import yaml from 'js-yaml';
+import { load } from 'js-yaml';
 import { validateAuthPayload } from '../../scripts/release/devvit-release-guards.mjs';
 import {
   reviewPreflight,
@@ -334,7 +334,7 @@ test('review workflow is manual, exact-ref/SHA guarded, pinned and has one scope
     join(repo, '.github/workflows/devvit-release.yaml'),
     'utf8'
   );
-  const workflow = yaml.safeLoad(raw);
+  const workflow = load(raw);
   assert.deepEqual(Object.keys(workflow.on), ['workflow_dispatch']);
   assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs).sort(), [
     'confirm_review_submission',
@@ -492,7 +492,7 @@ test('one public workflow replaces private deploy defaults and ordinary CI stays
   assert.equal(pkg.scripts.deploy, undefined);
   assert.equal(pkg.scripts.dev, 'npm run dev:local');
   const raw = readFileSync(join(repo, '.github/workflows/ci.yaml'), 'utf8');
-  const workflow = yaml.safeLoad(raw);
+  const workflow = load(raw);
   assert.deepEqual(Object.keys(workflow.jobs).sort(), ['browser', 'check']);
   assert.deepEqual(workflow.on.pull_request.branches, [
     'main',

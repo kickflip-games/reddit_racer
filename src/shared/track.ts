@@ -192,7 +192,14 @@ export function validateTrack(track: Track): void {
       const y = finite(sample.y, 'sample.y');
       const grade = finite(sample.grade, 'sample.grade');
       const bend = finite(sample.verticalCurvature, 'sample.verticalCurvature');
-      if (y < 0 || y > 8 || Math.abs(grade) > 0.5 || Math.abs(bend) > 0.09)
+      const maxElevation =
+        track.generatorVersion === 'linked-circuits-v6' ? 18 : 8;
+      if (
+        y < 0 ||
+        y > maxElevation ||
+        Math.abs(grade) > 0.5 ||
+        Math.abs(bend) > 0.09
+      )
         throw new Error('Road elevation exceeds safe bounds');
       if (
         (sample.s < 20 || sample.s > track.totalLength - 20) &&

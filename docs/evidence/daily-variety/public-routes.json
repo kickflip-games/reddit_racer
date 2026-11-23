@@ -1,0 +1,6157 @@
+{
+  "source": "Production daily service and candidate V6; full geometry in delivery forecast.json",
+  "scope": "t5_kyc33w",
+  "rows": [
+    {
+      "day": "2026-11-23",
+      "seed": "daily:t5_kyc33w:2026-11-23",
+      "family": "ridge",
+      "trackHash": "b5073ebacbc791e78832cd889a12773d3d26294c581ab5b17caa0332f357347f",
+      "peakElevation": 17.779265,
+      "ascent": 24.77919,
+      "maxGrade": 0.20355,
+      "rankedTicks": 3606,
+      "practiceTicks": 3606,
+      "longestThrottleSeconds": 10.833333333333334,
+      "lengthMetres": 798.3139,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3606,
+        "seconds": 30.05,
+        "elapsedTicks": 3606,
+        "offRoadTicks": 68,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4086,
+        "seconds": 34.05,
+        "elapsedTicks": 4086,
+        "offRoadTicks": 587,
+        "recoveryTicks": 120,
+        "recoveryCount": 1,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 121,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 121
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4738,
+        "seconds": 39.483333333333334,
+        "elapsedTicks": 4738,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 272,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 480,
+      "lifts": 4,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1002,
+            "held": false
+          },
+          {
+            "tick": 1059,
+            "held": true
+          },
+          {
+            "tick": 1389,
+            "held": false
+          },
+          {
+            "tick": 1467,
+            "held": true
+          },
+          {
+            "tick": 1501,
+            "held": false
+          },
+          {
+            "tick": 1506,
+            "held": true
+          },
+          {
+            "tick": 1974,
+            "held": false
+          },
+          {
+            "tick": 2073,
+            "held": true
+          },
+          {
+            "tick": 3373,
+            "held": false
+          },
+          {
+            "tick": 3454,
+            "held": true
+          }
+        ],
+        "endTick": 3606
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4086,
+        "cautiousFinishTicks": 4738,
+        "fastFinishTicks": 3606,
+        "meaningfulLifts": 4,
+        "gainTicks": 480,
+        "fastOffRoadTicks": 68,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 527164,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 562.8927,
+        "peakElevation": 1.47969,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4205,
+            "seconds": 35.041666666666664,
+            "elapsedTicks": 4205,
+            "offRoadTicks": 1369,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4364,
+            "seconds": 36.36666666666667,
+            "elapsedTicks": 4364,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 268,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3104,
+            "seconds": 25.866666666666667,
+            "elapsedTicks": 3104,
+            "offRoadTicks": 102,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 8,
+            "meaningfulLifts": 8,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1101,
+          "meaningfulLifts": 8,
+          "maxCurvatureSlope": 0.010333133253301463,
+          "seamTangentAngle": 0.0009525985873197508,
+          "seamCurvatureSlope": 8.900890089008677e-5
+        },
+        "longestThrottleSeconds": 3.566666666666667
+      }
+    },
+    {
+      "day": "2026-11-24",
+      "seed": "daily:t5_kyc33w:2026-11-24",
+      "family": "technical",
+      "trackHash": "38fc298e5f633a0319ea5cb1a89e3b286eaa76536d43a0084c8dda6459fb913d",
+      "peakElevation": 11.177579,
+      "ascent": 11.177579,
+      "maxGrade": 0.067939,
+      "rankedTicks": 3079,
+      "practiceTicks": 3079,
+      "longestThrottleSeconds": 5.316666666666666,
+      "lengthMetres": 613.0679,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3079,
+        "seconds": 25.658333333333335,
+        "elapsedTicks": 3079,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 8,
+        "meaningfulLifts": 7,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4141,
+        "seconds": 34.50833333333333,
+        "elapsedTicks": 4141,
+        "offRoadTicks": 1122,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 360,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 327
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4189,
+        "seconds": 34.90833333333333,
+        "elapsedTicks": 4189,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 247,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 1062,
+      "lifts": 7,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 638,
+            "held": false
+          },
+          {
+            "tick": 721,
+            "held": true
+          },
+          {
+            "tick": 956,
+            "held": false
+          },
+          {
+            "tick": 1043,
+            "held": true
+          },
+          {
+            "tick": 1270,
+            "held": false
+          },
+          {
+            "tick": 1371,
+            "held": true
+          },
+          {
+            "tick": 1662,
+            "held": false
+          },
+          {
+            "tick": 1743,
+            "held": true
+          },
+          {
+            "tick": 1844,
+            "held": false
+          },
+          {
+            "tick": 1852,
+            "held": true
+          },
+          {
+            "tick": 2074,
+            "held": false
+          },
+          {
+            "tick": 2176,
+            "held": true
+          },
+          {
+            "tick": 2447,
+            "held": false
+          },
+          {
+            "tick": 2484,
+            "held": true
+          },
+          {
+            "tick": 2709,
+            "held": false
+          },
+          {
+            "tick": 2789,
+            "held": true
+          }
+        ],
+        "endTick": 3079
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "holdFinishTicks": 4141,
+        "cautiousFinishTicks": 4189,
+        "fastFinishTicks": 3079,
+        "meaningfulLifts": 7,
+        "gainTicks": 1062,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 190,
+        "simulatedTicks": 682301,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 580.0062,
+        "peakElevation": 2.598678,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4082,
+            "seconds": 34.016666666666666,
+            "elapsedTicks": 4082,
+            "offRoadTicks": 1150,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4309,
+            "seconds": 35.90833333333333,
+            "elapsedTicks": 4309,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 267,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3059,
+            "seconds": 25.491666666666667,
+            "elapsedTicks": 3059,
+            "offRoadTicks": 166,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1023,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.022026851016932157,
+          "seamTangentAngle": 0.00099122251811957,
+          "seamCurvatureSlope": 0.00010517880396673444
+        },
+        "longestThrottleSeconds": 6.75
+      }
+    },
+    {
+      "day": "2026-11-25",
+      "seed": "daily:t5_kyc33w:2026-11-25",
+      "family": "switchbacks",
+      "trackHash": "975e4c9fc0f17dd4da407c7f98016934445f75c32f24a43f5834ef61e051626a",
+      "peakElevation": 10.609186,
+      "ascent": 14.609134000000003,
+      "maxGrade": 0.286086,
+      "rankedTicks": 3533,
+      "practiceTicks": 3533,
+      "longestThrottleSeconds": 10.083333333333334,
+      "lengthMetres": 760.1654,
+      "jumpCount": 1,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3533,
+        "seconds": 29.441666666666666,
+        "elapsedTicks": 3533,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.58329,
+            "airborneTicks": 170,
+            "peakClearance": 2.882826182869164,
+            "landingEdgeClearance": 1.3328352111375112,
+            "landedS": 73.166529,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4181,
+        "seconds": 34.84166666666667,
+        "elapsedTicks": 4181,
+        "offRoadTicks": 685,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.58329,
+            "airborneTicks": 170,
+            "peakClearance": 2.882826182869164,
+            "landingEdgeClearance": 1.3328352111375112,
+            "landedS": 73.166529,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 345,
+        "landings": 3,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 175
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4745,
+        "seconds": 39.541666666666664,
+        "elapsedTicks": 4745,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 244,
+        "meaningfulLifts": 2,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.58329,
+            "airborneTicks": 170,
+            "peakClearance": 2.882826182869164,
+            "landingEdgeClearance": 1.3328352111375112,
+            "landedS": 73.166529,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 648,
+      "lifts": 5,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1210,
+            "held": false
+          },
+          {
+            "tick": 1302,
+            "held": true
+          },
+          {
+            "tick": 1425,
+            "held": false
+          },
+          {
+            "tick": 1462,
+            "held": true
+          },
+          {
+            "tick": 1733,
+            "held": false
+          },
+          {
+            "tick": 1816,
+            "held": true
+          },
+          {
+            "tick": 2704,
+            "held": false
+          },
+          {
+            "tick": 2766,
+            "held": true
+          },
+          {
+            "tick": 3241,
+            "held": false
+          },
+          {
+            "tick": 3322,
+            "held": true
+          }
+        ],
+        "endTick": 3533
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4181,
+        "cautiousFinishTicks": 4745,
+        "fastFinishTicks": 3533,
+        "meaningfulLifts": 5,
+        "gainTicks": 648,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 522700,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 596.2154,
+        "peakElevation": 1.797602,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4064,
+            "seconds": 33.86666666666667,
+            "elapsedTicks": 4064,
+            "offRoadTicks": 1144,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4439,
+            "seconds": 36.99166666666667,
+            "elapsedTicks": 4439,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 260,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3164,
+            "seconds": 26.366666666666667,
+            "elapsedTicks": 3164,
+            "offRoadTicks": 288,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 900,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.010007010515773875,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.0001752277961349581
+        },
+        "longestThrottleSeconds": 5.141666666666667
+      }
+    },
+    {
+      "day": "2026-11-26",
+      "seed": "daily:t5_kyc33w:2026-11-26",
+      "family": "sweeping",
+      "trackHash": "2dc84ae9a6e7f176166b9bb59228ea08c0be326861865e3f2ada22852fb35eb9",
+      "peakElevation": 11.023093,
+      "ascent": 11.023093,
+      "maxGrade": 0.060489,
+      "rankedTicks": 3127,
+      "practiceTicks": 3127,
+      "longestThrottleSeconds": 5.775,
+      "lengthMetres": 673.8988,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3127,
+        "seconds": 26.058333333333334,
+        "elapsedTicks": 3127,
+        "offRoadTicks": 34,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3973,
+        "seconds": 33.108333333333334,
+        "elapsedTicks": 3973,
+        "offRoadTicks": 845,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 272,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 183
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4241,
+        "seconds": 35.34166666666667,
+        "elapsedTicks": 4241,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 252,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 846,
+      "lifts": 5,
+      "acceptedAttempt": 7,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 683,
+            "held": false
+          },
+          {
+            "tick": 706,
+            "held": true
+          },
+          {
+            "tick": 1399,
+            "held": false
+          },
+          {
+            "tick": 1456,
+            "held": true
+          },
+          {
+            "tick": 1736,
+            "held": false
+          },
+          {
+            "tick": 1816,
+            "held": true
+          },
+          {
+            "tick": 2228,
+            "held": false
+          },
+          {
+            "tick": 2326,
+            "held": true
+          },
+          {
+            "tick": 2634,
+            "held": false
+          },
+          {
+            "tick": 2743,
+            "held": true
+          }
+        ],
+        "endTick": 3127
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 7,
+        "qualityAttempts": 7,
+        "generationRejectCodes": [
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "qualityRejectCodes": [
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "holdFinishTicks": 3973,
+        "cautiousFinishTicks": 4241,
+        "fastFinishTicks": 3127,
+        "meaningfulLifts": 5,
+        "gainTicks": 846,
+        "fastOffRoadTicks": 34,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 352,
+        "simulatedTicks": 1360202,
+        "replayChecks": 24
+      },
+      "baseline": {
+        "lengthMetres": 553.2421,
+        "peakElevation": 2.669833,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3824,
+            "seconds": 31.866666666666667,
+            "elapsedTicks": 3824,
+            "offRoadTicks": 1294,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4353,
+            "seconds": 36.275,
+            "elapsedTicks": 4353,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 272,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3073,
+            "seconds": 25.608333333333334,
+            "elapsedTicks": 3073,
+            "offRoadTicks": 126,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 751,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.0136314471707572,
+          "seamTangentAngle": 0.00037917278621429044,
+          "seamCurvatureSlope": 5.0065084609988035e-6
+        },
+        "longestThrottleSeconds": 5.95
+      }
+    },
+    {
+      "day": "2026-11-27",
+      "seed": "daily:t5_kyc33w:2026-11-27",
+      "family": "ridge",
+      "trackHash": "11ef1e24a39f1f45c63569cae89f6c0350879e75930a9c52291cbaf8f99a504e",
+      "peakElevation": 17.880516,
+      "ascent": 24.880429000000014,
+      "maxGrade": 0.204709,
+      "rankedTicks": 3702,
+      "practiceTicks": 3702,
+      "longestThrottleSeconds": 11.05,
+      "lengthMetres": 808.4458,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3702,
+        "seconds": 30.85,
+        "elapsedTicks": 3702,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4227,
+        "seconds": 35.225,
+        "elapsedTicks": 4227,
+        "offRoadTicks": 718,
+        "recoveryTicks": 120,
+        "recoveryCount": 1,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 146,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 146
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4731,
+        "seconds": 39.425,
+        "elapsedTicks": 4731,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 266,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 525,
+      "lifts": 6,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1138,
+            "held": false
+          },
+          {
+            "tick": 1212,
+            "held": true
+          },
+          {
+            "tick": 1366,
+            "held": false
+          },
+          {
+            "tick": 1422,
+            "held": true
+          },
+          {
+            "tick": 1471,
+            "held": false
+          },
+          {
+            "tick": 1537,
+            "held": true
+          },
+          {
+            "tick": 1899,
+            "held": false
+          },
+          {
+            "tick": 1981,
+            "held": true
+          },
+          {
+            "tick": 2068,
+            "held": false
+          },
+          {
+            "tick": 2130,
+            "held": true
+          },
+          {
+            "tick": 3456,
+            "held": false
+          },
+          {
+            "tick": 3537,
+            "held": true
+          }
+        ],
+        "endTick": 3702
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4227,
+        "cautiousFinishTicks": 4731,
+        "fastFinishTicks": 3702,
+        "meaningfulLifts": 6,
+        "gainTicks": 525,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 540366,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 549.7611,
+        "peakElevation": 1.582717,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3862,
+            "seconds": 32.18333333333333,
+            "elapsedTicks": 3862,
+            "offRoadTicks": 1120,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4228,
+            "seconds": 35.233333333333334,
+            "elapsedTicks": 4228,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 259,
+            "meaningfulLifts": 4,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3272,
+            "seconds": 27.266666666666666,
+            "elapsedTicks": 3272,
+            "offRoadTicks": 486,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 5,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 590,
+          "meaningfulLifts": 5,
+          "maxCurvatureSlope": 0.019654758330830368,
+          "seamTangentAngle": 0.0007431379584431613,
+          "seamCurvatureSlope": 9.603841536613681e-5
+        },
+        "longestThrottleSeconds": 7.016666666666667
+      }
+    },
+    {
+      "day": "2026-11-28",
+      "seed": "daily:t5_kyc33w:2026-11-28",
+      "family": "ridge",
+      "trackHash": "daa247fafb9382c7c39994b800439ed645f1a010101b622a85654d2ae472831d",
+      "peakElevation": 17.537051,
+      "ascent": 24.537028000000007,
+      "maxGrade": 0.200777,
+      "rankedTicks": 3697,
+      "practiceTicks": 3697,
+      "longestThrottleSeconds": 10.658333333333333,
+      "lengthMetres": 803.2843,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3697,
+        "seconds": 30.808333333333334,
+        "elapsedTicks": 3697,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4399,
+        "seconds": 36.65833333333333,
+        "elapsedTicks": 4399,
+        "offRoadTicks": 729,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 145,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 145
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4707,
+        "seconds": 39.225,
+        "elapsedTicks": 4707,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 267,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 702,
+      "lifts": 6,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1094,
+            "held": false
+          },
+          {
+            "tick": 1170,
+            "held": true
+          },
+          {
+            "tick": 1391,
+            "held": false
+          },
+          {
+            "tick": 1452,
+            "held": true
+          },
+          {
+            "tick": 1498,
+            "held": false
+          },
+          {
+            "tick": 1543,
+            "held": true
+          },
+          {
+            "tick": 1895,
+            "held": false
+          },
+          {
+            "tick": 1977,
+            "held": true
+          },
+          {
+            "tick": 2093,
+            "held": false
+          },
+          {
+            "tick": 2177,
+            "held": true
+          },
+          {
+            "tick": 3456,
+            "held": false
+          },
+          {
+            "tick": 3536,
+            "held": true
+          }
+        ],
+        "endTick": 3697
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4399,
+        "cautiousFinishTicks": 4707,
+        "fastFinishTicks": 3697,
+        "meaningfulLifts": 6,
+        "gainTicks": 702,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 538526,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 592.3581,
+        "peakElevation": 3.02344,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4169,
+            "seconds": 34.74166666666667,
+            "elapsedTicks": 4169,
+            "offRoadTicks": 1187,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4382,
+            "seconds": 36.516666666666666,
+            "elapsedTicks": 4382,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 255,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3032,
+            "seconds": 25.266666666666666,
+            "elapsedTicks": 3032,
+            "offRoadTicks": 62,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 5,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1137,
+          "meaningfulLifts": 5,
+          "maxCurvatureSlope": 0.008366366366366347,
+          "seamTangentAngle": 0.0006922745258780203,
+          "seamCurvatureSlope": 7.608369206126368e-5
+        },
+        "longestThrottleSeconds": 5.958333333333333
+      }
+    },
+    {
+      "day": "2026-11-29",
+      "seed": "daily:t5_kyc33w:2026-11-29",
+      "family": "technical",
+      "trackHash": "6292301e76233ad2f6909e8b5385b0612ded388ec92adb08b6ca645733f3be92",
+      "peakElevation": 12.662935,
+      "ascent": 12.662935,
+      "maxGrade": 0.081601,
+      "rankedTicks": 2968,
+      "practiceTicks": 2968,
+      "longestThrottleSeconds": 5.225,
+      "lengthMetres": 580.9839,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 2968,
+        "seconds": 24.733333333333334,
+        "elapsedTicks": 2968,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3948,
+        "seconds": 32.9,
+        "elapsedTicks": 3948,
+        "offRoadTicks": 1048,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 396,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 236
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4029,
+        "seconds": 33.575,
+        "elapsedTicks": 4029,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 234,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 980,
+      "lifts": 6,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 583,
+            "held": false
+          },
+          {
+            "tick": 666,
+            "held": true
+          },
+          {
+            "tick": 810,
+            "held": false
+          },
+          {
+            "tick": 879,
+            "held": true
+          },
+          {
+            "tick": 1183,
+            "held": false
+          },
+          {
+            "tick": 1304,
+            "held": true
+          },
+          {
+            "tick": 1601,
+            "held": false
+          },
+          {
+            "tick": 1684,
+            "held": true
+          },
+          {
+            "tick": 1893,
+            "held": false
+          },
+          {
+            "tick": 2005,
+            "held": true
+          },
+          {
+            "tick": 2632,
+            "held": false
+          },
+          {
+            "tick": 2713,
+            "held": true
+          }
+        ],
+        "endTick": 2968
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["fast-recovery", "fast-off-road"],
+        "qualityRejectCodes": ["fast-recovery", "fast-off-road"],
+        "holdFinishTicks": 3948,
+        "cautiousFinishTicks": 4029,
+        "fastFinishTicks": 2968,
+        "meaningfulLifts": 6,
+        "gainTicks": 980,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 190,
+        "simulatedTicks": 678777,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 589.2384,
+        "peakElevation": 2.337506,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4140,
+            "seconds": 34.5,
+            "elapsedTicks": 4140,
+            "offRoadTicks": 1061,
+            "recoveryTicks": 240,
+            "recoveryCount": 2,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4341,
+            "seconds": 36.175,
+            "elapsedTicks": 4341,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 268,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3142,
+            "seconds": 26.183333333333334,
+            "elapsedTicks": 3142,
+            "offRoadTicks": 218,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 998,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.015236855282924379,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 8.10973167801394e-5
+        },
+        "longestThrottleSeconds": 6.433333333333334
+      }
+    },
+    {
+      "day": "2026-11-30",
+      "seed": "daily:t5_kyc33w:2026-11-30",
+      "family": "sweeping",
+      "trackHash": "11f459524c9add557db64d03687de84de2a2402e47bd6d1097ac3d68b84dae33",
+      "peakElevation": 12.346016,
+      "ascent": 12.346016,
+      "maxGrade": 0.06427,
+      "rankedTicks": 3286,
+      "practiceTicks": 3286,
+      "longestThrottleSeconds": 11.625,
+      "lengthMetres": 707.7696,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3286,
+        "seconds": 27.383333333333333,
+        "elapsedTicks": 3286,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 4,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4157,
+        "seconds": 34.641666666666666,
+        "elapsedTicks": 4157,
+        "offRoadTicks": 899,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 276,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 179
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4382,
+        "seconds": 36.516666666666666,
+        "elapsedTicks": 4382,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 254,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 871,
+      "lifts": 4,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1395,
+            "held": false
+          },
+          {
+            "tick": 1465,
+            "held": true
+          },
+          {
+            "tick": 1842,
+            "held": false
+          },
+          {
+            "tick": 1922,
+            "held": true
+          },
+          {
+            "tick": 2393,
+            "held": false
+          },
+          {
+            "tick": 2488,
+            "held": true
+          },
+          {
+            "tick": 2764,
+            "held": false
+          },
+          {
+            "tick": 2889,
+            "held": true
+          }
+        ],
+        "endTick": 3286
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4157,
+        "cautiousFinishTicks": 4382,
+        "fastFinishTicks": 3286,
+        "meaningfulLifts": 4,
+        "gainTicks": 871,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 84,
+        "simulatedTicks": 327316,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 547.5921,
+        "peakElevation": 1.742554,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4034,
+            "seconds": 33.61666666666667,
+            "elapsedTicks": 4034,
+            "offRoadTicks": 1227,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4168,
+            "seconds": 34.733333333333334,
+            "elapsedTicks": 4168,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 244,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 2979,
+            "seconds": 24.825,
+            "elapsedTicks": 2979,
+            "offRoadTicks": 111,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1055,
+          "meaningfulLifts": 5,
+          "maxCurvatureSlope": 0.008623761385246733,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 9.406584609226944e-5
+        },
+        "longestThrottleSeconds": 6.1
+      }
+    },
+    {
+      "day": "2026-12-01",
+      "seed": "daily:t5_kyc33w:2026-12-01",
+      "family": "technical",
+      "trackHash": "56d9e46d8a60dbccb08762328f46fb1e490c77a3a2d24974cf0887568a352f91",
+      "peakElevation": 11.416145,
+      "ascent": 11.416145,
+      "maxGrade": 0.076096,
+      "rankedTicks": 2909,
+      "practiceTicks": 2909,
+      "longestThrottleSeconds": 4.825,
+      "lengthMetres": 563.2617,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 2909,
+        "seconds": 24.241666666666667,
+        "elapsedTicks": 2909,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 7,
+        "meaningfulLifts": 7,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3803,
+        "seconds": 31.691666666666666,
+        "elapsedTicks": 3803,
+        "offRoadTicks": 867,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 366,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 336
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 3977,
+        "seconds": 33.141666666666666,
+        "elapsedTicks": 3977,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 236,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 894,
+      "lifts": 7,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 579,
+            "held": false
+          },
+          {
+            "tick": 661,
+            "held": true
+          },
+          {
+            "tick": 785,
+            "held": false
+          },
+          {
+            "tick": 852,
+            "held": true
+          },
+          {
+            "tick": 1176,
+            "held": false
+          },
+          {
+            "tick": 1291,
+            "held": true
+          },
+          {
+            "tick": 1546,
+            "held": false
+          },
+          {
+            "tick": 1634,
+            "held": true
+          },
+          {
+            "tick": 1867,
+            "held": false
+          },
+          {
+            "tick": 1979,
+            "held": true
+          },
+          {
+            "tick": 2131,
+            "held": false
+          },
+          {
+            "tick": 2151,
+            "held": true
+          },
+          {
+            "tick": 2561,
+            "held": false
+          },
+          {
+            "tick": 2642,
+            "held": true
+          }
+        ],
+        "endTick": 2909
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "holdFinishTicks": 3803,
+        "cautiousFinishTicks": 3977,
+        "fastFinishTicks": 2909,
+        "meaningfulLifts": 7,
+        "gainTicks": 894,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 174,
+        "simulatedTicks": 611442,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 591.4281,
+        "peakElevation": 1.688208,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3952,
+            "seconds": 32.93333333333333,
+            "elapsedTicks": 3952,
+            "offRoadTicks": 1362,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4593,
+            "seconds": 38.275,
+            "elapsedTicks": 4593,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 259,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3155,
+            "seconds": 26.291666666666668,
+            "elapsedTicks": 3155,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 5,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 797,
+          "meaningfulLifts": 5,
+          "maxCurvatureSlope": 0.011990189208128955,
+          "seamTangentAngle": 0.0008560268948552539,
+          "seamCurvatureSlope": 7.506756080472436e-5
+        },
+        "longestThrottleSeconds": 7.241666666666666
+      }
+    },
+    {
+      "day": "2026-12-02",
+      "seed": "daily:t5_kyc33w:2026-12-02",
+      "family": "ridge",
+      "trackHash": "f46434821e88953197d97848baf84bc8e6f362cde3b56024e0308b21e72cfc03",
+      "peakElevation": 17.437766,
+      "ascent": 24.437678999999967,
+      "maxGrade": 0.19964,
+      "rankedTicks": 3648,
+      "practiceTicks": 3648,
+      "longestThrottleSeconds": 11.266666666666667,
+      "lengthMetres": 802.4318,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3648,
+        "seconds": 30.4,
+        "elapsedTicks": 3648,
+        "offRoadTicks": 99,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4100,
+        "seconds": 34.166666666666664,
+        "elapsedTicks": 4100,
+        "offRoadTicks": 573,
+        "recoveryTicks": 120,
+        "recoveryCount": 1,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 108,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 108
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4752,
+        "seconds": 39.6,
+        "elapsedTicks": 4752,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 275,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 452,
+      "lifts": 4,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1150,
+            "held": false
+          },
+          {
+            "tick": 1206,
+            "held": true
+          },
+          {
+            "tick": 1371,
+            "held": false
+          },
+          {
+            "tick": 1450,
+            "held": true
+          },
+          {
+            "tick": 1484,
+            "held": false
+          },
+          {
+            "tick": 1494,
+            "held": true
+          },
+          {
+            "tick": 1965,
+            "held": false
+          },
+          {
+            "tick": 2052,
+            "held": true
+          },
+          {
+            "tick": 3404,
+            "held": false
+          },
+          {
+            "tick": 3486,
+            "held": true
+          }
+        ],
+        "endTick": 3648
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["passive-driving"],
+        "qualityRejectCodes": ["passive-driving"],
+        "holdFinishTicks": 4100,
+        "cautiousFinishTicks": 4752,
+        "fastFinishTicks": 3648,
+        "meaningfulLifts": 4,
+        "gainTicks": 452,
+        "fastOffRoadTicks": 99,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 198,
+        "simulatedTicks": 806369,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 560.3575,
+        "peakElevation": 2.535798,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3899,
+            "seconds": 32.49166666666667,
+            "elapsedTicks": 3899,
+            "offRoadTicks": 1310,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4247,
+            "seconds": 35.391666666666666,
+            "elapsedTicks": 4247,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 243,
+            "meaningfulLifts": 4,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3111,
+            "seconds": 25.925,
+            "elapsedTicks": 3111,
+            "offRoadTicks": 260,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 788,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.007598117741289524,
+          "seamTangentAngle": 0.0005254997683682704,
+          "seamCurvatureSlope": 0
+        },
+        "longestThrottleSeconds": 6.625
+      }
+    },
+    {
+      "day": "2026-12-03",
+      "seed": "daily:t5_kyc33w:2026-12-03",
+      "family": "sweeping",
+      "trackHash": "928e01f64c76ce7b23bc150ae3b1c5661b0e0776f623f396922dc7383d628d0b",
+      "peakElevation": 9.200661,
+      "ascent": 9.200661,
+      "maxGrade": 0.052096,
+      "rankedTicks": 3069,
+      "practiceTicks": 3069,
+      "longestThrottleSeconds": 6.658333333333333,
+      "lengthMetres": 654.5887,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3069,
+        "seconds": 25.575,
+        "elapsedTicks": 3069,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3866,
+        "seconds": 32.21666666666667,
+        "elapsedTicks": 3866,
+        "offRoadTicks": 775,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 237,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 233
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4191,
+        "seconds": 34.925,
+        "elapsedTicks": 4191,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 253,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 797,
+      "lifts": 5,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 799,
+            "held": false
+          },
+          {
+            "tick": 846,
+            "held": true
+          },
+          {
+            "tick": 1353,
+            "held": false
+          },
+          {
+            "tick": 1420,
+            "held": true
+          },
+          {
+            "tick": 1708,
+            "held": false
+          },
+          {
+            "tick": 1788,
+            "held": true
+          },
+          {
+            "tick": 2244,
+            "held": false
+          },
+          {
+            "tick": 2323,
+            "held": true
+          },
+          {
+            "tick": 2566,
+            "held": false
+          },
+          {
+            "tick": 2682,
+            "held": true
+          }
+        ],
+        "endTick": 3069
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 3866,
+        "cautiousFinishTicks": 4191,
+        "fastFinishTicks": 3069,
+        "meaningfulLifts": 5,
+        "gainTicks": 797,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 84,
+        "simulatedTicks": 319120,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 594.0585,
+        "peakElevation": 6.499019,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4307,
+            "seconds": 35.891666666666666,
+            "elapsedTicks": 4307,
+            "offRoadTicks": 1292,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4418,
+            "seconds": 36.81666666666667,
+            "elapsedTicks": 4418,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 260,
+            "meaningfulLifts": 4,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3187,
+            "seconds": 26.558333333333334,
+            "elapsedTicks": 3187,
+            "offRoadTicks": 146,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 8,
+            "meaningfulLifts": 8,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1120,
+          "meaningfulLifts": 8,
+          "maxCurvatureSlope": 0.014253230491834896,
+          "seamTangentAngle": 0.0007662623757602953,
+          "seamCurvatureSlope": 0
+        },
+        "longestThrottleSeconds": 5.608333333333333
+      }
+    },
+    {
+      "day": "2026-12-04",
+      "seed": "daily:t5_kyc33w:2026-12-04",
+      "family": "technical",
+      "trackHash": "4b649f43cc670ed9e363fd95f86905959331bb006c9a780ed3743cc592f931af",
+      "peakElevation": 12.12611,
+      "ascent": 12.12611,
+      "maxGrade": 0.0738,
+      "rankedTicks": 3128,
+      "practiceTicks": 3128,
+      "longestThrottleSeconds": 5.266666666666667,
+      "lengthMetres": 612.3424,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3128,
+        "seconds": 26.066666666666666,
+        "elapsedTicks": 3128,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4159,
+        "seconds": 34.65833333333333,
+        "elapsedTicks": 4159,
+        "offRoadTicks": 1113,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 410,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 221
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4182,
+        "seconds": 34.85,
+        "elapsedTicks": 4182,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 245,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 1031,
+      "lifts": 6,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 627,
+            "held": false
+          },
+          {
+            "tick": 709,
+            "held": true
+          },
+          {
+            "tick": 944,
+            "held": false
+          },
+          {
+            "tick": 1030,
+            "held": true
+          },
+          {
+            "tick": 1261,
+            "held": false
+          },
+          {
+            "tick": 1372,
+            "held": true
+          },
+          {
+            "tick": 1549,
+            "held": false
+          },
+          {
+            "tick": 1643,
+            "held": true
+          },
+          {
+            "tick": 2030,
+            "held": false
+          },
+          {
+            "tick": 2136,
+            "held": true
+          },
+          {
+            "tick": 2768,
+            "held": false
+          },
+          {
+            "tick": 2849,
+            "held": true
+          }
+        ],
+        "endTick": 3128
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4159,
+        "cautiousFinishTicks": 4182,
+        "fastFinishTicks": 3128,
+        "meaningfulLifts": 6,
+        "gainTicks": 1031,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 116,
+        "simulatedTicks": 425774,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 569.8703,
+        "peakElevation": 4.053418,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3865,
+            "seconds": 32.208333333333336,
+            "elapsedTicks": 3865,
+            "offRoadTicks": 1232,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4350,
+            "seconds": 36.25,
+            "elapsedTicks": 4350,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 256,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3181,
+            "seconds": 26.508333333333333,
+            "elapsedTicks": 3181,
+            "offRoadTicks": 307,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 684,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.014140242072621722,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.0002160432086417175
+        },
+        "longestThrottleSeconds": 4.816666666666666
+      }
+    },
+    {
+      "day": "2026-12-05",
+      "seed": "daily:t5_kyc33w:2026-12-05",
+      "family": "ridge",
+      "trackHash": "57b50462ee83fe66e09ed29a2ca950b278b87bf5e0a668c35d73b6bba6bee6a6",
+      "peakElevation": 17.445876,
+      "ascent": 24.44587100000001,
+      "maxGrade": 0.199732,
+      "rankedTicks": 3648,
+      "practiceTicks": 3648,
+      "longestThrottleSeconds": 11.608333333333333,
+      "lengthMetres": 799.6661,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3648,
+        "seconds": 30.4,
+        "elapsedTicks": 3648,
+        "offRoadTicks": 98,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 4,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4217,
+        "seconds": 35.141666666666666,
+        "elapsedTicks": 4217,
+        "offRoadTicks": 675,
+        "recoveryTicks": 120,
+        "recoveryCount": 1,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 87,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 87
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4729,
+        "seconds": 39.40833333333333,
+        "elapsedTicks": 4729,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 271,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 569,
+      "lifts": 4,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1047,
+            "held": false
+          },
+          {
+            "tick": 1100,
+            "held": true
+          },
+          {
+            "tick": 1343,
+            "held": false
+          },
+          {
+            "tick": 1443,
+            "held": true
+          },
+          {
+            "tick": 1932,
+            "held": false
+          },
+          {
+            "tick": 2022,
+            "held": true
+          },
+          {
+            "tick": 3415,
+            "held": false
+          },
+          {
+            "tick": 3496,
+            "held": true
+          }
+        ],
+        "endTick": 3648
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4217,
+        "cautiousFinishTicks": 4729,
+        "fastFinishTicks": 3648,
+        "meaningfulLifts": 4,
+        "gainTicks": 569,
+        "fastOffRoadTicks": 98,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 533316,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 593.7513,
+        "peakElevation": 2.407558,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4679,
+            "seconds": 38.99166666666667,
+            "elapsedTicks": 4679,
+            "offRoadTicks": 1451,
+            "recoveryTicks": 240,
+            "recoveryCount": 2,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4510,
+            "seconds": 37.583333333333336,
+            "elapsedTicks": 4510,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 271,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3130,
+            "seconds": 26.083333333333332,
+            "elapsedTicks": 3130,
+            "offRoadTicks": 122,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1549,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.008942471235617705,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 2.3009203681472895e-5
+        },
+        "longestThrottleSeconds": 3.9166666666666665
+      }
+    },
+    {
+      "day": "2026-12-06",
+      "seed": "daily:t5_kyc33w:2026-12-06",
+      "family": "ridge",
+      "trackHash": "48ae9b2518eeff95414c7e087f01fae463afcf26caf6a1ec9042e176a54081f9",
+      "peakElevation": 17.972939,
+      "ascent": 24.972756999999987,
+      "maxGrade": 0.205766,
+      "rankedTicks": 3508,
+      "practiceTicks": 3508,
+      "longestThrottleSeconds": 10.158333333333333,
+      "lengthMetres": 754.7912,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3508,
+        "seconds": 29.233333333333334,
+        "elapsedTicks": 3508,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4458,
+        "seconds": 37.15,
+        "elapsedTicks": 4458,
+        "offRoadTicks": 1075,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 275,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 219
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4554,
+        "seconds": 37.95,
+        "elapsedTicks": 4554,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 266,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 950,
+      "lifts": 6,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1219,
+            "held": false
+          },
+          {
+            "tick": 1290,
+            "held": true
+          },
+          {
+            "tick": 1369,
+            "held": false
+          },
+          {
+            "tick": 1433,
+            "held": true
+          },
+          {
+            "tick": 1802,
+            "held": false
+          },
+          {
+            "tick": 1930,
+            "held": true
+          },
+          {
+            "tick": 2349,
+            "held": false
+          },
+          {
+            "tick": 2393,
+            "held": true
+          },
+          {
+            "tick": 2454,
+            "held": false
+          },
+          {
+            "tick": 2495,
+            "held": true
+          },
+          {
+            "tick": 3284,
+            "held": false
+          },
+          {
+            "tick": 3365,
+            "held": true
+          }
+        ],
+        "endTick": 3508
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["passive-driving"],
+        "qualityRejectCodes": ["passive-driving"],
+        "holdFinishTicks": 4458,
+        "cautiousFinishTicks": 4554,
+        "fastFinishTicks": 3508,
+        "meaningfulLifts": 6,
+        "gainTicks": 950,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 198,
+        "simulatedTicks": 798686,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 553.033,
+        "peakElevation": 2.53276,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4074,
+            "seconds": 33.95,
+            "elapsedTicks": 4074,
+            "offRoadTicks": 1439,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4369,
+            "seconds": 36.40833333333333,
+            "elapsedTicks": 4369,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 279,
+            "meaningfulLifts": 2,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 2963,
+            "seconds": 24.691666666666666,
+            "elapsedTicks": 2963,
+            "offRoadTicks": 32,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1111,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.0067952314165498065,
+          "seamTangentAngle": 0.0006475646799441936,
+          "seamCurvatureSlope": 8.113793448863295e-5
+        },
+        "longestThrottleSeconds": 5.491666666666666
+      }
+    },
+    {
+      "day": "2026-12-07",
+      "seed": "daily:t5_kyc33w:2026-12-07",
+      "family": "sweeping",
+      "trackHash": "210c1b4b8d5f51c9953deb2f70a381280b0fe24a856d69786e6ed524e9369df4",
+      "peakElevation": 11.642672,
+      "ascent": 11.642672,
+      "maxGrade": 0.062613,
+      "rankedTicks": 3170,
+      "practiceTicks": 3170,
+      "longestThrottleSeconds": 9.325,
+      "lengthMetres": 686.6492,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3170,
+        "seconds": 26.416666666666668,
+        "elapsedTicks": 3170,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 4,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4077,
+        "seconds": 33.975,
+        "elapsedTicks": 4077,
+        "offRoadTicks": 894,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 263,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 181
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4217,
+        "seconds": 35.141666666666666,
+        "elapsedTicks": 4217,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 245,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 907,
+      "lifts": 4,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1119,
+            "held": false
+          },
+          {
+            "tick": 1172,
+            "held": true
+          },
+          {
+            "tick": 1527,
+            "held": false
+          },
+          {
+            "tick": 1608,
+            "held": true
+          },
+          {
+            "tick": 2335,
+            "held": false
+          },
+          {
+            "tick": 2415,
+            "held": true
+          },
+          {
+            "tick": 2658,
+            "held": false
+          },
+          {
+            "tick": 2779,
+            "held": true
+          }
+        ],
+        "endTick": 3170
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["fast-recovery"],
+        "qualityRejectCodes": ["fast-recovery"],
+        "holdFinishTicks": 4077,
+        "cautiousFinishTicks": 4217,
+        "fastFinishTicks": 3170,
+        "meaningfulLifts": 4,
+        "gainTicks": 907,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 118,
+        "simulatedTicks": 455392,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 575.3395,
+        "peakElevation": 6.5,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4275,
+            "seconds": 35.625,
+            "elapsedTicks": 4275,
+            "offRoadTicks": 1415,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4332,
+            "seconds": 36.1,
+            "elapsedTicks": 4332,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 244,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3061,
+            "seconds": 25.508333333333333,
+            "elapsedTicks": 3061,
+            "offRoadTicks": 69,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1214,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.009751652313238436,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.0001802162595114003
+        },
+        "longestThrottleSeconds": 6.033333333333333
+      }
+    },
+    {
+      "day": "2026-12-08",
+      "seed": "daily:t5_kyc33w:2026-12-08",
+      "family": "sweeping",
+      "trackHash": "d1ccdf18e64bd447113fba08819a84d5c69d0fb6456610de95ea5da4e9eec531",
+      "peakElevation": 10.803188,
+      "ascent": 10.803188,
+      "maxGrade": 0.059779,
+      "rankedTicks": 3178,
+      "practiceTicks": 3178,
+      "longestThrottleSeconds": 5.825,
+      "lengthMetres": 668.6926,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3178,
+        "seconds": 26.483333333333334,
+        "elapsedTicks": 3178,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4539,
+        "seconds": 37.825,
+        "elapsedTicks": 4539,
+        "offRoadTicks": 1330,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 384,
+        "landings": 4,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 126
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4217,
+        "seconds": 35.141666666666666,
+        "elapsedTicks": 4217,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 250,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 1361,
+      "lifts": 6,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 699,
+            "held": false
+          },
+          {
+            "tick": 716,
+            "held": true
+          },
+          {
+            "tick": 1103,
+            "held": false
+          },
+          {
+            "tick": 1158,
+            "held": true
+          },
+          {
+            "tick": 1381,
+            "held": false
+          },
+          {
+            "tick": 1446,
+            "held": true
+          },
+          {
+            "tick": 1790,
+            "held": false
+          },
+          {
+            "tick": 1871,
+            "held": true
+          },
+          {
+            "tick": 2303,
+            "held": false
+          },
+          {
+            "tick": 2422,
+            "held": true
+          },
+          {
+            "tick": 2704,
+            "held": false
+          },
+          {
+            "tick": 2817,
+            "held": true
+          }
+        ],
+        "endTick": 3178
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "qualityRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "holdFinishTicks": 4539,
+        "cautiousFinishTicks": 4217,
+        "fastFinishTicks": 3178,
+        "meaningfulLifts": 6,
+        "gainTicks": 1361,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 142,
+        "simulatedTicks": 565273,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 571.4551,
+        "peakElevation": 5.707671,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4278,
+            "seconds": 35.65,
+            "elapsedTicks": 4278,
+            "offRoadTicks": 1396,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4329,
+            "seconds": 36.075,
+            "elapsedTicks": 4329,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 252,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3037,
+            "seconds": 25.308333333333334,
+            "elapsedTicks": 3037,
+            "offRoadTicks": 115,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1241,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.006598598598598443,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.00020718646782103925
+        },
+        "longestThrottleSeconds": 5.466666666666667
+      }
+    },
+    {
+      "day": "2026-12-09",
+      "seed": "daily:t5_kyc33w:2026-12-09",
+      "family": "sweeping",
+      "trackHash": "70b9b0945be4bfd378538f6e79b061dc253f62245074fb0d9f31c504082bce15",
+      "peakElevation": 12.857042,
+      "ascent": 12.857042,
+      "maxGrade": 0.07348,
+      "rankedTicks": 3081,
+      "practiceTicks": 3081,
+      "longestThrottleSeconds": 7.525,
+      "lengthMetres": 648.971,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3081,
+        "seconds": 25.675,
+        "elapsedTicks": 3081,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3902,
+        "seconds": 32.516666666666666,
+        "elapsedTicks": 3902,
+        "offRoadTicks": 887,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 283,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 214
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4202,
+        "seconds": 35.016666666666666,
+        "elapsedTicks": 4202,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 254,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 821,
+      "lifts": 5,
+      "acceptedAttempt": 4,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 903,
+            "held": false
+          },
+          {
+            "tick": 956,
+            "held": true
+          },
+          {
+            "tick": 1369,
+            "held": false
+          },
+          {
+            "tick": 1439,
+            "held": true
+          },
+          {
+            "tick": 1719,
+            "held": false
+          },
+          {
+            "tick": 1800,
+            "held": true
+          },
+          {
+            "tick": 2176,
+            "held": false
+          },
+          {
+            "tick": 2271,
+            "held": true
+          },
+          {
+            "tick": 2577,
+            "held": false
+          },
+          {
+            "tick": 2701,
+            "held": true
+          }
+        ],
+        "endTick": 3081
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 4,
+        "qualityAttempts": 4,
+        "generationRejectCodes": [
+          "passive-driving",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "qualityRejectCodes": [
+          "passive-driving",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "holdFinishTicks": 3902,
+        "cautiousFinishTicks": 4202,
+        "fastFinishTicks": 3081,
+        "meaningfulLifts": 5,
+        "gainTicks": 821,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 210,
+        "simulatedTicks": 820415,
+        "replayChecks": 15
+      },
+      "baseline": {
+        "lengthMetres": 569.4971,
+        "peakElevation": 1.742078,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4058,
+            "seconds": 33.81666666666667,
+            "elapsedTicks": 4058,
+            "offRoadTicks": 1234,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4401,
+            "seconds": 36.675,
+            "elapsedTicks": 4401,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 274,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3024,
+            "seconds": 25.2,
+            "elapsedTicks": 3024,
+            "offRoadTicks": 204,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1034,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.006686349079263422,
+          "seamTangentAngle": 0.0003193524713482649,
+          "seamCurvatureSlope": 9.107285828662137e-5
+        },
+        "longestThrottleSeconds": 5.066666666666666
+      }
+    },
+    {
+      "day": "2026-12-10",
+      "seed": "daily:t5_kyc33w:2026-12-10",
+      "family": "technical",
+      "trackHash": "77ff464d3d0baa0b00eddd1e744a59a744235a38f8321d126fd383ca491c8994",
+      "peakElevation": 11.751235,
+      "ascent": 11.751235,
+      "maxGrade": 0.076167,
+      "rankedTicks": 2949,
+      "practiceTicks": 2949,
+      "longestThrottleSeconds": 5.091666666666667,
+      "lengthMetres": 577.8863,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 2949,
+        "seconds": 24.575,
+        "elapsedTicks": 2949,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3877,
+        "seconds": 32.30833333333333,
+        "elapsedTicks": 3877,
+        "offRoadTicks": 895,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 376,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 339
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4080,
+        "seconds": 34,
+        "elapsedTicks": 4080,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 244,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 928,
+      "lifts": 6,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 611,
+            "held": false
+          },
+          {
+            "tick": 694,
+            "held": true
+          },
+          {
+            "tick": 909,
+            "held": false
+          },
+          {
+            "tick": 1000,
+            "held": true
+          },
+          {
+            "tick": 1214,
+            "held": false
+          },
+          {
+            "tick": 1311,
+            "held": true
+          },
+          {
+            "tick": 1600,
+            "held": false
+          },
+          {
+            "tick": 1683,
+            "held": true
+          },
+          {
+            "tick": 1975,
+            "held": false
+          },
+          {
+            "tick": 2085,
+            "held": true
+          },
+          {
+            "tick": 2589,
+            "held": false
+          },
+          {
+            "tick": 2670,
+            "held": true
+          }
+        ],
+        "endTick": 2949
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["fast-recovery", "passive-driving"],
+        "qualityRejectCodes": ["fast-recovery", "passive-driving"],
+        "holdFinishTicks": 3877,
+        "cautiousFinishTicks": 4080,
+        "fastFinishTicks": 2949,
+        "meaningfulLifts": 6,
+        "gainTicks": 928,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 174,
+        "simulatedTicks": 618975,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 566.89,
+        "peakElevation": 2.472915,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3992,
+            "seconds": 33.266666666666666,
+            "elapsedTicks": 3992,
+            "offRoadTicks": 1387,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4437,
+            "seconds": 36.975,
+            "elapsedTicks": 4437,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 267,
+            "meaningfulLifts": 9,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3208,
+            "seconds": 26.733333333333334,
+            "elapsedTicks": 3208,
+            "offRoadTicks": 334,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 784,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.006756351270254477,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 7.300730073007118e-5
+        },
+        "longestThrottleSeconds": 6.916666666666667
+      }
+    },
+    {
+      "day": "2026-12-11",
+      "seed": "daily:t5_kyc33w:2026-12-11",
+      "family": "switchbacks",
+      "trackHash": "f882691030bc6fe3eb71b36a89d15e8583f2e87a988a3672d44a0ad247b2fd81",
+      "peakElevation": 9.681444,
+      "ascent": 13.68142599999999,
+      "maxGrade": 0.286052,
+      "rankedTicks": 3551,
+      "practiceTicks": 3551,
+      "longestThrottleSeconds": 9.983333333333333,
+      "lengthMetres": 762.4996,
+      "jumpCount": 1,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3551,
+        "seconds": 29.591666666666665,
+        "elapsedTicks": 3551,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989731,
+            "launchSpeed": 24.583307,
+            "airborneTicks": 170,
+            "peakClearance": 2.884398003842306,
+            "landingEdgeClearance": 1.333316169438313,
+            "landedS": 73.166549,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4230,
+        "seconds": 35.25,
+        "elapsedTicks": 4230,
+        "offRoadTicks": 684,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989731,
+            "launchSpeed": 24.583307,
+            "airborneTicks": 170,
+            "peakClearance": 2.884398003842306,
+            "landingEdgeClearance": 1.333316169438313,
+            "landedS": 73.166549,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 336,
+        "landings": 3,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 166
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4861,
+        "seconds": 40.50833333333333,
+        "elapsedTicks": 4861,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 257,
+        "meaningfulLifts": 2,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989731,
+            "launchSpeed": 24.583307,
+            "airborneTicks": 170,
+            "peakClearance": 2.884398003842306,
+            "landingEdgeClearance": 1.333316169438313,
+            "landedS": 73.166549,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 679,
+      "lifts": 5,
+      "acceptedAttempt": 3,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1198,
+            "held": false
+          },
+          {
+            "tick": 1280,
+            "held": true
+          },
+          {
+            "tick": 1485,
+            "held": false
+          },
+          {
+            "tick": 1554,
+            "held": true
+          },
+          {
+            "tick": 1833,
+            "held": false
+          },
+          {
+            "tick": 1915,
+            "held": true
+          },
+          {
+            "tick": 2649,
+            "held": false
+          },
+          {
+            "tick": 2716,
+            "held": true
+          },
+          {
+            "tick": 3279,
+            "held": false
+          },
+          {
+            "tick": 3360,
+            "held": true
+          }
+        ],
+        "endTick": 3551
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 3,
+        "qualityAttempts": 3,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "holdFinishTicks": 4230,
+        "cautiousFinishTicks": 4861,
+        "fastFinishTicks": 3551,
+        "meaningfulLifts": 5,
+        "gainTicks": 679,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 264,
+        "simulatedTicks": 1113470,
+        "replayChecks": 12
+      },
+      "baseline": {
+        "lengthMetres": 548.5754,
+        "peakElevation": 1.581662,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3894,
+            "seconds": 32.45,
+            "elapsedTicks": 3894,
+            "offRoadTicks": 1362,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4276,
+            "seconds": 35.63333333333333,
+            "elapsedTicks": 4276,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 262,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3059,
+            "seconds": 25.491666666666667,
+            "elapsedTicks": 3059,
+            "offRoadTicks": 150,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 835,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.018100290261235146,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.00013809666766737428
+        },
+        "longestThrottleSeconds": 4.158333333333333
+      }
+    },
+    {
+      "day": "2026-12-12",
+      "seed": "daily:t5_kyc33w:2026-12-12",
+      "family": "sweeping",
+      "trackHash": "6d10edf98be4faeba6530f3f5a2129075147cefc0920c0e67720584037f4372e",
+      "peakElevation": 12.202485,
+      "ascent": 12.202485,
+      "maxGrade": 0.068191,
+      "rankedTicks": 3129,
+      "practiceTicks": 3129,
+      "longestThrottleSeconds": 7.425,
+      "lengthMetres": 662.6113,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3129,
+        "seconds": 26.075,
+        "elapsedTicks": 3129,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4361,
+        "seconds": 36.34166666666667,
+        "elapsedTicks": 4361,
+        "offRoadTicks": 1219,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 398,
+        "landings": 4,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 85
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4204,
+        "seconds": 35.03333333333333,
+        "elapsedTicks": 4204,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 248,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 1232,
+      "lifts": 5,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 891,
+            "held": false
+          },
+          {
+            "tick": 949,
+            "held": true
+          },
+          {
+            "tick": 1437,
+            "held": false
+          },
+          {
+            "tick": 1503,
+            "held": true
+          },
+          {
+            "tick": 1782,
+            "held": false
+          },
+          {
+            "tick": 1863,
+            "held": true
+          },
+          {
+            "tick": 2246,
+            "held": false
+          },
+          {
+            "tick": 2339,
+            "held": true
+          },
+          {
+            "tick": 2614,
+            "held": false
+          },
+          {
+            "tick": 2734,
+            "held": true
+          }
+        ],
+        "endTick": 3129
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "qualityRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "holdFinishTicks": 4361,
+        "cautiousFinishTicks": 4204,
+        "fastFinishTicks": 3129,
+        "meaningfulLifts": 5,
+        "gainTicks": 1232,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 126,
+        "simulatedTicks": 486784,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 591.1416,
+        "peakElevation": 2.877311,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4318,
+            "seconds": 35.983333333333334,
+            "elapsedTicks": 4318,
+            "offRoadTicks": 1320,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4435,
+            "seconds": 36.958333333333336,
+            "elapsedTicks": 4435,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 258,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3120,
+            "seconds": 26,
+            "elapsedTicks": 3120,
+            "offRoadTicks": 49,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1198,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.01251001602564107,
+          "seamTangentAngle": 0.0007914606956710672,
+          "seamCurvatureSlope": 8.011215701982692e-6
+        },
+        "longestThrottleSeconds": 4.183333333333334
+      }
+    },
+    {
+      "day": "2026-12-13",
+      "seed": "daily:t5_kyc33w:2026-12-13",
+      "family": "sweeping",
+      "trackHash": "b4bdba6a374c5d47f8f7a4f5c520fc94f4c6849e1643364cbc4dc60eb57b2afd",
+      "peakElevation": 12.398199,
+      "ascent": 12.398199,
+      "maxGrade": 0.066476,
+      "rankedTicks": 3251,
+      "practiceTicks": 3251,
+      "longestThrottleSeconds": 6.291666666666667,
+      "lengthMetres": 688.5822,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3251,
+        "seconds": 27.091666666666665,
+        "elapsedTicks": 3251,
+        "offRoadTicks": 53,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3890,
+        "seconds": 32.416666666666664,
+        "elapsedTicks": 3890,
+        "offRoadTicks": 651,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 278,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 199
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4303,
+        "seconds": 35.858333333333334,
+        "elapsedTicks": 4303,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 254,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 639,
+      "lifts": 6,
+      "acceptedAttempt": 5,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 755,
+            "held": false
+          },
+          {
+            "tick": 778,
+            "held": true
+          },
+          {
+            "tick": 1131,
+            "held": false
+          },
+          {
+            "tick": 1176,
+            "held": true
+          },
+          {
+            "tick": 1423,
+            "held": false
+          },
+          {
+            "tick": 1528,
+            "held": true
+          },
+          {
+            "tick": 1880,
+            "held": false
+          },
+          {
+            "tick": 1936,
+            "held": true
+          },
+          {
+            "tick": 2340,
+            "held": false
+          },
+          {
+            "tick": 2446,
+            "held": true
+          },
+          {
+            "tick": 2755,
+            "held": false
+          },
+          {
+            "tick": 2862,
+            "held": true
+          }
+        ],
+        "endTick": 3251
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 5,
+        "qualityAttempts": 5,
+        "generationRejectCodes": [
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "no-braking-benefit",
+          "fast-recovery",
+          "fast-off-road",
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "qualityRejectCodes": [
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "no-braking-benefit",
+          "fast-recovery",
+          "fast-off-road",
+          "passive-driving",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "holdFinishTicks": 3890,
+        "cautiousFinishTicks": 4303,
+        "fastFinishTicks": 3251,
+        "meaningfulLifts": 6,
+        "gainTicks": 639,
+        "fastOffRoadTicks": 53,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 276,
+        "simulatedTicks": 1104236,
+        "replayChecks": 18
+      },
+      "baseline": {
+        "lengthMetres": 552.8445,
+        "peakElevation": 2.472454,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3858,
+            "seconds": 32.15,
+            "elapsedTicks": 3858,
+            "offRoadTicks": 1353,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4161,
+            "seconds": 34.675,
+            "elapsedTicks": 4161,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 236,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 2963,
+            "seconds": 24.691666666666666,
+            "elapsedTicks": 2963,
+            "offRoadTicks": 114,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 895,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.006563969190757478,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.0003580716143228466
+        },
+        "longestThrottleSeconds": 4.625
+      }
+    },
+    {
+      "day": "2026-12-14",
+      "seed": "daily:t5_kyc33w:2026-12-14",
+      "family": "ridge",
+      "trackHash": "1b4b7b43133288407bfcbfada3a26adbb9d705774e041b89ed9fec4adcf45865",
+      "peakElevation": 17.393935,
+      "ascent": 24.393856999999997,
+      "maxGrade": 0.199138,
+      "rankedTicks": 3624,
+      "practiceTicks": 3624,
+      "longestThrottleSeconds": 11.416666666666666,
+      "lengthMetres": 792.3264,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3624,
+        "seconds": 30.2,
+        "elapsedTicks": 3624,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4198,
+        "seconds": 34.983333333333334,
+        "elapsedTicks": 4198,
+        "offRoadTicks": 751,
+        "recoveryTicks": 120,
+        "recoveryCount": 1,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 147,
+        "landings": 1,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 147
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4659,
+        "seconds": 38.825,
+        "elapsedTicks": 4659,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 269,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 574,
+      "lifts": 5,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 966,
+            "held": false
+          },
+          {
+            "tick": 1008,
+            "held": true
+          },
+          {
+            "tick": 1107,
+            "held": false
+          },
+          {
+            "tick": 1153,
+            "held": true
+          },
+          {
+            "tick": 1435,
+            "held": false
+          },
+          {
+            "tick": 1525,
+            "held": true
+          },
+          {
+            "tick": 1889,
+            "held": false
+          },
+          {
+            "tick": 2016,
+            "held": true
+          },
+          {
+            "tick": 3386,
+            "held": false
+          },
+          {
+            "tick": 3467,
+            "held": true
+          }
+        ],
+        "endTick": 3624
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4198,
+        "cautiousFinishTicks": 4659,
+        "fastFinishTicks": 3624,
+        "meaningfulLifts": 5,
+        "gainTicks": 574,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 531362,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 554.9806,
+        "peakElevation": 5.899345,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4290,
+            "seconds": 35.75,
+            "elapsedTicks": 4290,
+            "offRoadTicks": 1491,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4341,
+            "seconds": 36.175,
+            "elapsedTicks": 4341,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 257,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3045,
+            "seconds": 25.375,
+            "elapsedTicks": 3045,
+            "offRoadTicks": 142,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1245,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.020463927855711325,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0.000144274120829573
+        },
+        "longestThrottleSeconds": 5.491666666666666
+      }
+    },
+    {
+      "day": "2026-12-15",
+      "seed": "daily:t5_kyc33w:2026-12-15",
+      "family": "technical",
+      "trackHash": "7335971df3a4229499797b248d71e1d70cffca5975780fc0b111b9bb35ba31ef",
+      "peakElevation": 9.833749,
+      "ascent": 9.833749,
+      "maxGrade": 0.058906,
+      "rankedTicks": 3117,
+      "practiceTicks": 3117,
+      "longestThrottleSeconds": 5.058333333333334,
+      "lengthMetres": 621.3644,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3117,
+        "seconds": 25.975,
+        "elapsedTicks": 3117,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 7,
+        "meaningfulLifts": 7,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4161,
+        "seconds": 34.675,
+        "elapsedTicks": 4161,
+        "offRoadTicks": 1084,
+        "recoveryTicks": 360,
+        "recoveryCount": 3,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 367,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 223
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4190,
+        "seconds": 34.916666666666664,
+        "elapsedTicks": 4190,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 239,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 1044,
+      "lifts": 7,
+      "acceptedAttempt": 4,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 607,
+            "held": false
+          },
+          {
+            "tick": 689,
+            "held": true
+          },
+          {
+            "tick": 946,
+            "held": false
+          },
+          {
+            "tick": 1029,
+            "held": true
+          },
+          {
+            "tick": 1231,
+            "held": false
+          },
+          {
+            "tick": 1339,
+            "held": true
+          },
+          {
+            "tick": 1655,
+            "held": false
+          },
+          {
+            "tick": 1737,
+            "held": true
+          },
+          {
+            "tick": 1972,
+            "held": false
+          },
+          {
+            "tick": 2088,
+            "held": true
+          },
+          {
+            "tick": 2504,
+            "held": false
+          },
+          {
+            "tick": 2528,
+            "held": true
+          },
+          {
+            "tick": 2759,
+            "held": false
+          },
+          {
+            "tick": 2839,
+            "held": true
+          }
+        ],
+        "endTick": 3117
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 4,
+        "qualityAttempts": 4,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "fast-recovery",
+          "start-straight"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "fast-recovery",
+          "start-straight"
+        ],
+        "holdFinishTicks": 4161,
+        "cautiousFinishTicks": 4190,
+        "fastFinishTicks": 3117,
+        "meaningfulLifts": 7,
+        "gainTicks": 1044,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 264,
+        "simulatedTicks": 948538,
+        "replayChecks": 12
+      },
+      "baseline": {
+        "lengthMetres": 556.7431,
+        "peakElevation": 1.478894,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3856,
+            "seconds": 32.13333333333333,
+            "elapsedTicks": 3856,
+            "offRoadTicks": 1235,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4341,
+            "seconds": 36.175,
+            "elapsedTicks": 4341,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 273,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3050,
+            "seconds": 25.416666666666668,
+            "elapsedTicks": 3050,
+            "offRoadTicks": 288,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 806,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.011381967377164282,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0
+        },
+        "longestThrottleSeconds": 5.4
+      }
+    },
+    {
+      "day": "2026-12-16",
+      "seed": "daily:t5_kyc33w:2026-12-16",
+      "family": "switchbacks",
+      "trackHash": "dc7654e6ac3acd697cd7282ad3f17f6262f94a41f87d9065c831003a22e36139",
+      "peakElevation": 10.004367,
+      "ascent": 14.004315000000004,
+      "maxGrade": 0.286086,
+      "rankedTicks": 3654,
+      "practiceTicks": 3654,
+      "longestThrottleSeconds": 9.916666666666666,
+      "lengthMetres": 776.1433,
+      "jumpCount": 1,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3654,
+        "seconds": 30.45,
+        "elapsedTicks": 3654,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.583289,
+            "airborneTicks": 170,
+            "peakClearance": 2.8828121900590737,
+            "landingEdgeClearance": 1.332831090159702,
+            "landedS": 73.166528,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4282,
+        "seconds": 35.68333333333333,
+        "elapsedTicks": 4282,
+        "offRoadTicks": 660,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.583289,
+            "airborneTicks": 170,
+            "peakClearance": 2.8828121900590737,
+            "landingEdgeClearance": 1.332831090159702,
+            "landedS": 73.166528,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 341,
+        "landings": 3,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 171
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4927,
+        "seconds": 41.05833333333333,
+        "elapsedTicks": 4927,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 260,
+        "meaningfulLifts": 5,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989726,
+            "launchSpeed": 24.583289,
+            "airborneTicks": 170,
+            "peakClearance": 2.8828121900590737,
+            "landingEdgeClearance": 1.332831090159702,
+            "landedS": 73.166528,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.883,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 628,
+      "lifts": 6,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1190,
+            "held": false
+          },
+          {
+            "tick": 1268,
+            "held": true
+          },
+          {
+            "tick": 1509,
+            "held": false
+          },
+          {
+            "tick": 1586,
+            "held": true
+          },
+          {
+            "tick": 1864,
+            "held": false
+          },
+          {
+            "tick": 1946,
+            "held": true
+          },
+          {
+            "tick": 2201,
+            "held": false
+          },
+          {
+            "tick": 2281,
+            "held": true
+          },
+          {
+            "tick": 2894,
+            "held": false
+          },
+          {
+            "tick": 2959,
+            "held": true
+          },
+          {
+            "tick": 3370,
+            "held": false
+          },
+          {
+            "tick": 3451,
+            "held": true
+          }
+        ],
+        "endTick": 3654
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4282,
+        "cautiousFinishTicks": 4927,
+        "fastFinishTicks": 3654,
+        "meaningfulLifts": 6,
+        "gainTicks": 628,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 559372,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 595.6771,
+        "peakElevation": 2.674229,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4199,
+            "seconds": 34.99166666666667,
+            "elapsedTicks": 4199,
+            "offRoadTicks": 1206,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4397,
+            "seconds": 36.641666666666666,
+            "elapsedTicks": 4397,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 256,
+            "meaningfulLifts": 4,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3182,
+            "seconds": 26.516666666666666,
+            "elapsedTicks": 3182,
+            "offRoadTicks": 100,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1017,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.014664731785428322,
+          "seamTangentAngle": 0.0008099963184418644,
+          "seamCurvatureSlope": 0.00018409204602300934
+        },
+        "longestThrottleSeconds": 3.7
+      }
+    },
+    {
+      "day": "2026-12-17",
+      "seed": "daily:t5_kyc33w:2026-12-17",
+      "family": "sweeping",
+      "trackHash": "a7f9596bf38a933af922ec04be6a0fdc5716aefd769e33ee5431d6a92a5813e1",
+      "peakElevation": 9.756931,
+      "ascent": 9.756931,
+      "maxGrade": 0.055543,
+      "rankedTicks": 3053,
+      "practiceTicks": 3053,
+      "longestThrottleSeconds": 7.383333333333334,
+      "lengthMetres": 651.3354,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3053,
+        "seconds": 25.441666666666666,
+        "elapsedTicks": 3053,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3814,
+        "seconds": 31.783333333333335,
+        "elapsedTicks": 3814,
+        "offRoadTicks": 737,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 248,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 241
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4173,
+        "seconds": 34.775,
+        "elapsedTicks": 4173,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 256,
+        "meaningfulLifts": 2,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 761,
+      "lifts": 5,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 886,
+            "held": false
+          },
+          {
+            "tick": 932,
+            "held": true
+          },
+          {
+            "tick": 1356,
+            "held": false
+          },
+          {
+            "tick": 1416,
+            "held": true
+          },
+          {
+            "tick": 1699,
+            "held": false
+          },
+          {
+            "tick": 1781,
+            "held": true
+          },
+          {
+            "tick": 2194,
+            "held": false
+          },
+          {
+            "tick": 2269,
+            "held": true
+          },
+          {
+            "tick": 2543,
+            "held": false
+          },
+          {
+            "tick": 2665,
+            "held": true
+          }
+        ],
+        "endTick": 3053
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 3814,
+        "cautiousFinishTicks": 4173,
+        "fastFinishTicks": 3053,
+        "meaningfulLifts": 5,
+        "gainTicks": 761,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 84,
+        "simulatedTicks": 307992,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 598.7348,
+        "peakElevation": 2.407428,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4221,
+            "seconds": 35.175,
+            "elapsedTicks": 4221,
+            "offRoadTicks": 1196,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4427,
+            "seconds": 36.891666666666666,
+            "elapsedTicks": 4427,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 266,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3187,
+            "seconds": 26.558333333333334,
+            "elapsedTicks": 3187,
+            "offRoadTicks": 127,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1034,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.012767660596357344,
+          "seamTangentAngle": 0.0012818557739439351,
+          "seamCurvatureSlope": 2.601040416166501e-5
+        },
+        "longestThrottleSeconds": 5.525
+      }
+    },
+    {
+      "day": "2026-12-18",
+      "seed": "daily:t5_kyc33w:2026-12-18",
+      "family": "switchbacks",
+      "trackHash": "b1ba029565e729407eade291f7286e117a8b7174caf554455ba659ae98e9c0cd",
+      "peakElevation": 10.572149,
+      "ascent": 14.572147000000005,
+      "maxGrade": 0.286017,
+      "rankedTicks": 3487,
+      "practiceTicks": 3487,
+      "longestThrottleSeconds": 10.625,
+      "lengthMetres": 764.8155,
+      "jumpCount": 1,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3487,
+        "seconds": 29.058333333333334,
+        "elapsedTicks": 3487,
+        "offRoadTicks": 27,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 5,
+        "meaningfulLifts": 5,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989735,
+            "launchSpeed": 24.583327,
+            "airborneTicks": 170,
+            "peakClearance": 2.8850606905941296,
+            "landingEdgeClearance": 1.3336394753483263,
+            "landedS": 73.166586,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.885,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4297,
+        "seconds": 35.80833333333333,
+        "elapsedTicks": 4297,
+        "offRoadTicks": 716,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989735,
+            "launchSpeed": 24.583327,
+            "airborneTicks": 170,
+            "peakClearance": 2.8850606905941296,
+            "landingEdgeClearance": 1.3336394753483263,
+            "landedS": 73.166586,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 343,
+        "landings": 3,
+        "maxAirHeight": 2.885,
+        "airborneCornerTicks": 173
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4661,
+        "seconds": 38.84166666666667,
+        "elapsedTicks": 4661,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 232,
+        "meaningfulLifts": 2,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.989735,
+            "launchSpeed": 24.583327,
+            "airborneTicks": 170,
+            "peakClearance": 2.8850606905941296,
+            "landingEdgeClearance": 1.3336394753483263,
+            "landedS": 73.166586,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.885,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 810,
+      "lifts": 5,
+      "acceptedAttempt": 2,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1275,
+            "held": false
+          },
+          {
+            "tick": 1357,
+            "held": true
+          },
+          {
+            "tick": 1481,
+            "held": false
+          },
+          {
+            "tick": 1510,
+            "held": true
+          },
+          {
+            "tick": 2646,
+            "held": false
+          },
+          {
+            "tick": 2681,
+            "held": true
+          },
+          {
+            "tick": 2745,
+            "held": false
+          },
+          {
+            "tick": 2806,
+            "held": true
+          },
+          {
+            "tick": 3193,
+            "held": false
+          },
+          {
+            "tick": 3274,
+            "held": true
+          }
+        ],
+        "endTick": 3487
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 2,
+        "qualityAttempts": 2,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "passive-driving"
+        ],
+        "holdFinishTicks": 4297,
+        "cautiousFinishTicks": 4661,
+        "fastFinishTicks": 3487,
+        "meaningfulLifts": 5,
+        "gainTicks": 810,
+        "fastOffRoadTicks": 27,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 198,
+        "simulatedTicks": 823912,
+        "replayChecks": 9
+      },
+      "baseline": {
+        "lengthMetres": 542.9517,
+        "peakElevation": 2.034339,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4320,
+            "seconds": 36,
+            "elapsedTicks": 4320,
+            "offRoadTicks": 1430,
+            "recoveryTicks": 240,
+            "recoveryCount": 2,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4205,
+            "seconds": 35.041666666666664,
+            "elapsedTicks": 4205,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 257,
+            "meaningfulLifts": 3,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 2975,
+            "seconds": 24.791666666666668,
+            "elapsedTicks": 2975,
+            "offRoadTicks": 137,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1345,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.007175717571757401,
+          "seamTangentAngle": 0.0006503891257675035,
+          "seamCurvatureSlope": 0.00023202320232025258
+        },
+        "longestThrottleSeconds": 3.2583333333333333
+      }
+    },
+    {
+      "day": "2026-12-19",
+      "seed": "daily:t5_kyc33w:2026-12-19",
+      "family": "sweeping",
+      "trackHash": "78a929e33d81f8497d1e880fd264d890991e72cc8b2708395ef6f694bbe669e7",
+      "peakElevation": 10.640842,
+      "ascent": 10.640842,
+      "maxGrade": 0.056769,
+      "rankedTicks": 3193,
+      "practiceTicks": 3193,
+      "longestThrottleSeconds": 11.858333333333333,
+      "lengthMetres": 691.7858,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3193,
+        "seconds": 26.608333333333334,
+        "elapsedTicks": 3193,
+        "offRoadTicks": 51,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 4,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4090,
+        "seconds": 34.083333333333336,
+        "elapsedTicks": 4090,
+        "offRoadTicks": 901,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 271,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 193
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4330,
+        "seconds": 36.083333333333336,
+        "elapsedTicks": 4330,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 257,
+        "meaningfulLifts": 3,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 897,
+      "lifts": 4,
+      "acceptedAttempt": 4,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1423,
+            "held": false
+          },
+          {
+            "tick": 1491,
+            "held": true
+          },
+          {
+            "tick": 1771,
+            "held": false
+          },
+          {
+            "tick": 1851,
+            "held": true
+          },
+          {
+            "tick": 2255,
+            "held": false
+          },
+          {
+            "tick": 2344,
+            "held": true
+          },
+          {
+            "tick": 2683,
+            "held": false
+          },
+          {
+            "tick": 2792,
+            "held": true
+          }
+        ],
+        "endTick": 3193
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 4,
+        "qualityAttempts": 4,
+        "generationRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "qualityRejectCodes": [
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery",
+          "unsafe-jump-landing",
+          "fast-recovery"
+        ],
+        "holdFinishTicks": 4090,
+        "cautiousFinishTicks": 4330,
+        "fastFinishTicks": 3193,
+        "meaningfulLifts": 4,
+        "gainTicks": 897,
+        "fastOffRoadTicks": 51,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 202,
+        "simulatedTicks": 809113,
+        "replayChecks": 15
+      },
+      "baseline": {
+        "lengthMetres": 564.659,
+        "peakElevation": 2.955191,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3892,
+            "seconds": 32.43333333333333,
+            "elapsedTicks": 3892,
+            "offRoadTicks": 1290,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4408,
+            "seconds": 36.733333333333334,
+            "elapsedTicks": 4408,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 266,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3032,
+            "seconds": 25.266666666666666,
+            "elapsedTicks": 3032,
+            "offRoadTicks": 126,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 5,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 860,
+          "meaningfulLifts": 5,
+          "maxCurvatureSlope": 0.008915457728864455,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0
+        },
+        "longestThrottleSeconds": 7.191666666666666
+      }
+    },
+    {
+      "day": "2026-12-20",
+      "seed": "daily:t5_kyc33w:2026-12-20",
+      "family": "ridge",
+      "trackHash": "5a0aabb25e1b7988c479f91afec5c4456733f45b95833499779a378fa40b19f0",
+      "peakElevation": 17.097484,
+      "ascent": 24.097375000000007,
+      "maxGrade": 0.195744,
+      "rankedTicks": 3753,
+      "practiceTicks": 3753,
+      "longestThrottleSeconds": 11.475,
+      "lengthMetres": 784.5286,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3753,
+        "seconds": 31.275,
+        "elapsedTicks": 3753,
+        "offRoadTicks": 165,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 6,
+        "meaningfulLifts": 6,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4409,
+        "seconds": 36.74166666666667,
+        "elapsedTicks": 4409,
+        "offRoadTicks": 893,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 274,
+        "landings": 2,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 154
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4682,
+        "seconds": 39.016666666666666,
+        "elapsedTicks": 4682,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 268,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 656,
+      "lifts": 6,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1063,
+            "held": false
+          },
+          {
+            "tick": 1119,
+            "held": true
+          },
+          {
+            "tick": 1218,
+            "held": false
+          },
+          {
+            "tick": 1264,
+            "held": true
+          },
+          {
+            "tick": 1462,
+            "held": false
+          },
+          {
+            "tick": 1553,
+            "held": true
+          },
+          {
+            "tick": 1851,
+            "held": false
+          },
+          {
+            "tick": 1932,
+            "held": true
+          },
+          {
+            "tick": 2124,
+            "held": false
+          },
+          {
+            "tick": 2140,
+            "held": true
+          },
+          {
+            "tick": 3517,
+            "held": false
+          },
+          {
+            "tick": 3597,
+            "held": true
+          }
+        ],
+        "endTick": 3753
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4409,
+        "cautiousFinishTicks": 4682,
+        "fastFinishTicks": 3753,
+        "meaningfulLifts": 6,
+        "gainTicks": 656,
+        "fastOffRoadTicks": 165,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 551980,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 575.1054,
+        "peakElevation": 2.736388,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3912,
+            "seconds": 32.6,
+            "elapsedTicks": 3912,
+            "offRoadTicks": 1249,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4491,
+            "seconds": 37.425,
+            "elapsedTicks": 4491,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 268,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3124,
+            "seconds": 26.033333333333335,
+            "elapsedTicks": 3124,
+            "offRoadTicks": 114,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 788,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.01738381410256404,
+          "seamTangentAngle": 0,
+          "seamCurvatureSlope": 0
+        },
+        "longestThrottleSeconds": 6.375
+      }
+    },
+    {
+      "day": "2026-12-21",
+      "seed": "daily:t5_kyc33w:2026-12-21",
+      "family": "sweeping",
+      "trackHash": "c96ca3a24c363e285a01d290e9d446588dff50c11e018e9712b937df31a120b8",
+      "peakElevation": 9.673299,
+      "ascent": 9.673299,
+      "maxGrade": 0.055074,
+      "rankedTicks": 3056,
+      "practiceTicks": 3056,
+      "longestThrottleSeconds": 11.183333333333334,
+      "lengthMetres": 651.2583,
+      "jumpCount": 0,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3056,
+        "seconds": 25.466666666666665,
+        "elapsedTicks": 3056,
+        "offRoadTicks": 83,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 4,
+        "meaningfulLifts": 4,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 3911,
+        "seconds": 32.59166666666667,
+        "elapsedTicks": 3911,
+        "offRoadTicks": 867,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [],
+        "airborneTicks": 255,
+        "landings": 3,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 189
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4211,
+        "seconds": 35.09166666666667,
+        "elapsedTicks": 4211,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 257,
+        "meaningfulLifts": 1,
+        "jumpFlights": [],
+        "airborneTicks": 0,
+        "landings": 0,
+        "maxAirHeight": 0,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 855,
+      "lifts": 4,
+      "acceptedAttempt": 3,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1342,
+            "held": false
+          },
+          {
+            "tick": 1419,
+            "held": true
+          },
+          {
+            "tick": 1699,
+            "held": false
+          },
+          {
+            "tick": 1780,
+            "held": true
+          },
+          {
+            "tick": 2180,
+            "held": false
+          },
+          {
+            "tick": 2270,
+            "held": true
+          },
+          {
+            "tick": 2546,
+            "held": false
+          },
+          {
+            "tick": 2655,
+            "held": true
+          }
+        ],
+        "endTick": 3056
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 3,
+        "qualityAttempts": 3,
+        "generationRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "qualityRejectCodes": ["unsafe-jump-landing", "fast-recovery"],
+        "holdFinishTicks": 3911,
+        "cautiousFinishTicks": 4211,
+        "fastFinishTicks": 3056,
+        "meaningfulLifts": 4,
+        "gainTicks": 855,
+        "fastOffRoadTicks": 83,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 184,
+        "simulatedTicks": 714653,
+        "replayChecks": 12
+      },
+      "baseline": {
+        "lengthMetres": 559.4111,
+        "peakElevation": 6.5,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 4085,
+            "seconds": 34.041666666666664,
+            "elapsedTicks": 4085,
+            "offRoadTicks": 1216,
+            "recoveryTicks": 120,
+            "recoveryCount": 1,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4213,
+            "seconds": 35.108333333333334,
+            "elapsedTicks": 4213,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 253,
+            "meaningfulLifts": 5,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 2997,
+            "seconds": 24.975,
+            "elapsedTicks": 2997,
+            "offRoadTicks": 217,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 6,
+            "meaningfulLifts": 6,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 1088,
+          "meaningfulLifts": 6,
+          "maxCurvatureSlope": 0.019622509262040667,
+          "seamTangentAngle": 0.0008136375338806716,
+          "seamCurvatureSlope": 7.007007007006841e-6
+        },
+        "longestThrottleSeconds": 6.041666666666667
+      }
+    },
+    {
+      "day": "2026-12-22",
+      "seed": "daily:t5_kyc33w:2026-12-22",
+      "family": "switchbacks",
+      "trackHash": "bdf472e3c25882a21cc66c5adf101284099e67e053643a9bf6da876176505cd6",
+      "peakElevation": 9.038702,
+      "ascent": 13.038681000000008,
+      "maxGrade": 0.286056,
+      "rankedTicks": 3670,
+      "practiceTicks": 3670,
+      "longestThrottleSeconds": 10.216666666666667,
+      "lengthMetres": 774.4545,
+      "jumpCount": 1,
+      "fast": {
+        "finished": true,
+        "finishTicks": 3670,
+        "seconds": 30.583333333333332,
+        "elapsedTicks": 3670,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 7,
+        "meaningfulLifts": 7,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.98973,
+            "launchSpeed": 24.583302,
+            "airborneTicks": 170,
+            "peakClearance": 2.8842004128877345,
+            "landingEdgeClearance": 1.3332528037917326,
+            "landedS": 73.166547,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 0
+      },
+      "hold": {
+        "finished": true,
+        "finishTicks": 4228,
+        "seconds": 35.233333333333334,
+        "elapsedTicks": 4228,
+        "offRoadTicks": 648,
+        "recoveryTicks": 240,
+        "recoveryCount": 2,
+        "lifts": 0,
+        "meaningfulLifts": 0,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.98973,
+            "launchSpeed": 24.583302,
+            "airborneTicks": 170,
+            "peakClearance": 2.8842004128877345,
+            "landingEdgeClearance": 1.3332528037917326,
+            "landedS": 73.166547,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 327,
+        "landings": 3,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 157
+      },
+      "cautious": {
+        "finished": true,
+        "finishTicks": 4829,
+        "seconds": 40.24166666666667,
+        "elapsedTicks": 4829,
+        "offRoadTicks": 0,
+        "recoveryTicks": 0,
+        "recoveryCount": 0,
+        "lifts": 244,
+        "meaningfulLifts": 1,
+        "jumpFlights": [
+          {
+            "takeoff": 42,
+            "launchS": 38.98973,
+            "launchSpeed": 24.583302,
+            "airborneTicks": 170,
+            "peakClearance": 2.8842004128877345,
+            "landingEdgeClearance": 1.3332528037917326,
+            "landedS": 73.166547,
+            "recoveries": 0
+          }
+        ],
+        "airborneTicks": 170,
+        "landings": 1,
+        "maxAirHeight": 2.884,
+        "airborneCornerTicks": 0
+      },
+      "gainTicks": 558,
+      "lifts": 7,
+      "acceptedAttempt": 1,
+      "fastReplay": {
+        "schemaVersion": 2,
+        "simulationVersion": "fixed-step-v9",
+        "handlingVersion": "countdown-start-v1",
+        "transitions": [
+          {
+            "tick": 0,
+            "held": true
+          },
+          {
+            "tick": 1226,
+            "held": false
+          },
+          {
+            "tick": 1306,
+            "held": true
+          },
+          {
+            "tick": 1476,
+            "held": false
+          },
+          {
+            "tick": 1537,
+            "held": true
+          },
+          {
+            "tick": 1866,
+            "held": false
+          },
+          {
+            "tick": 1947,
+            "held": true
+          },
+          {
+            "tick": 2201,
+            "held": false
+          },
+          {
+            "tick": 2281,
+            "held": true
+          },
+          {
+            "tick": 2722,
+            "held": false
+          },
+          {
+            "tick": 2767,
+            "held": true
+          },
+          {
+            "tick": 2998,
+            "held": false
+          },
+          {
+            "tick": 3070,
+            "held": true
+          },
+          {
+            "tick": 3386,
+            "held": false
+          },
+          {
+            "tick": 3467,
+            "held": true
+          }
+        ],
+        "endTick": 3670
+      },
+      "audit": {
+        "generatorFallback": false,
+        "structuralFallback": false,
+        "generationAttempts": 1,
+        "qualityAttempts": 1,
+        "generationRejectCodes": [],
+        "qualityRejectCodes": [],
+        "holdFinishTicks": 4228,
+        "cautiousFinishTicks": 4829,
+        "fastFinishTicks": 3670,
+        "meaningfulLifts": 7,
+        "gainTicks": 558,
+        "fastOffRoadTicks": 0,
+        "fastRecoveryTicks": 0,
+        "controllerRuns": 132,
+        "simulatedTicks": 555386,
+        "replayChecks": 6
+      },
+      "baseline": {
+        "lengthMetres": 552.6363,
+        "peakElevation": 1.633888,
+        "metrics": {
+          "hold": {
+            "finished": true,
+            "finishTicks": 3786,
+            "seconds": 31.55,
+            "elapsedTicks": 3786,
+            "offRoadTicks": 1307,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 0,
+            "meaningfulLifts": 0,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "cautious": {
+            "finished": true,
+            "finishTicks": 4337,
+            "seconds": 36.141666666666666,
+            "elapsedTicks": 4337,
+            "offRoadTicks": 0,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 258,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "fast": {
+            "finished": true,
+            "finishTicks": 3042,
+            "seconds": 25.35,
+            "elapsedTicks": 3042,
+            "offRoadTicks": 166,
+            "recoveryTicks": 0,
+            "recoveryCount": 0,
+            "lifts": 7,
+            "meaningfulLifts": 7,
+            "airborneTicks": 0,
+            "landings": 0,
+            "maxAirHeight": 0,
+            "airborneCornerTicks": 0
+          },
+          "gainTicks": 744,
+          "meaningfulLifts": 7,
+          "maxCurvatureSlope": 0.012529276348713862,
+          "seamTangentAngle": 0.0014591779801170733,
+          "seamCurvatureSlope": 0.00018212748924245842
+        },
+        "longestThrottleSeconds": 3.4
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "publicDates": 30,
+  "publicReserveCalls": 0,
+  "publicUniqueHashes": 30,
+  "families": {
+    "sweeping": 11,
+    "switchbacks": 5,
+    "technical": 6,
+    "ridge": 8
+  },
+  "jumpDays": 5,
+  "lifts": {
+    "3": 0,
+    "4": 7,
+    "5": 9,
+    "6": 10,
+    "7": 4,
+    "8": 0
+  },
+  "oldSixOrSeven": 23,
+  "newSixOrSeven": 14,
+  "longRunCount": 200,
+  "longRunFailures": [],
+  "longRunUniqueHashes": 200
+}

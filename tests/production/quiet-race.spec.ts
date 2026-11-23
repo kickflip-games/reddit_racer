@@ -19,7 +19,13 @@ const retained = {
   ...old,
   track: oldTrack,
   quality: assessBrakingTrack(oldTrack),
-  diagnostics: { ...old.diagnostics, version: oldTrack.generatorVersion },
+  diagnostics: {
+    ...old.diagnostics,
+    version: oldTrack.generatorVersion,
+    // Keep the retained fixture's historical audit bounds instead of V6's
+    // wider current-course configuration. Record validation stays unchanged.
+    config: { ...old.diagnostics.config, lengthMin: 540, lengthMax: 600 },
+  },
 };
 
 test('built teaser has the exact short driving instruction', async ({

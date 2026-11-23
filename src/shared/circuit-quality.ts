@@ -1,3 +1,5 @@
+import { playableJumpFlight } from './jump-flight';
+import { findTrackCrossings, crossingHeadroom } from './track-crossings';
 import {
   FALLBACK_CIRCUIT_ATTEMPT,
   FALLBACK_CIRCUIT_SEED,
@@ -26,23 +28,25 @@ import type { Track } from './track.ts';
 import {
   LINKED_COURSE_VERSION,
   LINKED_QUALITY_VERSION,
-  LINKED_RHYTHM_LIMITS,
+  rhythmLimitsFor,
   longestThrottleTicks,
 } from './course-rhythm';
 
 export const QUALITY_VERSION = 'quality-v1';
 export const ELEVATED_QUALITY_VERSION = 'quality-v3';
 export const qualityVersionForTrack = (track: Track): string =>
-  track.generatorVersion === LINKED_COURSE_VERSION ||
-  track.generatorVersion === 'linked-circuits-v4' ||
-  track.generatorVersion === 'linked-circuits-v3' ||
-  track.generatorVersion === 'linked-circuits-v2'
+  track.generatorVersion === LINKED_COURSE_VERSION
     ? LINKED_QUALITY_VERSION
-    : track.generatorVersion === 'linked-circuits-v1'
-      ? 'linked-quality-v1'
-      : track.schemaVersion === 2
-        ? ELEVATED_QUALITY_VERSION
-        : QUALITY_VERSION;
+    : track.generatorVersion === 'linked-circuits-v5' ||
+        track.generatorVersion === 'linked-circuits-v4' ||
+        track.generatorVersion === 'linked-circuits-v3' ||
+        track.generatorVersion === 'linked-circuits-v2'
+      ? 'linked-quality-v2'
+      : track.generatorVersion === 'linked-circuits-v1'
+        ? 'linked-quality-v1'
+        : track.schemaVersion === 2
+          ? ELEVATED_QUALITY_VERSION
+          : QUALITY_VERSION;
 export const MAX_QUALITY_ASSESSMENTS = 4;
 export const MAX_REPLAY_CHECKS = 3;
 export const MAX_QUALITY_TICKS =
@@ -210,6 +214,7 @@ export function assessTrackQuality(
     )
   )
     throw new Error('Unknown track quality option');
+  const limits = rhythmLimitsFor(track.generatorVersion);
   const thresholds = thresholdsFor({
     ...(track.schemaVersion === 2 ? { minMeaningfulLifts: 2 } : {}),
     ...options.thresholds,
@@ -228,24 +233,38 @@ export function assessTrackQuality(
     search: { peaks: [], widths: [] },
   };
   if (!structure.valid) return result;
+  if (track.generatorVersion === LINKED_COURSE_VERSION) {
+    const crossings = findTrackCrossings(track);
+    if (
+      crossings.length &&
+      (crossings.length !== 1 ||
+        crossingHeadroom(track) < 10 ||
+        crossings.some(
+          (c) =>
+            c.angle < Math.PI * 0.22 ||
+            [c.lowerS, c.upperS].some((s) =>
+              track.jumps?.some(
+                (j) => j.rampStart < s + 60 && j.rampEnd > s - 60
+              )
+            )
+        ))
+    )
+      codes.push('unsafe-overpass');
+  }
   if (structure.metrics.startStraight < MIN_START_STRAIGHT)
     codes.push('start-straight');
   if (structure.metrics.directionChanges < thresholds.minDirectionChanges)
     codes.push('corner-diversity');
   if (
     track.generatorVersion === LINKED_COURSE_VERSION ||
+    track.generatorVersion === 'linked-circuits-v5' ||
     track.generatorVersion === 'linked-circuits-v4' ||
     track.generatorVersion === 'linked-circuits-v3' ||
     track.generatorVersion === 'linked-circuits-v2'
   ) {
-    if (
-      structure.metrics.longestStraight > LINKED_RHYTHM_LIMITS.longestStraight
-    )
+    if (structure.metrics.longestStraight > limits.longestStraight)
       codes.push('passive-straight');
-    if (
-      Math.max(...track.samples.map((p) => p.y ?? 0)) <
-      LINKED_RHYTHM_LIMITS.minElevation
-    )
+    if (Math.max(...track.samples.map((p) => p.y ?? 0)) < limits.minElevation)
       codes.push('missing-elevation');
   }
   const smooth = smoothness(track);
@@ -276,6 +295,28 @@ export function assessTrackQuality(
     meaningfulLifts: fast.meaningfulLifts,
     ...smooth,
   };
+  if (track.generatorVersion === LINKED_COURSE_VERSION && track.jumps?.length) {
+    if (
+      [fast, cautious].some(
+        (run) =>
+          !run.jumpFlights ||
+          run.jumpFlights.length !== track.jumps?.length ||
+          run.jumpFlights.some((f) => !playableJumpFlight(f))
+      )
+    )
+      codes.push('uncleared-gap');
+    for (const j of track.jumps) {
+      if (
+        track.samples.some(
+          (p) =>
+            p.s >= j.rampStart &&
+            p.s <= j.rampEnd + 35 &&
+            Math.abs(p.curvature) > 0.0015
+        )
+      )
+        codes.push('jump-runout');
+    }
+  }
   if (track.schemaVersion === 2) {
     if (
       track.jumps?.length &&
@@ -322,11 +363,12 @@ export function assessTrackQuality(
   result.fastReplay = fast.finished ? search.fast.replay : null;
   if (
     (track.generatorVersion === LINKED_COURSE_VERSION ||
+      track.generatorVersion === 'linked-circuits-v5' ||
       track.generatorVersion === 'linked-circuits-v4' ||
       track.generatorVersion === 'linked-circuits-v3' ||
       track.generatorVersion === 'linked-circuits-v2') &&
     longestThrottleTicks(search.fast.replay, thresholds.minLiftTicks) >
-      LINKED_RHYTHM_LIMITS.longestThrottleTicks
+      limits.longestThrottleTicks
   )
     codes.push('passive-driving');
   result.valid = codes.length === 0;

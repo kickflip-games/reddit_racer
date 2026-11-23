@@ -8,7 +8,8 @@ export const COUNTDOWN_LAUNCH_SPEED = 4;
 export const supportsCountdownLaunch = (track: Track): boolean =>
   track.schemaVersion === 2 &&
   (track.generatorVersion === 'linked-circuits-v4' ||
-    track.generatorVersion === 'linked-circuits-v5');
+    track.generatorVersion === 'linked-circuits-v5' ||
+    track.generatorVersion === 'linked-circuits-v6');
 
 export type CountdownLaunchInput = {
   held: boolean;

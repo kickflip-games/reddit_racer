@@ -247,14 +247,13 @@ void test('wrong methods and public or unmounted paths cannot invoke the interna
   assert.equal(ensured, 0);
 });
 
-void test('the registered task keeps the existing app identity and resolves to the same full mounted endpoint', async () => {
+void test('the registered task keeps the public app identity without a remote dev default and resolves to the same mounted endpoint', async () => {
   const config: unknown = JSON.parse(
     readFileSync(new URL('../../devvit.json', import.meta.url), 'utf8')
   );
   assert.ok(record(config));
   assert.equal(config.name, 'the-daily-lap');
-  assert.ok(record(config.dev));
-  assert.equal(config.dev.subreddit, 'full_throttle_dev_dev');
+  assert.equal(config.dev, undefined);
   assert.ok(record(config.scheduler));
   assert.ok(record(config.scheduler.tasks));
   const registration = config.scheduler.tasks[DAILY_RACE_TASK_NAME];

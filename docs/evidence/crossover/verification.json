@@ -1,0 +1,84 @@
+{
+  "status": "DRAFT / NOT DEPLOYED",
+  "base": "e049da7854a141c536f5b027c50a69db93e5650d",
+  "branch": "feature/daily-course-variety",
+  "checks": {
+    "npm run check": {
+      "passed": true,
+      "unitTests": 524,
+      "trackChecks": 200,
+      "types": true,
+      "lint": true,
+      "format": true,
+      "build": true
+    },
+    "npm run courses:check": {
+      "passed": true,
+      "courses": 205
+    },
+    "publicForecast": {
+      "publicDates": 30,
+      "publicReserveCalls": 0,
+      "publicUniqueHashes": 30,
+      "families": {
+        "sweeping": 9,
+        "switchbacks": 5,
+        "technical": 4,
+        "ridge": 6,
+        "crossover": 6
+      },
+      "jumpDays": 5,
+      "bridgeDays": 6,
+      "minimumBridgeHeadroom": 11.44456,
+      "lifts": {
+        "3": 0,
+        "4": 6,
+        "5": 9,
+        "6": 6,
+        "7": 3,
+        "8": 6
+      },
+      "oldSixOrSeven": 23,
+      "newSixOrSeven": 9,
+      "longRunCount": 200,
+      "longRunFailures": [],
+      "longRunUniqueHashes": 200
+    },
+    "deterministicReconstruction": {
+      "passed": true,
+      "cases": 85,
+      "exactGeometryAndRankedTicks": true
+    },
+    "phoneBrowser": {
+      "passed": true,
+      "completeLaps": 2,
+      "days": ["2026-11-27", "2026-12-04"],
+      "viewport": [393, 568],
+      "deckViews": 4,
+      "rankedReplayTicksExact": true,
+      "browserErrors": 0,
+      "renderedFps": 20,
+      "physicsHz": 120
+    },
+    "cameraAndProps": {
+      "passed": true,
+      "positions": 468,
+      "crossingDays": 6,
+      "opaqueRoadPierBlockers": 0,
+      "propClearRadius": 32
+    },
+    "all230HashesUnique": true,
+    "all43Overpasses": {
+      "minimumFullWidthHeadroom": 11.409493999999999,
+      "fastAirborneTicks": 0,
+      "fastRecoveries": 0
+    }
+  },
+  "loopType": "one localized grade-separated road overpass in an asymmetric mixed course; no full symmetric figure eight and no vertical stunt loop",
+  "noReleaseOrLiveDataWrites": true,
+  "images": {
+    "daily-lap-v6-overpass-30-days.png": [720, 16810],
+    "daily-lap-v6-overpass-phone-views.png": [433, 2780],
+    "daily-lap-v6-overpass-30-days-comparison.png": [1120, 2005]
+  }
+}

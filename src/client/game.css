@@ -862,6 +862,9 @@ select:focus-visible {
   stroke-width: 1.5px;
   vector-effect: non-scaling-stroke;
 }
+.minimap-player[data-deck='underpass'] {
+  fill: #78dbeb;
+}
 #race[data-settings-open='true'] .circuit-minimap {
   visibility: hidden;
 }

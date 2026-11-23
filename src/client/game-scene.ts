@@ -41,7 +41,11 @@ import {
 } from './render-viewport';
 import { createSceneAssetCache, type SceneryAssets } from './scene-assets';
 import { sampleTrack, type Track } from '../shared/track';
-import { createTrackDebugOverlay, createTrackRenderer } from './track-renderer';
+import {
+  createTrackDebugOverlay,
+  createTrackRenderer,
+  createBridgeVisibility,
+} from './track-renderer';
 
 export type AttemptPreparation = {
   kind: 'practice' | 'ranked' | 'blocked';
@@ -319,7 +323,9 @@ export function initializeGame(
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   addToonLighting(scene);
 
-  scene.add(createTrackRenderer(track));
+  const trackRenderer = createTrackRenderer(track);
+  scene.add(trackRenderer);
+  const updateBridgeVisibility = createBridgeVisibility(trackRenderer, track);
 
   if (
     import.meta.env.DEV &&
@@ -718,6 +724,7 @@ export function initializeGame(
           ? 'paused'
           : 'playing';
       const pose = homePreview.update(deltaSeconds, mode);
+      const bridgeView = updateBridgeVisibility(pose.distance);
       const changed = carVisual.update({
         x: pose.x,
         z: pose.z,
@@ -762,7 +769,7 @@ export function initializeGame(
         screenX: ((previewScreenPoint.x + 1) * canvas.clientWidth) / 2,
         screenY: ((1 - previewScreenPoint.y) * canvas.clientHeight) / 2,
       });
-      sceneDirty = sceneDirty || changed || cameraChanged;
+      sceneDirty = sceneDirty || changed || cameraChanged || bridgeView.changed;
       return;
     }
     raceRoot.dataset.preview = 'off';
@@ -852,6 +859,10 @@ export function initializeGame(
     raceRoot.dataset.roadHeight = String(frame.y ?? 0);
     raceRoot.dataset.landings = String(current.vertical?.landings ?? 0);
     raceRoot.dataset.trackSchema = String(track.schemaVersion);
+    const bridgeView = updateBridgeVisibility(distance);
+    raceRoot.dataset.crossingDeck = bridgeView.deck;
+    raceRoot.dataset.routeDistance = String(distance);
+    sceneDirty = sceneDirty || bridgeView.changed;
     const landing = landingFeedback.update({
       attemptId,
       landings: current.vertical?.landings ?? 0,

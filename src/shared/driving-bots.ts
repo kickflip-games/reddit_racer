@@ -1,3 +1,9 @@
+import { courseFamilyForSeed } from './course-families';
+import {
+  createJumpFlights,
+  observeJumpFlights,
+  type JumpFlight,
+} from './jump-flight';
 import { handlingForTrack, runtimeForTrack } from './scored-runtime.ts';
 import {
   abandonRace,
@@ -27,6 +33,7 @@ export type BotRunSummary = {
   recoveryCount: number;
   lifts: number;
   meaningfulLifts: number;
+  jumpFlights?: JumpFlight[];
   airborneTicks?: number;
   landings?: number;
   maxAirHeight?: number;
@@ -77,6 +84,10 @@ function drive(
     maxAirHeight = 0,
     airborneCornerTicks = 0;
   const transitions: ReplayTransition[] = [];
+  const jumpFlights =
+    track.generatorVersion === 'linked-circuits-v6'
+      ? createJumpFlights(track)
+      : undefined;
   while (
     race.phase === 'racing' &&
     race.simulation.tick < MAX_SIMULATION_TICKS
@@ -92,6 +103,8 @@ function drive(
     }
     const previous = race.simulation;
     race = stepCourseQualityRace(track, race, held);
+    if (jumpFlights)
+      observeJumpFlights(track, jumpFlights, previous, race.simulation);
     if (race.simulation.vertical?.airborne) {
       airborneTicks++;
       const frame = sampleTrack(track, race.simulation.distance);
@@ -121,6 +134,7 @@ function drive(
       recoveryCount: race.simulation.recoveryCount,
       lifts,
       meaningfulLifts,
+      ...(jumpFlights ? { jumpFlights } : {}),
       ...(track.schemaVersion === 2
         ? {
             airborneTicks,
@@ -175,7 +189,13 @@ export function brakingPeaks(track: Track): BrakingPeak[] {
       index,
     }))
     .filter(
-      (point) => point.curvature > (track.schemaVersion === 2 ? 0.018 : 0.03)
+      (point) =>
+        point.curvature >
+        (track.generatorVersion === 'linked-circuits-v6'
+          ? 0.012
+          : track.schemaVersion === 2
+            ? 0.018
+            : 0.03)
     )
     .sort((a, b) => b.curvature - a.curvature || a.index - b.index);
   const peaks: BrakingPeak[] = [];
@@ -187,7 +207,12 @@ export function brakingPeaks(track: Track): BrakingPeak[] {
           Math.min(
             Math.abs(peak.s - point.s),
             track.totalLength - Math.abs(peak.s - point.s)
-          ) > 28
+          ) >
+          (track.generatorVersion === 'linked-circuits-v6'
+            ? courseFamilyForSeed(track.seed) === 'sweeping'
+              ? 75
+              : 45
+            : 28)
       )
     )
       peaks.push({ s: point.s, curvature: point.curvature });
@@ -200,10 +225,13 @@ function windowBot(
   widths: number[],
   minimumLiftTicks: number
 ): BotRun {
+  const crossover =
+    track.generatorVersion === 'linked-circuits-v6' &&
+    courseFamilyForSeed(track.seed) === 'crossover';
   const completed = new Set<number>();
   return drive(
     track,
-    (state) => {
+    (state, previousHeld) => {
       let held = true;
       for (let index = 0; index < peaks.length; index++) {
         const peak = peaks[index],
@@ -214,9 +242,26 @@ function windowBot(
           width <= 0 ||
           completed.has(index) ||
           state.distance < peak.s - width ||
-          state.distance > peak.s + 2
+          state.distance > peak.s + (crossover ? 10 : 2)
         )
           continue;
+        if (crossover) {
+          // A climbing bend needs speed held through its exit: immediately
+          // reaccelerating at the apex can throw a car off the raised deck.
+          // This is a real input tape using the unchanged authoritative physics.
+          let curvature = peak.curvature;
+          for (const ahead of [0, 5, 10])
+            curvature = Math.max(
+              curvature,
+              Math.abs(sampleTrack(track, state.distance + ahead).curvature)
+            );
+          const target = Math.sqrt(
+            (handlingForTrack(track).lateralGrip * 0.9) / curvature
+          );
+          if (state.speed > target + (previousHeld ? 0.25 : -0.25))
+            held = false;
+          continue;
+        }
         if (
           state.speed <=
           Math.sqrt(
@@ -233,12 +278,29 @@ function windowBot(
 }
 
 /** Bounded coordinate improvement over short release windows; not a global optimum. */
+/** New layouts search for a clean lap before optimising time; old solver stays pinned. */
+function cleanerV6Run(run: BotRun): number {
+  const s = run.summary;
+  return (
+    s.recoveryTicks +
+    s.recoveryCount * 120 +
+    (s.airborneCornerTicks ?? 0) +
+    Math.max(0, s.offRoadTicks - (s.finishTicks ?? 0) * 0.15)
+  );
+}
 export function searchDrivingInputs(
   track: Track,
   minimumLiftTicks = 12
 ): ImprovingSearch {
-  const peaks = brakingPeaks(track),
-    widths = peaks.map(() => 0);
+  const peaks = brakingPeaks(track);
+  // Start the crossover search with all approaches braked. One-window-at-a-time
+  // improvement from full throttle can otherwise get stuck between two falls.
+  const widths: number[] = peaks.map(() =>
+    courseFamilyForSeed(track.seed) === 'crossover' &&
+    track.generatorVersion === 'linked-circuits-v6'
+      ? 30
+      : 0
+  );
   const hold = holdBot(track, minimumLiftTicks),
     cautious = cautiousBot(track, minimumLiftTicks);
   const work = {
@@ -260,7 +322,11 @@ export function searchDrivingInputs(
         if (
           trial.summary.finishTicks !== null &&
           (fast.summary.finishTicks === null ||
-            trial.summary.finishTicks < fast.summary.finishTicks)
+            (track.generatorVersion === 'linked-circuits-v6' &&
+              cleanerV6Run(trial) < cleanerV6Run(fast)) ||
+            ((track.generatorVersion !== 'linked-circuits-v6' ||
+              cleanerV6Run(trial) === cleanerV6Run(fast)) &&
+              trial.summary.finishTicks < fast.summary.finishTicks))
         ) {
           fast = trial;
           selected = width;

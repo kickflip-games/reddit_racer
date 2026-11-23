@@ -1,14 +1,14 @@
-name: Private test release
+name: Release The Daily Lap
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: Unused exact private version to upload and install (major.minor.patch)
+        description: Unused exact stable version to upload for review (major.minor.patch)
         type: string
         required: true
-      confirm_test_install:
-        description: Privately upload the-daily-lap and install only into full_throttle_dev_dev
+      confirm_review_submission:
+        description: Upload source and submit the-daily-lap for unlisted Reddit review; no installation
         type: boolean
         required: true
         default: false
@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: the-daily-lap-test-release
+  group: the-daily-lap-release
   cancel-in-progress: false
 
 jobs:
@@ -25,8 +25,8 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'kickflip-games/reddit_racer' &&
-      github.ref == 'refs/heads/main' && github.ref_protected == true &&
-      inputs.confirm_test_install == true
+      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
+      inputs.confirm_review_submission == true
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -41,20 +41,18 @@ jobs:
       - run: npm ci --ignore-scripts --no-fund
       - run: npm run check
 
-  release:
+  submit:
     needs: validate
     if: >-
       github.event_name == 'workflow_dispatch' &&
       github.repository == 'kickflip-games/reddit_racer' &&
-      github.ref == 'refs/heads/main' && github.ref_protected == true &&
-      inputs.confirm_test_install == true
+      github.ref == 'refs/heads/release/daily-lap' && github.ref_protected == true &&
+      inputs.confirm_review_submission == true
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    environment:
-      name: the-daily-lap-test-release
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
-      RELEASE_CONFIRM: ${{ inputs.confirm_test_install }}
+      REVIEW_VERSION: ${{ inputs.version }}
+      REVIEW_CONFIRM: ${{ inputs.confirm_review_submission }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -66,9 +64,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts --no-fund
       - run: npm run build
-      - name: Guard app, target, source and pinned CLI
-        run: node scripts/release/devvit-test-release.mjs preflight
-      - name: Upload private version and install exact version on test subreddit
-        run: node scripts/release/devvit-test-release.mjs release
+      - name: Guard app, source, pinned publish contract and launch README
+        run: node scripts/release/devvit-release.mjs preflight
+      - name: Submit exact version and source for unlisted review only
+        run: node scripts/release/devvit-release.mjs submit
         env:
-          DEVVIT_AUTH_TOKEN: ${{ secrets.THE_DAILY_LAP_TEST_DEVVIT_AUTH_TOKEN }}
+          DEVVIT_AUTH_TOKEN: ${{ secrets.DEVVIT_AUTH_TOKEN }}

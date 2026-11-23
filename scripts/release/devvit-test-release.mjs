@@ -23,12 +23,12 @@ export function validateContext(env) {
     env.GITHUB_ACTIONS !== 'true' ||
     env.GITHUB_EVENT_NAME !== 'workflow_dispatch' ||
     env.GITHUB_REPOSITORY !== repository ||
-    env.GITHUB_REF !== 'refs/heads/main' ||
+    env.GITHUB_REF !== 'refs/heads/release/daily-lap' ||
     env.GITHUB_REF_TYPE !== 'branch' ||
     env.GITHUB_REF_PROTECTED !== 'true'
   ) {
     throw new Error(
-      'Release requires manual dispatch on this repository’s protected main branch.'
+      'Release requires manual dispatch on this repository’s protected release/daily-lap branch.'
     );
   }
   if (env.RELEASE_CONFIRM !== 'true')

@@ -36,10 +36,14 @@ identifier is unavailable, choose a new identifier and align this repo's
 
 The guarded **Private test release** workflow is the supported release path.
 See [owner setup and exact-version dispatch](github-actions-test-release.md).
-It requires manual confirmation on protected `main` and references the existing
-repository Actions secret `DEVVIT_AUTH_TOKEN` only in its release step. No separate
+It requires manual confirmation on the exact protected `release/daily-lap` branch and
+references the existing repository Actions secret `DEVVIT_AUTH_TOKEN` only in
+its release step. No separate
 GitHub Environment or additional environment secret is required. The secret's
-actual value is neither accessed nor changed by this setup.
+actual value is neither accessed nor changed by this setup. `main` remains the
+unprotected default/development branch; the workflow stays on the default branch
+for dispatch availability. Release-branch/ruleset settings require separate owner
+confirmation. Repository writers are trusted with the repository-scoped secret.
 
 The former optional `deploy-private` job in ordinary CI is removed. Pushes,
 PRs and scheduled CI runs only validate code and never receive the Devvit secret.

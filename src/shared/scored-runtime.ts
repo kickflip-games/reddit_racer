@@ -1,3 +1,4 @@
+import { isVarietyCourseVersion } from './course-rhythm';
 import type { Track } from './track.ts';
 
 export type Handling = Readonly<{
@@ -147,7 +148,7 @@ export function runtimeForTrack(track: Track): ScoredRuntime {
     track.schemaVersion === 2 &&
     (track.generatorVersion === 'linked-circuits-v4' ||
       track.generatorVersion === 'linked-circuits-v5' ||
-      track.generatorVersion === 'linked-circuits-v6')
+      isVarietyCourseVersion(track.generatorVersion))
   )
     return countdownLaunchRuntime;
   if (

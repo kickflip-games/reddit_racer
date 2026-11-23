@@ -1,8 +1,14 @@
 import type { Replay } from './replay';
 
-export const LINKED_COURSE_VERSION = 'linked-circuits-v6';
+export const LINKED_COURSE_VERSION = 'linked-circuits-v7';
+/** Both recipes use the same driving rules; V6 geometry remains frozen. */
+export const isVarietyCourseVersion = (version: string): boolean =>
+  version === LINKED_COURSE_VERSION || version === 'linked-circuits-v6';
 export type LinkedCourseVersion =
-  typeof LINKED_COURSE_VERSION | 'linked-circuits-v5' | 'linked-circuits-v4';
+  | typeof LINKED_COURSE_VERSION
+  | 'linked-circuits-v6'
+  | 'linked-circuits-v5'
+  | 'linked-circuits-v4';
 export const LINKED_QUALITY_VERSION = 'linked-quality-v3';
 /** V2 searches more candidates without weakening any acceptance threshold. */
 export const LINKED_CANDIDATE_BUDGET = 32;
@@ -37,6 +43,6 @@ export function longestThrottleTicks(
 
 /** Earlier routes keep their original acceptance policy. V6 permits deliberate long runs. */
 export const rhythmLimitsFor = (version: string) =>
-  version === LINKED_COURSE_VERSION
+  isVarietyCourseVersion(version)
     ? LINKED_RHYTHM_LIMITS
     : { longestStraight: 65, longestThrottleTicks: 8 * 120, minElevation: 1 };

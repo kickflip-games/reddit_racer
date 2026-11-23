@@ -1,0 +1,46 @@
+{
+  "metrics": [
+    {
+      "metric": "Median longest interval",
+      "baseline": 9.483333333333334,
+      "tuned": 7.0875,
+      "unit": "s"
+    },
+    {
+      "metric": "Worst longest interval",
+      "baseline": 13.316666666666668,
+      "tuned": 9.516666666666667,
+      "unit": "s"
+    },
+    {
+      "metric": "Repeated excess, all 30 laps",
+      "baseline": 51.83333333333333,
+      "tuned": 22.574999999999996,
+      "unit": "s"
+    },
+    {
+      "metric": "All excess over 5s, all 30 laps",
+      "baseline": 177.83333333333334,
+      "tuned": 83.71666666666667,
+      "unit": "s"
+    },
+    {
+      "metric": "Median brake duty",
+      "baseline": 14.446662464379306,
+      "tuned": 17.78965943075235,
+      "unit": "%"
+    },
+    {
+      "metric": "Maximum brake duty",
+      "baseline": 20.700100976102323,
+      "tuned": 20.700100976102323,
+      "unit": "%"
+    },
+    {
+      "metric": "Median reference lap",
+      "baseline": 28.475,
+      "tuned": 26.5375,
+      "unit": "s"
+    }
+  ]
+}

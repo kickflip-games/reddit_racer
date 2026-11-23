@@ -567,6 +567,7 @@ export async function createDailyChallengeRecord(
     await import('./circuit-quality.ts');
   const { normalizeGeneratorConfig } = await import('./circuit-generator.ts');
   const normalize =
+    track.generatorVersion === 'linked-circuits-v6' ||
     track.generatorVersion === 'linked-circuits-v5' ||
     track.generatorVersion === 'linked-circuits-v4' ||
     track.generatorVersion ===

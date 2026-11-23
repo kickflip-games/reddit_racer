@@ -44,6 +44,7 @@ export function generateBrakingCircuit(
     throw new Error('Braking course seeds must contain1–96 characters.');
   if (
     version !== LINKED_COURSE_VERSION &&
+    version !== 'linked-circuits-v6' &&
     version !== 'linked-circuits-v5' &&
     version !== 'linked-circuits-v4'
   )

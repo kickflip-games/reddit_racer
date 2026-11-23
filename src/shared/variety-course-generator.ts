@@ -3,7 +3,10 @@ import {
   assessTrackStructure,
   findLongestStraight,
 } from './circuit-validation';
-import { LINKED_COURSE_VERSION } from './course-rhythm';
+import {
+  LINKED_COURSE_VERSION,
+  type LinkedCourseVersion,
+} from './course-rhythm';
 import type { CircuitCandidate, MotifKind } from './circuit-generator';
 import { sampleTrack, validateTrack, type Track } from './track';
 import { findTrackCrossings, crossingHeadroom } from './track-crossings';
@@ -54,7 +57,11 @@ function hill(s: number, from: number, span: number, height: number) {
   };
 }
 /** Different spatial constructions, not a shuffled inventory around one inward hairpin. */
-function controlsFor(family: CourseFamily, random: () => number): TrackPoint[] {
+function controlsFor(
+  family: CourseFamily,
+  random: () => number,
+  tuned: boolean
+): TrackPoint[] {
   let pairs: number[][];
   if (family === 'sweeping') {
     // Broad outward lobes with three tightening waists; no inward U hairpin.
@@ -171,6 +178,17 @@ function controlsFor(family: CourseFamily, random: () => number): TrackPoint[] {
       [-180, 10],
     ];
   }
+  if (tuned) {
+    // Tighten broad lobes rather than injecting chicanes into the elevated road.
+    // Technical and bridge days already have frequent braking approaches.
+    if (family === 'sweeping') {
+      pairs[4] = [75, -65];
+      pairs[5] = [120, -65];
+      pairs[6] = [120, 25];
+      pairs[7] = [100, 80];
+    } else if (family === 'switchbacks') pairs[15] = [-105, 100];
+    else if (family === 'ridge') pairs[16] = [-105, 120];
+  }
   const stretch = 0.9 + random() * 0.2,
     depth = 0.9 + random() * 0.2;
   const raw = pairs.map(([x = 0, z = 0], i) => ({
@@ -194,22 +212,34 @@ function controlsFor(family: CourseFamily, random: () => number): TrackPoint[] {
 }
 export function generateVarietyCandidate(
   seed: string,
-  attempt: number
+  attempt: number,
+  version: LinkedCourseVersion = LINKED_COURSE_VERSION
 ): CircuitCandidate & { hills: [] } {
   const family = courseFamilyForSeed(seed),
     random = courseRandomFor(`variety-v6|${seed}|${attempt}`);
-  const controls = controlsFor(family, random);
+  const controls = controlsFor(
+    family,
+    random,
+    version === LINKED_COURSE_VERSION
+  );
   let dense = spline(controls);
+  const tuned = version === LINKED_COURSE_VERSION;
   const target =
     (family === 'technical'
       ? 560
       : family === 'crossover'
         ? 830
         : family === 'switchbacks'
-          ? 760
+          ? tuned
+            ? 640
+            : 760
           : family === 'ridge'
-            ? 740
-            : 640) +
+            ? tuned
+              ? 650
+              : 740
+            : tuned && family === 'sweeping'
+              ? 620
+              : 640) +
     random() * (family === 'crossover' ? 60 : 70);
   const scale = target / length(dense),
     angle = random() * Math.PI * 2,
@@ -220,7 +250,7 @@ export function generateVarietyCandidate(
   }));
   const options = {
     seed,
-    generatorVersion: LINKED_COURSE_VERSION,
+    generatorVersion: version,
     width: 7,
     sampleSpacing: 1,
     checkpointCount: 8,

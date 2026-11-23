@@ -1,3 +1,4 @@
+import { isVarietyCourseVersion } from './course-rhythm';
 import { courseFamilyForSeed } from './course-families';
 import {
   createJumpFlights,
@@ -84,10 +85,9 @@ function drive(
     maxAirHeight = 0,
     airborneCornerTicks = 0;
   const transitions: ReplayTransition[] = [];
-  const jumpFlights =
-    track.generatorVersion === 'linked-circuits-v6'
-      ? createJumpFlights(track)
-      : undefined;
+  const jumpFlights = isVarietyCourseVersion(track.generatorVersion)
+    ? createJumpFlights(track)
+    : undefined;
   while (
     race.phase === 'racing' &&
     race.simulation.tick < MAX_SIMULATION_TICKS
@@ -191,7 +191,7 @@ export function brakingPeaks(track: Track): BrakingPeak[] {
     .filter(
       (point) =>
         point.curvature >
-        (track.generatorVersion === 'linked-circuits-v6'
+        (isVarietyCourseVersion(track.generatorVersion)
           ? 0.012
           : track.schemaVersion === 2
             ? 0.018
@@ -208,7 +208,7 @@ export function brakingPeaks(track: Track): BrakingPeak[] {
             Math.abs(peak.s - point.s),
             track.totalLength - Math.abs(peak.s - point.s)
           ) >
-          (track.generatorVersion === 'linked-circuits-v6'
+          (isVarietyCourseVersion(track.generatorVersion)
             ? courseFamilyForSeed(track.seed) === 'sweeping'
               ? 75
               : 45
@@ -226,7 +226,7 @@ function windowBot(
   minimumLiftTicks: number
 ): BotRun {
   const crossover =
-    track.generatorVersion === 'linked-circuits-v6' &&
+    isVarietyCourseVersion(track.generatorVersion) &&
     courseFamilyForSeed(track.seed) === 'crossover';
   const completed = new Set<number>();
   return drive(
@@ -297,7 +297,7 @@ export function searchDrivingInputs(
   // improvement from full throttle can otherwise get stuck between two falls.
   const widths: number[] = peaks.map(() =>
     courseFamilyForSeed(track.seed) === 'crossover' &&
-    track.generatorVersion === 'linked-circuits-v6'
+    isVarietyCourseVersion(track.generatorVersion)
       ? 30
       : 0
   );
@@ -322,9 +322,9 @@ export function searchDrivingInputs(
         if (
           trial.summary.finishTicks !== null &&
           (fast.summary.finishTicks === null ||
-            (track.generatorVersion === 'linked-circuits-v6' &&
+            (isVarietyCourseVersion(track.generatorVersion) &&
               cleanerV6Run(trial) < cleanerV6Run(fast)) ||
-            ((track.generatorVersion !== 'linked-circuits-v6' ||
+            ((!isVarietyCourseVersion(track.generatorVersion) ||
               cleanerV6Run(trial) === cleanerV6Run(fast)) &&
               trial.summary.finishTicks < fast.summary.finishTicks))
         ) {

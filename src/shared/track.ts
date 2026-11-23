@@ -1,3 +1,4 @@
+import { isVarietyCourseVersion } from './course-rhythm';
 /** Canonical data only: no renderer, platform, clock, or authoring dependencies. */
 export type TrackSample = {
   x: number;
@@ -192,8 +193,9 @@ export function validateTrack(track: Track): void {
       const y = finite(sample.y, 'sample.y');
       const grade = finite(sample.grade, 'sample.grade');
       const bend = finite(sample.verticalCurvature, 'sample.verticalCurvature');
-      const maxElevation =
-        track.generatorVersion === 'linked-circuits-v6' ? 18 : 8;
+      const maxElevation = isVarietyCourseVersion(track.generatorVersion)
+        ? 18
+        : 8;
       if (
         y < 0 ||
         y > maxElevation ||

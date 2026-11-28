@@ -33,13 +33,17 @@ test('compact restart resets a moving practice lap without changing course @smok
   await page.keyboard.down('Space');
   await page.clock.runFor(1200);
   await page.keyboard.up('Space');
-  await expect(page.locator('#timer')).not.toHaveText('00.000');
+  await expect(page.locator('#timer')).not.toHaveText('00.0');
+  await expect(page.locator('#timer')).toHaveText(/^\d+\.\d$/);
   for (let i = 0; i < 2; i++) {
     if (info.project.name === 'mobile-chromium') await restart.tap();
     else {
       await restart.focus();
       await page.keyboard.press('Enter');
     }
+    await page.clock.runFor(20);
+    await expect(race).toHaveAttribute('data-phase', 'countdown');
+    await expect(page.locator('#timer')).toHaveText('00.0');
     await page.clock.runFor(3100);
     await expect(race).toHaveAttribute('data-phase', 'racing');
     await expect(race).toHaveAttribute('data-track-hash', hash!);

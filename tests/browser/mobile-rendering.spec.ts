@@ -211,7 +211,7 @@ test('emulated DPR1/2/3 cap correctly and same-CSS raw DPR changes redraw a paus
             'data-phase',
             'ready'
           );
-          await expect(page.locator('#timer')).toHaveText('00.000');
+          await expect(page.locator('#timer')).toHaveText('00.0');
           const glError = await page
             .locator('#race-canvas')
             .evaluate((canvas) => {
@@ -281,7 +281,7 @@ test('home preview draws while moving, reduced-motion home settles, and real dri
   await expect
     .poll(async () => (await counters(page)).clears)
     .toBeGreaterThan(preference.clears);
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#timer')).toHaveText('00.0');
   const activeBefore = await counters(page);
   await page.locator('#start-button').click();
   await page.keyboard.down('Space');
@@ -562,7 +562,7 @@ test('an undersized view interrupts a real held attempt and restores accessible 
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#timer')).toHaveText('00.0');
   await expect(page.locator('#speed')).toHaveText('0');
   expect(errors).toEqual([]);
 });

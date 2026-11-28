@@ -356,7 +356,7 @@ test('New track changes unranked geometry and returning Daily restores the immut
     'data-practice-laps',
     '0'
   );
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#timer')).toHaveText('00.0');
   await expect(page.locator('#practice-best-lap')).toHaveText('Best —');
   await expect(page.locator('#practice-last-lap')).toHaveText('Last —');
   await setRaceSettingsOpen(page, true);
@@ -445,7 +445,7 @@ test('practice interruption releases the hold and requires an explicit resume wh
     'data-phase',
     'countdown'
   );
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#timer')).toHaveText('00.0');
   await expect(page.locator('#race')).toHaveAttribute(
     'data-practice-laps',
     '0'

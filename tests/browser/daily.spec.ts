@@ -192,7 +192,7 @@ test('server UTC expiry changes messaging without replacing an in-flight circuit
     record.challengeHash
   );
   await page.clock.runFor(32);
-  await expect(page.locator('#timer')).toHaveText('00.000');
+  await expect(page.locator('#timer')).toHaveText('00.0');
   expect(calls()).toBe(1);
 });
 

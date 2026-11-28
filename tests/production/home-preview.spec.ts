@@ -80,7 +80,7 @@ for (const [name, generated] of [
     );
     expect(moved.x).toBeCloseTo(actual.x, 5);
     expect(moved.z).toBeCloseTo(actual.z, 5);
-    await expect(page.locator('#timer')).toHaveText('00.000');
+    await expect(page.locator('#timer')).toHaveText('00.0');
     await expect(race).toHaveAttribute('data-phase', 'ready');
     await expect(race).toHaveAttribute('data-audio-state', audio!);
     await expect(page.locator('canvas')).toHaveCount(1);
@@ -118,7 +118,7 @@ for (const [name, generated] of [
     await expect(race).toHaveAttribute('data-phase', 'countdown');
     await expect(race).toHaveAttribute('data-preview', 'off');
     await expect(page.locator('#race-countdown')).toHaveText('3');
-    await expect(page.locator('#timer')).toHaveText('00.000');
+    await expect(page.locator('#timer')).toHaveText('00.0');
     expect(starts).toBe(1);
     await page.keyboard.down('Space');
     await page.clock.runFor(3100);

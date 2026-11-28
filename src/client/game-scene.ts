@@ -13,6 +13,7 @@ import {
 } from './practice-best';
 import * as THREE from 'three';
 import { SIMULATION_HZ } from '../shared/simulation';
+import { formatLiveLapTime } from './live-lap-time';
 import {
   createSimulationDriver,
   type InterruptionReason,
@@ -555,11 +556,13 @@ export function initializeGame(
     raceRoot.dataset.gripModel = 'progressive-slip';
     raceRoot.dataset.lateralOffset = String(state.lateralOffset);
     const race = driver.raceState;
-    timer.textContent = formatTime(
-      (practiceDriver
-        ? practiceDriver.lapTicks
-        : (state.finishedTick ?? state.tick)) / SIMULATION_HZ
-    );
+    const elapsedTicks = practiceDriver
+      ? practiceDriver.lapTicks
+      : (state.finishedTick ?? state.tick);
+    timer.textContent =
+      race.phase === 'finished'
+        ? formatTime(elapsedTicks / SIMULATION_HZ)
+        : formatLiveLapTime(elapsedTicks);
     if (practiceDriver) {
       const completed = practiceDriver.completedLaps;
       if (
